@@ -28,11 +28,11 @@ export default function Ecommerce() {
         <StatisticsChart />
       </div>
 
-      <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
+      <div className="col-span-12 xl:col-span-6">
+        <RecentOrders />
       </div>
 
-      <div className="col-span-12 xl:col-span-7">
+      <div className="col-span-12 xl:col-span-6">
         <RecentOrders />
       </div>
     </div>

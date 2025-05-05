@@ -29,9 +29,8 @@ export default function AuthLayout({
                     src={Logo}
                     alt="Logo"
                   />
-                 
                 </Link>
-                
+
               </div>
             </div>
           </div>
