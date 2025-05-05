@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-
+import Profile from '../../../public/images/logo/user1.webp'
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,7 +26,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           <Image
             width={44}
             height={44}
-            src="/images/user/owner.jpg"
+            src={Profile}
             alt="User"
           />
         </span>

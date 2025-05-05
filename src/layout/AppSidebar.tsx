@@ -18,7 +18,7 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
-
+import Logo from '../../public/images/logo/final-logo.png'
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -305,7 +305,7 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex  ${
+        className={`pb-8 pt-3 flex  ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
@@ -314,14 +314,14 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src="/images/logo/logo.svg"
+                src={Logo}
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
+                src={Logo}
                 alt="Logo"
                 width={150}
                 height={40}
