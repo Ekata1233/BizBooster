@@ -1,3 +1,4 @@
+// /models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -63,12 +64,20 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
+// Hash password and clean null referralCode
+userSchema.pre('save', async function (next) {
+    if (this.isModified('password')) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+  
+    // Properly remove referralCode field if it's null or empty
+    if (!this.referralCode) {
+      this.set('referralCode', undefined);
+    }
+  
+    next();
+  });
+  
+  
 
 export default mongoose.models.User || mongoose.model('User', userSchema);
