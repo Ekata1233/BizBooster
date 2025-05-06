@@ -10,22 +10,19 @@ export const POST = async (req: Request) => {
 
     const body = await req.json();
     const { email, mobileNumber, password } = body;
-
     if (!email && !mobileNumber) {
       return NextResponse.json({ error: 'Email or Mobile number is required' }, { status: 400 });
     }
-
     if (!password) {
       return NextResponse.json({ error: 'Password is required' }, { status: 400 });
     }
-
     const user = await User.findOne({
       $or: [{ email }, { mobileNumber }],
     });
-
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+<<<<<<< HEAD
 
     console.log("Stored password:", user.password);
     console.log("Plain password:", password);
@@ -33,6 +30,16 @@ export const POST = async (req: Request) => {
     // ✅ Compare plain password with hashed password in DB
     const isPasswordValid = await bcrypt.compare(password.trim(), user.password);
     console.log("Is password valid?:", isPasswordValid);
+=======
+
+
+    console.log("Input password:", password);
+    console.log("Stored hashed password:", user.password);
+    
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match result:", isMatch); // 👈 Check this log
+    
+>>>>>>> 2e311d51c413577c2d10a8cfd9dd7b32cceaeef7
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
