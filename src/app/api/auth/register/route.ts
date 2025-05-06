@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { userValidationSchema } from '@/validation/userValidation';
 import User from '@/models/User';
-import { generateOtp } from '@/utils/generateOtp';
 import { connectToDatabase } from '@/utils/db'; // Import connectToDatabase function
+import { generateOtp } from '@/utils/generateOtp';
 
 export const POST = async (req: Request) => {
   try {
@@ -23,19 +22,42 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: 'Email or Mobile already exists' }, { status: 400 });
     }
 
-    // Generate OTP
-    const otp = generateOtp();
-    console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(parsedData.password, 10);
 
-    // Save OTP to DB (temporarily for validation later)
+    function generateReferralCode(length = 6) {
+      return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
+    }
+    
+    let referralCode: string = '';
+    let exists = true;
+    
+    while (exists) {
+      referralCode = generateReferralCode();
+      const existing = await User.findOne({ referralCode });
+      if (!existing) exists = false;
+    }
+
+    // Create a new user (OTP will be handled later)
     const newUser = new User({
       ...parsedData,
-      password: await bcrypt.hash(parsedData.password, 10),
-      otp: { code: otp, expiresAt: new Date(Date.now() + 5 * 60 * 1000), verified: false },
+      password: hashedPassword,
+      referralCode,
+      isMobileVerified: false, 
     });
 
     await newUser.save();
-    return NextResponse.json({ message: 'OTP sent successfully' }, { status: 200 });
+    const otp = generateOtp();
+    console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console (can be replaced with actual OTP sending service)
+
+    // Store OTP in DB (temporarily for verification)
+    newUser.otp = {
+      code: otp,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP expires in 5 minutes
+      verified: false,
+    };
+    await newUser.save();
+    return NextResponse.json({ message: 'User registered successfully, OTP sent separately' }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -31,7 +31,7 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                   <TableCell
                     key={idx}
                     isHeader
-                    className="px-2 py-1 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
+                    className="px-2 py-3 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
                   >
                     {column.header}
                   </TableCell>
@@ -46,7 +46,7 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                   {columns.map((column, colIndex) => (
                     <TableCell
                       key={colIndex}
-                      className="px-2 py-1 text-start text-gray-500 text-sm dark:text-gray-400"
+                      className="px-2 py-4 text-start text-gray-500 text-sm dark:text-gray-400"
                     >
                       {column.render
                         ? column.render(row)
