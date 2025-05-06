@@ -24,16 +24,15 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: 'Email or Mobile already exists' }, { status: 400 });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(parsedData.password, 10);
+
 
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
     }
-    
+
     let referralCode: string = '';
     let exists = true;
-    
+
     while (exists) {
       referralCode = generateReferralCode();
       const existing = await User.findOne({ referralCode });
@@ -41,26 +40,31 @@ export const POST = async (req: Request) => {
     }
 
     // Create a new user (OTP will be handled later)
-    const newUser = new User({
-      ...parsedData,
-      password: hashedPassword,
-      referralCode,
-      isMobileVerified: false, 
-    });
+    // const newUser = new User({
+    //   ...parsedData,
+    //   referralCode,
+    //   isMobileVerified: false, 
+    // });
 
     // Save the new user to the database
-    await newUser.save();
+    // await newUser.save();
     const otp = generateOtp();
     console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console (can be replaced with actual OTP sending service)
 
     // Store OTP in DB (temporarily for verification)
-    newUser.otp = {
-      code: otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP expires in 5 minutes
-      verified: false,
-    };
+    const newUser = new User({
+      ...parsedData,
+      referralCode,
+      isMobileVerified: false,
+      otp: {
+        code: otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        verified: false,
+      },
+    });
+
     await newUser.save();
-    return NextResponse.json({ message: 'User registered successfully, OTP sent separately' }, { status: 200 });
+    return NextResponse.json({ success: true, message: 'User registered successfully, OTP sent separately' }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error saving user:', error); // Log error to debug
     if (error instanceof Error) {
