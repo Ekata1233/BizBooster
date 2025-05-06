@@ -1,4 +1,3 @@
-// src/app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -25,17 +24,20 @@ export const POST = async (req: Request) => {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    console.log("pass :",password);
+
+    console.log("Stored password:", user.password);
+    console.log("Plain password:", password);
 
     // ✅ Compare plain password with hashed password in DB
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password.trim(), user.password);
+    console.log("Is password valid?:", isPasswordValid);
 
-    if (!isMatch) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 400 });
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-    
+
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET!,

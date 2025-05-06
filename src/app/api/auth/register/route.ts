@@ -25,7 +25,7 @@ export const POST = async (req: Request) => {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(parsedData.password, 10);
+    // const hashedPassword = await bcrypt.hash(parsedData.password, 10);
 
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
@@ -43,7 +43,6 @@ export const POST = async (req: Request) => {
     // Create a new user (OTP will be handled later)
     const newUser = new User({
       ...parsedData,
-      password: hashedPassword,
       referralCode,
       isMobileVerified: false, 
     });
