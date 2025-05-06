@@ -5,9 +5,10 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import {
-    BoxCubeIcon,
-    EyeIcon
-  } from "../../../../../icons/index";
+    EyeIcon,
+    TrashBinIcon,
+    PencilIcon
+} from "../../../../../icons/index";
 
 const tableData = [
     {
@@ -158,24 +159,35 @@ const columns = [
         accessor: "budget",
     },
     {
-            header: "Action",
-            accessor: "action",
-            render: () => (
-                <button className="text-blue-500 hover:text-blue-700"><EyeIcon /></button>
-            ),
-        },
+        header: "Action",
+        accessor: "action",
+        render: () => (
+            <div className="flex gap-2">
+                <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                    <PencilIcon/>
+                </button>
+                <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                    <TrashBinIcon />
+                </button>
+                <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                    <EyeIcon />
+                </button>
+            </div>
+
+        ),
+    },
 ];
 
 const UserList = () => {
     return (
         <div>
-        <PageBreadcrumb pageTitle="User List" />
-        <div className="space-y-6">
-            <ComponentCard title="User List">
-                <BasicTableOne columns={columns} data={tableData} />;
-            </ComponentCard>
+            <PageBreadcrumb pageTitle="User List" />
+            <div className="space-y-6">
+                <ComponentCard title="User List">
+                    <BasicTableOne columns={columns} data={tableData} />;
+                </ComponentCard>
+            </div>
         </div>
-    </div>
     )
 }
 

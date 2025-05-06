@@ -6,14 +6,16 @@ import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import {
     BoxCubeIcon,
-    EyeIcon
+    EyeIcon,
+    PencilIcon,
+    TrashBinIcon
   } from "../../../../../icons/index";
 
 const tableData = [
     {
         id: 1,
         franchise: {
-            image: "/images/franchise/franchise-1.jpg",
+            image: "/images/user/user-17.jpg",
             name: "Burger King",
             type: "Fast Food",
         },
@@ -28,7 +30,7 @@ const tableData = [
     {
         id: 2,
         franchise: {
-            image: "/images/franchise/franchise-2.jpg",
+            image: "/images/user/user-17.jpg",
             name: "Starbucks",
             type: "Coffee Shop",
         },
@@ -43,7 +45,7 @@ const tableData = [
     {
         id: 3,
         franchise: {
-            image: "/images/franchise/franchise-3.jpg",
+            image: "/images/user/user-17.jpg",
             name: "McDonald's",
             type: "Fast Food",
         },
@@ -58,7 +60,7 @@ const tableData = [
     {
         id: 4,
         franchise: {
-            image: "/images/franchise/franchise-4.jpg",
+            image: "/images/user/user-17.jpg",
             name: "Domino's Pizza",
             type: "Pizza",
         },
@@ -141,12 +143,23 @@ const columns = [
         ),
     },
     {
-        header: "Action",
-        accessor: "action",
-        render: () => (
-            <button className="text-blue-500 hover:text-blue-700"><EyeIcon /></button>
-        ),
-    },
+            header: "Action",
+            accessor: "action",
+            render: () => (
+                <div className="flex gap-2">
+                    <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                        <PencilIcon/>
+                    </button>
+                    <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                        <TrashBinIcon />
+                    </button>
+                    <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                        <EyeIcon />
+                    </button>
+                </div>
+    
+            ),
+        },
 ];
 
 
