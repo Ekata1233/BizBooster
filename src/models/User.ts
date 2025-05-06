@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   referralCode: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true, // Ensures MongoDB ignores null/undefined in unique index
   },
   referredBy: {
     type: String,
@@ -70,5 +70,9 @@ userSchema.pre('save', async function(next) {
   }
   next();
 });
-
+userSchema.methods.comparePassword = async function (
+    candidatePassword: string,
+  ) {
+    return bcrypt.compare(candidatePassword, this.password);
+  };
 export default mongoose.models.User || mongoose.model('User', userSchema);
