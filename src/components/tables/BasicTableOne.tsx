@@ -32,6 +32,7 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                     key={idx}
                     isHeader
                     className="px-2 py-3 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
+                    className="px-2 py-3 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
                   >
                     {column.header}
                   </TableCell>

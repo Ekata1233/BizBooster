@@ -1,3 +1,5 @@
+// src/app/api/auth/register/route.ts
+
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { userValidationSchema } from '@/validation/userValidation';
@@ -8,10 +10,10 @@ import { generateOtp } from '@/utils/generateOtp';
 export const POST = async (req: Request) => {
   try {
     // Connect to the database before performing any operations
-    await connectToDatabase();
+    await connectToDatabase(); // This should connect to the database
 
-    const body = await req.json();
-    const parsedData = userValidationSchema.parse(body);
+    const body = await req.json(); // Parse the request body
+    const parsedData = userValidationSchema.parse(body); // Validate the data
 
     // Check for existing user (email or mobile)
     const existingUser = await User.findOne({
@@ -46,6 +48,7 @@ export const POST = async (req: Request) => {
       isMobileVerified: false, 
     });
 
+    // Save the new user to the database
     await newUser.save();
     const otp = generateOtp();
     console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console (can be replaced with actual OTP sending service)
@@ -59,6 +62,7 @@ export const POST = async (req: Request) => {
     await newUser.save();
     return NextResponse.json({ message: 'User registered successfully, OTP sent separately' }, { status: 200 });
   } catch (error: unknown) {
+    console.error('Error saving user:', error); // Log error to debug
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
