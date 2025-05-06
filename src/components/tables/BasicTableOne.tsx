@@ -20,9 +20,9 @@ interface BasicTableOneProps<T> {
 
 export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T>) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className="min-w-[800px]">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
@@ -31,7 +31,7 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                   <TableCell
                     key={idx}
                     isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    className="px-2 py-1 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
                   >
                     {column.header}
                   </TableCell>
@@ -46,7 +46,7 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                   {columns.map((column, colIndex) => (
                     <TableCell
                       key={colIndex}
-                      className="px-5 py-4 sm:px-6 text-start text-gray-500 text-theme-sm dark:text-gray-400"
+                      className="px-2 py-1 text-start text-gray-500 text-sm dark:text-gray-400"
                     >
                       {column.render
                         ? column.render(row)
