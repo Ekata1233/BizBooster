@@ -1,37 +1,43 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 
-export const GET = async (_req: Request, { params }: { params: { id: string } }) => {
+// GET user by ID
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
-    const user = await User.findById(params.id);
+    const { id } = context.params;
+    const user = await User.findById(id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
     return NextResponse.json(user, { status: 200 });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-};
+}
 
-export const PUT = async (req: Request, { params }: { params: { id: string } }) => {
+// UPDATE user by ID
+export async function PUT(req: NextRequest, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
+    const { id } = context.params;
     const body = await req.json();
-    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, body, { new: true });
     if (!updatedUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
     return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-};
+}
 
-export const DELETE = async (_req: Request, { params }: { params: { id: string } }) => {
+// SOFT DELETE user by ID
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
+    const { id } = context.params;
     const updatedUser = await User.findByIdAndUpdate(
-      params.id,
+      id,
       { isDeleted: true },
       { new: true }
     );
@@ -45,4 +51,4 @@ export const DELETE = async (_req: Request, { params }: { params: { id: string }
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-};
+}
