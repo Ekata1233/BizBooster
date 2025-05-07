@@ -3,8 +3,7 @@ import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 import { NextRequest } from 'next/server';
 
-// Correct context type
-type Params = { params: { id: string } };
+
 
 // ✅ GET /api/users/[id]
 export async function GET(
