@@ -42,8 +42,7 @@ export const POST = async (req: Request) => {
       { expiresIn: '1h' }
     );
 
-    const { password: _password, otp: _otp, ...userInfo } = user.toObject();
-
+    const { password: _, otp: __, ...userInfo } = user.toObject();
     return NextResponse.json({ message: 'Login successful', token, user: userInfo }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error during login:', error);
