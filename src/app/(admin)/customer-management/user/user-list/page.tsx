@@ -142,45 +142,19 @@ const columns = [
         ),
     },
     {
-        header: "Project Name",
+        header: "Email",
         accessor: "projectName",
     },
     {
-        header: "Team",
-        accessor: "team",
-        render: (row: TableData) => (
-            <div className="flex -space-x-2">
-                {row.team.images.map((img: string, i: number) => (
-                    <div
-                        key={i}
-                        className="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900"
-                    >
-                        <Image
-                            width={24}
-                            height={24}
-                            src={img}
-                            alt={`Team member ${i + 1}`}
-                            className="w-full"
-                        />
-                    </div>
-                ))}
-            </div>
-        ),
+        header: "Mobile Number",
+        accessor: "projectName",
     },
     {
-        header: "Status",
-        accessor: "status",
-        render: (row: TableData) => (
-            <Badge
-                size="sm"
-                color={row.status === "Active" ? "success" : row.status === "Pending" ? "warning" : "error"}
-            >
-                {row.status}
-            </Badge>
-        ),
+        header: "Referred By",
+        accessor: "projectName",
     },
     {
-        header: "Budget",
+        header: "Total Bookings",
         accessor: "budget",
     },
     {
@@ -205,9 +179,10 @@ const columns = [
 const UserList = () => {
     const [showPassword, setShowPassword] = useState(false);
     const options = [
-        { value: "marketing", label: "Marketing" },
-        { value: "template", label: "Template" },
-        { value: "development", label: "Development" },
+        { value: "latest", label: "Latest" },
+        { value: "oldest", label: "Oldest" },
+        { value: "ascending", label: "Ascending" },
+        { value: "descending", label: "Descending" },
     ];
 
     const handleSelectChange = (value: string) => {
@@ -252,23 +227,38 @@ const UserList = () => {
                 />
             </div>
 
-            <div>
-                <ComponentCard title="Default Inputs">
-                    <div className="space-y-6">
+            <div className="my-5">
+                <ComponentCard title="Search Filter">
+                    <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+
                         <div>
-                            <Label>Input</Label>
-                            <Input type="text" />
+                            <DatePicker
+                                id="date-picker"
+                                label="Start Date"
+                                placeholder="Select a date"
+                                onChange={(dates, currentDateString) => {
+                                    // Handle your logic
+                                    console.log({ dates, currentDateString });
+                                }}
+                            />
                         </div>
                         <div>
-                            <Label>Input with Placeholder</Label>
-                            <Input type="text" placeholder="info@gmail.com" />
+                            <DatePicker
+                                id="date-picker"
+                                label="End Date"
+                                placeholder="Select a date"
+                                onChange={(dates, currentDateString) => {
+                                    // Handle your logic
+                                    console.log({ dates, currentDateString });
+                                }}
+                            />
                         </div>
                         <div>
                             <Label>Select Input</Label>
                             <div className="relative">
                                 <Select
                                     options={options}
-                                    placeholder="Select an option"
+                                    placeholder="Sort By"
                                     onChange={handleSelectChange}
                                     className="dark:bg-dark-900"
                                 />
@@ -278,76 +268,8 @@ const UserList = () => {
                             </div>
                         </div>
                         <div>
-                            <Label>Password Input</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Enter your password"
-                                />
-                                <button
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                                >
-                                    {showPassword ? (
-                                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                                    ) : (
-                                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <DatePicker
-                                id="date-picker"
-                                label="Date Picker Input"
-                                placeholder="Select a date"
-                                onChange={(dates, currentDateString) => {
-                                    // Handle your logic
-                                    console.log({ dates, currentDateString });
-                                }}
-                            />
-                        </div>
-
-                        <div>
-                            <Label htmlFor="tm">Time Picker Input</Label>
-                            <div className="relative">
-                                <Input
-                                    type="time"
-                                    id="tm"
-                                    name="tm"
-                                    onChange={(e) => console.log(e.target.value)}
-                                />
-                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                    <TimeIcon />
-                                </span>
-                            </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="tm">Input with Payment</Label>
-                            <div className="relative">
-                                <Input
-                                    type="text"
-                                    placeholder="Card number"
-                                    className="pl-[62px]"
-                                />
-                                <span className="absolute left-0 top-1/2 flex h-11 w-[46px] -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                                        <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                                        <path
-                                            d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
-                                            fill="#FC6020"
-                                        />
-                                    </svg>
-                                </span>
-                            </div>
+                            <Label>Other Filter</Label>
+                            <Input type="text" />
                         </div>
                     </div>
                 </ComponentCard>
