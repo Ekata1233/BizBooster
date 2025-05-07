@@ -20,8 +20,11 @@ export const GET = async (_req: Request, { params }: { params: { id: string } })
     const user = await User.findById(params.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     return NextResponse.json(user, { status: 200, headers: corsHeaders });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+  } catch (error: unknown) { // Use 'unknown' instead of 'any'
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
   }
 };
 
@@ -33,8 +36,11 @@ export const PUT = async (req: Request, { params }: { params: { id: string } }) 
     const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
     if (!updatedUser) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     return NextResponse.json({ success: true, user: updatedUser }, { status: 200, headers: corsHeaders });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+  } catch (error: unknown) { // Use 'unknown' instead of 'any'
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
   }
 };
 
@@ -51,7 +57,10 @@ export const DELETE = async (_req: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     }
     return NextResponse.json({ success: true, message: 'User soft deleted (isDeleted: true)' }, { status: 200, headers: corsHeaders });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+  } catch (error: unknown) { // Use 'unknown' instead of 'any'
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
   }
 };
