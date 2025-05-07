@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import Badge from "@/components/ui/badge/Badge";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
@@ -12,19 +11,21 @@ import {
     BoxCubeIcon,
     ArrowUpIcon,
     ChevronDownIcon,
-    EyeCloseIcon,
-    TimeIcon
 } from "../../../../../icons/index";
 import StatCard from "@/components/common/StatCard";
 import DatePicker from '@/components/form/date-picker';
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
+import { useUserContext } from "@/context/UserContext";
+import userProfile from "../../../../../../public/images/logo/user1.webp"
+import Link from "next/link";
 
 // Define the type for the table data
 interface User {
     image: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     role: string;
 }
 
@@ -35,86 +36,69 @@ interface Team {
 interface TableData {
     id: number;
     user: User;
-    projectName: string;
-    team: Team;
-    budget: string;
+    email: string;
+    mobileNumber: string;
+    referredBy: string;
+    totalBookings: string;
     status: string;
 }
 
-const tableData: TableData[] = [
-    {
-        id: 1,
-        user: {
-            image: "/images/user/user-17.jpg",
-            name: "Lindsey Curtis",
-            role: "Web Designer",
-        },
-        projectName: "Agency Website",
-        team: {
-            images: [
-                "/images/user/user-22.jpg",
-                "/images/user/user-23.jpg",
-                "/images/user/user-24.jpg",
-            ],
-        },
-        budget: "3.9K",
-        status: "Active",
-    },
-    {
-        id: 2,
-        user: {
-            image: "/images/user/user-17.jpg",
-            name: "Lindsey Curtis",
-            role: "Web Designer",
-        },
-        projectName: "Agency Website",
-        team: {
-            images: [
-                "/images/user/user-22.jpg",
-                "/images/user/user-23.jpg",
-                "/images/user/user-24.jpg",
-            ],
-        },
-        budget: "3.9K",
-        status: "Active",
-    },
-    {
-        id: 3,
-        user: {
-            image: "/images/user/user-17.jpg",
-            name: "Lindsey Curtis",
-            role: "Web Designer",
-        },
-        projectName: "Agency Website",
-        team: {
-            images: [
-                "/images/user/user-22.jpg",
-                "/images/user/user-23.jpg",
-                "/images/user/user-24.jpg",
-            ],
-        },
-        budget: "3.9K",
-        status: "Active",
-    },
-    {
-        id: 4,
-        user: {
-            image: "/images/user/user-17.jpg",
-            name: "Lindsey Curtis",
-            role: "Web Designer",
-        },
-        projectName: "Agency Website",
-        team: {
-            images: [
-                "/images/user/user-22.jpg",
-                "/images/user/user-23.jpg",
-                "/images/user/user-24.jpg",
-            ],
-        },
-        budget: "3.9K",
-        status: "Active",
-    },
-];
+
+// const tableData: TableData[] = [
+//     {
+//         id: 1,
+//         user: {
+//             image: "/images/user/user-17.jpg",
+//             name: "Lindsey Curtis",
+//             role: "Web Designer",
+//         },
+//         email: "lindsey.curtis@example.com",
+//         mobileNumber: "+1 234 567 8901",
+//         referredBy: "David Smith",
+//         totalBookings: "3.9K",
+//         status: "Active",
+//     },
+//     {
+//         id: 2,
+//         user: {
+//             image: "/images/user/user-18.jpg",
+//             name: "Michael Scott",
+//             role: "Marketing Manager",
+//         },
+//         email: "michael.scott@example.com",
+//         mobileNumber: "+1 987 654 3210",
+//         referredBy: "Pam Beesly",
+//         totalBookings: "5.2K",
+//         status: "Active",
+//     },
+//     {
+//         id: 3,
+//         user: {
+//             image: "/images/user/user-19.jpg",
+//             name: "Angela Martin",
+//             role: "Accountant",
+//         },
+//         email: "angela.martin@example.com",
+//         mobileNumber: "+1 555 123 4567",
+//         referredBy: "Oscar Martinez",
+//         totalBookings: "4.1K",
+//         status: "Active",
+//     },
+//     {
+//         id: 4,
+//         user: {
+//             image: "/images/user/user-20.jpg",
+//             name: "Jim Halpert",
+//             role: "Sales Executive",
+//         },
+//         email: "jim.halpert@example.com",
+//         mobileNumber: "+1 321 654 0987",
+//         referredBy: "Dwight Schrute",
+//         totalBookings: "6.3K",
+//         status: "Active",
+//     },
+// ];
+
 
 const columns = [
     {
@@ -127,36 +111,37 @@ const columns = [
                         width={40}
                         height={40}
                         src={row.user.image}
-                        alt={row.user.name}
+                        alt={row.user.firstName}
                     />
                 </div>
                 <div>
                     <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {row.user.name}
+                        {row.user.firstName}{" "}{row.user.lastName}
                     </span>
-                    <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                        {row.user.role}
-                    </span>
+                    {/* <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
+                    {row.user.lastName}
+                    </span> */}
                 </div>
             </div>
         ),
     },
     {
         header: "Email",
-        accessor: "projectName",
+        accessor: "email",
     },
     {
         header: "Mobile Number",
-        accessor: "projectName",
+        accessor: "mobileNumber",
     },
     {
         header: "Referred By",
-        accessor: "projectName",
+        accessor: "referredBy",
     },
     {
         header: "Total Bookings",
-        accessor: "budget",
+        accessor: "totalBookings",
     },
+
     {
         header: "Action",
         accessor: "action",
@@ -168,16 +153,40 @@ const columns = [
                 <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                     <TrashBinIcon />
                 </button>
-                <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                    <EyeIcon />
-                </button>
+                <Link href="/profile" passHref>
+                    <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                        <EyeIcon />
+                    </button>
+                </Link>
             </div>
         ),
     },
 ];
 
 const UserList = () => {
-    const [showPassword, setShowPassword] = useState(false);
+    const { users } = useUserContext();
+
+    console.log("All Users : ", users)
+
+    if (!users) {
+        return <div>Loading...</div>;  // Or any other fallback UI
+    }
+
+    const tableData = users.map((user: any) => ({
+        id: user._id,
+        user: {
+            image: "/images/logo/user1.webp",  // Replace with the user’s image URL if available
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role || "User",  // Assume you will assign a role in the context
+        },
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        referredBy: user.referredBy || "N/A",  // You can modify if you have referredBy data
+        totalBookings: "0",  // Placeholder if you don't have this data, you can adjust it
+        status: user.isDeleted ? "Inactive" : "Active",  // Assuming isDeleted is the status field
+    }));
+
     const options = [
         { value: "latest", label: "Latest" },
         { value: "oldest", label: "Oldest" },
@@ -285,3 +294,6 @@ const UserList = () => {
 };
 
 export default UserList;
+
+
+
