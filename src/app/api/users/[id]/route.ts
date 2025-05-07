@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import User from '@/models/User';
-import type { NextApiRequest } from 'next';
 import { connectToDatabase } from '@/utils/db';
 
 type Context = {
