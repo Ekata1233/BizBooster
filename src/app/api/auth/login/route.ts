@@ -44,8 +44,11 @@ export const POST = async (req: Request) => {
     );
 
     // ✅ Remove password and otp without assigning unused variables
-    const { password: removedPassword, otp: removedOtp, ...userInfo } = user.toObject();
-
+    const userObject = user.toObject();
+    delete userObject.password;
+    delete userObject.otp;
+    const userInfo = userObject;
+    
     return NextResponse.json({ message: 'Login successful', token, user: userInfo }, { status: 200 });
 
   } catch (error: unknown) {
