@@ -13,14 +13,14 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// ✅ GET - Fetch User
-export const GET = async (req: Request, context: { params: { id: string } }) => {
+// ✅ GET - Fetch User by ID
+export const GET = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     await connectToDatabase();
-    const user = await User.findById(context.params.id); // Use context.params.id
+    const user = await User.findById(params.id); // Correctly access the ID from params
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     return NextResponse.json(user, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
     }
@@ -29,14 +29,14 @@ export const GET = async (req: Request, context: { params: { id: string } }) => 
 };
 
 // ✅ PUT - Update User
-export const PUT = async (req: Request, context: { params: { id: string } }) => {
+export const PUT = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     await connectToDatabase();
     const body = await req.json();
-    const updatedUser = await User.findByIdAndUpdate(context.params.id, body, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
     if (!updatedUser) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     return NextResponse.json({ success: true, user: updatedUser }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
     }
@@ -45,11 +45,11 @@ export const PUT = async (req: Request, context: { params: { id: string } }) => 
 };
 
 // ✅ DELETE - Soft Delete User
-export const DELETE = async (req: Request, context: { params: { id: string } }) => {
+export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     await connectToDatabase();
     const updatedUser = await User.findByIdAndUpdate(
-      context.params.id,  // Use context.params.id
+      params.id,  // Accessing the ID from params
       { isDeleted: true },
       { new: true }
     );
@@ -57,7 +57,7 @@ export const DELETE = async (req: Request, context: { params: { id: string } }) 
       return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
     }
     return NextResponse.json({ success: true, message: 'User soft deleted (isDeleted: true)' }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
     }
