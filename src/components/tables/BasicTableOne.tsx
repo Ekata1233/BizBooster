@@ -48,9 +48,11 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                       key={colIndex}
                       className="px-2 py-4 text-start text-gray-500 text-sm dark:text-gray-400"
                     >
-                      {column.render
-                        ? column.render(row)
-                        : (row as any)[column.accessor]}
+                      {column.render ? (
+                        column.render(row)
+                      ) : (
+                        (row[column.accessor as keyof T] as React.ReactNode) ?? ""
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

@@ -1,7 +1,5 @@
 import React from "react";
-import Badge from "../ui/badge/Badge";
-
-type BadgeColor = "default" | "secondary" | "destructive" | "success" | "warning";
+import Badge, { BadgeColor } from "../ui/badge/Badge";
 
 interface StatCardProps {
   title: string;
@@ -16,7 +14,7 @@ const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
   icon: Icon,
-  badgeColor = "default",
+  badgeColor = "primary",
   badgeValue,
   badgeIcon: BadgeIcon,
 }) => {

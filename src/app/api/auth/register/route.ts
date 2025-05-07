@@ -1,7 +1,6 @@
 // src/app/api/auth/register/route.ts
 
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
 import { userValidationSchema } from '@/validation/userValidation';
 import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db'; // Import connectToDatabase function
@@ -24,8 +23,6 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: 'Email or Mobile already exists' }, { status: 400 });
     }
 
-
-
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
     }
@@ -39,22 +36,26 @@ export const POST = async (req: Request) => {
       if (!existing) exists = false;
     }
 
-    // Create a new user (OTP will be handled later)
-    // const newUser = new User({
-    //   ...parsedData,
-    //   referralCode,
-    //   isMobileVerified: false, 
-    // });
-
-    // Save the new user to the database
-    // await newUser.save();
     const otp = generateOtp();
     console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console (can be replaced with actual OTP sending service)
+
+    // Check if referralCode was provided by the new user
+    let referredBy = null;
+
+    if (parsedData.referredBy) {
+      const referringUser = await User.findOne({ referralCode: parsedData.referredBy });
+
+      if (!referringUser) {
+        return NextResponse.json({ error: 'Referral code is not valid' }, { status: 400 });
+      }
+      referredBy = referringUser._id; // Store referrer's user ID
+    }
 
     // Store OTP in DB (temporarily for verification)
     const newUser = new User({
       ...parsedData,
       referralCode,
+      referredBy,
       isMobileVerified: false,
       otp: {
         code: otp,
