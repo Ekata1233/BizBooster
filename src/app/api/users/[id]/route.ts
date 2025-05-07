@@ -1,30 +1,60 @@
 import { NextResponse } from 'next/server';
-import User from '@/models/User';
-import { connectToDatabase } from '@/utils/db';
 import { NextRequest } from 'next/server';
 
-// This will automatically extract the `id` from the dynamic route
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+// Define TypeScript types
+type Item = {
+  id: string;
+  name: string;
+  description?: string;
+};
+
+// Mock database (replace with your actual database operations)
+let items: Item[] = [
+  { id: '1', name: 'Item 1', description: 'First item' },
+  { id: '2', name: 'Item 2', description: 'Second item' },
+];
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Connect to the database
-    await connectToDatabase();
-
-    // Parse the request body
-    const body = await req.json();
-
-    // Update the user by id
-    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
-
-    if (!updatedUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const id = params.id;
+    const body = await request.json();
+    
+    // Validate the request body
+    if (!body.name) {
+      return NextResponse.json(
+        { error: 'Name is required' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
+    // Find the item to update
+    const itemIndex = items.findIndex(item => item.id === id);
+    
+    if (itemIndex === -1) {
+      return NextResponse.json(
+        { error: 'Item not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update the item
+    const updatedItem: Item = {
+      ...items[itemIndex],
+      ...body,
+      id // Ensure the ID remains the same
+    };
+
+    items[itemIndex] = updatedItem;
+
+    return NextResponse.json(updatedItem, { status: 200 });
   } catch (error) {
-    // Handle any errors
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal Server Error' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
 }
+
