@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+type UserInput = z.infer<typeof userValidationSchema>;
 export const userValidationSchema = z.object({
   firstName: z.string().min(2).max(30).regex(/^[A-Za-z]+$/, 'First name must be alphabetic'),
   lastName: z.string().min(2).max(30).regex(/^[A-Za-z]+$/, 'Last name must be alphabetic'),
@@ -14,13 +14,13 @@ export const userValidationSchema = z.object({
   isAgree: z.boolean().refine(val => val === true, 'You must agree to the terms')
 });
 
-export const validateUser = (data: any) => {
+export const validateUser = (data: UserInput) => {
   try {
     userValidationSchema.parse(data);
-    return null;  // validation passed
-  }  catch (err: unknown) {
+    return null; // validation passed
+  } catch (err: unknown) {
     if (err instanceof Error) {
-      return err.message; // or err.errors if it's part of the Error object
+      return err.message;
     } else {
       return 'An unknown error occurred';
     }
