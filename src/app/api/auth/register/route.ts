@@ -24,12 +24,7 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: 'Email or Mobile already exists' }, { status: 400 });
     }
 
-<<<<<<< HEAD
-    // Hash the password
-    // const hashedPassword = await bcrypt.hash(parsedData.password, 10);
-=======
 
->>>>>>> 2e311d51c413577c2d10a8cfd9dd7b32cceaeef7
 
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
@@ -45,19 +40,11 @@ export const POST = async (req: Request) => {
     }
 
     // Create a new user (OTP will be handled later)
-<<<<<<< HEAD
-    const newUser = new User({
-      ...parsedData,
-      referralCode,
-      isMobileVerified: false, 
-    });
-=======
     // const newUser = new User({
     //   ...parsedData,
     //   referralCode,
     //   isMobileVerified: false, 
     // });
->>>>>>> 2e311d51c413577c2d10a8cfd9dd7b32cceaeef7
 
     // Save the new user to the database
     // await newUser.save();
