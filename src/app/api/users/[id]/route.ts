@@ -2,65 +2,53 @@ import { NextResponse } from 'next/server';
 import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
-// ✅ Handle preflight
+// ✅ Handle preflight (OPTIONS request)
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+  return NextResponse.json({}, { status: 200 });
 }
 
 // ✅ GET - Fetch User by ID
-export const GET = async (req: Request, { params }: { params: { id: string } }) => {
+export async function GET(req: Request, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
-    const user = await User.findById(params.id); // Correctly access the ID from params
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
-    return NextResponse.json(user, { status: 200, headers: corsHeaders });
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    const { id } = context.params; // Correctly access id from context.params
+    const user = await User.findById(id); // Fetch the user by the id
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(user, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
-};
+}
 
 // ✅ PUT - Update User
-export const PUT = async (req: Request, { params }: { params: { id: string } }) => {
+export async function PUT(req: Request, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
+    const { id } = context.params; // Correctly access id from context.params
     const body = await req.json();
-    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
-    if (!updatedUser) return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
-    return NextResponse.json({ success: true, user: updatedUser }, { status: 200, headers: corsHeaders });
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    const updatedUser = await User.findByIdAndUpdate(id, body, { new: true });
+    if (!updatedUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
+    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
-};
+}
 
 // ✅ DELETE - Soft Delete User
-export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
+export async function DELETE(req: Request, context: { params: { id: string } }) {
   try {
     await connectToDatabase();
-    const updatedUser = await User.findByIdAndUpdate(
-      params.id,  // Accessing the ID from params
-      { isDeleted: true },
-      { new: true }
-    );
+    const { id } = context.params; // Correctly access id from context.params
+    const updatedUser = await User.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
     if (!updatedUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true, message: 'User soft deleted (isDeleted: true)' }, { status: 200, headers: corsHeaders });
+    return NextResponse.json({ success: true, message: 'User soft deleted (isDeleted: true)' }, { status: 200 });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
-    }
-    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500, headers: corsHeaders });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
-};
+}
