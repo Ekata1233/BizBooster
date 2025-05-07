@@ -15,12 +15,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // Update the user by id
     const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
 
-    // Check if the user was found and updated
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Respond with the updated user data
     return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
   } catch (error) {
     // Handle any errors
