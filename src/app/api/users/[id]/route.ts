@@ -7,19 +7,27 @@ import { NextRequest } from 'next/server';
 type Params = { params: { id: string } };
 
 // ✅ GET /api/users/[id]
-export async function GET(req: NextRequest, { params }: Params) {
-  try {
-    await connectToDatabase();
-    const user = await User.findById(params.id);
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    return NextResponse.json(user, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal Server Error' },
-      { status: 500 }
-    );
+export async function GET(
+    req: NextRequest,
+    context: { params: { id: string } }
+  ) {
+    try {
+      await connectToDatabase();
+      const { id } = context.params;
+      const user = await User.findById(id);
+  
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+  
+      return NextResponse.json(user);
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Something went wrong' },
+        { status: 500 }
+      );
+    }
   }
-}
 
 // ✅ PUT /api/users/[id]
 export async function PUT(req: NextRequest, { params }: Params) {
