@@ -21,7 +21,27 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 
-const tableData = [
+// Define the type for the table data
+interface User {
+    image: string;
+    name: string;
+    role: string;
+}
+
+interface Team {
+    images: string[];
+}
+
+interface TableData {
+    id: number;
+    user: User;
+    projectName: string;
+    team: Team;
+    budget: string;
+    status: string;
+}
+
+const tableData: TableData[] = [
     {
         id: 1,
         user: {
@@ -41,7 +61,7 @@ const tableData = [
         status: "Active",
     },
     {
-        id: 1,
+        id: 2,
         user: {
             image: "/images/user/user-17.jpg",
             name: "Lindsey Curtis",
@@ -59,7 +79,7 @@ const tableData = [
         status: "Active",
     },
     {
-        id: 1,
+        id: 3,
         user: {
             image: "/images/user/user-17.jpg",
             name: "Lindsey Curtis",
@@ -77,7 +97,7 @@ const tableData = [
         status: "Active",
     },
     {
-        id: 1,
+        id: 4,
         user: {
             image: "/images/user/user-17.jpg",
             name: "Lindsey Curtis",
@@ -100,7 +120,7 @@ const columns = [
     {
         header: "User",
         accessor: "user",
-        render: (row: any) => (
+        render: (row: TableData) => (
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 overflow-hidden rounded-full">
                     <Image
@@ -128,7 +148,7 @@ const columns = [
     {
         header: "Team",
         accessor: "team",
-        render: (row: any) => (
+        render: (row: TableData) => (
             <div className="flex -space-x-2">
                 {row.team.images.map((img: string, i: number) => (
                     <div
@@ -150,16 +170,10 @@ const columns = [
     {
         header: "Status",
         accessor: "status",
-        render: (row: any) => (
+        render: (row: TableData) => (
             <Badge
                 size="sm"
-                color={
-                    row.status === "Active"
-                        ? "success"
-                        : row.status === "Pending"
-                            ? "warning"
-                            : "error"
-                }
+                color={row.status === "Active" ? "success" : row.status === "Pending" ? "warning" : "error"}
             >
                 {row.status}
             </Badge>
@@ -184,7 +198,6 @@ const columns = [
                     <EyeIcon />
                 </button>
             </div>
-
         ),
     },
 ];
@@ -196,9 +209,11 @@ const UserList = () => {
         { value: "template", label: "Template" },
         { value: "development", label: "Development" },
     ];
+
     const handleSelectChange = (value: string) => {
         console.log("Selected value:", value);
     };
+
     return (
         <div>
             <PageBreadcrumb pageTitle="User List" />
@@ -237,113 +252,114 @@ const UserList = () => {
                 />
             </div>
 
-            <div><ComponentCard title="Default Inputs">
-                <div className="space-y-6">
-                    <div>
-                        <Label>Input</Label>
-                        <Input type="text" />
-                    </div>
-                    <div>
-                        <Label>Input with Placeholder</Label>
-                        <Input type="text" placeholder="info@gmail.com" />
-                    </div>
-                    <div>
-                        <Label>Select Input</Label>
-                        <div className="relative">
-                            <Select
-                                options={options}
-                                placeholder="Select an option"
-                                onChange={handleSelectChange}
-                                className="dark:bg-dark-900"
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <ChevronDownIcon />
-                            </span>
+            <div>
+                <ComponentCard title="Default Inputs">
+                    <div className="space-y-6">
+                        <div>
+                            <Label>Input</Label>
+                            <Input type="text" />
                         </div>
-                    </div>
-                    <div>
-                        <Label>Password Input</Label>
-                        <div className="relative">
-                            <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Enter your password"
-                            />
-                            <button
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                            >
-                                {showPassword ? (
-                                    <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                                ) : (
-                                    <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                                )}
-                            </button>
+                        <div>
+                            <Label>Input with Placeholder</Label>
+                            <Input type="text" placeholder="info@gmail.com" />
                         </div>
-                    </div>
-
-                    <div>
-                        <DatePicker
-                            id="date-picker"
-                            label="Date Picker Input"
-                            placeholder="Select a date"
-                            onChange={(dates, currentDateString) => {
-                                // Handle your logic
-                                console.log({ dates, currentDateString });
-                            }}
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="tm">Time Picker Input</Label>
-                        <div className="relative">
-                            <Input
-                                type="time"
-                                id="tm"
-                                name="tm"
-                                onChange={(e) => console.log(e.target.value)}
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <TimeIcon />
-                            </span>
+                        <div>
+                            <Label>Select Input</Label>
+                            <div className="relative">
+                                <Select
+                                    options={options}
+                                    placeholder="Select an option"
+                                    onChange={handleSelectChange}
+                                    className="dark:bg-dark-900"
+                                />
+                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                    <ChevronDownIcon />
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <Label htmlFor="tm">Input with Payment</Label>
-                        <div className="relative">
-                            <Input
-                                type="text"
-                                placeholder="Card number"
-                                className="pl-[62px]"
-                            />
-                            <span className="absolute left-0 top-1/2 flex h-11 w-[46px] -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
-                                <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
+                        <div>
+                            <Label>Password Input</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                />
+                                <button
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                                 >
-                                    <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
-                                    <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                                    <path
-                                        d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
-                                        fill="#FC6020"
-                                    />
-                                </svg>
-                            </span>
+                                    {showPassword ? (
+                                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                                    ) : (
+                                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <DatePicker
+                                id="date-picker"
+                                label="Date Picker Input"
+                                placeholder="Select a date"
+                                onChange={(dates, currentDateString) => {
+                                    // Handle your logic
+                                    console.log({ dates, currentDateString });
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="tm">Time Picker Input</Label>
+                            <div className="relative">
+                                <Input
+                                    type="time"
+                                    id="tm"
+                                    name="tm"
+                                    onChange={(e) => console.log(e.target.value)}
+                                />
+                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                    <TimeIcon />
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <Label htmlFor="tm">Input with Payment</Label>
+                            <div className="relative">
+                                <Input
+                                    type="text"
+                                    placeholder="Card number"
+                                    className="pl-[62px]"
+                                />
+                                <span className="absolute left-0 top-1/2 flex h-11 w-[46px] -translate-y-1/2 items-center justify-center border-r border-gray-200 dark:border-gray-800">
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
+                                        <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
+                                        <path
+                                            d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
+                                            fill="#FC6020"
+                                        />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </ComponentCard></div>
+                </ComponentCard>
+            </div>
 
-            <div className="space-y-6">
-                <ComponentCard title="User List">
-                    <BasicTableOne columns={columns} data={tableData} />;
+            <div>
+                <ComponentCard title="Table">
+                    <BasicTableOne columns={columns} data={tableData} />
                 </ComponentCard>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default UserList
-
+export default UserList;

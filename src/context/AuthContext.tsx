@@ -1,9 +1,11 @@
-"use client"
+"use client";
 import { createContext, useContext, useState, ReactNode } from 'react';
 
+type UserType = Record<string, unknown> | null;
+
 interface AuthContextType {
-  user: any | null;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  user: UserType;
+  setUser: React.Dispatch<React.SetStateAction<UserType>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +23,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserType>(null);
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
