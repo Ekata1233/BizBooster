@@ -65,7 +65,7 @@ export const POST = async (req: Request) => {
     });
 
     await newUser.save();
-    return NextResponse.json({ success: true, message: 'User registered successfully, OTP sent separately' }, { status: 200 });
+    return NextResponse.json({ success: true, message: 'Please verify your OTP' }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error saving user:', error); // Log error to debug
     if (error instanceof Error) {
