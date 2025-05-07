@@ -6,7 +6,7 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Image from "next/image";
-import userProfile from "../../../public/images/logo/user1.webp"
+// import userProfile from "../../../public/images/logo/user1.webp"
 
 
 export default function UserMetaCard() {
@@ -25,7 +25,7 @@ export default function UserMetaCard() {
               <Image
                 width={80}
                 height={80}
-                src={userProfile}
+                src='../../../public/images/logo/user1.webp'
                 alt="user"
               />
             </div>
