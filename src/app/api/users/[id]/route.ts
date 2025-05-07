@@ -3,18 +3,29 @@ import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 
 // GET user by ID
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  try {
-    await connectToDatabase();
-    const { id } = context.params;
-    const user = await User.findById(id);
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    return NextResponse.json(user, { status: 200 });
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+export async function GET(req: NextRequest) {
+    try {
+      await connectToDatabase();
+  
+      // Get the URL and extract the ID
+      const url = new URL(req.url);
+      const id = url.pathname.split('/').pop(); // gets the last part (ID)
+  
+      if (!id) {
+        return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+      }
+  
+      const user = await User.findById(id);
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+  
+      return NextResponse.json(user, { status: 200 });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
   }
-}
 
 // UPDATE user by ID
 export async function PUT(req: NextRequest, context: { params: { id: string } }) {
