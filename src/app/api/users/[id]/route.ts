@@ -3,64 +3,27 @@ import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 import { NextRequest } from 'next/server';
 
-
-
-// ✅ GET /api/users/[id]
-// export async function GET(
-//   req: NextRequest,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     await connectToDatabase();
-//     const { id } = params;
-//     const user = await User.findById(id);
-
-//     if (!user) {
-//       return NextResponse.json({ error: 'User not found' }, { status: 404 });
-//     }
-
-//     return NextResponse.json(user);
-//   } catch (error) {
-//     return NextResponse.json(
-//       { error: error instanceof Error ? error.message : 'Something went wrong' },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// ✅ PUT /api/users/[id]
+// This will automatically extract the `id` from the dynamic route
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Connect to the database
     await connectToDatabase();
-    const body = await req.json();
-    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
-    if (!updatedUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal Server Error' },
-      { status: 500 }
-    );
-  }
-}
 
-// ✅ DELETE /api/users/[id]
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    await connectToDatabase();
-    const deletedUser = await User.findByIdAndUpdate(
-      params.id,
-      { isDeleted: true },
-      { new: true }
-    );
-    if (!deletedUser) {
+    // Parse the request body
+    const body = await req.json();
+
+    // Update the user by id
+    const updatedUser = await User.findByIdAndUpdate(params.id, body, { new: true });
+
+    // Check if the user was found and updated
+    if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    return NextResponse.json(
-      { success: true, message: 'User soft deleted (isDeleted: true)' },
-      { status: 200 }
-    );
+
+    // Respond with the updated user data
+    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
   } catch (error) {
+    // Handle any errors
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal Server Error' },
       { status: 500 }
