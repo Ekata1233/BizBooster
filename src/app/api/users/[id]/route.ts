@@ -70,63 +70,81 @@
 // }
 
 
-import { NextResponse } from 'next/server';
-import User from '@/models/User'; // Import the User model
-import { connectToDatabase } from '@/utils/db'; // Import database connection function
+import User from "@/models/User";
+import { connectToDatabase } from "@/utils/db";
+import { NextResponse } from "next/server";
 
-// PUT - Update User
-export const PUT = async (req: Request, { params }: { params: { id: string } }) => {
-  try {
-    const { id } = params; // Extract the user ID from the URL
-    const data = await req.json(); // Parse the request body
 
-    // Connect to the database
-    await connectToDatabase();
-
-    // Find the user by ID and update
-    const user = await User.findByIdAndUpdate(id, data, { new: true });
-
-    if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
-    }
-
-    // Return the updated user
-    return NextResponse.json({ user }, { status: 200 });
-  } catch (error: unknown) {
-    console.error('Error updating user:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Unknown error' }, { status: 400 });
-  }
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-// DELETE - Soft Delete User (set a flag instead of actual deletion)
-export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
+// ✅ Handle preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+// ✅ PUT - Update Box
+export async function PUT(request: Request, context: any) {
+  await connectToDatabase();
+
   try {
-    const { id } = params; // Extract the user ID from the URL
+    const { id } = context.params;
+    const updateData = await request.json();
 
-    // Connect to the database
-    await connectToDatabase();
+    const updatedBox = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
-    // Soft delete the user by setting isDeleted flag to true
-    const user = await User.findByIdAndUpdate(
+    if (!updatedBox) {
+      return NextResponse.json(
+        { success: false, message: "Box not found" },
+        { status: 404, headers: corsHeaders },
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: updatedBox },
+      { status: 200, headers: corsHeaders },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 400, headers: corsHeaders },
+    );
+  }
+}
+
+// ✅ DELETE - Soft Delete Box
+export async function DELETE(request: Request, context: any) {
+  await connectToDatabase();
+
+  try {
+    const { id } = context.params;
+
+    const deletedBox = await User.findByIdAndUpdate(
       id,
-      { isDeleted: true }, // Set a field to indicate soft delete
-      { new: true }
+      { isDeleted: true },
+      { new: true },
     );
 
-    if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    if (!deletedBox) {
+      return NextResponse.json(
+        { success: false, message: "Box not found" },
+        { status: 404, headers: corsHeaders },
+      );
     }
 
-    // Return a success message
-    return NextResponse.json({ message: 'User soft deleted successfully' }, { status: 200 });
-  } catch (error: unknown) {
-    console.error('Error deleting user:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Unknown error' }, { status: 400 });
+    return NextResponse.json(
+      { success: true, data: deletedBox },
+      { status: 200, headers: corsHeaders },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 400, headers: corsHeaders },
+    );
   }
-};
+}
