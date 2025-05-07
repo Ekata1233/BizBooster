@@ -42,7 +42,7 @@ export const POST = async (req: Request) => {
       { expiresIn: '1h' }
     );
 
-    const { password: _, otp, ...userInfo } = user.toObject();
+    const { password: _password, otp: _otp, ...userInfo } = user.toObject();
 
     return NextResponse.json({ message: 'Login successful', token, user: userInfo }, { status: 200 });
   } catch (error: unknown) {
