@@ -1,7 +1,6 @@
 // src/app/api/auth/register/route.ts
 
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
 import { userValidationSchema } from '@/validation/userValidation';
 import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db'; // Import connectToDatabase function

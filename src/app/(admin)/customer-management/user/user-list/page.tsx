@@ -10,7 +10,6 @@ import {
     TrashBinIcon,
     PencilIcon,
     BoxCubeIcon,
-    FolderIcon,
     ArrowUpIcon,
     ChevronDownIcon,
     EyeCloseIcon,
