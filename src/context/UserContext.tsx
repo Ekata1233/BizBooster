@@ -1,29 +1,28 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export interface User {
-    _id: string;
-    fullName: string;
-    email: string;
-    mobileNumber: string;
-    password: string;
-    referralCode?: string;
-    referredBy?: string | null; // it's a reference to another user
-    isAgree: boolean;
-    otp?: {
-      code: string;
-      expiresAt: string; // Date in string format when fetched from backend
-      verified: boolean;
-    };
-    isEmailVerified: boolean;
-    isMobileVerified: boolean;
-    isDeleted: boolean;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
+  _id: string;
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  password: string;
+  referralCode?: string;
+  referredBy?: string | null;
+  isAgree: boolean;
+  otp?: {
+    code: string;
+    expiresAt: string;
+    verified: boolean;
+  };
+  isEmailVerified: boolean;
+  isMobileVerified: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface UserContextType {
   users: User[] | null;
@@ -54,8 +53,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const res = await axios.get('/api/users');
       setUsers(res.data.users);
       setError(null);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch users');
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ error: string }>;
+      setError(axiosError.response?.data?.error || 'Failed to fetch users');
       setUsers(null);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ users, loading, error, refreshUsers: fetchUsers,setUsers }}>
+    <UserContext.Provider value={{ users, loading, error, refreshUsers: fetchUsers, setUsers }}>
       {children}
     </UserContext.Provider>
   );
