@@ -106,7 +106,7 @@ export const GET = async (req: NextRequest) => {
 
     const filter: {
       createdAt?: { $gte?: Date; $lte?: Date };
-      $or?: any[];
+      $or?: { [key: string]: { $regex: string; $options: string } }[];
     } = {};
 
     // ✅ Search filter logic
