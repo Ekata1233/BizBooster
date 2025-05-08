@@ -11,6 +11,9 @@ import {
     BoxCubeIcon,
     ArrowUpIcon,
     ChevronDownIcon,
+    UserIcon,
+    CalenderIcon,
+    DollarLineIcon,
 } from "../../../../../icons/index";
 import StatCard from "@/components/common/StatCard";
 import DatePicker from '@/components/form/date-picker';
@@ -54,7 +57,7 @@ const columns = [
                         width={40}
                         height={40}
                         src={row.user.image}
-                        alt={row.user.fullName || "user image"}
+                        alt={row.user.fullName}
                     />
                 </div>
                 
@@ -188,7 +191,40 @@ const UserList = () => {
     return (
         <div>
             <PageBreadcrumb pageTitle="User List" />
-            
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
+                <StatCard
+                    title="Revenue"
+                    value="$8490"
+                    icon={BoxCubeIcon}
+                    badgeColor="success"
+                    badgeValue="6.88%"
+                    badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                    title="Revenue"
+                    value="$8420"
+                    icon={BoxCubeIcon}
+                    badgeColor="success"
+                    badgeValue="6.88%"
+                    badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                    title="Revenue"
+                    value="$8420"
+                    icon={BoxCubeIcon}
+                    badgeColor="success"
+                    badgeValue="6.88%"
+                    badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                    title="Revenue"
+                    value="$8420"
+                    icon={BoxCubeIcon}
+                    badgeColor="success"
+                    badgeValue="6.88%"
+                    badgeIcon={ArrowUpIcon}
+                />
+            </div>
 
             <div className="my-5">
                 <ComponentCard title="Search Filter">

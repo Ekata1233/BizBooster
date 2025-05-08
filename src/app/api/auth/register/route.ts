@@ -3,24 +3,36 @@
 import { NextResponse } from 'next/server';
 import { userValidationSchema } from '@/validation/userValidation';
 import User from '@/models/User';
-import { connectToDatabase } from '@/utils/db'; // Import connectToDatabase function
+import { connectToDatabase } from '@/utils/db';
 import { generateOtp } from '@/utils/generateOtp';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// ✅ Handle preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 export const POST = async (req: Request) => {
   try {
-    // Connect to the database before performing any operations
-    await connectToDatabase(); // This should connect to the database
+    await connectToDatabase();
 
-    const body = await req.json(); // Parse the request body
-    const parsedData = userValidationSchema.parse(body); // Validate the data
+    const body = await req.json();
+    const parsedData = userValidationSchema.parse(body);
 
-    // Check for existing user (email or mobile)
     const existingUser = await User.findOne({
       $or: [{ email: parsedData.email }, { mobileNumber: parsedData.mobileNumber }],
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: 'Email or Mobile already exists' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Email or Mobile already exists' },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     function generateReferralCode(length = 6) {
@@ -37,21 +49,21 @@ export const POST = async (req: Request) => {
     }
 
     const otp = generateOtp();
-    console.log(`OTP for ${parsedData.email}: ${otp}`); // Send OTP to console (can be replaced with actual OTP sending service)
+    console.log(`OTP for ${parsedData.email}: ${otp}`);
 
-    // Check if referralCode was provided by the new user
     let referredBy = null;
 
     if (parsedData.referredBy) {
       const referringUser = await User.findOne({ referralCode: parsedData.referredBy });
-
       if (!referringUser) {
-        return NextResponse.json({ error: 'Referral code is not valid' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Referral code is not valid' },
+          { status: 400, headers: corsHeaders }
+        );
       }
-      referredBy = referringUser._id; // Store referrer's user ID
+      referredBy = referringUser._id;
     }
 
-    // Store OTP in DB (temporarily for verification)
     const newUser = new User({
       ...parsedData,
       referralCode,
@@ -65,12 +77,18 @@ export const POST = async (req: Request) => {
     });
 
     await newUser.save();
-    return NextResponse.json({ success: true, message: 'Please verify your OTP' }, { status: 200 });
+
+    return NextResponse.json(
+      { success: true, message: 'Please verify your OTP' },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    console.error('Error saving user:', error); // Log error to debug
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Unknown error' }, { status: 400 });
+    console.error('Error saving user:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+
+    return NextResponse.json(
+      { error: message },
+      { status: 400, headers: corsHeaders }
+    );
   }
 };
