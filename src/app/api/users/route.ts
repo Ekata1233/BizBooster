@@ -12,6 +12,7 @@ const corsHeaders = {
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
+
 export const GET = async (req: NextRequest) => {
   try {
     // Connect to the database
@@ -19,16 +20,17 @@ export const GET = async (req: NextRequest) => {
 
     // Get query params
     const { searchParams } = new URL(req.url);
-    console.log("search params : ", searchParams)
+    console.log("search params : ", searchParams);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const sort = searchParams.get('sort'); // newest, oldest, asc, desc, etc.
+    const sort = searchParams.get('sort');
     console.log({ startDate, endDate, sort });
 
-    const filter: any = {};
+    // const filter: Record<string, any> = {};
+    const filter: { createdAt?: { $gte?: Date; $lte?: Date } } = {};
 
     if (startDate || endDate) {
-      const createdAtFilter: any = {};
+      const createdAtFilter: { $gte?: Date; $lte?: Date } = {};
 
       if (startDate && !isNaN(new Date(startDate).getTime())) {
         createdAtFilter.$gte = new Date(startDate);
@@ -46,7 +48,7 @@ export const GET = async (req: NextRequest) => {
     }
 
     // Build sort options
-    let sortOption: any = {};
+    let sortOption: Record<string, 1 | -1> = {};
 
     switch (sort) {
       case 'latest':
@@ -62,7 +64,7 @@ export const GET = async (req: NextRequest) => {
         sortOption = { fullName: -1 };
         break;
       default:
-        sortOption = { createdAt: -1 }; // default to newest
+        sortOption = { createdAt: -1 };
     }
 
     console.log("Filter being used:", filter);
@@ -71,7 +73,7 @@ export const GET = async (req: NextRequest) => {
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const skip = (page - 1) * limit;
-    // Fetch users with filters and sorting
+
     const users = await User.find(filter).sort(sortOption).skip(skip).limit(limit);
 
     if (users.length === 0) {
@@ -79,7 +81,6 @@ export const GET = async (req: NextRequest) => {
       return NextResponse.json({ users, message: 'No users found' }, { status: 200 });
     }
 
-    // Return the users as a JSON response
     return NextResponse.json({ users }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error fetching users:', error);
