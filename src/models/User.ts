@@ -5,8 +5,10 @@ const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
     required: true,
-    match: [/^[A-Za-z]{2,30}$/, 'First name must be 2-30 alphabetic characters']
-  },
+    match: [/^[A-Za-z]+(?: [A-Za-z]+)*$/, 'Full name must be 2-30 alphabetic characters and may include spaces'],
+    minlength: 2,
+    maxlength: 30
+  },  
   email: {
     type: String,
     required: true,
