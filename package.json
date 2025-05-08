@@ -30,6 +30,7 @@
     "flatpickr": "^4.6.13",
     "jsonwebtoken": "^9.0.2",
     "lightningcss": "^1.29.3",
+    "lodash": "^4.17.21",
     "mongoose": "^8.14.1",
     "next": "^15.3.2",
     "nodemailer": "^7.0.2",

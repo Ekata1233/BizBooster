@@ -26,7 +26,7 @@ import axios from "axios";
 
 // Define the type for the table data
 interface User {
-    _id:string;
+    _id: string;
     image: string;
     fullName: string;
     email: string;
@@ -72,7 +72,7 @@ const columns = [
                     <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                         {row.user.fullName}
                     </span>
-                    
+
                 </div>
 
             </div>
@@ -123,6 +123,7 @@ const UserList = () => {
     const [sort, setSort] = useState<string>('oldest');
     const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
     const [message, setMessage] = useState<string>('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -137,11 +138,11 @@ const UserList = () => {
                 return date && !isNaN(Date.parse(date));
             };
 
-
             const params = {
                 ...(isValidDate(startDate) && { startDate }),
                 ...(isValidDate(endDate) && { endDate }),
                 ...(sort && { sort }),
+                ...(searchQuery && { search: searchQuery }),
             };
 
             const response = await axios.get('/api/users', { params });
@@ -176,14 +177,12 @@ const UserList = () => {
     };
     useEffect(() => {
         fetchFilteredUsers();
-    }, [startDate, endDate, sort]);
+    }, [startDate, endDate, sort,searchQuery]);
+
+
     if (!users) {
         return <div>Loading...</div>;
-        return <div>Loading...</div>;
     }
-
-
-
 
     return (
         <div>
@@ -244,7 +243,6 @@ const UserList = () => {
                                 placeholder="Select a date"
                                 onChange={(dates, currentDateString) => {
                                     setEndDate(currentDateString); // Ensure proper format if needed
-                                    setEndDate(currentDateString); // Ensure proper format if needed
                                 }}
                             />
                         </div>
@@ -266,7 +264,13 @@ const UserList = () => {
                         </div>
                         <div>
                             <Label>Other Filter</Label>
-                            <Input type="text" />
+                            <Input
+                                type="text"
+                                placeholder="Search by name, email, or phone"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+
                         </div>
                     </div>
                 </ComponentCard>
