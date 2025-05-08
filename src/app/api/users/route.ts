@@ -27,14 +27,21 @@ export const GET = async (req: NextRequest) => {
 
     const filter: any = {};
 
-    // Add date filter if provided
     if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) {
-        filter.createdAt.$gte = new Date(startDate);
+      const createdAtFilter: any = {};
+
+      if (startDate && !isNaN(new Date(startDate).getTime())) {
+        createdAtFilter.$gte = new Date(startDate);
       }
-      if (endDate) {
-        filter.createdAt.$lte = new Date(endDate);
+
+      if (endDate && !isNaN(new Date(endDate).getTime())) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // <-- extend to end of the day
+        createdAtFilter.$lte = end;
+      }
+
+      if (Object.keys(createdAtFilter).length > 0) {
+        filter.createdAt = createdAtFilter;
       }
     }
 
@@ -58,6 +65,8 @@ export const GET = async (req: NextRequest) => {
         sortOption = { createdAt: -1 }; // default to newest
     }
 
+    console.log("Filter being used:", filter);
+
 
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -66,7 +75,8 @@ export const GET = async (req: NextRequest) => {
     const users = await User.find(filter).sort(sortOption).skip(skip).limit(limit);
 
     if (users.length === 0) {
-      return NextResponse.json({ message: 'No users found' }, { status: 404 });
+      // return NextResponse.json({ users }, { status: 200 });
+      return NextResponse.json({ users, message: 'No users found' }, { status: 200 });
     }
 
     // Return the users as a JSON response
