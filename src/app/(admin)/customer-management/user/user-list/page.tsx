@@ -21,7 +21,6 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import { useUserContext } from "@/context/UserContext";
-import userProfile from "../../../../../../public/images/logo/user1.webp"
 import Link from "next/link";
 import axios from "axios";
 
@@ -60,6 +59,7 @@ const columns = [
                         alt={row.user.fullName || "User image"}
                     />
                 </div>
+
 
             </div>
         ),
@@ -117,6 +117,7 @@ const UserList = () => {
 
 
 
+
     const options = [
         { value: "latest", label: "Latest" },
         { value: "oldest", label: "Oldest" },
@@ -129,11 +130,13 @@ const UserList = () => {
     };
 
 
+
     const fetchFilteredUsers = async () => {
         try {
             const isValidDate = (date: string | null) => {
                 return date && !isNaN(Date.parse(date));
             };
+
 
             const params = {
                 ...(isValidDate(startDate) && { startDate }),
@@ -142,7 +145,9 @@ const UserList = () => {
             };
 
 
+
             console.log("params : ", params)
+
 
             const response = await axios.get('/api/users', { params });
 
@@ -180,6 +185,7 @@ const UserList = () => {
     }, [startDate, endDate, sort]);
     if (!users) {
         return <div>Loading...</div>;
+        return <div>Loading...</div>;
     }
 
     const tableData = users.map((user: any) => ({
@@ -195,6 +201,7 @@ const UserList = () => {
         totalBookings: "0",  // Placeholder if you don't have this data, you can adjust it
         status: user.isDeleted ? "Inactive" : "Active",  // Assuming isDeleted is the status field
     }));
+
 
     return (
         <div>
@@ -255,9 +262,11 @@ const UserList = () => {
                                 placeholder="Select a date"
                                 onChange={(dates, currentDateString) => {
                                     setEndDate(currentDateString); // Ensure proper format if needed
+                                    setEndDate(currentDateString); // Ensure proper format if needed
                                 }}
                             />
                         </div>
+
 
                         <div>
                             <Label>Select Input</Label>
