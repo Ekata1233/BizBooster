@@ -2,15 +2,10 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
-  firstName: {
+  fullName: {
     type: String,
     required: true,
     match: [/^[A-Za-z]{2,30}$/, 'First name must be 2-30 alphabetic characters']
-  },
-  lastName: {
-    type: String,
-    required: true,
-    match: [/^[A-Za-z]{2,30}$/, 'Last name must be 2-30 alphabetic characters']
   },
   email: {
     type: String,
