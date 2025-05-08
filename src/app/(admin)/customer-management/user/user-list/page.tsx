@@ -31,9 +31,6 @@ interface User {
     role: string;
 }
 
-interface Team {
-    images: string[];
-}
 
 interface TableData {
     id: number;
@@ -121,9 +118,6 @@ const UserList = () => {
         { value: "descending", label: "Descending" },
     ];
 
-    const handleSelectChange = (value: string) => {
-        console.log("Selected value:", value);
-    };
 
 
     const fetchFilteredUsers = async () => {
