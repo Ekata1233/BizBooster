@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { UserProvider } from '@/context/UserContext';
 import { ModuleProvider } from '@/context/ModuleContext';
+import { CategoryProvider } from '@/context/CategoryContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,7 +25,9 @@ export default function RootLayout({
             <AuthProvider>
               <UserProvider>
                 <ModuleProvider>
-                {children}
+                  <CategoryProvider>
+                    {children}
+                  </CategoryProvider>
                 </ModuleProvider>
               </UserProvider>
             </AuthProvider>
