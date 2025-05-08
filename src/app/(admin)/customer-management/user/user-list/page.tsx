@@ -8,14 +8,10 @@ import {
     EyeIcon,
     TrashBinIcon,
     PencilIcon,
-    BoxCubeIcon,
-    ArrowUpIcon,
+   
     ChevronDownIcon,
-    UserIcon,
-    CalenderIcon,
-    DollarLineIcon,
+    
 } from "../../../../../icons/index";
-import StatCard from "@/components/common/StatCard";
 import DatePicker from '@/components/form/date-picker';
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
