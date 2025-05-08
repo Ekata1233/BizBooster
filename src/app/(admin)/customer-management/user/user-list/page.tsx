@@ -8,14 +8,8 @@ import {
     EyeIcon,
     TrashBinIcon,
     PencilIcon,
-    BoxCubeIcon,
-    ArrowUpIcon,
     ChevronDownIcon,
-    UserIcon,
-    CalenderIcon,
-    DollarLineIcon,
 } from "../../../../../icons/index";
-import StatCard from "@/components/common/StatCard";
 import DatePicker from '@/components/form/date-picker';
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
@@ -28,6 +22,7 @@ import UserStatCard from "@/components/user-component/UserStatCard";
 // Define the type for the table data
 interface User {
     _id: string;
+    id: string;
     image: string;
     fullName: string;
     email: string;
@@ -40,7 +35,7 @@ interface User {
         code: string;
         expiresAt: Date;
         verified: boolean;
-      };
+    };
     isEmailVerified: boolean;
     isMobileVerified: boolean;
     isDeleted: boolean;
@@ -109,7 +104,8 @@ const columns = [
         render: (row: TableData) => {
             const status = row.status;
             let colorClass = "";
-    
+
+
             switch (status) {
                 case "Deleted":
                     colorClass = "text-red-500 bg-red-100 border border-red-300";
@@ -123,35 +119,34 @@ const columns = [
                 default:
                     colorClass = "text-gray-600 bg-gray-100 border border-gray-300";
             }
-    
+
             return (
-                <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}
-                >
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
                     {status}
                 </span>
             );
         },
     },
-    
+
     {
         header: "Action",
         accessor: "action",
-        render: () => (
-            <div className="flex gap-2">
+        render: (row: TableData) => {
+            console.log("row id ", row.id)
+            return (<div className="flex gap-2">
                 <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                     <PencilIcon />
                 </button>
                 <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                     <TrashBinIcon />
                 </button>
-                <Link href="/profile" passHref>
+                <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
                     <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
                         <EyeIcon />
                     </button>
                 </Link>
-            </div>
-        ),
+            </div>)
+        },
     },
 ];
 

@@ -25,7 +25,6 @@ export async function POST(req: Request) {
     const formData = await req.formData();
 
     const name = formData.get("name") as string;
-    // const categories = JSON.parse(formData.get("categories") as string);
 
     if (!name) {
       return NextResponse.json(
@@ -52,16 +51,16 @@ export async function POST(req: Request) {
     const newModule = await Module.create({
       name,
       image: imageUrl,
-    //   categories,
     });
 
     return NextResponse.json(
       { success: true, data: newModule },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message },
       { status: 400, headers: corsHeaders }
     );
   }
@@ -72,16 +71,17 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const modules = await Module.find({})
-    // .populate("categories");
+    const modules = await Module.find({});
     return NextResponse.json(
       { success: true, data: modules },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+

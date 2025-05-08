@@ -2,14 +2,29 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const ModuleContext = createContext<any>(null);
+// Define a type for the module
+type Module = {
+  id: string;
+  name: string;
+  description: string;
+  // Add other properties as needed
+};
+
+interface ModuleContextType {
+  modules: Module[];
+  addModule: (formData: FormData) => Promise<void>;
+  updateModule: (id: string, formData: FormData) => Promise<void>;
+  deleteModule: (id: string) => Promise<void>;
+}
+
+const ModuleContext = createContext<ModuleContextType | null>(null);
 
 export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
-  const [modules, setModules] = useState([]);
+  const [modules, setModules] = useState<Module[]>([]);
 
   const fetchModules = async () => {
-    const res = await fetch("/api/module");
-    const data = await res.json();
+    const response = await fetch("/api/module");
+    const data = await response.json();
     setModules(data);
   };
 
@@ -18,7 +33,7 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const addModule = async (formData: FormData) => {
-    const res = await fetch("/api/module", {
+    await fetch("/api/module", {
       method: "POST",
       body: formData,
     });
@@ -26,7 +41,7 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateModule = async (id: string, formData: FormData) => {
-    const res = await fetch(`/api/module/${id}`, {
+    await fetch(`/api/module/${id}`, {
       method: "PUT",
       body: formData,
     });
@@ -47,4 +62,10 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useModule = () => useContext(ModuleContext);
+export const useModule = () => {
+  const context = useContext(ModuleContext);
+  if (!context) {
+    throw new Error("useModule must be used within a ModuleProvider");
+  }
+  return context;
+};
