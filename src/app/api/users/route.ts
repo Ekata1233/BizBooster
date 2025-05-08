@@ -26,10 +26,11 @@ export const GET = async (req: NextRequest) => {
     const sort = searchParams.get('sort');
     console.log({ startDate, endDate, sort });
 
-    const filter: Record<string, any> = {};
+    // const filter: Record<string, any> = {};
+    const filter: { createdAt?: { $gte?: Date; $lte?: Date } } = {};
 
     if (startDate || endDate) {
-      const createdAtFilter: any = {};
+      const createdAtFilter: { $gte?: Date; $lte?: Date } = {};
 
       if (startDate && !isNaN(new Date(startDate).getTime())) {
         createdAtFilter.$gte = new Date(startDate);
