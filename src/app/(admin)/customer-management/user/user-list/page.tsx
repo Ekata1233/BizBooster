@@ -57,6 +57,7 @@ const columns = [
                     />
                 </div>
 
+
             </div>
         ),
     },
@@ -104,8 +105,11 @@ const UserList = () => {
     const [endDate, setEndDate] = useState<string | null>(null);
     const [sort, setSort] = useState<string>('latest');
     const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
+    const [message, setMessage] = useState<string>('');
+
 
     console.log("All Users : ", users)
+
 
 
 
@@ -120,11 +124,13 @@ const UserList = () => {
 
 
 
+
     const fetchFilteredUsers = async () => {
         try {
             const isValidDate = (date: string | null) => {
                 return date && !isNaN(Date.parse(date));
             };
+
 
             const params = {
                 ...(isValidDate(startDate) && { startDate }),
@@ -133,37 +139,46 @@ const UserList = () => {
             };
 
 
+
             console.log("params : ", params)
+
 
             const response = await axios.get('/api/users', { params });
 
-
             const data = response.data;
 
-            const mapped = data.users.map((user: any) => ({
-                id: user._id,
-                user: {
-                    image: user.image || "/images/logo/user1.webp",
-                    fullName: user.fullName,
-                    role: user.role || "User",
-                },
-                email: user.email,
-                mobileNumber: user.mobileNumber,
-                referredBy: user.referredBy || "N/A",
-                totalBookings: "0",
-                status: user.isDeleted ? "Inactive" : "Active",
-            }));
+            if (data.users.length === 0) {
+                setFilteredUsers([]);
+                setMessage(data.message || 'No users found');
+            } else {
 
-            setFilteredUsers(mapped);
+                const mapped = data.users.map((user: any) => ({
+                    id: user._id,
+                    user: {
+                        image: user.image || "/images/logo/user1.webp",
+                        fullName: user.fullName,
+                        role: user.role || "User",
+                    },
+                    email: user.email,
+                    mobileNumber: user.mobileNumber,
+                    referredBy: user.referredBy || "N/A",
+                    totalBookings: "0",
+                    status: user.isDeleted ? "Inactive" : "Active",
+                }));
+                setFilteredUsers(mapped);
+                setMessage('');
+            }
         } catch (error) {
             console.error('Error fetching users:', error);
             setFilteredUsers([]);
+            setMessage('Something went wrong while fetching users');
         }
     };
     useEffect(() => {
         fetchFilteredUsers();
     }, [startDate, endDate, sort]);
     if (!users) {
+        return <div>Loading...</div>;
         return <div>Loading...</div>;
     }
 
@@ -181,11 +196,12 @@ const UserList = () => {
         status: user.isDeleted ? "Inactive" : "Active",  // Assuming isDeleted is the status field
     }));
 
+
     return (
         <div>
             <PageBreadcrumb pageTitle="User List" />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
-            <StatCard
+                <StatCard
                     title="Total Users"
                     value={users.length}
                     icon={UserIcon}
@@ -240,9 +256,11 @@ const UserList = () => {
                                 placeholder="Select a date"
                                 onChange={(dates, currentDateString) => {
                                     setEndDate(currentDateString); // Ensure proper format if needed
+                                    setEndDate(currentDateString); // Ensure proper format if needed
                                 }}
                             />
                         </div>
+
 
                         <div>
                             <Label>Select Input</Label>
@@ -268,7 +286,12 @@ const UserList = () => {
 
             <div>
                 <ComponentCard title="Table">
-                    <BasicTableOne columns={columns} data={filteredUsers.length ? filteredUsers : tableData} />
+                    {message ? (
+                        <p className="text-red-500 text-center my-4">{message}</p>
+                    ) : (
+                        <BasicTableOne columns={columns} data={filteredUsers} />
+                    )}
+
                 </ComponentCard>
             </div>
         </div>
@@ -276,6 +299,3 @@ const UserList = () => {
 };
 
 export default UserList;
-
-
-
