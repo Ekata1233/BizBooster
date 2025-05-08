@@ -11,6 +11,9 @@ import {
     BoxCubeIcon,
     ArrowUpIcon,
     ChevronDownIcon,
+    UserIcon,
+    CalenderIcon,
+    DollarLineIcon,
 } from "../../../../../icons/index";
 import StatCard from "@/components/common/StatCard";
 import DatePicker from '@/components/form/date-picker';
@@ -42,63 +45,6 @@ interface TableData {
     status: string;
 }
 
-
-// const tableData: TableData[] = [
-//     {
-//         id: 1,
-//         user: {
-//             image: "/images/user/user-17.jpg",
-//             name: "Lindsey Curtis",
-//             role: "Web Designer",
-//         },
-//         email: "lindsey.curtis@example.com",
-//         mobileNumber: "+1 234 567 8901",
-//         referredBy: "David Smith",
-//         totalBookings: "3.9K",
-//         status: "Active",
-//     },
-//     {
-//         id: 2,
-//         user: {
-//             image: "/images/user/user-18.jpg",
-//             name: "Michael Scott",
-//             role: "Marketing Manager",
-//         },
-//         email: "michael.scott@example.com",
-//         mobileNumber: "+1 987 654 3210",
-//         referredBy: "Pam Beesly",
-//         totalBookings: "5.2K",
-//         status: "Active",
-//     },
-//     {
-//         id: 3,
-//         user: {
-//             image: "/images/user/user-19.jpg",
-//             name: "Angela Martin",
-//             role: "Accountant",
-//         },
-//         email: "angela.martin@example.com",
-//         mobileNumber: "+1 555 123 4567",
-//         referredBy: "Oscar Martinez",
-//         totalBookings: "4.1K",
-//         status: "Active",
-//     },
-//     {
-//         id: 4,
-//         user: {
-//             image: "/images/user/user-20.jpg",
-//             name: "Jim Halpert",
-//             role: "Sales Executive",
-//         },
-//         email: "jim.halpert@example.com",
-//         mobileNumber: "+1 321 654 0987",
-//         referredBy: "Dwight Schrute",
-//         totalBookings: "6.3K",
-//         status: "Active",
-//     },
-// ];
-
-
 const columns = [
     {
         header: "User",
@@ -110,7 +56,7 @@ const columns = [
                         width={40}
                         height={40}
                         src={row.user.image}
-                        alt={row.user.fullName}
+                        alt={row.user.fullName || "User image"}
                     />
                 </div>
                 
@@ -194,25 +140,25 @@ const UserList = () => {
             <PageBreadcrumb pageTitle="User List" />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
                 <StatCard
-                    title="Revenue"
-                    value="$8490"
-                    icon={BoxCubeIcon}
+                    title="Total Users"
+                    value={users.length}
+                    icon={UserIcon}
                     badgeColor="success"
                     badgeValue="6.88%"
                     badgeIcon={ArrowUpIcon}
                 />
                 <StatCard
-                    title="Revenue"
-                    value="$8420"
-                    icon={BoxCubeIcon}
+                    title="Total Booking"
+                    value="20"
+                    icon={CalenderIcon}
                     badgeColor="success"
                     badgeValue="6.88%"
                     badgeIcon={ArrowUpIcon}
                 />
                 <StatCard
-                    title="Revenue"
+                    title="Total Revenue"
                     value="$8420"
-                    icon={BoxCubeIcon}
+                    icon={DollarLineIcon}
                     badgeColor="success"
                     badgeValue="6.88%"
                     badgeIcon={ArrowUpIcon}
