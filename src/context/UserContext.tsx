@@ -5,8 +5,7 @@ import axios from 'axios';
 
 export interface User {
     _id: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
     mobileNumber: string;
     password: string;

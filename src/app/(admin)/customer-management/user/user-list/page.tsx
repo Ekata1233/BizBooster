@@ -24,8 +24,7 @@ import Link from "next/link";
 // Define the type for the table data
 interface User {
     image: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     role: string;
 }
 
@@ -111,17 +110,10 @@ const columns = [
                         width={40}
                         height={40}
                         src={row.user.image}
-                        alt={row.user.firstName}
+                        alt={row.user.fullName}
                     />
                 </div>
-                <div>
-                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {row.user.firstName}{" "}{row.user.lastName}
-                    </span>
-                    {/* <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                    {row.user.lastName}
-                    </span> */}
-                </div>
+                
             </div>
         ),
     },
@@ -176,8 +168,7 @@ const UserList = () => {
         id: user._id,
         user: {
             image: "/images/logo/user1.webp",  // Replace with the user’s image URL if available
-            firstName: user.firstName,
-            lastName: user.lastName,
+            fullName: user.fullName,
             role: user.role || "User",  // Assume you will assign a role in the context
         },
         email: user.email,
