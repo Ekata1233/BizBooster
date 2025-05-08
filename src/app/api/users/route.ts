@@ -12,6 +12,7 @@ const corsHeaders = {
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
+
 export const GET = async (req: NextRequest) => {
   try {
     // Connect to the database
@@ -19,13 +20,13 @@ export const GET = async (req: NextRequest) => {
 
     // Get query params
     const { searchParams } = new URL(req.url);
-    console.log("search params : ", searchParams)
+    console.log("search params : ", searchParams);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const sort = searchParams.get('sort'); // newest, oldest, asc, desc, etc.
+    const sort = searchParams.get('sort');
     console.log({ startDate, endDate, sort });
 
-    const filter: any = {};
+    const filter: Record<string, any> = {};
 
     // Add date filter if provided
     if (startDate || endDate) {
@@ -39,7 +40,7 @@ export const GET = async (req: NextRequest) => {
     }
 
     // Build sort options
-    let sortOption: any = {};
+    let sortOption: Record<string, 1 | -1> = {};
 
     switch (sort) {
       case 'latest':
@@ -55,21 +56,19 @@ export const GET = async (req: NextRequest) => {
         sortOption = { fullName: -1 };
         break;
       default:
-        sortOption = { createdAt: -1 }; // default to newest
+        sortOption = { createdAt: -1 };
     }
-
 
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const skip = (page - 1) * limit;
-    // Fetch users with filters and sorting
+
     const users = await User.find(filter).sort(sortOption).skip(skip).limit(limit);
 
     if (users.length === 0) {
       return NextResponse.json({ message: 'No users found' }, { status: 404 });
     }
 
-    // Return the users as a JSON response
     return NextResponse.json({ users }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error fetching users:', error);
