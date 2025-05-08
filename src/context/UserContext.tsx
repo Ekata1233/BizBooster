@@ -30,6 +30,7 @@ interface UserContextType {
   loading: boolean;
   error: string | null;
   refreshUsers: () => void;
+  setUsers: (users: User[]) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -66,7 +67,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ users, loading, error, refreshUsers: fetchUsers }}>
+    <UserContext.Provider value={{ users, loading, error, refreshUsers: fetchUsers,setUsers }}>
       {children}
     </UserContext.Provider>
   );

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -20,6 +20,7 @@ import Select from "@/components/form/Select";
 import { useUserContext } from "@/context/UserContext";
 import userProfile from "../../../../../../public/images/logo/user1.webp"
 import Link from "next/link";
+import axios from "axios";
 
 // Define the type for the table data
 interface User {
@@ -42,63 +43,6 @@ interface TableData {
     status: string;
 }
 
-
-// const tableData: TableData[] = [
-//     {
-//         id: 1,
-//         user: {
-//             image: "/images/user/user-17.jpg",
-//             name: "Lindsey Curtis",
-//             role: "Web Designer",
-//         },
-//         email: "lindsey.curtis@example.com",
-//         mobileNumber: "+1 234 567 8901",
-//         referredBy: "David Smith",
-//         totalBookings: "3.9K",
-//         status: "Active",
-//     },
-//     {
-//         id: 2,
-//         user: {
-//             image: "/images/user/user-18.jpg",
-//             name: "Michael Scott",
-//             role: "Marketing Manager",
-//         },
-//         email: "michael.scott@example.com",
-//         mobileNumber: "+1 987 654 3210",
-//         referredBy: "Pam Beesly",
-//         totalBookings: "5.2K",
-//         status: "Active",
-//     },
-//     {
-//         id: 3,
-//         user: {
-//             image: "/images/user/user-19.jpg",
-//             name: "Angela Martin",
-//             role: "Accountant",
-//         },
-//         email: "angela.martin@example.com",
-//         mobileNumber: "+1 555 123 4567",
-//         referredBy: "Oscar Martinez",
-//         totalBookings: "4.1K",
-//         status: "Active",
-//     },
-//     {
-//         id: 4,
-//         user: {
-//             image: "/images/user/user-20.jpg",
-//             name: "Jim Halpert",
-//             role: "Sales Executive",
-//         },
-//         email: "jim.halpert@example.com",
-//         mobileNumber: "+1 321 654 0987",
-//         referredBy: "Dwight Schrute",
-//         totalBookings: "6.3K",
-//         status: "Active",
-//     },
-// ];
-
-
 const columns = [
     {
         header: "User",
@@ -110,7 +54,7 @@ const columns = [
                         width={40}
                         height={40}
                         src={row.user.image}
-                        alt={row.user.fullName}
+                        alt={row.user.fullName || "user image"}
                     />
                 </div>
                 
@@ -157,11 +101,74 @@ const columns = [
 
 const UserList = () => {
     const { users } = useUserContext();
-
+    const [startDate, setStartDate] = useState<string | null>(null);
+    const [endDate, setEndDate] = useState<string | null>(null);
+    const [sort, setSort] = useState<string>('latest');
+    const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
+    
     console.log("All Users : ", users)
 
+ 
+
+
+
+    const options = [
+        { value: "latest", label: "Latest" },
+        { value: "oldest", label: "Oldest" },
+        { value: "ascending", label: "Ascending" },
+        { value: "descending", label: "Descending" },
+    ];
+
+    const handleSelectChange = (value: string) => {
+        console.log("Selected value:", value);
+    };
+    
+
+    const fetchFilteredUsers = async () => {
+        try {
+            const isValidDate = (date: string | null) => {
+                return date && !isNaN(Date.parse(date));
+            };
+            
+            const params = {
+                ...(isValidDate(startDate) && { startDate }),
+                ...(isValidDate(endDate) && { endDate }),
+                ...(sort && { sort }),
+            };
+            
+
+            console.log("params : ", params)
+    
+            const response = await axios.get('/api/users', { params });
+            
+    
+            const data = response.data;
+    
+            const mapped = data.users.map((user: any) => ({
+                id: user._id,
+                user: {
+                    image: user.image || "/images/logo/user1.webp",
+                    fullName: user.fullName,
+                    role: user.role || "User",
+                },
+                email: user.email,
+                mobileNumber: user.mobileNumber,
+                referredBy: user.referredBy || "N/A",
+                totalBookings: "0",
+                status: user.isDeleted ? "Inactive" : "Active",
+            }));
+    
+            setFilteredUsers(mapped);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setFilteredUsers([]);
+        }
+    };
+    useEffect(() => {
+        fetchFilteredUsers();
+    }, [startDate, endDate, sort]);
     if (!users) {
-        return <div>Loading...</div>;  // Or any other fallback UI
+        return <div>Loading...</div>;  
     }
 
     const tableData = users.map((user: any) => ({
@@ -177,55 +184,11 @@ const UserList = () => {
         totalBookings: "0",  // Placeholder if you don't have this data, you can adjust it
         status: user.isDeleted ? "Inactive" : "Active",  // Assuming isDeleted is the status field
     }));
-
-    const options = [
-        { value: "latest", label: "Latest" },
-        { value: "oldest", label: "Oldest" },
-        { value: "ascending", label: "Ascending" },
-        { value: "descending", label: "Descending" },
-    ];
-
-    const handleSelectChange = (value: string) => {
-        console.log("Selected value:", value);
-    };
-
+    
     return (
         <div>
             <PageBreadcrumb pageTitle="User List" />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
-                <StatCard
-                    title="Revenue"
-                    value="$8490"
-                    icon={BoxCubeIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Revenue"
-                    value="$8420"
-                    icon={BoxCubeIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Revenue"
-                    value="$8420"
-                    icon={BoxCubeIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Revenue"
-                    value="$8420"
-                    icon={BoxCubeIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-            </div>
+            
 
             <div className="my-5">
                 <ComponentCard title="Search Filter">
@@ -237,8 +200,7 @@ const UserList = () => {
                                 label="Start Date"
                                 placeholder="Select a date"
                                 onChange={(dates, currentDateString) => {
-                                    // Handle your logic
-                                    console.log({ dates, currentDateString });
+                                    setStartDate(currentDateString); // Ensure proper format if needed
                                 }}
                             />
                         </div>
@@ -248,8 +210,7 @@ const UserList = () => {
                                 label="End Date"
                                 placeholder="Select a date"
                                 onChange={(dates, currentDateString) => {
-                                    // Handle your logic
-                                    console.log({ dates, currentDateString });
+                                    setEndDate(currentDateString);
                                 }}
                             />
                         </div>
@@ -259,7 +220,7 @@ const UserList = () => {
                                 <Select
                                     options={options}
                                     placeholder="Sort By"
-                                    onChange={handleSelectChange}
+                                    onChange={(value: string) => setSort(value)}
                                     className="dark:bg-dark-900"
                                 />
                                 <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -277,7 +238,7 @@ const UserList = () => {
 
             <div>
                 <ComponentCard title="Table">
-                    <BasicTableOne columns={columns} data={tableData} />
+                    <BasicTableOne columns={columns} data={filteredUsers.length ? filteredUsers : tableData} />
                 </ComponentCard>
             </div>
         </div>
