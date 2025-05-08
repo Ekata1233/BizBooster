@@ -23,6 +23,7 @@ import Select from "@/components/form/Select";
 import { useUserContext } from "@/context/UserContext";
 import Link from "next/link";
 import axios from "axios";
+import UserStatCard from "@/components/user-component/UserStatCard";
 
 // Define the type for the table data
 interface User {
@@ -94,7 +95,14 @@ const columns = [
         header: "Total Bookings",
         accessor: "totalBookings",
     },
-
+    {
+        header: "Total Earnings",
+        accessor: "totalEarnings",
+    },
+    {
+        header: "Status",
+        accessor: "status",
+    },
     {
         header: "Action",
         accessor: "action",
@@ -175,10 +183,10 @@ const UserList = () => {
             setMessage('Something went wrong while fetching users');
         }
     };
+
     useEffect(() => {
         fetchFilteredUsers();
-    }, [startDate, endDate, sort,searchQuery]);
-
+    }, [startDate, endDate, sort, searchQuery]);
 
     if (!users) {
         return <div>Loading...</div>;
@@ -187,39 +195,9 @@ const UserList = () => {
     return (
         <div>
             <PageBreadcrumb pageTitle="User List" />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
-                <StatCard
-                    title="Total Users"
-                    value={users.length}
-                    icon={UserIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Total Booking"
-                    value="20"
-                    icon={CalenderIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Total Revenue"
-                    value="$8420"
-                    icon={DollarLineIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
-                <StatCard
-                    title="Revenue"
-                    value="$8420"
-                    icon={BoxCubeIcon}
-                    badgeColor="success"
-                    badgeValue="6.88%"
-                    badgeIcon={ArrowUpIcon}
-                />
+
+            <div>
+                <UserStatCard />
             </div>
 
             <div className="my-5">
