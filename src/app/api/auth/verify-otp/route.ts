@@ -1,6 +1,16 @@
 import User from '@/models/User';
 import { NextResponse } from 'next/server';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// ✅ Handle preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 export const POST = async (req: Request) => {
   try {
     const body = await req.json();
@@ -23,12 +33,12 @@ export const POST = async (req: Request) => {
     user.isMobileVerified = true;
     await user.save();
 
-    return NextResponse.json({ message: 'OTP verified successfully, mobile number verified' }, { status: 200 });
+    return NextResponse.json({ message: 'OTP verified successfully, mobile number verified' }, { status: 200, headers: corsHeaders });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 400, headers: corsHeaders });
     }
-    return NextResponse.json({ error: 'Unknown error' }, { status: 400 });
+    return NextResponse.json({ error: 'Unknown error' }, { status: 400, headers: corsHeaders });
   }
 };
 
