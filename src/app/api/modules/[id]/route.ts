@@ -15,18 +15,17 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
   try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop(); // Get the last part of the URL
+
     const formData = await req.formData();
 
     const name = formData.get("name") as string;
     const categories = JSON.parse(formData.get("categories") as string);
-    const id = params.id;
 
     if (!name || !id) {
       return NextResponse.json(
@@ -73,14 +72,19 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
   try {
-    const { id } = params;
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     const deletedModule = await Module.findByIdAndUpdate(
       id,
