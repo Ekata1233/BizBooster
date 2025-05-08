@@ -26,9 +26,21 @@ import axios from "axios";
 
 // Define the type for the table data
 interface User {
+    _id:string;
     image: string;
     fullName: string;
-    role: string;
+    email: string;
+    mobileNumber: string;
+    password: string;
+    referralCode?: string;
+    referredBy: string | null;
+    isAgree: boolean;
+    // otp: OTP;
+    isEmailVerified: boolean;
+    isMobileVerified: boolean;
+    isDeleted: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 
@@ -56,7 +68,12 @@ const columns = [
                         alt={row.user.fullName || "User image"}
                     />
                 </div>
-
+                <div>
+                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        {row.user.fullName}
+                    </span>
+                    
+                </div>
 
             </div>
         ),
@@ -103,17 +120,9 @@ const UserList = () => {
     const { users } = useUserContext();
     const [startDate, setStartDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
-    const [sort, setSort] = useState<string>('latest');
+    const [sort, setSort] = useState<string>('oldest');
     const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
     const [message, setMessage] = useState<string>('');
-
-
-    console.log("All Users : ", users)
-
-
-
-
-
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -121,9 +130,6 @@ const UserList = () => {
         { value: "ascending", label: "Ascending" },
         { value: "descending", label: "Descending" },
     ];
-
-
-
 
     const fetchFilteredUsers = async () => {
         try {
@@ -138,11 +144,6 @@ const UserList = () => {
                 ...(sort && { sort }),
             };
 
-
-
-            console.log("params : ", params)
-
-
             const response = await axios.get('/api/users', { params });
 
             const data = response.data;
@@ -152,12 +153,11 @@ const UserList = () => {
                 setMessage(data.message || 'No users found');
             } else {
 
-                const mapped = data.users.map((user: any) => ({
+                const mapped = data.users.map((user: User) => ({
                     id: user._id,
                     user: {
                         image: user.image || "/images/logo/user1.webp",
                         fullName: user.fullName,
-                        role: user.role || "User",
                     },
                     email: user.email,
                     mobileNumber: user.mobileNumber,
@@ -182,19 +182,7 @@ const UserList = () => {
         return <div>Loading...</div>;
     }
 
-    const tableData = users.map((user: any) => ({
-        id: user._id,
-        user: {
-            image: "/images/logo/user1.webp",  // Replace with the user’s image URL if available
-            fullName: user.fullName,
-            role: user.role || "User",  // Assume you will assign a role in the context
-        },
-        email: user.email,
-        mobileNumber: user.mobileNumber,
-        referredBy: user.referredBy || "N/A",  // You can modify if you have referredBy data
-        totalBookings: "0",  // Placeholder if you don't have this data, you can adjust it
-        status: user.isDeleted ? "Inactive" : "Active",  // Assuming isDeleted is the status field
-    }));
+
 
 
     return (
