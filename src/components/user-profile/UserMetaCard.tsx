@@ -6,7 +6,6 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Image from "next/image";
-import userProfile from "../../../public/images/logo/user1.webp"
 
 
 export default function UserMetaCard() {
