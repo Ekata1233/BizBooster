@@ -8,9 +8,7 @@ import {
     EyeIcon,
     TrashBinIcon,
     PencilIcon,
-   
     ChevronDownIcon,
-    
 } from "../../../../../icons/index";
 import DatePicker from '@/components/form/date-picker';
 import Label from "@/components/form/Label";
@@ -24,6 +22,7 @@ import UserStatCard from "@/components/user-component/UserStatCard";
 // Define the type for the table data
 interface User {
     _id: string;
+    id: string;
     image: string;
     fullName: string;
     email: string;
@@ -32,7 +31,11 @@ interface User {
     referralCode?: string;
     referredBy: string | null;
     isAgree: boolean;
-    // otp: OTP;
+    otp: {
+        code: string;
+        expiresAt: Date;
+        verified: boolean;
+    };
     isEmailVerified: boolean;
     isMobileVerified: boolean;
     isDeleted: boolean;
@@ -98,25 +101,52 @@ const columns = [
     {
         header: "Status",
         accessor: "status",
+        render: (row: TableData) => {
+            const status = row.status;
+            let colorClass = "";
+
+
+            switch (status) {
+                case "Deleted":
+                    colorClass = "text-red-500 bg-red-100 border border-red-300";
+                    break;
+                case "Active":
+                    colorClass = "text-green-600 bg-green-100 border border-green-300";
+                    break;
+                case "Not Verified":
+                    colorClass = "text-yellow-600 bg-yellow-100 border border-yellow-300";
+                    break;
+                default:
+                    colorClass = "text-gray-600 bg-gray-100 border border-gray-300";
+            }
+
+            return (
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+                    {status}
+                </span>
+            );
+        },
     },
+
     {
         header: "Action",
         accessor: "action",
-        render: () => (
-            <div className="flex gap-2">
+        render: (row: TableData) => {
+            console.log("row id ", row.id)
+            return (<div className="flex gap-2">
                 <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                     <PencilIcon />
                 </button>
                 <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                     <TrashBinIcon />
                 </button>
-                <Link href="/profile" passHref>
+                <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
                     <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
                         <EyeIcon />
                     </button>
                 </Link>
-            </div>
-        ),
+            </div>)
+        },
     },
 ];
 
@@ -128,6 +158,8 @@ const UserList = () => {
     const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
+
+    console.log("user : ", users);
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -168,7 +200,8 @@ const UserList = () => {
                     mobileNumber: user.mobileNumber,
                     referredBy: user.referredBy || "N/A",
                     totalBookings: "0",
-                    status: user.isDeleted ? "Inactive" : "Active",
+                    totalEarnings: "0",
+                    status: user.isDeleted ? "Deleted" : user.otp?.verified ? "Active" : "Not Verified"
                 }));
                 setFilteredUsers(mapped);
                 setMessage('');
