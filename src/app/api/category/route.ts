@@ -47,9 +47,10 @@ export async function POST(req: Request) {
       { success: true, data: newCategory },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: err.message },
       { status: 400, headers: corsHeaders }
     );
   }
@@ -64,9 +65,10 @@ export async function GET() {
       { success: true, data: categories },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: err.message },
       { status: 500, headers: corsHeaders }
     );
   }
