@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
 // Define a type for the module
 type Module = {
@@ -23,9 +24,12 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   const [modules, setModules] = useState<Module[]>([]);
 
   const fetchModules = async () => {
-    const response = await fetch("/api/modules");
-    const data = await response.json();
-    setModules(data);
+    try {
+      const response = await axios.get("/api/modules");
+      setModules(response.data);
+    } catch (error) {
+      console.error("Error fetching modules:", error);
+    }
   };
 
   useEffect(() => {
@@ -33,26 +37,30 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const addModule = async (formData: FormData) => {
-    await fetch("/api/module", {
-      method: "POST",
-      body: formData,
-    });
-    fetchModules();
+    try {
+      await axios.post("/api/modules", formData);
+      fetchModules();
+    } catch (error) {
+      console.error("Error adding module:", error);
+    }
   };
 
   const updateModule = async (id: string, formData: FormData) => {
-    await fetch(`/api/module/${id}`, {
-      method: "PUT",
-      body: formData,
-    });
-    fetchModules();
+    try {
+      await axios.put(`/api/modules/${id}`, formData);
+      fetchModules();
+    } catch (error) {
+      console.error("Error updating module:", error);
+    }
   };
 
   const deleteModule = async (id: string) => {
-    await fetch(`/api/module/${id}`, {
-      method: "DELETE",
-    });
-    fetchModules();
+    try {
+      await axios.delete(`/api/modules/${id}`);
+      fetchModules();
+    } catch (error) {
+      console.error("Error deleting module:", error);
+    }
   };
 
   return (
