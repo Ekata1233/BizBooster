@@ -1,10 +1,25 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-const SubcategoryContext = createContext<any>(null);
+// Define the shape of a subcategory
+interface Subcategory {
+  id: string;
+  name: string;
+  // Add any other fields that are part of your subcategory
+}
+
+// Define the context value type
+interface SubcategoryContextType {
+  subcategories: Subcategory[];
+  addSubcategory: (formData: FormData) => Promise<void>;
+  updateSubcategory: (id: string, formData: FormData) => Promise<void>;
+  deleteSubcategory: (id: string) => Promise<void>;
+}
+
+const SubcategoryContext = createContext<SubcategoryContextType | null>(null);
 
 export const SubcategoryProvider = ({ children }: { children: React.ReactNode }) => {
-  const [subcategories, setSubcategories] = useState([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
 
   const fetchSubcategories = async () => {
     const res = await fetch("/api/subcategory");
@@ -46,4 +61,10 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
   );
 };
 
-export const useSubcategory = () => useContext(SubcategoryContext);
+export const useSubcategory = () => {
+  const context = useContext(SubcategoryContext);
+  if (!context) {
+    throw new Error("useSubcategory must be used within a SubcategoryProvider");
+  }
+  return context;
+};
