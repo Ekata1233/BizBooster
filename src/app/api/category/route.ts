@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const name = formData.get("name") as string;
-    const module = formData.get("module") as string;
+    const moduleId = formData.get("module") as string; // renamed variable
 
     let imageUrl = "";
     const file = formData.get("image") as File | null;
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     const newCategory = await Category.create({
       name,
-      module,
+      module: moduleId, // keep field name as 'module'
       image: imageUrl,
     });
 
