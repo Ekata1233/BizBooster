@@ -16,7 +16,8 @@ const UserStatCard = () => {
         return <div>Loading...</div>;
     }
     return (
-        <div><div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
+        <div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
             <StatCard
                 title="Total Users"
                 value={users.length}
@@ -49,7 +50,8 @@ const UserStatCard = () => {
                 badgeValue="6.88%"
                 badgeIcon={ArrowUpIcon}
             />
-        </div></div>
+        </div>
+        </div>
     )
 }
 

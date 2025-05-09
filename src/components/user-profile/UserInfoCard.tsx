@@ -6,6 +6,7 @@ interface UserInfoCardProps {
   email: string;
   phone: string;
   referralCode: string;
+  address:string;
 }
 
 export default function UserInfoCard({
@@ -13,6 +14,7 @@ export default function UserInfoCard({
   email,
   phone,
   referralCode,
+  address,
 }: UserInfoCardProps) {
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -56,6 +58,15 @@ export default function UserInfoCard({
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {referralCode || "N/A"}
+              </p>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                Address
+              </p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                {address || "N/A"}
               </p>
             </div>
           </div>
