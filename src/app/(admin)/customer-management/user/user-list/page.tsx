@@ -284,7 +284,7 @@ const UserList = () => {
             </div>
 
             <div>
-                <ComponentCard title="Table">
+                <ComponentCard title="Table" className="">
                     {message ? (
                         <p className="text-red-500 text-center my-4">{message}</p>
                     ) : (
