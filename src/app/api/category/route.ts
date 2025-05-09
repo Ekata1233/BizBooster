@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+import { v4 as uuidv4 } from "uuid";
 import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
+import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,18 +22,27 @@ export async function POST(req: Request) {
     const name = formData.get("name") as string;
     const moduleId = formData.get("module") as string; // renamed variable
 
-    let imageUrl = "";
-    const file = formData.get("image") as File | null;
+     if (!name) {
+          return NextResponse.json(
+            { success: false, message: "Name is required." },
+            { status: 400, headers: corsHeaders }
+          );
+        }
 
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true });
+let imageUrl = "";
+    const file = formData.get("image") as File;
 
     if (file) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const filePath = path.join(uploadDir, file.name);
-      await writeFile(filePath, buffer);
-      imageUrl = `/uploads/${file.name}`;
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const uploadResponse = await imagekit.upload({
+        file: buffer, // binary file
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/uploads", // optional folder in ImageKit
+      });
+
+      imageUrl = uploadResponse.url;
     }
 
     const newCategory = await Category.create({

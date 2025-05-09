@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
-
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";

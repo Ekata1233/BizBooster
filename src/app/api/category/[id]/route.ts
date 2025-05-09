@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+import { v4 as uuidv4 } from "uuid";
 import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
+import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,14 +74,16 @@ export async function PUT(req: Request) {
     const file = formData.get("image") as File | null;
 
     if (file && typeof file === "object" && file instanceof File) {
-      const uploadDir = path.join(process.cwd(), "public/uploads");
-      if (!existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true });
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const filePath = path.join(uploadDir, file.name);
-      await writeFile(filePath, buffer);
-      imageUrl = `/uploads/${file.name}`;
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/uploads", // optional
+      });
+
+      imageUrl = uploadResponse.url;
     }
 
     const updateData: Record<string, unknown> = {
