@@ -4,7 +4,6 @@ import StatCard from "../common/StatCard";
 
 import {
   BoxCubeIcon,
-  ArrowUpIcon,
   CalenderIcon,
   DollarLineIcon,
 } from "../..//icons/index";

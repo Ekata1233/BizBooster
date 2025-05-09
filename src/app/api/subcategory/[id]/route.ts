@@ -43,9 +43,10 @@ export async function GET(req: Request) {
       { success: true, data: subcategory },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Server error";
     return NextResponse.json(
-      { success: false, message: error.message || "Server error" },
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -85,7 +86,7 @@ export async function PUT(req: Request) {
       imageUrl = `/uploads/${file.name}`;
     }
 
-    const updateData: Record<string, any> = { name, category };
+    const updateData: Record<string, unknown> = { name, category };
     if (imageUrl) updateData.image = imageUrl;
 
     const updatedSubcategory = await Subcategory.findByIdAndUpdate(
@@ -98,9 +99,10 @@ export async function PUT(req: Request) {
       { success: true, data: updatedSubcategory },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Update failed";
     return NextResponse.json(
-      { success: false, message: error.message || "Update failed" },
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -138,9 +140,10 @@ export async function DELETE(req: Request) {
       { success: true, message: "Subcategory soft-deleted successfully." },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Server error";
     return NextResponse.json(
-      { success: false, message: error.message || "Server error" },
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }

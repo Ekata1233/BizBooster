@@ -5,7 +5,6 @@ import { existsSync } from "fs";
 import { connectToDatabase } from "@/utils/db";
 
 import Subcategory from "@/models/Subcategory";
-import Category from "@/models/Category"; // ✅ this is the fix
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
