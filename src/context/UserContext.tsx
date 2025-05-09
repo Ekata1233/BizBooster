@@ -28,8 +28,12 @@ interface UserContextType {
   users: User[] | null;
   loading: boolean;
   error: string | null;
+  singleUser: User | null;
+  singleUserLoading: boolean;
+  singleUserError: string | null;
   refreshUsers: () => void;
   setUsers: (users: User[]) => void;
+  fetchSingleUser: (id: string) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -47,6 +51,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+
+  const [singleUser, setSingleUser] = useState<User | null>(null);
+  const [singleUserLoading, setSingleUserLoading] = useState<boolean>(false);
+  const [singleUserError, setSingleUserError] = useState<string | null>(null);
+
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -62,12 +72,34 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchSingleUser = async (id: string) => {
+    setSingleUserLoading(true);
+    try {
+      const res = await axios.get(`/api/users/${id}`); // Single user
+      setSingleUser(res.data?.data || null);
+      setSingleUserError(null);
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setSingleUserError(
+        axiosError.response?.data?.message || 'Failed to fetch user'
+      );
+      setSingleUser(null);
+    } finally {
+      setSingleUserLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
   return (
-    <UserContext.Provider value={{ users, loading, error, refreshUsers: fetchUsers, setUsers }}>
+    <UserContext.Provider value={{ users, loading, error,  singleUser,
+      singleUserLoading,
+      singleUserError,
+      refreshUsers: fetchUsers,
+      setUsers,
+      fetchSingleUser, }}>
       {children}
     </UserContext.Provider>
   );
