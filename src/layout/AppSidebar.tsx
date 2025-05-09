@@ -14,7 +14,6 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
-import Logo from '../../public/images/logo/final-logo.png'
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -302,14 +301,14 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src={Logo}
+                src="/images/logo/user1.webp"
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src={Logo}
+                src="/images/logo/user1.webp"
                 alt="Logo"
                 width={150}
                 height={40}
