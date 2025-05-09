@@ -64,7 +64,8 @@ const moduleItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Module",
     subItems: [
-      { name: "Module List", path: "/customer-management/user/user-list", pro: false },
+      { name: "Add Module", path: "/customer-management/user/user-list", pro: false },
+      { name: "Module List", path: "/module-management/module/module-list", pro: false },
     ],
   },
 
