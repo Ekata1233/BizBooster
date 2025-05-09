@@ -1,6 +1,6 @@
-// import UserAddressCard from "@/components/user-profile/UserAddressCard";
-// import UserInfoCard from "@/components/user-profile/UserInfoCard";
-// import UserMetaCard from "@/components/user-profile/UserMetaCard";
+
+import UserInfoCard from "@/components/user-profile/UserInfoCard";
+import UserMetaCard from "@/components/user-profile/UserMetaCard";
 import { Metadata } from "next";
 import React from "react";
 
@@ -18,9 +18,19 @@ export default function Profile() {
           Profile
         </h3>
         <div className="space-y-6">
-          {/* <UserMetaCard /> */}
-          {/* <UserInfoCard /> */}
-          {/* <UserAddressCard /> */}
+          <UserMetaCard
+            imageSrc="/images/logo/user1.webp"
+            name="BizBooster Admin"
+            role="Admin"
+            location="Amanora Chember, Hadapsar, Pune"
+          />
+          <UserInfoCard
+            fullName="BizBooster Admin"
+            email="BizBooster@admin.com"
+            phone="+91 9988776655"
+            referralCode={" "}
+            address="Amanora Chember, Hadapsar, Pune"
+          />
         </div>
       </div>
     </div>
