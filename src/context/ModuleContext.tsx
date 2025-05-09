@@ -23,7 +23,7 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   const [modules, setModules] = useState<Module[]>([]);
 
   const fetchModules = async () => {
-    const response = await fetch("/api/module");
+    const response = await fetch("/api/modules");
     const data = await response.json();
     setModules(data);
   };
