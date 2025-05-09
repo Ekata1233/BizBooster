@@ -1,8 +1,4 @@
 import { NextResponse } from "next/server";
-<<<<<<< HEAD
-=======
-
->>>>>>> a0d14adfa062273dd0365d230d9006f935bff7c7
 import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";

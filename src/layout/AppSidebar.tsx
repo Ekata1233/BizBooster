@@ -63,8 +63,7 @@ const moduleItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Module",
     subItems: [
-      { name: "Add Module", path: "/customer-management/user/user-list", pro: false },
-      { name: "Module List", path: "/module-management/module/module-list", pro: false },
+      { name: "Modules", path: "/module-management/module", pro: false },
     ],
   },
 
@@ -301,14 +300,14 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src="/images/logo/user1.webp"
+                src="/images/logo/final-logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src="/images/logo/user1.webp"
+                src="/images/logo/final-logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
