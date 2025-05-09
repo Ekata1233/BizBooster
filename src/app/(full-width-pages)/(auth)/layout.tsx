@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import Logo from '../../../../public/images/logo/final-logo.png'
 
 export default function AuthLayout({
   children,
@@ -26,7 +25,7 @@ export default function AuthLayout({
                   <Image
                     width={631}
                     height={58}
-                    src={Logo}
+                    src="/images/logo/user1.webp"
                     alt="Logo"
                   />
                 </Link>
