@@ -13,14 +13,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
+// Define types
 interface Module {
-    _id: string;
-    id: string;
-    image: string;
-    name:string
-    
-   
+  _id: string;
+  id: string;
+  image: string;
+  name: string;
+  isDeleted: boolean;
 }
+
 interface TableData {
   id: string;
   name: string;
@@ -101,7 +102,7 @@ const Module = () => {
 
   // Safely extract data array
   const moduleData: TableData[] = Array.isArray(modules?.data)
-    ? modules.data.map((mod: any) => ({
+    ? modules.data.map((mod: Module) => ({
         id: mod._id,
         name: mod.name,
         image: mod.image,
