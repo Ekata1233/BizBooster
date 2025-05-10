@@ -3,12 +3,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
-// Define a type for the module
+// Define the Module type with additional fields
 type Module = {
   id: string;
   name: string;
   description: string;
-  // Add other properties as needed
+  image?: string;  // Optional, in case you deal with image files
+  isDeleted: boolean;
 };
 
 interface ModuleContextType {
@@ -23,41 +24,46 @@ const ModuleContext = createContext<ModuleContextType | null>(null);
 export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   const [modules, setModules] = useState<Module[]>([]);
 
+  // Fetch modules from the API
   const fetchModules = async () => {
     try {
       const response = await axios.get("/api/modules");
-      setModules(response.data);
+      setModules(response.data);  // Ensure your API returns an array of `Module`
     } catch (error) {
       console.error("Error fetching modules:", error);
     }
   };
 
+  // Fetch modules when the component mounts
   useEffect(() => {
     fetchModules();
   }, []);
 
+  // Add new module to the system
   const addModule = async (formData: FormData) => {
     try {
       await axios.post("/api/modules", formData);
-      fetchModules();
+      fetchModules();  // Re-fetch modules after adding a new one
     } catch (error) {
       console.error("Error adding module:", error);
     }
   };
 
+  // Update existing module
   const updateModule = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/modules/${id}`, formData);
-      fetchModules();
+      fetchModules();  // Re-fetch modules after updating one
     } catch (error) {
       console.error("Error updating module:", error);
     }
   };
 
+  // Delete a module by ID
   const deleteModule = async (id: string) => {
     try {
       await axios.delete(`/api/modules/${id}`);
-      fetchModules();
+      fetchModules();  // Re-fetch modules after deleting one
     } catch (error) {
       console.error("Error deleting module:", error);
     }
@@ -70,6 +76,7 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Custom hook to use module context
 export const useModule = () => {
   const context = useContext(ModuleContext);
   if (!context) {

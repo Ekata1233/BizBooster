@@ -14,13 +14,14 @@ import Link from 'next/link';
 import React from 'react';
 
 // Define types
-interface Module {
+interface ModuleType {
   _id: string;
   id: string;
   image: string;
   name: string;
   isDeleted: boolean;
 }
+
 
 interface TableData {
   id: string;
@@ -97,18 +98,25 @@ const columns = [
   },
 ];
 
-const Module = () => {
+const ModulePage = () => {
   const { modules } = useModule();
+console.log("module:" , modules);
 
   // Safely extract data array
-  const moduleData: TableData[] = Array.isArray(modules?.data)
-    ? modules.data.map((mod: Module) => ({
-        id: mod._id,
-        name: mod.name,
-        image: mod.image,
-        status: mod.isDeleted ? 'Deleted' : 'Active',
-      }))
-    : [];
+const moduleData: TableData[] = Array.isArray(modules)
+  ? (modules as unknown as ModuleType[]).map((mod) => ({
+      id: mod._id,
+      name: mod.name,
+      image: mod.image,
+      status: mod.isDeleted ? 'Deleted' : 'Active',
+    }))
+  : [];
+
+console.log("modul data",moduleData);
+
+
+
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -151,4 +159,4 @@ const Module = () => {
   );
 };
 
-export default Module;
+export default ModulePage;
