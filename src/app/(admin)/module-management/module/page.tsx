@@ -77,6 +77,10 @@ const Module = () => {
             ),
         },
         {
+            header: 'Category Count',
+            accessor: 'categoryCount',
+        },
+        {
             header: 'Status',
             accessor: 'status',
             render: (row: TableData) => {

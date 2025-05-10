@@ -68,16 +68,17 @@ const Category = () => {
   }));
 
   const columns = [
+    
+    {
+      header: 'Category Name',
+      accessor: 'name',
+    },
     {
       header: 'Module Name',
       accessor: 'moduleName',
       render: (row: TableData) => (
         <span className="font-medium text-blue-600">{row.moduleName}</span>
       ),
-    },
-    {
-      header: 'Category Name',
-      accessor: 'name',
     },
     {
       header: 'Image',
@@ -95,6 +96,10 @@ const Category = () => {
           </div>
         </div>
       ),
+    },
+    {
+      header: 'Subcategory Count',
+      accessor: 'subcategoryCount',
     },
     {
       header: 'Status',
