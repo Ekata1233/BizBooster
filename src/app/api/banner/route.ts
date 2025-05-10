@@ -32,9 +32,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, data: newBanner }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }
@@ -46,7 +47,8 @@ export async function GET() {
   try {
     const banners = await Banner.find({ isDeleted: false }).sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: banners });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }
 }
