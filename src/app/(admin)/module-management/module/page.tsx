@@ -2,12 +2,9 @@
 
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import FileInput from '@/components/form/input/FileInput';
-import Input from '@/components/form/input/InputField';
-import Label from '@/components/form/Label';
+
 import AddModule from '@/components/module-component/AddModule';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import Button from '@/components/ui/button/Button';
 import { useModule } from '@/context/ModuleContext';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Image from 'next/image';
@@ -25,10 +22,7 @@ interface Module {
     __v?: number;
 }
 
-interface ModuleResponse {
-    success: boolean;
-    data: Module[];
-}
+
 
 
 interface TableData {
