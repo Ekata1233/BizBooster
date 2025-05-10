@@ -42,10 +42,10 @@ const columns = [
         accessor: 'image',
         render: (row: TableData) => (
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 overflow-hidden">
+                <div className="w-30 h-30 overflow-hidden">
                     <Image
-                        width={40}
-                        height={40}
+                        width={130}
+                        height={130}
                         src={row.image}
                         alt={row.name || "module image"}
                         className="object-cover rounded"
@@ -73,7 +73,7 @@ const columns = [
             }
 
             return (
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+                <span className={`px-3 py-1 rounded-full text-sm  ${colorClass}`}>
                     {status}
                 </span>
             );

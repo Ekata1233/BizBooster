@@ -121,7 +121,7 @@ const columns = [
             }
 
             return (
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+                <span className={`px-2 py-1 rounded-full text-xs  ${colorClass}`}>
                     {status}
                 </span>
             );
