@@ -78,6 +78,9 @@ import axios from "axios";
 interface Subcategory {
   id: string;
   name: string;
+  category: { name: string };
+  image?: string;
+  isDeleted?: boolean;
   // Add any other fields that are part of your subcategory
 }
 
