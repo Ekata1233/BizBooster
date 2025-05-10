@@ -4,8 +4,6 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import FileInput from '@/components/form/input/FileInput';
 import Label from '@/components/form/Label';
-
-// import AddSubcategory from '@/components/module-component/AddSubcategory';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
@@ -15,7 +13,8 @@ import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 // Types
 interface Category {
@@ -27,8 +26,11 @@ interface Category {
     updatedAt?: string;
     __v?: number;
 }
+
 interface Subcategory {
     id: string;
+    _id: string;
+
     name: string;
     image: string;
     isDeleted?: boolean;
@@ -50,35 +52,72 @@ const Subcategory = () => {
     const { subcategories, updateSubcategory, deleteSubcategory } = useSubcategory();
     const { isOpen, openModal, closeModal } = useModal();
 
-    console.log("subcate :", subcategories);
-
-
+    const [categories, setCategories] = useState<Category[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [subcategoryName, setSubcategoryName] = useState<string>('');
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+    console.log("subcat :",subcategories);
+    
+    useEffect(() => {
+        axios.get("/api/category")
+            .then(res => setCategories(res.data.data))
+            .catch(err => console.error("Error fetching categories", err));
+    }, []);
 
-    if (!subcategories || !Array.isArray(subcategories)) {
-        return <div>Loading...</div>;
-    }
+    const handleEdit = (id: string) => {
+        const subcat = subcategories.find(item => item.id === id);
+        if (subcat) {
+            setEditingId(id);
+            setSubcategoryName(subcat.name);
+            setSelectedCategoryId(subcat.category?._id || '');
+            setSelectedFile(null);
+            openModal();
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) setSelectedFile(file);
+    };
+
+    const handleSave = async () => {
+        if (!editingId || !subcategoryName || !selectedCategoryId) return;
+
+        const formData = new FormData();
+        formData.append("name", subcategoryName);
+        formData.append("category", selectedCategoryId);
+        if (selectedFile) formData.append("image", selectedFile);
+
+        try {
+            await updateSubcategory(editingId, formData);
+            closeModal();
+            setEditingId(null);
+            setSubcategoryName('');
+            setSelectedFile(null);
+        } catch (error) {
+            console.error('Error updating subcategory:', error);
+        }
+    };
+
+    if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
     const tableData: TableData[] = subcategories.map((subcat) => ({
         id: subcat.id,
         categoryName: subcat.category?.name || 'N/A',
         name: subcat.name,
-        image: (subcat as any).image || '', // handle optional image
+        image: subcat.image || '',
         status: subcat.isDeleted ? 'Deleted' : 'Active',
     }));
 
     const columns = [
+        { header: 'Subcategory Name', accessor: 'name' },
         {
             header: 'Category Name',
             accessor: 'categoryName',
             render: (row: TableData) => (
                 <span className="font-medium text-blue-600">{row.categoryName}</span>
             ),
-        },
-        {
-            header: 'Subcategory Name',
-            accessor: 'name',
         },
         {
             header: 'Image',
@@ -94,7 +133,6 @@ const Subcategory = () => {
                             className="object-cover object-center w-full h-full rounded"
                         />
                     </div>
-
                 </div>
             ),
         },
@@ -129,11 +167,7 @@ const Subcategory = () => {
             render: (row: TableData) => (
                 <div className="flex gap-2">
                     <button
-                        onClick={() => {
-                            setEditingId(row.id);
-                            setSelectedFile(null);
-                            openModal();
-                        }}
+                        onClick={() => handleEdit(row.id)}
                         className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500"
                     >
                         <PencilIcon />
@@ -156,58 +190,56 @@ const Subcategory = () => {
         },
     ];
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-        }
-    };
-
-    const handleSave = async () => {
-        if (!editingId || !selectedFile) return;
-
-        const formData = new FormData();
-        formData.append('image', selectedFile);
-
-        try {
-            await updateSubcategory(editingId, formData);
-            closeModal();
-            setEditingId(null);
-            setSelectedFile(null);
-        } catch (error) {
-            console.error('Error updating subcategory:', error);
-        }
-    };
-
     return (
         <div>
             <PageBreadcrumb pageTitle="Subcategory" />
-
-            <div className="my-5">
-                {/* <AddSubcategory /> */}
-            </div>
-
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
                     <BasicTableOne columns={columns} data={tableData} />
                 </ComponentCard>
             </div>
 
+            {/* Modal */}
             <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
                 <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
                     <div className="px-2 pr-14">
                         <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                            Edit Subcategory Image
+                            Edit Subcategory
                         </h4>
                     </div>
 
                     <form className="flex flex-col">
-                        <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-5">
-                                <div>
-                                    <Label>Select Image</Label>
-                                    <FileInput onChange={handleFileChange} />
-                                </div>
+                        <div className="custom-scrollbar h-[300px] overflow-y-auto px-2 pb-3 space-y-4">
+                            <div>
+                                <Label>Subcategory Name</Label>
+                                <input
+                                    type="text"
+                                    value={subcategoryName}
+                                    onChange={(e) => setSubcategoryName(e.target.value)}
+                                    className="w-full p-2 border rounded"
+                                    placeholder="Enter subcategory name"
+                                />
+                            </div>
+
+                            <div>
+                                <Label>Select Category</Label>
+                                <select
+                                    value={selectedCategoryId}
+                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                                    className="w-full p-2 border rounded"
+                                >
+                                    <option value="">Select category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat._id} value={cat._id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <Label>Upload Image</Label>
+                                <FileInput onChange={handleFileChange} />
                             </div>
                         </div>
 
