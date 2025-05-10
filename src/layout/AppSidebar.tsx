@@ -73,6 +73,13 @@ const moduleItems: NavItem[] = [
       { name: "Category", path: "/category-management/category", pro: false },
     ],
   },
+    {
+    icon: <PieChartIcon />,
+    name: "SubCategory",
+    subItems: [
+      { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
+    ],
+  },
 
 ];
 
