@@ -8,11 +8,13 @@ import Label from '@/components/form/Label';
 import AddModule from '@/components/module-component/AddModule';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Button from '@/components/ui/button/Button';
+import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
+import { useModal } from '@/hooks/useModal';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 
 // Define types
 interface Module {
@@ -25,12 +27,6 @@ interface Module {
     __v?: number;
 }
 
-interface ModuleResponse {
-    success: boolean;
-    data: Module[];
-}
-
-
 interface TableData {
     id: string;
     name: string;
@@ -38,81 +34,17 @@ interface TableData {
     status: string;
 }
 
-const columns = [
-    {
-        header: 'Module Name',
-        accessor: 'name',
-    },
-    {
-        header: 'Image',
-        accessor: 'image',
-        render: (row: TableData) => (
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 overflow-hidden">
-                    <Image
-                        width={40}
-                        height={40}
-                        src={row.image}
-                        alt={row.name || "module image"}
-                        className="object-cover rounded"
-                    />
-                </div>
-            </div>
-        ),
-    },
-    {
-        header: 'Status',
-        accessor: 'status',
-        render: (row: TableData) => {
-            const status = row.status;
-            let colorClass = '';
-
-            switch (status) {
-                case 'Deleted':
-                    colorClass = 'text-red-500 bg-red-100 border border-red-300';
-                    break;
-                case 'Active':
-                    colorClass = 'text-green-600 bg-green-100 border border-green-300';
-                    break;
-                default:
-                    colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-            }
-
-            return (
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-                    {status}
-                </span>
-            );
-        },
-    },
-    {
-        header: 'Action',
-        accessor: 'action',
-        render: (row: TableData) => (
-            <div className="flex gap-2">
-                <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
-                    <PencilIcon />
-                </button>
-                <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
-                    <TrashBinIcon />
-                </button>
-                <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
-                    <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                        <EyeIcon />
-                    </button>
-                </Link>
-            </div>
-        ),
-    },
-];
-
 const Module = () => {
     const { modules } = useModule();  // Get modules from context
+    const { updateModule } = useModule();
+    const { isOpen, openModal, closeModal } = useModal();
+    const [moduleName, setModuleName] = useState('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
 
-    console.log("modules : ", modules)
 
     if (!modules || !Array.isArray(modules)) {
-        return <div>Loading...</div>;  // Optionally, show a loading state if modules isn't an array yet
+        return <div>Loading...</div>;
     }
 
     const tableData: TableData[] = modules.map((mod) => ({
@@ -122,13 +54,106 @@ const Module = () => {
         status: mod.isDeleted ? 'Deleted' : 'Active',
     }));
 
-    // You can now safely use tableData
-    console.log(tableData);
+    const columns = [
+        {
+            header: 'Module Name',
+            accessor: 'name',
+        },
+        {
+            header: 'Image',
+            accessor: 'image',
+            render: (row: TableData) => (
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 overflow-hidden">
+                        <Image
+                            width={40}
+                            height={40}
+                            src={row.image}
+                            alt={row.name || "module image"}
+                            className="object-cover rounded"
+                        />
+                    </div>
+                </div>
+            ),
+        },
+        {
+            header: 'Status',
+            accessor: 'status',
+            render: (row: TableData) => {
+                const status = row.status;
+                let colorClass = '';
+
+                switch (status) {
+                    case 'Deleted':
+                        colorClass = 'text-red-500 bg-red-100 border border-red-300';
+                        break;
+                    case 'Active':
+                        colorClass = 'text-green-600 bg-green-100 border border-green-300';
+                        break;
+                    default:
+                        colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
+                }
+
+                return (
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+                        {status}
+                    </span>
+                );
+            },
+        },
+        {
+            header: 'Action',
+            accessor: 'action',
+            render: (row: TableData) => (
+                <div className="flex gap-2">
+                    <button onClick={() => {
+                        setEditingModuleId(row.id);
+                        setModuleName(row.name);
+                        // Optionally reset file
+                        setSelectedFile(null);
+                        openModal();
+                    }} className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                        <PencilIcon />
+                    </button>
+                    <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                        <TrashBinIcon />
+                    </button>
+                    <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                            <EyeIcon />
+                        </button>
+                    </Link>
+                </div>
+            ),
+        },
+    ];
+
+    const handleSave = async () => {
+        if (!editingModuleId) return;
+
+        const formData = new FormData();
+        formData.append('name', moduleName);
+        if (selectedFile) {
+            formData.append('image', selectedFile);
+        }
+
+        try {
+            await updateModule(editingModuleId, formData);
+            console.log('Module updated successfully');
+            closeModal();
+            setEditingModuleId(null);
+            setModuleName('');
+            setSelectedFile(null);
+        } catch (error) {
+            console.error('Error updating module:', error);
+        }
+    };
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             console.log('Selected file:', file.name);
         }
     };
@@ -146,6 +171,52 @@ const Module = () => {
                         <BasicTableOne columns={columns} data={tableData} />
                     </div>
                 </ComponentCard>
+            </div>
+
+            <div>
+                <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+                    <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+                        <div className="px-2 pr-14">
+                            <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                                Edit Module Information
+                            </h4>
+
+                        </div>
+                        <form className="flex flex-col">
+                            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
+                                <div className="">
+                                    <div className="grid grid-cols-1 gap-x-6 gap-y-5 ">
+                                        <div>
+                                            <Label>Module Name</Label>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter Module"
+                                                value={moduleName}
+                                                onChange={(e) => setModuleName(e.target.value)}
+                                            />
+
+                                        </div>
+                                        <div>
+                                            <Label>Select Image</Label>
+                                            <FileInput onChange={handleFileChange} className="custom-class" />
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                                <Button size="sm" variant="outline" onClick={closeModal}>
+                                    Close
+                                </Button>
+                                <Button size="sm" onClick={handleSave}>
+                                    Save Changes
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </Modal>
             </div>
         </div>
     );

@@ -4,14 +4,17 @@ import Input from '@/components/form/input/InputField'
 import Label from '@/components/form/Label'
 import Button from '@/components/ui/button/Button'
 import ComponentCard from '../common/ComponentCard'
-import { useModule } from '@/context/ModuleContext'
 import Select from '../form/Select'
 import { ChevronDownIcon } from '@/icons'
+import { useCategory } from '@/context/CategoryContext'
+import { useModule } from '@/context/ModuleContext'
 
 const AddCategory = () => {
-    const { addModule } = useModule(); // Access the context
-    const [moduleName, setModuleName] = useState('');
+    const { addCategory } = useCategory();
+    const { modules } = useModule();
+    const [categoryName, setCategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedModule, setSelectedModule] = useState('');
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -22,34 +25,37 @@ const AddCategory = () => {
     };
 
     const handleSubmit = async () => {
-        if (!moduleName || !selectedFile) {
-            alert('Please enter module name and select a file.');
+        if (!selectedModule || !categoryName || !selectedFile) {
+            alert('Please enter all required fields.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('name', moduleName);
+        formData.append('module', selectedModule);
+        formData.append('name', categoryName);
         formData.append('image', selectedFile);
 
         try {
-            await addModule(formData);
+            await addCategory(formData);
             alert('Category added successfully!');
-            setModuleName('');
+            setSelectedModule('');
+            setCategoryName('');
             setSelectedFile(null);
             console.log("page reset")
         } catch (error) {
-            alert('Error adding module.');
+            alert('Error adding category.');
             console.error(error);
         }
     };
 
-    const options = [
-        { value: "marketing", label: "Marketing" },
-        { value: "template", label: "Template" },
-        { value: "development", label: "Development" },
-    ];
+    const options = modules.map((mod: any) => ({
+        value: mod._id, // or mod._id
+        label: mod.name,
+    }));
+
     const handleSelectChange = (value: string) => {
         console.log("Selected value:", value);
+        setSelectedModule(value); // required to set the selected module
     };
     return (
         <div><ComponentCard title="Add New Category">
@@ -73,8 +79,8 @@ const AddCategory = () => {
                     <Input
                         type="text"
                         placeholder="Enter Category"
-                        value={moduleName}
-                        onChange={(e) => setModuleName(e.target.value)}
+                        value={categoryName}
+                        onChange={(e) => setCategoryName(e.target.value)}
                     />
 
                 </div>
