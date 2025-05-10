@@ -120,12 +120,7 @@ const Module = () => {
     console.log(tableData);
 
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            console.log('Selected file:', file.name);
-        }
-    };
+   
 
     return (
         <div>
