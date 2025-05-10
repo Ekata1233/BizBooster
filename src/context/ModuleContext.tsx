@@ -5,11 +5,13 @@ import axios from "axios";
 
 // Define the Module type with additional fields
 type Module = {
-  id: string;
-  name: string;
-  description: string;
-  image?: string;  // Optional, in case you deal with image files
-  isDeleted: boolean;
+  _id: string;
+    name: string;
+    image: string;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt?: string;
+    __v?: number;
 };
 
 interface ModuleContextType {
@@ -28,7 +30,7 @@ export const ModuleProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchModules = async () => {
     try {
       const response = await axios.get("/api/modules");
-      setModules(response.data);  // Ensure your API returns an array of `Module`
+      setModules(response.data.data);
     } catch (error) {
       console.error("Error fetching modules:", error);
     }

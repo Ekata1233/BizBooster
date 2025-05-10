@@ -70,7 +70,7 @@ const moduleItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Category",
     subItems: [
-      { name: "Category", path: "/module-management/module", pro: false },
+      { name: "Category", path: "/category-management/category", pro: false },
     ],
   },
 
