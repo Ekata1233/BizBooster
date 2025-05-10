@@ -68,7 +68,7 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const categories = await Category.find({ isDeleted: false }).populate("module");
+    const categories = await Category.find().populate("module");
     return NextResponse.json(
       { success: true, data: categories },
       { status: 200, headers: corsHeaders }

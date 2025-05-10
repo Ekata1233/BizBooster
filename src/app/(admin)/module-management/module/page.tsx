@@ -36,8 +36,7 @@ interface TableData {
 }
 
 const Module = () => {
-    const { modules } = useModule();  // Get modules from context
-    const { updateModule } = useModule();
+    const { modules , updateModule, deleteModule } = useModule(); 
     const { isOpen, openModal, closeModal } = useModal();
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -116,7 +115,7 @@ const Module = () => {
                     }} className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                         <PencilIcon />
                     </button>
-                    <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                    <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                         <TrashBinIcon />
                     </button>
                     <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
@@ -159,6 +158,19 @@ const Module = () => {
         }
     };
 
+    const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+    if (!confirmDelete) return;
+
+    try {
+        await deleteModule(id);
+        alert('Module deleted successfully');
+    } catch (error) {
+        alert('Error deleting module:');
+    }
+};
+
+
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />
@@ -183,6 +195,7 @@ const Module = () => {
                             </h4>
 
                         </div>
+                        
                         <form className="flex flex-col">
                             <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
                                 <div className="">

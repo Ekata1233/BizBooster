@@ -19,7 +19,7 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const data = await Subcategory.find({ isDeleted: false }).populate("category");
+    const data = await Subcategory.find().populate("category");
     return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
   } catch (error) {
     return NextResponse.json(
