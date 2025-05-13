@@ -30,7 +30,6 @@ interface Category {
 interface Subcategory {
     id: string;
     _id: string;
-
     name: string;
     image: string;
     isDeleted?: boolean;
@@ -46,6 +45,7 @@ interface TableData {
     categoryName: string;
     image: string;
     status: string;
+    
 }
 
 const Subcategory = () => {
@@ -57,8 +57,7 @@ const Subcategory = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [subcategoryName, setSubcategoryName] = useState<string>('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-    console.log("subcat :",subcategories);
-    
+
     useEffect(() => {
         axios.get("/api/category")
             .then(res => setCategories(res.data.data))
@@ -70,7 +69,7 @@ const Subcategory = () => {
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
-            setSelectedCategoryId(subcat.category?._id || '');
+            setSelectedCategoryId((subcat.category as Category)?._id || '');
             setSelectedFile(null);
             openModal();
         }
@@ -97,6 +96,14 @@ const Subcategory = () => {
             setSelectedFile(null);
         } catch (error) {
             console.error('Error updating subcategory:', error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteSubcategory(id);
+        } catch (error) {
+            console.error("Error deleting subcategory:", error);
         }
     };
 
@@ -174,7 +181,7 @@ const Subcategory = () => {
                     </button>
 
                     <button
-                        onClick={() => deleteSubcategory(row.id)}
+                        onClick={() => handleDelete(row.id)}
                         className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
                     >
                         <TrashBinIcon />
@@ -199,7 +206,6 @@ const Subcategory = () => {
                 </ComponentCard>
             </div>
 
-            {/* Modal */}
             <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
                 <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
                     <div className="px-2 pr-14">
