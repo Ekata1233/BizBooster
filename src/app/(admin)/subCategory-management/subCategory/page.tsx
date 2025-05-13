@@ -102,6 +102,7 @@ const Subcategory = () => {
 
         try {
             await updateSubcategory(editingId, formData);
+            alert('Subcategory updated successfully');
             closeModal();
             setEditingId(null);
             setSubcategoryName('');

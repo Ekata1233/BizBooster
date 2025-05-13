@@ -15,6 +15,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal'
 import Select from '@/components/form/Select'
+import { useModule } from '@/context/ModuleContext'
 
 interface Module {
   _id: string;
@@ -47,13 +48,17 @@ interface TableData {
 
 
 const Category = () => {
-  const { categories, updateCategory,deleteCategory } = useCategory();
+  const { categories, updateCategory, deleteCategory } = useCategory();
+  const { modules } = useModule();
   const { isOpen, openModal, closeModal } = useModal();
   const [CategoryName, setCategoryName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('');
-  console.log("category : ", categories)
+  const [selectedModuleId, setSelectedModuleId] = useState<string>('');
+
+  console.log("selectedModuleId : ", selectedModuleId)
+    console.log("categories : ", categories)
 
   if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
@@ -68,7 +73,7 @@ const Category = () => {
   }));
 
   const columns = [
-    
+
     {
       header: 'Category Name',
       accessor: 'name',
@@ -131,13 +136,16 @@ const Category = () => {
       accessor: 'action',
       render: (row: TableData) => (
         <div className="flex gap-2">
-          <button onClick={() => {
-            setEditingCategoryId(row.id);
-            setCategoryName(row.name);
-            // Optionally reset file
-            setSelectedFile(null);
-            openModal();
-          }} className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+          <button
+            // onClick={() => {
+            //   setEditingCategoryId(row.id);
+            //   setCategoryName(row.name);
+            //   // Optionally reset file
+            //   setSelectedFile(null);
+            //   openModal();
+            // }} 
+            onClick={() => handleEdit(row.id)}
+            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
             <PencilIcon />
           </button>
           <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
@@ -153,18 +161,31 @@ const Category = () => {
     },
   ];
 
-  const handleSave = async () => {
+  const handleEdit = (id: string) => {
+    const category = categories.find(item => item._id === id);
+    console.log("in handle edit : ", category)
+    if (category) {
+      setEditingCategoryId(id);
+      setCategoryName(category.name);
+      setSelectedModuleId(category.module?._id || '');
+      setSelectedFile(null);
+      openModal();
+    }
+  };
+
+  const handleUpdateData = async () => {
     if (!editingCategoryId) return;
 
     const formData = new FormData();
     formData.append('name', CategoryName);
+    formData.append("module", selectedModuleId);
     if (selectedFile) {
       formData.append('image', selectedFile);
     }
 
     try {
       await updateCategory(editingCategoryId, formData);
-      console.log('Category updated successfully');
+      alert('Category updated successfully');
       closeModal();
       setEditingCategoryId(null);
       setCategoryName('');
@@ -187,6 +208,11 @@ const Category = () => {
     label: cat.name,
   }));
 
+  const moduleOptions = modules.map((mod: any) => ({
+    value: mod._id, // or mod._id
+    label: mod.name,
+  }));
+
   const handleSelectChange = (value: string) => {
     console.log("Selected value:", value);
     setSelectedCategory(value); // required to set the selected Category
@@ -197,12 +223,12 @@ const Category = () => {
     if (!confirmDelete) return;
 
     try {
-        await deleteCategory(id);
-        alert('Category deleted successfully');
+      await deleteCategory(id);
+      alert('Category deleted successfully');
     } catch (error) {
-        alert('Error deleting category:');
+      alert('Error deleting category:');
     }
-};
+  };
 
   return (
     <div>
@@ -236,15 +262,27 @@ const Category = () => {
                     <div>
                       <Label>Select Module</Label>
                       <div className="relative">
-                        <Select
-                          options={options}
+                        {/* <Select
+                          options={moduleOptions}
                           placeholder="Select an option"
+                          value={selectedModuleId} // ← Controlled
+  // onChange={(val) => setSelectedModule(val)}
                           onChange={handleSelectChange}
                           className="dark:bg-dark-900"
-                        />
-                        <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                          <ChevronDownIcon />
-                        </span>
+                        /> */}
+                        <select
+                          value={selectedModuleId}
+                          onChange={(e) => setSelectedModuleId(e.target.value)}
+                          className="w-full p-2 border rounded"
+                        >
+                          <option value="">Select Module</option>
+                          {modules.map((mod) => (
+                            <option key={mod._id} value={mod._id}>
+                              {mod.name}
+                            </option>
+                          ))}
+                        </select>
+                        
                       </div>
                     </div>
 
@@ -256,7 +294,6 @@ const Category = () => {
                         value={CategoryName}
                         onChange={(e) => setCategoryName(e.target.value)}
                       />
-
                     </div>
                     <div>
                       <Label>Select Image</Label>
@@ -272,8 +309,8 @@ const Category = () => {
                 <Button size="sm" variant="outline" onClick={closeModal}>
                   Close
                 </Button>
-                <Button size="sm" onClick={handleSave}>
-                  Save Changes
+                <Button size="sm" onClick={handleUpdateData}>
+                  Update Changes
                 </Button>
               </div>
             </form>
