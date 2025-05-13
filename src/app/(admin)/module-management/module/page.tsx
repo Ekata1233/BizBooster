@@ -142,17 +142,16 @@ const Module = () => {
         },
     ];
 
-    const handleEdit = (id: string) => {
-        const module = modules.find(item => item._id === id);
-        console.log("moduel in edit : ", module)
-        if (module) {
-            setEditingModuleId(id);
-            setModuleName(module.name);
-            // setSelectedCategoryId(module.category?._id || '');
-            setSelectedFile(null);
-            openModal();
-        }
-    };
+  const handleEdit = (id: string) => {
+    const selectedModule = modules.find(item => item._id === id); // ✅ renamed from "module"
+    console.log("module in edit : ", selectedModule);
+    if (selectedModule) {
+        setEditingModuleId(id);
+        setModuleName(selectedModule.name);
+        setSelectedFile(null);
+        openModal();
+    }
+};
 
     const handleUpdateData = async () => {
         if (!editingModuleId) return;
@@ -192,8 +191,8 @@ const Module = () => {
             await deleteModule(id);
             alert('Module deleted successfully');
         } catch (error) {
-            alert('Error deleting module:');
-        }
+    console.error('Error deleting module:', error); // ✅ using the error
+}
     };
 
 
