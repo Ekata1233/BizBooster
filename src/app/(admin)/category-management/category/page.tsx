@@ -208,10 +208,10 @@ const Category = () => {
   };
 
 
-  const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
-    setSelectedCategory(value); // required to set the selected Category
-  };
+  // const handleSelectChange = (value: string) => {
+  //   console.log("Selected value:", value);
+  //   setSelectedCategory(value); // required to set the selected Category
+  // };
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this category?');
