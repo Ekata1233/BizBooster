@@ -4,7 +4,7 @@ import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import BasicTableOne from '@/components/tables/BasicTableOne'
 import { useCategory } from '@/context/CategoryContext'
-import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
+import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useState } from 'react'
@@ -14,7 +14,6 @@ import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal'
-import Select from '@/components/form/Select'
 import { useModule } from '@/context/ModuleContext'
 
 interface Module {
@@ -63,8 +62,7 @@ const Category = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
 
-  console.log("selectedModuleId : ", selectedModuleId)
-    console.log("categories : ", categories)
+  console.log("selectedCategory : ", selectedCategory)
 
   if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
@@ -168,7 +166,7 @@ const Category = () => {
   ];
 
   const handleEdit = (id: string) => {
-const category = categories.find(item => item._id === id) as CategoryItem | undefined;
+    const category = categories.find(item => item._id === id) as CategoryItem | undefined;
     console.log("in handle edit : ", category)
     if (category) {
       setEditingCategoryId(id);
@@ -209,15 +207,6 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
     }
   };
 
-  const options = categories.map((cat: any) => ({
-    value: cat._id, // or mod._id
-    label: cat.name,
-  }));
-
-  const moduleOptions = modules.map((mod: any) => ({
-    value: mod._id, // or mod._id
-    label: mod.name,
-  }));
 
   const handleSelectChange = (value: string) => {
     console.log("Selected value:", value);
@@ -232,7 +221,8 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
       await deleteCategory(id);
       alert('Category deleted successfully');
     } catch (error) {
-      alert('Error deleting category:');
+      const err = error as Error;
+      alert('Error deleting category: ' + err.message);
     }
   };
 
@@ -288,7 +278,7 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
                             </option>
                           ))}
                         </select>
-                        
+
                       </div>
                     </div>
 

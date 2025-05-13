@@ -8,6 +8,10 @@ import Select from '../form/Select'
 import { ChevronDownIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useModule } from '@/context/ModuleContext'
+interface ModuleType {
+  _id: string;
+  name: string;
+}
 
 const AddCategory = () => {
     const { addCategory } = useCategory();
@@ -48,10 +52,11 @@ const AddCategory = () => {
         }
     };
 
-    const options = modules.map((mod: any) => ({
-        value: mod._id, // or mod._id
-        label: mod.name,
-    }));
+  const options = modules.map((mod: ModuleType) => ({
+  value: mod._id,
+  label: mod.name,
+}));
+
 
     const handleSelectChange = (value: string) => {
         console.log("Selected value:", value);

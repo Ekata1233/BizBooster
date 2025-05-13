@@ -112,13 +112,13 @@ const Subcategory = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        try {
-            await deleteSubcategory(id);
-        } catch (error) {
-            console.error("Error deleting subcategory:", error);
-        }
-    };
+    // const handleDelete = async (id: string) => {
+    //     try {
+    //         await deleteSubcategory(id);
+    //     } catch (error) {
+    //         console.error("Error deleting subcategory:", error);
+    //     }
+    // };
 
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
