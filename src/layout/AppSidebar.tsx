@@ -12,6 +12,8 @@ import {
   HorizontaLDots,
   PieChartIcon,
   UserCircleIcon,
+  FolderIcon,
+  BoxIcon
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 type NavItem = {
@@ -67,14 +69,14 @@ const moduleItems: NavItem[] = [
     ],
   },
   {
-    icon: <PieChartIcon />,
+    icon: <FolderIcon />,
     name: "Category",
     subItems: [
       { name: "Category", path: "/category-management/category", pro: false },
     ],
   },
     {
-    icon: <PieChartIcon />,
+    icon: <BoxIcon />,
     name: "SubCategory",
     subItems: [
       { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },

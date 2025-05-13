@@ -36,12 +36,16 @@ interface TableData {
 }
 
 const Module = () => {
-    const { modules , updateModule, deleteModule } = useModule(); 
+    const { modules, updateModule, deleteModule } = useModule();
     const { isOpen, openModal, closeModal } = useModal();
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
 
+    console.log("editingModuleId for update :", editingModuleId);
+    console.log("moduleName for update :", moduleName);
+    // console.log("selectedCategoryId for update :", selectedCategoryId);
+    console.log("modules for update :", modules);
 
     if (!modules || !Array.isArray(modules)) {
         return <div>Loading...</div>;
@@ -77,6 +81,10 @@ const Module = () => {
             ),
         },
         {
+            header: 'Category Count',
+            accessor: 'categoryCount',
+        },
+        {
             header: 'Status',
             accessor: 'status',
             render: (row: TableData) => {
@@ -104,31 +112,49 @@ const Module = () => {
         {
             header: 'Action',
             accessor: 'action',
-            render: (row: TableData) => (
-                <div className="flex gap-2">
-                    <button onClick={() => {
-                        setEditingModuleId(row.id);
-                        setModuleName(row.name);
-                        // Optionally reset file
-                        setSelectedFile(null);
-                        openModal();
-                    }} className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
-                        <PencilIcon />
-                    </button>
-                    <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
-                        <TrashBinIcon />
-                    </button>
-                    <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
-                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                            <EyeIcon />
+            render: (row: TableData) => {
+                console.log("row data of module : ", row)
+                return (
+                    <div className="flex gap-2">
+                        <button
+                            //  onClick={() => {
+                            //     setEditingModuleId(row.id);
+                            //     setModuleName(row.name);
+                            //     // Optionally reset file
+                            //     setSelectedFile(null);
+                            //     openModal();
+                            // }} 
+                            onClick={() => handleEdit(row.id)}
+                            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                            <PencilIcon />
                         </button>
-                    </Link>
-                </div>
-            ),
+                        <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                            <TrashBinIcon />
+                        </button>
+                        <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                                <EyeIcon />
+                            </button>
+                        </Link>
+                    </div>
+                )
+            },
         },
     ];
 
-    const handleSave = async () => {
+    const handleEdit = (id: string) => {
+        const module = modules.find(item => item._id === id);
+        console.log("moduel in edit : ", module)
+        if (module) {
+            setEditingModuleId(id);
+            setModuleName(module.name);
+            // setSelectedCategoryId(module.category?._id || '');
+            setSelectedFile(null);
+            openModal();
+        }
+    };
+
+    const handleUpdateData = async () => {
         if (!editingModuleId) return;
 
         const formData = new FormData();
@@ -139,7 +165,7 @@ const Module = () => {
 
         try {
             await updateModule(editingModuleId, formData);
-            console.log('Module updated successfully');
+            alert('Module updated successfully');
             closeModal();
             setEditingModuleId(null);
             setModuleName('');
@@ -159,16 +185,16 @@ const Module = () => {
     };
 
     const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this module?');
-    if (!confirmDelete) return;
+        const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+        if (!confirmDelete) return;
 
-    try {
-        await deleteModule(id);
-        alert('Module deleted successfully');
-    } catch (error) {
-        alert('Error deleting module:');
-    }
-};
+        try {
+            await deleteModule(id);
+            alert('Module deleted successfully');
+        } catch (error) {
+            alert('Error deleting module:');
+        }
+    };
 
 
     return (
@@ -195,7 +221,7 @@ const Module = () => {
                             </h4>
 
                         </div>
-                        
+
                         <form className="flex flex-col">
                             <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
                                 <div className="">
@@ -204,8 +230,8 @@ const Module = () => {
                                             <Label>Module Name</Label>
                                             <Input
                                                 type="text"
-                                                placeholder="Enter Module"
                                                 value={moduleName}
+                                                placeholder="Enter Module"
                                                 onChange={(e) => setModuleName(e.target.value)}
                                             />
 
@@ -224,8 +250,8 @@ const Module = () => {
                                 <Button size="sm" variant="outline" onClick={closeModal}>
                                     Close
                                 </Button>
-                                <Button size="sm" onClick={handleSave}>
-                                    Save Changes
+                                <Button size="sm" onClick={handleUpdateData}>
+                                    Update Changes
                                 </Button>
                             </div>
                         </form>

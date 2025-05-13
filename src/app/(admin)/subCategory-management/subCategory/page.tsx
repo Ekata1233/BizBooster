@@ -15,6 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 
 // Types
 interface Category {
@@ -41,6 +42,7 @@ interface Subcategory {
 
 interface TableData {
     id: string;
+    // _id: string;
     name: string;
     categoryName: string;
     image: string;
@@ -51,12 +53,17 @@ interface TableData {
 const Subcategory = () => {
     const { subcategories, updateSubcategory, deleteSubcategory } = useSubcategory();
     const { isOpen, openModal, closeModal } = useModal();
-
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [subcategoryName, setSubcategoryName] = useState<string>('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+
+
+    console.log("editingId for update :", editingId);
+    console.log("subcategoryName for update :", subcategoryName);
+    console.log("selectedCategoryId for update :", selectedCategoryId);
+    console.log("subcategories for update :", subcategories);
 
     useEffect(() => {
         axios.get("/api/category")
@@ -65,7 +72,8 @@ const Subcategory = () => {
     }, []);
 
     const handleEdit = (id: string) => {
-        const subcat = subcategories.find(item => item.id === id);
+        const subcat = subcategories.find(item => item._id === id);
+        console.log("in handle edit : ", subcat)
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
@@ -80,7 +88,8 @@ const Subcategory = () => {
         if (file) setSelectedFile(file);
     };
 
-    const handleSave = async () => {
+    const handleUpdateData = async () => {
+
         if (!editingId || !subcategoryName || !selectedCategoryId) return;
 
         const formData = new FormData();
@@ -88,8 +97,12 @@ const Subcategory = () => {
         formData.append("category", selectedCategoryId);
         if (selectedFile) formData.append("image", selectedFile);
 
+        console.log("form data : ", formData)
+        console.log("editingId : ", editingId)
+
         try {
             await updateSubcategory(editingId, formData);
+            alert('Subcategory updated successfully');
             closeModal();
             setEditingId(null);
             setSubcategoryName('');
@@ -110,7 +123,7 @@ const Subcategory = () => {
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
     const tableData: TableData[] = subcategories.map((subcat) => ({
-        id: subcat.id,
+        id: subcat._id,
         categoryName: subcat.category?.name || 'N/A',
         name: subcat.name,
         image: subcat.image || '',
@@ -171,35 +184,42 @@ const Subcategory = () => {
         {
             header: 'Action',
             accessor: 'action',
-            render: (row: TableData) => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => handleEdit(row.id)}
-                        className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500"
-                    >
-                        <PencilIcon />
-                    </button>
-
-                    <button
-                        onClick={() => handleDelete(row.id)}
-                        className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
-                    >
-                        <TrashBinIcon />
-                    </button>
-
-                    <Link href={`/subcategory/${row.id}`} passHref>
-                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                            <EyeIcon />
+            render: (row: TableData) => {
+                console.log("row data : ",row);
+                return (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => handleEdit(row.id)}
+                            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500"
+                        >
+                            <PencilIcon />
                         </button>
-                    </Link>
-                </div>
-            ),
+
+                        <button
+                            onClick={() => deleteSubcategory(row.id)}
+                            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
+                        >
+                            <TrashBinIcon />
+                        </button>
+
+                        <Link href={`/subcategory/${row.id}`} passHref>
+                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                                <EyeIcon />
+                            </button>
+                        </Link>
+                    </div>
+                )
+            },
         },
     ];
 
     return (
         <div>
-            <PageBreadcrumb pageTitle="Subcategory" />
+            <PageBreadcrumb pageTitle="Module" />
+            <div className="my-5">
+                <AddSubcategory />
+            </div>
+
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
                     <BasicTableOne columns={columns} data={tableData} />
@@ -253,8 +273,8 @@ const Subcategory = () => {
                             <Button size="sm" variant="outline" onClick={closeModal}>
                                 Close
                             </Button>
-                            <Button size="sm" onClick={handleSave}>
-                                Save Changes
+                            <Button size="sm" onClick={handleUpdateData}>
+                                Update Changes
                             </Button>
                         </div>
                     </form>

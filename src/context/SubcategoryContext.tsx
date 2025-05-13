@@ -53,7 +53,7 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
   const updateSubcategory = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/subcategory/${id}`, formData);
-      fetchSubcategories();
+     fetchSubcategories();
     } catch (error) {
       console.error("Update subcategory error:", error);
     }
