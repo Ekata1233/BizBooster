@@ -78,6 +78,9 @@ import axios from "axios";
 interface Subcategory {
   id: string;
   name: string;
+  category: { name: string };
+  image?: string;
+  isDeleted?: boolean;
   // Add any other fields that are part of your subcategory
 }
 
@@ -117,9 +120,10 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
   };
 
   const updateSubcategory = async (id: string, formData: FormData) => {
+    console.log("form data in context : ", formData)
     try {
       await axios.put(`/api/subcategory/${id}`, formData);
-      fetchSubcategories();
+     fetchSubcategories();
     } catch (error) {
       console.error("Update subcategory error:", error);
     }

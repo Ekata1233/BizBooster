@@ -61,6 +61,8 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+    console.log("formdata for update : ",formData );
+
     const name = formData.get("name") as string;
     const category = formData.get("category") as string;
 

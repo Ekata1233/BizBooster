@@ -36,7 +36,7 @@ interface TableData {
 }
 
 const Module = () => {
-    const { modules , updateModule, deleteModule } = useModule(); 
+    const { modules, updateModule, deleteModule } = useModule();
     const { isOpen, openModal, closeModal } = useModal();
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -64,10 +64,10 @@ const Module = () => {
             accessor: 'image',
             render: (row: TableData) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 overflow-hidden">
+                    <div className="w-30 h-30 overflow-hidden">
                         <Image
-                            width={40}
-                            height={40}
+                            width={130}
+                            height={130}
                             src={row.image}
                             alt={row.name || "module image"}
                             className="object-cover rounded"
@@ -110,13 +110,16 @@ const Module = () => {
             accessor: 'action',
             render: (row: TableData) => (
                 <div className="flex gap-2">
-                    <button onClick={() => {
-                        setEditingModuleId(row.id);
-                        setModuleName(row.name);
-                        // Optionally reset file
-                        setSelectedFile(null);
-                        openModal();
-                    }} className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                    <button
+                        //  onClick={() => {
+                        //     setEditingModuleId(row.id);
+                        //     setModuleName(row.name);
+                        //     // Optionally reset file
+                        //     setSelectedFile(null);
+                        //     openModal();
+                        // }} 
+                        onClick={() => handleEdit(row.id)}
+                        className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                         <PencilIcon />
                     </button>
                     <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
@@ -132,7 +135,18 @@ const Module = () => {
         },
     ];
 
-    const handleSave = async () => {
+    const handleEdit = (id: string) => {
+        const module = modules.find(item => item._id === id);
+        if (module) {
+            setEditingModuleId(id);
+            setModuleName(module.name);
+            // setSelectedCategoryId(module.category?._id || '');
+            setSelectedFile(null);
+            openModal();
+        }
+    };
+
+    const handleUpdateData = async () => {
         if (!editingModuleId) return;
 
         const formData = new FormData();
@@ -163,16 +177,16 @@ const Module = () => {
     };
 
     const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this module?');
-    if (!confirmDelete) return;
+        const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+        if (!confirmDelete) return;
 
-    try {
-        await deleteModule(id);
-        alert('Module deleted successfully');
-    } catch (error) {
-        alert('Error deleting module:');
-    }
-};
+        try {
+            await deleteModule(id);
+            alert('Module deleted successfully');
+        } catch (error) {
+            alert('Error deleting module:');
+        }
+    };
 
 
     return (
@@ -199,7 +213,7 @@ const Module = () => {
                             </h4>
 
                         </div>
-                        
+
                         <form className="flex flex-col">
                             <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
                                 <div className="">
@@ -228,7 +242,7 @@ const Module = () => {
                                 <Button size="sm" variant="outline" onClick={closeModal}>
                                     Close
                                 </Button>
-                                <Button size="sm" onClick={handleSave}>
+                                <Button size="sm" onClick={handleUpdateData}>
                                     Save Changes
                                 </Button>
                             </div>
