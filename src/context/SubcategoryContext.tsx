@@ -8,6 +8,8 @@ import axios from "axios";
 // Define the shape of a subcategory
 interface Subcategory {
   id: string;
+    _id: string;
+
   name: string;
   category: { name: string };
   image?: string;
