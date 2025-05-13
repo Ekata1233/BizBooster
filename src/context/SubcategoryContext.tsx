@@ -76,6 +76,7 @@ import axios from "axios";
 
 // Define the shape of a subcategory
 interface Subcategory {
+  _id: string;
   id: string;
   name: string;
   category: { name: string };

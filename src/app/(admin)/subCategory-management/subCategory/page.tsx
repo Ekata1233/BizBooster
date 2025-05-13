@@ -29,9 +29,7 @@ interface Category {
 }
 
 interface Subcategory {
-    id: string;
     _id: string;
-
     name: string;
     image: string;
     isDeleted?: boolean;
@@ -43,7 +41,7 @@ interface Subcategory {
 
 interface TableData {
     id: string;
-    _id: string;
+    // _id: string;
     name: string;
     categoryName: string;
     image: string;
@@ -77,7 +75,8 @@ const Subcategory = () => {
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
-            setSelectedCategoryId(subcat.category?._id || '');
+            // setSelectedCategoryId(subcat.category?._id || '');
+            setSelectedCategoryId((subcat.category as Category)?._id || '');
             setSelectedFile(null);
             openModal();
         }
@@ -177,7 +176,7 @@ const Subcategory = () => {
             header: 'Action',
             accessor: 'action',
             render: (row: TableData) => {
-                console.log("row data : ",row);
+                console.log("row data : ", row);
                 return (
                     <div className="flex gap-2">
                         <button

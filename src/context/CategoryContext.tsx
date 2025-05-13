@@ -5,6 +5,7 @@ import axios from "axios";
 
 export interface Category {
   _id?: string;
+  id:string;
   name: string;
   module: { name: string };
   image?: string;
