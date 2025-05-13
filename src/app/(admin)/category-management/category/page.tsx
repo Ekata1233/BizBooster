@@ -59,7 +59,7 @@ const Category = () => {
   const [CategoryName, setCategoryName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
 
   console.log("selectedCategory : ", selectedCategory)
