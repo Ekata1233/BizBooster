@@ -16,6 +16,7 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
+import Input from '@/components/form/input/InputField';
 
 // Types
 interface Category {
@@ -29,7 +30,6 @@ interface Category {
 }
 
 interface Subcategory {
-    id: string;
     _id: string;
     name: string;
     image: string;
@@ -47,7 +47,7 @@ interface TableData {
     categoryName: string;
     image: string;
     status: string;
-    
+
 }
 
 const Subcategory = () => {
@@ -58,22 +58,52 @@ const Subcategory = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [subcategoryName, setSubcategoryName] = useState<string>('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
 
 
-    console.log("editingId for update :", editingId);
-    console.log("subcategoryName for update :", subcategoryName);
-    console.log("selectedCategoryId for update :", selectedCategoryId);
-    console.log("subcategories for update :", subcategories);
 
+    console.log("data in categories : ", categories)
     useEffect(() => {
         axios.get("/api/category")
             .then(res => setCategories(res.data.data))
             .catch(err => console.error("Error fetching categories", err));
     }, []);
 
+    const fetchFilteredSubcategory = async () => {
+        try {
+            const params = {
+                ...(searchQuery && { search: searchQuery }),
+            };
+
+            const response = await axios.get('/api/subcategory', { params });
+            const data = response.data.data;
+
+            if (data.length === 0) {
+                setFilteredSubcategory([]);
+            } else {
+                const tableData: TableData[] = data.map((subcat: Subcategory) => ({
+                    id: subcat._id,
+                    categoryName: subcat.category?.name || 'N/A',
+                    name: subcat.name,
+                    image: subcat.image || '',
+                    status: subcat.isDeleted ? 'Deleted' : 'Active',
+                }));
+                setFilteredSubcategory(tableData);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setFilteredSubcategory([]);
+        }
+    }
+
+    useEffect(() => {
+        fetchFilteredSubcategory()
+    }, [searchQuery])
+
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
-        console.log("in handle edit : ", subcat)
+
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
@@ -97,8 +127,6 @@ const Subcategory = () => {
         formData.append("category", selectedCategoryId);
         if (selectedFile) formData.append("image", selectedFile);
 
-        console.log("form data : ", formData)
-        console.log("editingId : ", editingId)
 
         try {
             await updateSubcategory(editingId, formData);
@@ -112,23 +140,27 @@ const Subcategory = () => {
         }
     };
 
-    // const handleDelete = async (id: string) => {
-    //     try {
-    //         await deleteSubcategory(id);
-    //     } catch (error) {
-    //         console.error("Error deleting subcategory:", error);
-    //     }
-    // };
+    const handleDelete = async (id: string) => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this Subcategory?');
+        if (!confirmDelete) return;
+
+        try {
+            await deleteSubcategory(id);
+            alert('Subcategory deleted successfully');
+        } catch (error) {
+            console.error("Error deleting subcategory:", error);
+        }
+    };
 
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
-    const tableData: TableData[] = subcategories.map((subcat) => ({
-        id: subcat._id,
-        categoryName: subcat.category?.name || 'N/A',
-        name: subcat.name,
-        image: subcat.image || '',
-        status: subcat.isDeleted ? 'Deleted' : 'Active',
-    }));
+    // const tableData: TableData[] = subcategories.map((subcat) => ({
+    //     id: subcat._id,
+    //     categoryName: subcat.category?.name || 'N/A',
+    //     name: subcat.name,
+    //     image: subcat.image || '',
+    //     status: subcat.isDeleted ? 'Deleted' : 'Active',
+    // }));
 
     const columns = [
         { header: 'Subcategory Name', accessor: 'name' },
@@ -144,7 +176,7 @@ const Subcategory = () => {
             accessor: 'image',
             render: (row: TableData) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-[130px] h-[130px] overflow-hidden">
+                    <div className="w-20 h-20 overflow-hidden">
                         <Image
                             width={130}
                             height={130}
@@ -185,7 +217,6 @@ const Subcategory = () => {
             header: 'Action',
             accessor: 'action',
             render: (row: TableData) => {
-                console.log("row data : ",row);
                 return (
                     <div className="flex gap-2">
                         <button
@@ -196,7 +227,7 @@ const Subcategory = () => {
                         </button>
 
                         <button
-                            onClick={() => deleteSubcategory(row.id)}
+                            onClick={() => handleDelete(row.id)}
                             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
                         >
                             <TrashBinIcon />
@@ -222,7 +253,16 @@ const Subcategory = () => {
 
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
-                    <BasicTableOne columns={columns} data={tableData} />
+                    <div>
+                        <Input
+                            type="text"
+                            placeholder="Search by Subcategory and Category name"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+
+                    </div>
+                    <BasicTableOne columns={columns} data={filteredSubcategory} />
                 </ComponentCard>
             </div>
 

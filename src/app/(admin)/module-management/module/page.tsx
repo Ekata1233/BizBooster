@@ -2,9 +2,11 @@
 
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import DatePicker from '@/components/form/date-picker';
 import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
+import Select from '@/components/form/Select';
 
 import AddModule from '@/components/module-component/AddModule';
 import BasicTableOne from '@/components/tables/BasicTableOne';
@@ -13,15 +15,17 @@ import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Define types
 interface Module {
     _id: string;
     name: string;
     image: string;
+    categoryCount: number;
     isDeleted: boolean;
     createdAt: string;
     updatedAt?: string;
@@ -32,8 +36,10 @@ interface TableData {
     id: string;
     name: string;
     image: string;
+    categoryCount: number;
     status: string;
 }
+
 
 const Module = () => {
     const { modules, updateModule, deleteModule } = useModule();
@@ -41,22 +47,47 @@ const Module = () => {
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
-
-    console.log("editingModuleId for update :", editingModuleId);
-    console.log("moduleName for update :", moduleName);
-    // console.log("selectedCategoryId for update :", selectedCategoryId);
-    console.log("modules for update :", modules);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
 
     if (!modules || !Array.isArray(modules)) {
         return <div>Loading...</div>;
     }
 
-    const tableData: TableData[] = modules.map((mod) => ({
-        id: mod._id,
-        name: mod.name,
-        image: mod.image,
-        status: mod.isDeleted ? 'Deleted' : 'Active',
-    }));
+    console.log("category count module : ", modules);
+
+    const fetchFilteredModules = async () => {
+        try {
+            const params = {
+                ...(searchQuery && { search: searchQuery }),
+            };
+
+            const response = await axios.get('/api/modules', { params });
+            const data = response.data.data;
+
+            if (data.length === 0) {
+                setFilteredModules([]);
+            } else {
+                const tableData: TableData[] = data.map((mod: Module) => ({
+                    id: mod._id,
+                    name: mod.name,
+                    image: mod.image,
+                    categoryCount : mod.categoryCount ,
+                    status: mod.isDeleted ? 'Deleted' : 'Active',
+                }));
+                setFilteredModules(tableData);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setFilteredModules([]);
+        }
+    }
+
+    useEffect(() => {
+        fetchFilteredModules()
+    }, [searchQuery])
+
+
 
     const columns = [
         {
@@ -68,7 +99,7 @@ const Module = () => {
             accessor: 'image',
             render: (row: TableData) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-30 h-30 overflow-hidden">
+                    <div className="w-20 h-20 overflow-hidden">
                         <Image
                             width={130}
                             height={130}
@@ -80,10 +111,18 @@ const Module = () => {
                 </div>
             ),
         },
-        {
-            header: 'Category Count',
-            accessor: 'categoryCount',
-        },
+    {
+  header: 'category Count',
+  accessor: 'categoryCount',
+  render: (row: TableData) => {
+    console.log("Row data: ", row);  // Log the row data
+    return (
+      <div className="flex justify-center items-center">
+        {row.categoryCount}
+      </div>
+    );
+  },
+},
         {
             header: 'Status',
             accessor: 'status',
@@ -113,17 +152,9 @@ const Module = () => {
             header: 'Action',
             accessor: 'action',
             render: (row: TableData) => {
-                console.log("row data of module : ", row)
                 return (
                     <div className="flex gap-2">
                         <button
-                            //  onClick={() => {
-                            //     setEditingModuleId(row.id);
-                            //     setModuleName(row.name);
-                            //     // Optionally reset file
-                            //     setSelectedFile(null);
-                            //     openModal();
-                            // }} 
                             onClick={() => handleEdit(row.id)}
                             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                             <PencilIcon />
@@ -142,16 +173,17 @@ const Module = () => {
         },
     ];
 
-  const handleEdit = (id: string) => {
-    const selectedModule = modules.find(item => item._id === id); // ✅ renamed from "module"
-    console.log("module in edit : ", selectedModule);
-    if (selectedModule) {
-        setEditingModuleId(id);
-        setModuleName(selectedModule.name);
-        setSelectedFile(null);
-        openModal();
-    }
-};
+    const handleEdit = (id: string) => {
+        const module = modules.find(item => item._id === id);
+
+        if (module) {
+            setEditingModuleId(id);
+            setModuleName(module.name);
+            // setSelectedCategoryId(module.category?._id || '');
+            setSelectedFile(null);
+            openModal();
+        }
+    };
 
     const handleUpdateData = async () => {
         if (!editingModuleId) return;
@@ -179,7 +211,6 @@ const Module = () => {
         const file = event.target.files?.[0];
         if (file) {
             setSelectedFile(file);
-            console.log('Selected file:', file.name);
         }
     };
 
@@ -191,11 +222,15 @@ const Module = () => {
             await deleteModule(id);
             alert('Module deleted successfully');
         } catch (error) {
-    console.error('Error deleting module:', error); // ✅ using the error
-}
+            console.error('Error deleting module:', error); // ✅ using the error
+        }
     };
 
+    
 
+    if (!modules) {
+        return <div>Loading...</div>;
+    }
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />
@@ -203,10 +238,21 @@ const Module = () => {
                 <AddModule />
             </div>
 
+
+
             <div className="my-5">
                 <ComponentCard title="All Modules">
                     <div>
-                        <BasicTableOne columns={columns} data={tableData} />
+                        <Input
+                            type="text"
+                            placeholder="Search by module name"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+
+                    </div>
+                    <div>
+                        <BasicTableOne columns={columns} data={filteredModules} />
                     </div>
                 </ComponentCard>
             </div>

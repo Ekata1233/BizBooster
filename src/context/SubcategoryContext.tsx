@@ -7,9 +7,8 @@ import axios from "axios";
 
 // Define the shape of a subcategory
 interface Subcategory {
+  _id: string;
   id: string;
-    _id: string;
-
   name: string;
   category: { name: string };
   image?: string;
@@ -55,7 +54,7 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
   const updateSubcategory = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/subcategory/${id}`, formData);
-     fetchSubcategories();
+      fetchSubcategories();
     } catch (error) {
       console.error("Update subcategory error:", error);
     }

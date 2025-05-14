@@ -60,10 +60,14 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    const name = formData.get("name") as string;
-    const moduleId = formData.get("module") as string;
+    console.log("formdata of category : ",formData)
 
-    if (!name || !moduleId || !id) {
+    const name = formData.get("name") as string;
+    const module = formData.get("module") as string;
+
+    console.log("formdata of moduleId : ",module)
+
+    if (!name || !module || !id) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
@@ -88,12 +92,13 @@ export async function PUT(req: Request) {
 
     const updateData: Record<string, unknown> = {
       name,
-      moduleId,
+      module,
     };
     if (imageUrl) updateData.image = imageUrl;
 
     const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true,
     });
 
     return NextResponse.json(

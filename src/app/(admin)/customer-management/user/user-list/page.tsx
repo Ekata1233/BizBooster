@@ -127,7 +127,6 @@ const columns = [
             );
         },
     },
-
     {
         header: "Action",
         accessor: "action",
@@ -189,7 +188,6 @@ const UserList = () => {
                 setFilteredUsers([]);
                 setMessage(data.message || 'No users found');
             } else {
-
                 const mapped = data.users.map((user: User) => ({
                     id: user._id,
                     user: {
