@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
+import {  NextResponse } from "next/server";
 import Banner from "@/models/Banner";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import { v4 as uuidv4 } from "uuid";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +29,6 @@ export async function GET(req: Request) {
     }
 
     const banner = await Banner.findById(id);
-
     if (!banner || banner.isDeleted) {
       return NextResponse.json(
         { success: false, message: "Banner not found" },
@@ -56,45 +55,44 @@ export async function PUT(req: Request) {
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+    const id = url.pathname.split('/').pop();
 
     const formData = await req.formData();
-    const file = formData.get("image") as File | null;
+
+    const existingImages = JSON.parse(formData.get('existingImages') as string || '[]');
+    const newFiles = formData.getAll('newImages') as File[];
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: "Missing ID." },
+        { success: false, message: 'Missing banner ID.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let imageUrl = "";
-    if (file && typeof file === "object" && file instanceof File) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    const newUploadedUrls: string[] = [];
 
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/banners",
-      });
+    for (const file of newFiles) {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-      imageUrl = uploadResponse.url;
+        const uploadResponse = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${file.name}`,
+          folder: '/banners',
+        });
+
+        newUploadedUrls.push(uploadResponse.url);
+      }
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (imageUrl) updateData.image = imageUrl;
+    const finalImages = [...existingImages, ...newUploadedUrls];
 
-    const updatedBanner = await Banner.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
-
-    if (!updatedBanner) {
-      return NextResponse.json(
-        { success: false, message: "Banner not found" },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+    const updatedBanner = await Banner.findByIdAndUpdate(
+      id,
+      { images: finalImages },
+      { new: true, runValidators: true }
+    );
 
     return NextResponse.json(
       { success: true, data: updatedBanner },
@@ -102,13 +100,14 @@ export async function PUT(req: Request) {
     );
   } catch (error: unknown) {
     const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+      error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

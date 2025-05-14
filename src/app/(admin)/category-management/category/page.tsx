@@ -71,15 +71,13 @@ const Category = () => {
 
   console.log("selectedModule : ", selectedModule)
 
-  if (!categories || !Array.isArray(categories)) {
-    return <div>Loading...</div>;
-  }
 
-const moduleOptions = modules.map((module) => ({
-  value: module._id, // or value: module if you want full object
-  label: module.name,
-  image: module.image,
-}));
+
+  const moduleOptions = modules.map((module) => ({
+    value: module._id, // or value: module if you want full object
+    label: module.name,
+    image: module.image,
+  }));
 
   const fetchFilteredCategory = async () => {
     try {
@@ -115,7 +113,7 @@ const moduleOptions = modules.map((module) => ({
 
   useEffect(() => {
     fetchFilteredCategory()
-  }, [selectedModule,searchQuery])
+  }, [selectedModule, searchQuery])
 
 
   const columns = [
@@ -250,12 +248,6 @@ const moduleOptions = modules.map((module) => ({
     }
   };
 
-
-  // const handleSelectChange = (value: string) => {
-  //   console.log("Selected value:", value);
-  //   setSelectedCategory(value); // required to set the selected Category
-  // };
-
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this category?');
     if (!confirmDelete) return;
@@ -268,6 +260,10 @@ const moduleOptions = modules.map((module) => ({
       alert('Error deleting category: ' + err.message);
     }
   };
+
+  if (!categories || !Array.isArray(categories)) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>

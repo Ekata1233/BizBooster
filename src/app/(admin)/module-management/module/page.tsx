@@ -2,11 +2,9 @@
 
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import DatePicker from '@/components/form/date-picker';
 import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
-import Select from '@/components/form/Select';
 
 import AddModule from '@/components/module-component/AddModule';
 import BasicTableOne from '@/components/tables/BasicTableOne';
@@ -50,9 +48,7 @@ const Module = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
 
-    if (!modules || !Array.isArray(modules)) {
-        return <div>Loading...</div>;
-    }
+
 
     console.log("category count module : ", modules);
 
@@ -72,7 +68,7 @@ const Module = () => {
                     id: mod._id,
                     name: mod.name,
                     image: mod.image,
-                    categoryCount : mod.categoryCount ,
+                    categoryCount: mod.categoryCount,
                     status: mod.isDeleted ? 'Deleted' : 'Active',
                 }));
                 setFilteredModules(tableData);
@@ -111,18 +107,18 @@ const Module = () => {
                 </div>
             ),
         },
-    {
-  header: 'category Count',
-  accessor: 'categoryCount',
-  render: (row: TableData) => {
-    console.log("Row data: ", row);  // Log the row data
-    return (
-      <div className="flex justify-center items-center">
-        {row.categoryCount}
-      </div>
-    );
-  },
-},
+        {
+            header: 'category Count',
+            accessor: 'categoryCount',
+            render: (row: TableData) => {
+                console.log("Row data: ", row);  // Log the row data
+                return (
+                    <div className="flex justify-center items-center">
+                        {row.categoryCount}
+                    </div>
+                );
+            },
+        },
         {
             header: 'Status',
             accessor: 'status',
@@ -174,11 +170,11 @@ const Module = () => {
     ];
 
     const handleEdit = (id: string) => {
-        const module = modules.find(item => item._id === id);
+        const selectedModule = modules.find(item => item._id === id);
 
-        if (module) {
+        if (selectedModule) {
             setEditingModuleId(id);
-            setModuleName(module.name);
+            setModuleName(selectedModule.name);
             // setSelectedCategoryId(module.category?._id || '');
             setSelectedFile(null);
             openModal();
@@ -226,11 +222,10 @@ const Module = () => {
         }
     };
 
-    
-
-    if (!modules) {
+        if (!modules || !Array.isArray(modules)) {
         return <div>Loading...</div>;
     }
+
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />

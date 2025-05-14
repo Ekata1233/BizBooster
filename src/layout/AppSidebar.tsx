@@ -82,6 +82,13 @@ const moduleItems: NavItem[] = [
       { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
     ],
   },
+   {
+    icon: <BoxIcon />,
+    name: "Banner",
+    subItems: [
+      { name: "Banner", path: "/banner-management/banners", pro: false },
+    ],
+  },
 
 ];
 

@@ -1,7 +1,12 @@
+// src/models/Banner.ts
+
 import mongoose, { Document, Schema } from "mongoose";
 
+export type BannerPageType = "homepage" | "categorypage";
+
 export interface IBanner extends Document {
-  image: string;
+  images: string[]; // array of image URLs
+  page: BannerPageType;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -9,10 +14,16 @@ export interface IBanner extends Document {
 
 const bannerSchema = new Schema<IBanner>(
   {
-    image: { type: String, required: true },
+    images: { type: [String], required: true }, // array of image URLs
+    page: {
+      type: String,
+      enum: ["homepage", "categorypage"],
+      required: true,
+    },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Banner || mongoose.model<IBanner>("Banner", bannerSchema);
+export default mongoose.models.Banner ||
+  mongoose.model<IBanner>("Banner", bannerSchema);

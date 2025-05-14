@@ -8,6 +8,7 @@ import { UserProvider } from '@/context/UserContext';
 import { ModuleProvider } from '@/context/ModuleContext';
 import { CategoryProvider } from '@/context/CategoryContext';
 import { SubcategoryProvider } from '@/context/SubcategoryContext';
+import { BannerProvider } from '@/context/BannerContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -28,7 +29,9 @@ export default function RootLayout({
                 <ModuleProvider>
                   <CategoryProvider>
                     <SubcategoryProvider>
+                      <BannerProvider>
                     {children}
+                    </BannerProvider>
                     </SubcategoryProvider>
                   </CategoryProvider>
                 </ModuleProvider>
