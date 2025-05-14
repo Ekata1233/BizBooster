@@ -4,18 +4,18 @@ import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import BasicTableOne from '@/components/tables/BasicTableOne'
 import { useCategory } from '@/context/CategoryContext'
-import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
+import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal'
-import Select from '@/components/form/Select'
 import { useModule } from '@/context/ModuleContext'
+import axios from 'axios'
 
 interface Module {
   _id: string;
@@ -60,23 +60,56 @@ const Category = () => {
   const [CategoryName, setCategoryName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
-
-  console.log("selectedModuleId : ", selectedModuleId)
-    console.log("categories : ", categories)
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
+  console.log("selectedCategory : ", selectedCategory)
 
   if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
   }
 
-  const tableData: TableData[] = categories.map((cat) => ({
-    id: cat._id || '',
-    moduleName: cat.module?.name || 'N/A',
-    name: cat.name || 'N/A',
-    image: cat.image || '',
-    status: cat.isDeleted ? 'Deleted' : 'Active',
-  }));
+
+  const fetchFilteredCategory = async () => {
+    try {
+      const params = {
+        ...(searchQuery && { search: searchQuery }),
+      };
+
+      const response = await axios.get('/api/category', { params });
+      const data = response.data.data;
+      console.log("data in category : ", data)
+
+      if (data.length === 0) {
+        setFilteredCategory([]);
+      } else {
+        const tableData: TableData[] = data.map((cat: Category) => ({
+          id: cat._id || '',
+          moduleName: cat.module?.name || 'N/A',
+          name: cat.name || 'N/A',
+          image: cat.image || '',
+          status: cat.isDeleted ? 'Deleted' : 'Active',
+        }));
+        setFilteredCategory(tableData);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setFilteredCategory([]);
+    }
+  }
+
+  useEffect(() => {
+    fetchFilteredCategory()
+  }, [searchQuery])
+
+  // const tableData: TableData[] = categories.map((cat) => ({
+  //   id: cat._id || '',
+  //   moduleName: cat.module?.name || 'N/A',
+  //   name: cat.name || 'N/A',
+  //   image: cat.image || '',
+  //   status: cat.isDeleted ? 'Deleted' : 'Active',
+  // }));
 
   const columns = [
 
@@ -143,13 +176,6 @@ const Category = () => {
       render: (row: TableData) => (
         <div className="flex gap-2">
           <button
-            // onClick={() => {
-            //   setEditingCategoryId(row.id);
-            //   setCategoryName(row.name);
-            //   // Optionally reset file
-            //   setSelectedFile(null);
-            //   openModal();
-            // }} 
             onClick={() => handleEdit(row.id)}
             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
             <PencilIcon />
@@ -168,7 +194,7 @@ const Category = () => {
   ];
 
   const handleEdit = (id: string) => {
-const category = categories.find(item => item._id === id) as CategoryItem | undefined;
+    const category = categories.find(item => item._id === id) as CategoryItem | undefined;
     console.log("in handle edit : ", category)
     if (category) {
       setEditingCategoryId(id);
@@ -209,20 +235,11 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
     }
   };
 
-  const options = categories.map((cat: any) => ({
-    value: cat._id, // or mod._id
-    label: cat.name,
-  }));
 
-  const moduleOptions = modules.map((mod: any) => ({
-    value: mod._id, // or mod._id
-    label: mod.name,
-  }));
-
-  const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
-    setSelectedCategory(value); // required to set the selected Category
-  };
+  // const handleSelectChange = (value: string) => {
+  //   console.log("Selected value:", value);
+  //   setSelectedCategory(value); // required to set the selected Category
+  // };
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this category?');
@@ -232,7 +249,8 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
       await deleteCategory(id);
       alert('Category deleted successfully');
     } catch (error) {
-      alert('Error deleting category:');
+      const err = error as Error;
+      alert('Error deleting category: ' + err.message);
     }
   };
 
@@ -245,7 +263,16 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
       <div className='my-5'>
         <ComponentCard title="All Categories">
           <div>
-            <BasicTableOne columns={columns} data={tableData} />
+            <Input
+              type="text"
+              placeholder="Search by category or module name"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+
+          </div>
+          <div>
+            <BasicTableOne columns={columns} data={filteredCategory} />
           </div>
         </ComponentCard>
       </div>
@@ -288,7 +315,7 @@ const category = categories.find(item => item._id === id) as CategoryItem | unde
                             </option>
                           ))}
                         </select>
-                        
+
                       </div>
                     </div>
 

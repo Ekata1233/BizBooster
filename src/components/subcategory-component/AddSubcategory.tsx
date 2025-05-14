@@ -6,12 +6,12 @@ import Button from '@/components/ui/button/Button'
 import ComponentCard from '../common/ComponentCard'
 import Select from '../form/Select'
 import { ChevronDownIcon } from '@/icons'
-import { useCategory } from '@/context/CategoryContext'
+import { Category, useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 
 const AddSubcategory = () => {
-    const {addSubcategory} = useSubcategory();
-    const {categories} = useCategory();
+    const { addSubcategory } = useSubcategory();
+    const { categories } = useCategory();
     const [subcategoryName, setSubcategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -48,8 +48,8 @@ const AddSubcategory = () => {
         }
     };
 
-    const options = categories.map((cat: any) => ({
-        value: cat._id, 
+    const options = categories.map((cat: Category) => ({
+        value: cat._id ?? '',
         label: cat.name,
     }));
 

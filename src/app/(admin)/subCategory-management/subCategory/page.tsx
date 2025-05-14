@@ -16,6 +16,7 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
+import Input from '@/components/form/input/InputField';
 
 // Types
 interface Category {
@@ -57,18 +58,46 @@ const Subcategory = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [subcategoryName, setSubcategoryName] = useState<string>('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-
-
-    console.log("editingId for update :", editingId);
-    console.log("subcategoryName for update :", subcategoryName);
-    console.log("selectedCategoryId for update :", selectedCategoryId);
-    console.log("subcategories for update :", subcategories);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
 
     useEffect(() => {
         axios.get("/api/category")
             .then(res => setCategories(res.data.data))
             .catch(err => console.error("Error fetching categories", err));
     }, []);
+
+    const fetchFilteredSubcategory = async () => {
+        try {
+            const params = {
+                ...(searchQuery && { search: searchQuery }),
+            };
+
+            const response = await axios.get('/api/subcategory', { params });
+            const data = response.data.data;
+            console.log("data in module : ", data)
+
+            if (data.length === 0) {
+                setFilteredSubcategory([]);
+            } else {
+                const tableData: TableData[] = data.map((subcat:Subcategory) => ({
+                    id: subcat._id,
+                    categoryName: subcat.category?.name || 'N/A',
+                    name: subcat.name,
+                    image: subcat.image || '',
+                    status: subcat.isDeleted ? 'Deleted' : 'Active',
+                }));
+                setFilteredSubcategory(tableData);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setFilteredSubcategory([]);
+        }
+    }
+
+    useEffect(() => {
+        fetchFilteredSubcategory()
+    }, [searchQuery])
 
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
@@ -125,13 +154,13 @@ const Subcategory = () => {
 
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
-    const tableData: TableData[] = subcategories.map((subcat) => ({
-        id: subcat._id,
-        categoryName: subcat.category?.name || 'N/A',
-        name: subcat.name,
-        image: subcat.image || '',
-        status: subcat.isDeleted ? 'Deleted' : 'Active',
-    }));
+    // const tableData: TableData[] = subcategories.map((subcat) => ({
+    //     id: subcat._id,
+    //     categoryName: subcat.category?.name || 'N/A',
+    //     name: subcat.name,
+    //     image: subcat.image || '',
+    //     status: subcat.isDeleted ? 'Deleted' : 'Active',
+    // }));
 
     const columns = [
         { header: 'Subcategory Name', accessor: 'name' },
@@ -225,7 +254,16 @@ const Subcategory = () => {
 
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
-                    <BasicTableOne columns={columns} data={tableData} />
+                    <div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Search by Subcategory and Category name"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                    
+                                        </div>
+                    <BasicTableOne columns={columns} data={filteredSubcategory} />
                 </ComponentCard>
             </div>
 

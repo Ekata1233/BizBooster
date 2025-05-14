@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { connectToDatabase } from "@/utils/db";
 
@@ -15,13 +15,48 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function GET() {
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//     const { searchParams } = new URL(req.url);
+//   const search = searchParams.get("search") || "";
+
+//   try {
+//     const data = await Subcategory.find().populate("category");
+//     return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
+//   } catch (error) {
+//     return NextResponse.json(
+//       { success: false, message: (error as Error).message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
+  const { searchParams } = new URL(req.url);
+  const search = searchParams.get("search") || "";
+
   try {
-    const data = await Subcategory.find().populate("category");
-    return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
-  } catch (error) {
+    // Fetch all subcategories with populated 'category'
+    const subcategories = await Subcategory.find().populate("category");
+
+    // Filter in-memory for `name` and `category.name`
+    let filteredSubcategories = subcategories;
+
+    if (search) {
+      const regex = new RegExp(search, "i");
+      filteredSubcategories = subcategories.filter((sub) =>
+        regex.test(sub.name) || regex.test(sub.category?.name)
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: filteredSubcategories },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
     return NextResponse.json(
       { success: false, message: (error as Error).message },
       { status: 500, headers: corsHeaders }

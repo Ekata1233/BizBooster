@@ -14,7 +14,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
-import {  EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -64,7 +64,7 @@ const Module = () => {
             console.log("data in module : ", data)
 
             if (data.length === 0) {
-               setFilteredModules([]);
+                setFilteredModules([]);
             } else {
                 const tableData: TableData[] = data.map((mod: Module) => ({
                     id: mod._id,
@@ -84,12 +84,7 @@ const Module = () => {
         fetchFilteredModules()
     }, [searchQuery])
 
-    // const tableData: TableData[] = modules.map((mod) => ({
-    //     id: mod._id,
-    //     name: mod.name,
-    //     image: mod.image,
-    //     status: mod.isDeleted ? 'Deleted' : 'Active',
-    // }));
+
 
     const columns = [
         {
@@ -217,9 +212,11 @@ const Module = () => {
             await deleteModule(id);
             alert('Module deleted successfully');
         } catch (error) {
-            alert('Error deleting module:');
+            console.error('Error deleting module:', error); // ✅ using the error
         }
     };
+
+    
 
     if (!modules) {
         return <div>Loading...</div>;
