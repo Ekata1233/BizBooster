@@ -49,36 +49,64 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
-  const formData = await req.formData();
-  const existingImages = JSON.parse(formData.get('existingImages') as string);
-  const newFiles = formData.getAll('newImages') as File[];
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
 
-  const newUploadedUrls: string[] = [];
+    const formData = await req.formData();
 
-  for (const file of newFiles) {
-    const arrayBuffer = await file.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    const existingImages = JSON.parse(formData.get('existingImages') as string || '[]');
+    const newFiles = formData.getAll('newImages') as File[];
 
-    const result = await imagekit.upload({
-      file: `data:${file.type};base64,${base64}`,
-      fileName: file.name,
-      folder: 'banners',
-    });
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: 'Missing banner ID.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-    newUploadedUrls.push(result.url);
+    const newUploadedUrls: string[] = [];
+
+    for (const file of newFiles) {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const uploadResponse = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${file.name}`,
+          folder: '/banners',
+        });
+
+        newUploadedUrls.push(uploadResponse.url);
+      }
+    }
+
+    const finalImages = [...existingImages, ...newUploadedUrls];
+
+    const updatedBanner = await Banner.findByIdAndUpdate(
+      id,
+      { images: finalImages },
+      { new: true, runValidators: true }
+    );
+
+    return NextResponse.json(
+      { success: true, data: updatedBanner },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json(
+      { success: false, message },
+      { status: 400, headers: corsHeaders }
+    );
   }
-
-  const finalImages = [...existingImages, ...newUploadedUrls];
-
-  await Banner.findByIdAndUpdate(params.id, {
-    images: finalImages,
-  });
-
-  return NextResponse.json({ success: true, images: finalImages });
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

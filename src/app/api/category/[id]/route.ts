@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
-import Banner from "@/models/Banner";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,59 +56,64 @@ export async function PUT(req: Request) {
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const id = url.pathname.split("/").pop();
 
     const formData = await req.formData();
 
-    const existingImages = JSON.parse(formData.get('existingImages') as string || '[]');
-    const newFiles = formData.getAll('newImages') as File[];
+    console.log("formdata of category : ", formData);
 
-    if (!id) {
+    const name = formData.get("name") as string;
+    const moduleId = formData.get("module") as string; // ✅ renamed
+
+    console.log("formdata of moduleId : ", moduleId);
+
+    if (!name || !moduleId || !id) {
       return NextResponse.json(
-        { success: false, message: 'Missing banner ID.' },
+        { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const newUploadedUrls: string[] = [];
+    let imageUrl = "";
+    const file = formData.get("image") as File | null;
 
-    for (const file of newFiles) {
-      if (file instanceof File) {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+    if (file && typeof file === "object" && file instanceof File) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-        const uploadResponse = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${file.name}`,
-          folder: '/banners',
-        });
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/uploads",
+      });
 
-        newUploadedUrls.push(uploadResponse.url);
-      }
+      imageUrl = uploadResponse.url;
     }
 
-    const finalImages = [...existingImages, ...newUploadedUrls];
+    const updateData: Record<string, unknown> = {
+      name,
+      module: moduleId, // ✅ renamed here too
+    };
+    if (imageUrl) updateData.image = imageUrl;
 
-    const updatedBanner = await Banner.findByIdAndUpdate(
-      id,
-      { images: finalImages },
-      { new: true, runValidators: true }
-    );
+    const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     return NextResponse.json(
-      { success: true, data: updatedBanner },
+      { success: true, data: updatedCategory },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
     const message =
-      error instanceof Error ? error.message : 'An unknown error occurred';
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
     );
   }
 }
-
 
 export async function DELETE(req: Request) {
   await connectToDatabase();
