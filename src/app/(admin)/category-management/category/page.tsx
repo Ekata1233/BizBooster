@@ -4,7 +4,7 @@ import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import BasicTableOne from '@/components/tables/BasicTableOne'
 import { useCategory } from '@/context/CategoryContext'
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
+import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
@@ -16,6 +16,7 @@ import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal'
 import { useModule } from '@/context/ModuleContext'
 import axios from 'axios'
+import Select from '@/components/form/Select'
 
 interface Module {
   _id: string;
@@ -66,18 +67,28 @@ const Category = () => {
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
-  console.log("selectedCategory : ", selectedCategory)
+  const [selectedModule, setSelectedModule] = useState<string>('');
+
+  console.log("selectedModule : ", selectedModule)
 
   if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
   }
 
+const moduleOptions = modules.map((module) => ({
+  value: module._id, // or value: module if you want full object
+  label: module.name,
+  image: module.image,
+}));
 
   const fetchFilteredCategory = async () => {
     try {
       const params = {
+        ...(selectedModule && { selectedModule }),
         ...(searchQuery && { search: searchQuery }),
       };
+
+      console.log("params : ", params)
 
       const response = await axios.get('/api/category', { params });
       const data = response.data.data;
@@ -104,15 +115,8 @@ const Category = () => {
 
   useEffect(() => {
     fetchFilteredCategory()
-  }, [searchQuery])
+  }, [selectedModule,searchQuery])
 
-  // const tableData: TableData[] = categories.map((cat) => ({
-  //   id: cat._id || '',
-  //   moduleName: cat.module?.name || 'N/A',
-  //   name: cat.name || 'N/A',
-  //   image: cat.image || '',
-  //   status: cat.isDeleted ? 'Deleted' : 'Active',
-  // }));
 
   const columns = [
 
@@ -145,17 +149,16 @@ const Category = () => {
       ),
     },
     {
-  header: 'Subcategory Count',
-  accessor: 'subcategoryCount',
-  render: (row: TableData) => {
-    console.log("Row data: ", row);  // Log the row data
-    return (
-      <div className="flex justify-center items-center">
-        {row.subcategoryCount}
-      </div>
-    );
-  },
-},
+      header: 'Subcategory Count',
+      accessor: 'subcategoryCount',
+      render: (row: TableData) => { // Log the row data
+        return (
+          <div className="flex justify-center items-center">
+            {row.subcategoryCount}
+          </div>
+        );
+      },
+    },
 
     {
       header: 'Status',
@@ -274,15 +277,33 @@ const Category = () => {
       </div>
       <div className='my-5'>
         <ComponentCard title="All Categories">
-          <div>
-            <Input
-              type="text"
-              placeholder="Search by category or module name"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+            <div>
+              <Label>Filter by Name</Label>
+              <Input
+                type="text"
+                placeholder="Search by category or module name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
 
+            </div>
+            <div>
+              <Label>Select Input</Label>
+              <div className="relative">
+                <Select
+                  options={moduleOptions}
+                  placeholder="Modules"
+                  onChange={(value: string) => setSelectedModule(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
           </div>
+
           <div>
             <BasicTableOne columns={columns} data={filteredCategory} />
           </div>
@@ -307,14 +328,7 @@ const Category = () => {
                     <div>
                       <Label>Select Module</Label>
                       <div className="relative">
-                        {/* <Select
-                          options={moduleOptions}
-                          placeholder="Select an option"
-                          value={selectedModuleId} // ← Controlled
-  // onChange={(val) => setSelectedModule(val)}
-                          onChange={handleSelectChange}
-                          className="dark:bg-dark-900"
-                        /> */}
+
                         <select
                           value={selectedModuleId}
                           onChange={(e) => setSelectedModuleId(e.target.value)}

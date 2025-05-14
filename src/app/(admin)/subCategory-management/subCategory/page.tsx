@@ -9,7 +9,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import { useModal } from '@/hooks/useModal';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 import Input from '@/components/form/input/InputField';
+import Select from '@/components/form/Select';
 
 // Types
 interface Category {
@@ -60,7 +61,7 @@ const Subcategory = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
-
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
 
 
     console.log("data in categories : ", categories)
@@ -70,9 +71,16 @@ const Subcategory = () => {
             .catch(err => console.error("Error fetching categories", err));
     }, []);
 
+    const categoryOptions = categories.map((cat) => ({
+        value: cat._id, // or value: module if you want full object
+        label: cat.name,
+        image: cat.image,
+    }));
+
     const fetchFilteredSubcategory = async () => {
         try {
             const params = {
+                ...(selectedCategory && { selectedCategory }),
                 ...(searchQuery && { search: searchQuery }),
             };
 
@@ -99,7 +107,7 @@ const Subcategory = () => {
 
     useEffect(() => {
         fetchFilteredSubcategory()
-    }, [searchQuery])
+    }, [selectedCategory,searchQuery])
 
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
@@ -253,14 +261,30 @@ const Subcategory = () => {
 
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
-                    <div>
-                        <Input
-                            type="text"
-                            placeholder="Search by Subcategory and Category name"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-
+                    <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+                        <div>
+                            <Label>Filter by Name</Label>
+                            <Input
+                                type="text"
+                                placeholder="Search by Subcategory and Category name"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <Label>Select Input</Label>
+                            <div className="relative">
+                                <Select
+                                    options={categoryOptions}
+                                    placeholder="Categories"
+                                    onChange={(value: string) => setSelectedCategory(value)}
+                                    className="dark:bg-dark-900"
+                                />
+                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                    <ChevronDownIcon />
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <BasicTableOne columns={columns} data={filteredSubcategory} />
                 </ComponentCard>
