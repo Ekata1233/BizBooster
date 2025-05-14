@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import Banner from "@/models/Banner";
+import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 
@@ -17,56 +18,100 @@ export async function GET(req: Request) {
   await connectToDatabase();
 
   try {
-    const id = new URL(req.url).pathname.split("/").pop();
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json({ success: false, message: "Missing ID parameter." }, { status: 400, headers: corsHeaders });
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const banner = await Banner.findById(id);
+    const category = await Category.findById(id);
 
-    if (!banner || banner.isDeleted) {
-      return NextResponse.json({ success: false, message: "Banner not found" }, { status: 404, headers: corsHeaders });
+    if (!category || category.isDeleted) {
+      return NextResponse.json(
+        { success: false, message: "Category not found" },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return NextResponse.json({ success: true, data: banner }, { status: 200, headers: corsHeaders });
+    return NextResponse.json(
+      { success: true, data: category },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
   try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
     const formData = await req.formData();
-    const existingImages = JSON.parse(formData.get("existingImages") as string);
-    const newFiles = formData.getAll("newImages") as File[];
 
-    const uploadedUrls: string[] = [];
+    console.log("formdata of category : ", formData);
 
-    for (const file of newFiles) {
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const name = formData.get("name") as string;
+    const moduleId = formData.get("module") as string; // ✅ renamed
 
-      const result = await imagekit.upload({
-        file: `data:${file.type};base64,${base64}`,
-        fileName: file.name,
-        folder: "banners",
-      });
+    console.log("formdata of moduleId : ", moduleId);
 
-      uploadedUrls.push(result.url);
+    if (!name || !moduleId || !id) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const finalImages = [...existingImages, ...uploadedUrls];
+    let imageUrl = "";
+    const file = formData.get("image") as File | null;
 
-    const updatedBanner = await Banner.findByIdAndUpdate(params.id, { images: finalImages }, { new: true });
+    if (file && typeof file === "object" && file instanceof File) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-    return NextResponse.json({ success: true, data: updatedBanner }, { status: 200, headers: corsHeaders });
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/uploads",
+      });
+
+      imageUrl = uploadResponse.url;
+    }
+
+    const updateData: Record<string, unknown> = {
+      name,
+      module: moduleId, // ✅ renamed here too
+    };
+    if (imageUrl) updateData.image = imageUrl;
+
+    const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    return NextResponse.json(
+      { success: true, data: updatedCategory },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 400, headers: corsHeaders }
+    );
   }
 }
 
@@ -74,21 +119,39 @@ export async function DELETE(req: Request) {
   await connectToDatabase();
 
   try {
-    const id = new URL(req.url).pathname.split("/").pop();
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json({ success: false, message: "Missing ID parameter." }, { status: 400, headers: corsHeaders });
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const deletedBanner = await Banner.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+    const deletedCategory = await Category.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
 
-    if (!deletedBanner) {
-      return NextResponse.json({ success: false, message: "Banner not found" }, { status: 404, headers: corsHeaders });
+    if (!deletedCategory) {
+      return NextResponse.json(
+        { success: false, message: "Category not found" },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return NextResponse.json({ success: true, message: "Banner soft-deleted successfully" }, { status: 200, headers: corsHeaders });
+    return NextResponse.json(
+      { success: true, message: "Category soft-deleted successfully" },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
