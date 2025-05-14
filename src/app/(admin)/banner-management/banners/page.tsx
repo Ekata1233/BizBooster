@@ -5,11 +5,16 @@ import Image from 'next/image';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import Button from '@/components/ui/button/Button';
 import { TrashBinIcon, PencilIcon } from '@/icons';
 import { useBannerContext } from '@/context/BannerContext';
 import { Modal } from '@/components/ui/modal';
 
+interface BannerType {
+  _id: string;
+  images: string[];
+  page: 'homepage' | 'categorypage';
+  isDeleted?: boolean;
+}
 interface TableData {
   id: string;
   _id: string;
@@ -23,7 +28,7 @@ const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBannerContext();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [currentBanner, setCurrentBanner] = useState<any>(null);
+  const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedImages, setUpdatedImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<FileList | null>(null);
 
@@ -37,7 +42,7 @@ const Banner = () => {
     }
   };
 
-  const handleEdit = (banner: any) => {
+  const handleEdit = (banner: BannerType) => {
     setCurrentBanner(banner);
     setUpdatedImages(banner.images);
     setEditModalOpen(true);

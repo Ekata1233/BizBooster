@@ -52,12 +52,18 @@ export async function POST(req: Request) {
       { success: true, data: newBanner },
       { status: 201 }
     );
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Upload failed" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+  let errorMessage = "Upload failed";
+
+  if (error instanceof Error) {
+    errorMessage = error.message;
   }
+
+  return NextResponse.json(
+    { success: false, message: errorMessage },
+    { status: 500 }
+  );
+}
 }
 
 export async function GET() {
