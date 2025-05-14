@@ -4,14 +4,16 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface Banner {
   _id: string;
-  image: string;
+  images: string[];
+  page: "homepage" | "categorypage";
   isDeleted: boolean;
 }
 
 interface BannerContextType {
   banners: Banner[];
-  addBanner: (image: string) => Promise<void>;
+  addBanner: (image: File, page: "homepage" | "categorypage") => Promise<void>;
   deleteBanner: (id: string) => Promise<void>;
+  updateBanner: (formData: FormData) => Promise<void>;
 }
 
 const BannerContext = createContext<BannerContextType | undefined>(undefined);
@@ -19,32 +21,50 @@ const BannerContext = createContext<BannerContextType | undefined>(undefined);
 export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
   const [banners, setBanners] = useState<Banner[]>([]);
 
+
+  const fetchBanners = async () => {
+    const res = await fetch("/api/banner");
+    const json = await res.json();
+    setBanners(json.data);
+  };
   useEffect(() => {
-    const fetchBanners = async () => {
-      const res = await fetch("/api/banner");
-      const data = await res.json();
-      setBanners(data);
-    };
     fetchBanners();
   }, []);
 
-  const addBanner = async (image: string) => {
+  const addBanner = async (image: File, page: "homepage" | "categorypage") => {
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("page", page);
+
     const res = await fetch("/api/banner", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image }),
+      body: formData,
     });
-    const data = await res.json();
-    setBanners((prev) => [...prev, data]);
+
+    const json = await res.json();
+    setBanners((prev) => [...prev, json.data]);
   };
 
   const deleteBanner = async (id: string) => {
     await fetch(`/api/banner/${id}`, { method: "DELETE" });
     setBanners((prev) => prev.filter((b) => b._id !== id));
   };
+  const updateBanner = async (formData: FormData) => {
+    const id = formData.get("id") as string;
+    const res = await fetch(`/api/banner/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
 
+    const json = await res.json();
+
+    setBanners((prev) =>
+      prev.map((banner) => (banner._id === id ? json.data : banner))
+    );
+    fetchBanners();
+  };
   return (
-    <BannerContext.Provider value={{ banners, addBanner, deleteBanner }}>
+    <BannerContext.Provider value={{ banners, addBanner, deleteBanner, updateBanner }}>
       {children}
     </BannerContext.Provider>
   );
@@ -52,6 +72,7 @@ export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useBannerContext = () => {
   const context = useContext(BannerContext);
-  if (!context) throw new Error("useBannerContext must be used within BannerProvider");
+  if (!context)
+    throw new Error("useBannerContext must be used within BannerProvider");
   return context;
 };
