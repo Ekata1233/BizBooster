@@ -25,6 +25,7 @@ interface Module {
     _id: string;
     name: string;
     image: string;
+    categoryCount: number;
     isDeleted: boolean;
     createdAt: string;
     updatedAt?: string;
@@ -35,6 +36,7 @@ interface TableData {
     id: string;
     name: string;
     image: string;
+    categoryCount: number;
     status: string;
 }
 
@@ -52,6 +54,7 @@ const Module = () => {
         return <div>Loading...</div>;
     }
 
+    console.log("category count module : ", modules);
 
     const fetchFilteredModules = async () => {
         try {
@@ -61,7 +64,6 @@ const Module = () => {
 
             const response = await axios.get('/api/modules', { params });
             const data = response.data.data;
-            console.log("data in module : ", data)
 
             if (data.length === 0) {
                 setFilteredModules([]);
@@ -70,6 +72,7 @@ const Module = () => {
                     id: mod._id,
                     name: mod.name,
                     image: mod.image,
+                    categoryCount : mod.categoryCount ,
                     status: mod.isDeleted ? 'Deleted' : 'Active',
                 }));
                 setFilteredModules(tableData);
@@ -108,10 +111,18 @@ const Module = () => {
                 </div>
             ),
         },
-        {
-            header: 'Category Count',
-            accessor: 'categoryCount',
-        },
+    {
+  header: 'category Count',
+  accessor: 'categoryCount',
+  render: (row: TableData) => {
+    console.log("Row data: ", row);  // Log the row data
+    return (
+      <div className="flex justify-center items-center">
+        {row.categoryCount}
+      </div>
+    );
+  },
+},
         {
             header: 'Status',
             accessor: 'status',
@@ -200,7 +211,6 @@ const Module = () => {
         const file = event.target.files?.[0];
         if (file) {
             setSelectedFile(file);
-            console.log('Selected file:', file.name);
         }
     };
 

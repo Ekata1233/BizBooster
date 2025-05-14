@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import Category from "@/models/Category";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,8 +81,18 @@ export async function GET(req: NextRequest) {
 
   try {
     const modules = await Module.find(filter);
+     const modulesWithCategoryCount = await Promise.all(modules.map(async (module) => {
+      // Count categories related to each module
+      const categoryCount = await Category.countDocuments({ module: module._id, isDeleted: false });
+      
+      // Add category count to each module
+      return {
+        ...module.toObject(),
+        categoryCount,
+      };
+    }));
     return NextResponse.json(
-      { success: true, data: modules },
+      { success: true, data: modulesWithCategoryCount },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

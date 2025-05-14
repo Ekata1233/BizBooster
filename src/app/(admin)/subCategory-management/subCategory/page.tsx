@@ -61,6 +61,9 @@ const Subcategory = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
 
+
+
+    console.log("data in categories : ", categories)
     useEffect(() => {
         axios.get("/api/category")
             .then(res => setCategories(res.data.data))
@@ -75,12 +78,11 @@ const Subcategory = () => {
 
             const response = await axios.get('/api/subcategory', { params });
             const data = response.data.data;
-            console.log("data in module : ", data)
 
             if (data.length === 0) {
                 setFilteredSubcategory([]);
             } else {
-                const tableData: TableData[] = data.map((subcat:Subcategory) => ({
+                const tableData: TableData[] = data.map((subcat: Subcategory) => ({
                     id: subcat._id,
                     categoryName: subcat.category?.name || 'N/A',
                     name: subcat.name,
@@ -101,7 +103,7 @@ const Subcategory = () => {
 
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
-        console.log("in handle edit : ", subcat)
+
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
@@ -125,8 +127,6 @@ const Subcategory = () => {
         formData.append("category", selectedCategoryId);
         if (selectedFile) formData.append("image", selectedFile);
 
-        console.log("form data : ", formData)
-        console.log("editingId : ", editingId)
 
         try {
             await updateSubcategory(editingId, formData);
@@ -217,7 +217,6 @@ const Subcategory = () => {
             header: 'Action',
             accessor: 'action',
             render: (row: TableData) => {
-                console.log("row data : ", row);
                 return (
                     <div className="flex gap-2">
                         <button
@@ -255,14 +254,14 @@ const Subcategory = () => {
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
                     <div>
-                                            <Input
-                                                type="text"
-                                                placeholder="Search by Subcategory and Category name"
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                    
-                                        </div>
+                        <Input
+                            type="text"
+                            placeholder="Search by Subcategory and Category name"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+
+                    </div>
                     <BasicTableOne columns={columns} data={filteredSubcategory} />
                 </ComponentCard>
             </div>

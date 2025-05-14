@@ -31,6 +31,7 @@ interface Category {
   _id: string;
   name: string;
   image: string;
+  subcategoryCount: number;
   isDeleted: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -43,6 +44,7 @@ interface TableData {
   moduleName: string;
   name: string;
   image: string;
+  subcategoryCount: number;
   status: string;
 }
 
@@ -89,6 +91,7 @@ const Category = () => {
           moduleName: cat.module?.name || 'N/A',
           name: cat.name || 'N/A',
           image: cat.image || '',
+          subcategoryCount: cat.subcategoryCount,
           status: cat.isDeleted ? 'Deleted' : 'Active',
         }));
         setFilteredCategory(tableData);
@@ -142,9 +145,18 @@ const Category = () => {
       ),
     },
     {
-      header: 'Subcategory Count',
-      accessor: 'subcategoryCount',
-    },
+  header: 'Subcategory Count',
+  accessor: 'subcategoryCount',
+  render: (row: TableData) => {
+    console.log("Row data: ", row);  // Log the row data
+    return (
+      <div className="flex justify-center items-center">
+        {row.subcategoryCount}
+      </div>
+    );
+  },
+},
+
     {
       header: 'Status',
       accessor: 'status',

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import Subcategory from "@/models/Subcategory";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -118,8 +119,23 @@ export async function GET(req: NextRequest) {
       );
     }
 
+     const categoriesWithSubcategoryCount = await Promise.all(
+      filteredCategories.map(async (category) => {
+        // Count the number of subcategories related to this category
+        const subcategoryCount = await Subcategory.countDocuments({
+          category: category._id,
+        });
+
+        // Return category with subcategory count
+        return {
+          ...category.toObject(),
+          subcategoryCount,
+        };
+      })
+    );
+
     return NextResponse.json(
-      { success: true, data: filteredCategories },
+      { success: true, data: categoriesWithSubcategoryCount   },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
