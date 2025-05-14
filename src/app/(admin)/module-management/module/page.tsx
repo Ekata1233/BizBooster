@@ -2,9 +2,11 @@
 
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import DatePicker from '@/components/form/date-picker';
 import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
+import Select from '@/components/form/Select';
 
 import AddModule from '@/components/module-component/AddModule';
 import BasicTableOne from '@/components/tables/BasicTableOne';
@@ -12,10 +14,11 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import {  EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Define types
 interface Module {
@@ -35,28 +38,58 @@ interface TableData {
     status: string;
 }
 
+
 const Module = () => {
     const { modules, updateModule, deleteModule } = useModule();
     const { isOpen, openModal, closeModal } = useModal();
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
-
-    console.log("editingModuleId for update :", editingModuleId);
-    console.log("moduleName for update :", moduleName);
-    // console.log("selectedCategoryId for update :", selectedCategoryId);
-    console.log("modules for update :", modules);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
 
     if (!modules || !Array.isArray(modules)) {
         return <div>Loading...</div>;
     }
 
-    const tableData: TableData[] = modules.map((mod) => ({
-        id: mod._id,
-        name: mod.name,
-        image: mod.image,
-        status: mod.isDeleted ? 'Deleted' : 'Active',
-    }));
+
+    const fetchFilteredModules = async () => {
+        try {
+            const params = {
+                ...(searchQuery && { search: searchQuery }),
+            };
+
+            const response = await axios.get('/api/modules', { params });
+            const data = response.data.data;
+            console.log("data in module : ", data)
+
+            if (data.length === 0) {
+               setFilteredModules([]);
+            } else {
+                const tableData: TableData[] = data.map((mod: Module) => ({
+                    id: mod._id,
+                    name: mod.name,
+                    image: mod.image,
+                    status: mod.isDeleted ? 'Deleted' : 'Active',
+                }));
+                setFilteredModules(tableData);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setFilteredModules([]);
+        }
+    }
+
+    useEffect(() => {
+        fetchFilteredModules()
+    }, [searchQuery])
+
+    // const tableData: TableData[] = modules.map((mod) => ({
+    //     id: mod._id,
+    //     name: mod.name,
+    //     image: mod.image,
+    //     status: mod.isDeleted ? 'Deleted' : 'Active',
+    // }));
 
     const columns = [
         {
@@ -68,7 +101,7 @@ const Module = () => {
             accessor: 'image',
             render: (row: TableData) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-30 h-30 overflow-hidden">
+                    <div className="w-20 h-20 overflow-hidden">
                         <Image
                             width={130}
                             height={130}
@@ -113,17 +146,9 @@ const Module = () => {
             header: 'Action',
             accessor: 'action',
             render: (row: TableData) => {
-                console.log("row data of module : ", row)
                 return (
                     <div className="flex gap-2">
                         <button
-                            //  onClick={() => {
-                            //     setEditingModuleId(row.id);
-                            //     setModuleName(row.name);
-                            //     // Optionally reset file
-                            //     setSelectedFile(null);
-                            //     openModal();
-                            // }} 
                             onClick={() => handleEdit(row.id)}
                             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                             <PencilIcon />
@@ -144,7 +169,7 @@ const Module = () => {
 
     const handleEdit = (id: string) => {
         const module = modules.find(item => item._id === id);
-        console.log("moduel in edit : ", module)
+
         if (module) {
             setEditingModuleId(id);
             setModuleName(module.name);
@@ -196,7 +221,9 @@ const Module = () => {
         }
     };
 
-
+    if (!modules) {
+        return <div>Loading...</div>;
+    }
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />
@@ -204,10 +231,21 @@ const Module = () => {
                 <AddModule />
             </div>
 
+
+
             <div className="my-5">
                 <ComponentCard title="All Modules">
                     <div>
-                        <BasicTableOne columns={columns} data={tableData} />
+                        <Input
+                            type="text"
+                            placeholder="Search by module name"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+
+                    </div>
+                    <div>
+                        <BasicTableOne columns={columns} data={filteredModules} />
                     </div>
                 </ComponentCard>
             </div>

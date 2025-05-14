@@ -46,7 +46,13 @@ interface TableData {
   status: string;
 }
 
-
+type CategoryItem = {
+  _id: string;
+  name: string;
+  module?: {
+    _id: string;
+  };
+};
 const Category = () => {
   const { categories, updateCategory, deleteCategory } = useCategory();
   const { modules } = useModule();
@@ -90,10 +96,10 @@ const Category = () => {
       accessor: 'image',
       render: (row: TableData) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 overflow-hidden">
+          <div className="w-20 h-20 overflow-hidden">
             <Image
-              width={40}
-              height={40}
+              width={130}
+              height={130}
               src={row.image}
               alt={row.name || "Category image"}
               className="object-cover rounded"
@@ -162,7 +168,7 @@ const Category = () => {
   ];
 
   const handleEdit = (id: string) => {
-    const category = categories.find(item => item._id === id);
+const category = categories.find(item => item._id === id) as CategoryItem | undefined;
     console.log("in handle edit : ", category)
     if (category) {
       setEditingCategoryId(id);

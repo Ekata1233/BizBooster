@@ -46,6 +46,7 @@ interface TableData {
     categoryName: string;
     image: string;
     status: string;
+
 }
 
 const Subcategory = () => {
@@ -75,7 +76,6 @@ const Subcategory = () => {
         if (subcat) {
             setEditingId(id);
             setSubcategoryName(subcat.name);
-            // setSelectedCategoryId(subcat.category?._id || '');
             setSelectedCategoryId((subcat.category as Category)?._id || '');
             setSelectedFile(null);
             openModal();
@@ -111,6 +111,18 @@ const Subcategory = () => {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        const confirmDelete = window.confirm('Are you sure you want to delete this Subcategory?');
+        if (!confirmDelete) return;
+
+        try {
+            await deleteSubcategory(id);
+            alert('Subcategory deleted successfully');
+        } catch (error) {
+            console.error("Error deleting subcategory:", error);
+        }
+    };
+
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
     const tableData: TableData[] = subcategories.map((subcat) => ({
@@ -135,7 +147,7 @@ const Subcategory = () => {
             accessor: 'image',
             render: (row: TableData) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-[130px] h-[130px] overflow-hidden">
+                    <div className="w-20 h-20 overflow-hidden">
                         <Image
                             width={130}
                             height={130}
@@ -187,7 +199,7 @@ const Subcategory = () => {
                         </button>
 
                         <button
-                            onClick={() => deleteSubcategory(row.id)}
+                            onClick={() => handleDelete(row.id)}
                             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
                         >
                             <TrashBinIcon />
@@ -217,7 +229,6 @@ const Subcategory = () => {
                 </ComponentCard>
             </div>
 
-            {/* Modal */}
             <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
                 <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
                     <div className="px-2 pr-14">
