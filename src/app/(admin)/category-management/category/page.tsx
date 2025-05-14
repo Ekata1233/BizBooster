@@ -68,9 +68,7 @@ const Category = () => {
   const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
   console.log("selectedCategory : ", selectedCategory)
 
-  if (!categories || !Array.isArray(categories)) {
-    return <div>Loading...</div>;
-  }
+
 
 
   const fetchFilteredCategory = async () => {
@@ -105,14 +103,6 @@ const Category = () => {
   useEffect(() => {
     fetchFilteredCategory()
   }, [searchQuery])
-
-  // const tableData: TableData[] = categories.map((cat) => ({
-  //   id: cat._id || '',
-  //   moduleName: cat.module?.name || 'N/A',
-  //   name: cat.name || 'N/A',
-  //   image: cat.image || '',
-  //   status: cat.isDeleted ? 'Deleted' : 'Active',
-  // }));
 
   const columns = [
 
@@ -247,12 +237,6 @@ const Category = () => {
     }
   };
 
-
-  // const handleSelectChange = (value: string) => {
-  //   console.log("Selected value:", value);
-  //   setSelectedCategory(value); // required to set the selected Category
-  // };
-
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this category?');
     if (!confirmDelete) return;
@@ -265,6 +249,10 @@ const Category = () => {
       alert('Error deleting category: ' + err.message);
     }
   };
+
+    if (!categories || !Array.isArray(categories)) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>

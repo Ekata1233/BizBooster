@@ -15,41 +15,41 @@ export async function OPTIONS() {
 }
 
 export async function GET(req: Request) {
-    await connectToDatabase();
-  
-    try {
-      const url = new URL(req.url);
-      const id = url.pathname.split("/").pop();
-  
-      if (!id) {
-        return NextResponse.json(
-          { success: false, message: "Missing ID parameter." },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-  
-      const category = await Category.findById(id);
-  
-      if (!category || category.isDeleted) {
-        return NextResponse.json(
-          { success: false, message: "Category not found" },
-          { status: 404, headers: corsHeaders }
-        );
-      }
-  
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
       return NextResponse.json(
-        { success: true, data: category },
-        { status: 200, headers: corsHeaders }
-      );
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "An unknown error occurred";
-      return NextResponse.json(
-        { success: false, message },
-        { status: 500, headers: corsHeaders }
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
       );
     }
+
+    const category = await Category.findById(id);
+
+    if (!category || category.isDeleted) {
+      return NextResponse.json(
+        { success: false, message: "Category not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: category },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
+}
 
 export async function PUT(req: Request) {
   await connectToDatabase();
@@ -60,14 +60,14 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    console.log("formdata of category : ",formData)
+    console.log("formdata of category : ", formData);
 
     const name = formData.get("name") as string;
-    const module = formData.get("module") as string;
+    const moduleId = formData.get("module") as string; // ✅ renamed
 
-    console.log("formdata of moduleId : ",module)
+    console.log("formdata of moduleId : ", moduleId);
 
-    if (!name || !module || !id) {
+    if (!name || !moduleId || !id) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
@@ -84,7 +84,7 @@ export async function PUT(req: Request) {
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${file.name}`,
-        folder: "/uploads", // optional
+        folder: "/uploads",
       });
 
       imageUrl = uploadResponse.url;
@@ -92,7 +92,7 @@ export async function PUT(req: Request) {
 
     const updateData: Record<string, unknown> = {
       name,
-      module,
+      module: moduleId, // ✅ renamed here too
     };
     if (imageUrl) updateData.image = imageUrl;
 
