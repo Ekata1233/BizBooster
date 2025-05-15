@@ -63,7 +63,6 @@ const Category = () => {
   const [CategoryName, setCategoryName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [selectedCategory] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
