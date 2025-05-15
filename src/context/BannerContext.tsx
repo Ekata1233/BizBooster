@@ -38,6 +38,7 @@ export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error fetching banners:", error);
     }
   };
+console.log(banners);
 
   useEffect(() => {
     fetchBanners();
@@ -57,7 +58,6 @@ export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error adding banner:", error);
     }
   };
-console.log(banners);
 
   // Delete a banner by ID (soft delete)
   const deleteBanner = async (id: string) => {

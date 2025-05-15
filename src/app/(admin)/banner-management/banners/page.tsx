@@ -10,9 +10,15 @@ import { useBannerContext } from '@/context/BannerContext';
 import { Modal } from '@/components/ui/modal';
 import AddBanner from '@/components/banner-component/AddBanner';
 
+interface ImageInfo {
+  url: string;
+  category: string;
+  module: string;
+}
+
 interface BannerType {
   _id: string;
-  images: string[];
+  images: ImageInfo[]; // changed from string[] to ImageInfo[]
   page: 'homepage' | 'categorypage';
   isDeleted?: boolean;
 }
@@ -20,7 +26,7 @@ interface BannerType {
 interface TableData {
   id: string;
   _id: string;
-  images: string[];
+  images: ImageInfo[];
   page: 'homepage' | 'categorypage';
   status: string;
 }
@@ -30,7 +36,7 @@ const Banner = () => {
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
-  const [updatedImages, setUpdatedImages] = useState<string[]>([]);
+  const [updatedImages, setUpdatedImages] = useState<ImageInfo[]>([]); // changed here too
   const [newImages, setNewImages] = useState<FileList | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -42,7 +48,7 @@ const Banner = () => {
       console.error('Error deleting banner:', error);
     }
   };
-console.log("banner", banners);
+  console.log("banner", banners);
 
   const handleEdit = (banner: BannerType) => {
     setCurrentBanner(banner);
@@ -51,7 +57,7 @@ console.log("banner", banners);
   };
 
   const handleRemoveImage = (url: string) => {
-    setUpdatedImages((prev) => prev.filter((img) => img !== url));
+    setUpdatedImages((prev) => prev.filter((img) => img.url !== url));
   };
 
   const handleUpdate = async () => {
@@ -81,7 +87,12 @@ console.log("banner", banners);
 
   const tableData: TableData[] = banners
     .map((item) => {
-      if (!item || !item._id || !Array.isArray(item.images)) {
+      if (
+        !item ||
+        !item._id ||
+        !Array.isArray(item.images) ||
+        !item.images.every(img => img.url && img.category && img.module)
+      ) {
         console.warn('Invalid banner item:', item);
         return null;
       }
@@ -103,8 +114,34 @@ console.log("banner", banners);
         <div className="flex gap-2 flex-wrap">
           {row.images.map((img, index) => (
             <div key={index} className="w-24 h-24 relative border rounded overflow-hidden">
-              <Image src={img} alt={`Banner ${index}`} fill className="object-cover" />
+              <Image src={img.url} alt={`Banner ${index}`} fill className="object-cover" />
             </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      header: 'Category',
+      accessor: 'category',
+      render: (row: TableData) => (
+        <div className="flex flex-wrap gap-1">
+          {row.images.map((img, idx) => (
+            <span key={idx} className="text-xs bg-gray-200 rounded px-2 py-0.5">
+              {img.category}
+            </span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      header: 'Module',
+      accessor: 'module',
+      render: (row: TableData) => (
+        <div className="flex flex-wrap gap-1">
+          {row.images.map((img, idx) => (
+            <span key={idx} className="text-xs bg-gray-200 rounded px-2 py-0.5">
+              {img.module}
+            </span>
           ))}
         </div>
       ),
@@ -186,9 +223,9 @@ console.log("banner", banners);
           <div className="grid grid-cols-3 gap-3 mb-4">
             {updatedImages.map((img, idx) => (
               <div key={idx} className="relative w-full h-24 border rounded overflow-hidden">
-                <Image src={img} alt="Preview" fill className="object-cover" />
+                <Image src={img.url} alt="Preview" fill className="object-cover" />
                 <button
-                  onClick={() => handleRemoveImage(img)}
+                  onClick={() => handleRemoveImage(img.url)}
                   className="absolute top-1 right-1 bg-white text-red-600 p-1 rounded-full text-xs"
                 >
                   ✕

@@ -9,10 +9,14 @@ export async function POST(req: Request) {
 
   try {
     const formData = await req.formData();
-    const files = formData.getAll("images") as File[];
+    console.log("formadata of the banner : ", formData)
+    const files = formData.getAll("newImages") as File[];
     const page = formData.get("page")?.toString();
-    const category = formData.get("category")?.toString();
-    const module = formData.get("module")?.toString();
+    // const category = formData.get("category")?.toString();
+    // const module = formData.get("module")?.toString();
+    const category = JSON.parse(formData.get("category")?.toString() || "[]");
+    const module = JSON.parse(formData.get("module")?.toString() || "[]");
+
 
     if (!page || !["homepage", "categorypage"].includes(page) || !category || !module) {
       return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
@@ -20,7 +24,21 @@ export async function POST(req: Request) {
 
     const images: { url: string; category: string; module: string }[] = [];
 
-    for (const file of files) {
+    // for (const file of files) {
+    //   const arrayBuffer = await file.arrayBuffer();
+    //   const buffer = Buffer.from(arrayBuffer);
+
+    //   const upload = await imagekit.upload({
+    //     file: buffer,
+    //     fileName: `${uuidv4()}-${file.name}`,
+    //     folder: "/banners",
+    //   });
+
+    //   images.push({ url: upload.url, category, module });
+    // }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
@@ -30,8 +48,13 @@ export async function POST(req: Request) {
         folder: "/banners",
       });
 
-      images.push({ url: upload.url, category, module });
+      images.push({
+        url: upload.url,
+        category: category[i], // array item
+        module: module[i],     // array item
+      });
     }
+
 
     const newBanner = await Banner.create({
       images,
