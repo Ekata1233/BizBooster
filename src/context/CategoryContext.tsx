@@ -47,7 +47,7 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
   const addCategory = async (formData: FormData) => {
     setLoading(true);
     try {
-      const res = await axios.post("/api/category", formData);
+       await axios.post("/api/category", formData);
        fetchCategories();
     } catch (error) {
       console.error("Add category error:", error);
@@ -59,7 +59,7 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
   const updateCategory = async (id: string, formData: FormData) => {
     setLoading(true);
     try {
-      const res = await axios.put(`/api/category/${id}`, formData);
+       await axios.put(`/api/category/${id}`, formData);
       fetchCategories();
     } catch (error) {
       console.error("Update category error:", error);

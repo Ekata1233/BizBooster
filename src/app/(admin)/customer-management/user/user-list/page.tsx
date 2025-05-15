@@ -214,14 +214,14 @@ const UserList = () => {
         fetchFilteredUsers();
     }, [startDate, endDate, sort, searchQuery]);
 
-      const getFilteredByStatus = () => {
-    if (activeTab === 'verified') {
-      return filteredUsers.filter(user => user.status === 'Verified');
-    } else if (activeTab === 'notVerified') {
-      return filteredUsers.filter(user => user.status === 'Not Verified');
-    }
-    return filteredUsers;
-  };
+    const getFilteredByStatus = () => {
+        if (activeTab === 'verified') {
+            return filteredUsers.filter(user => user.status === 'Verified');
+        } else if (activeTab === 'notVerified') {
+            return filteredUsers.filter(user => user.status === 'Not Verified');
+        }
+        return filteredUsers;
+    };
 
 
 
