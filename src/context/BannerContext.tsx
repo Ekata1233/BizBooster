@@ -57,7 +57,6 @@ export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error adding banner:", error);
     }
   };
-console.log(banners);
 
   // Delete a banner by ID (soft delete)
   const deleteBanner = async (id: string) => {
@@ -71,10 +70,10 @@ console.log(banners);
     }
   };
 
-  // Update banner by ID
+  // ✅ FIXED: Update banner by ID
   const updateBanner = async (formData: FormData) => {
     try {
-      const id = formData.get("id") as string;
+      const id = formData.get("id")?.toString();
       if (!id) throw new Error("Missing banner ID in form data");
 
       const res = await fetch(`/api/banner/${id}`, {
@@ -87,6 +86,7 @@ console.log(banners);
       setBanners((prev) =>
         prev.map((banner) => (banner._id === id ? json.data : banner))
       );
+      fetchBanners();
     } catch (error) {
       console.error("Error updating banner:", error);
     }
