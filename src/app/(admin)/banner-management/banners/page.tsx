@@ -10,9 +10,15 @@ import { useBannerContext } from '@/context/BannerContext';
 import { Modal } from '@/components/ui/modal';
 import AddBanner from '@/components/banner-component/AddBanner';
 
+interface ImageInfo {
+  url: string;
+  category: string;
+  module: string;
+}
+
 interface BannerType {
   _id: string;
-  images: string[];
+  images: ImageInfo[];  // array of image objects, not strings
   page: 'homepage' | 'categorypage';
   isDeleted?: boolean;
 }
@@ -20,7 +26,7 @@ interface BannerType {
 interface TableData {
   id: string;
   _id: string;
-  images: string[];
+  images: ImageInfo[];  // array of image objects
   page: 'homepage' | 'categorypage';
   status: string;
 }
@@ -79,36 +85,80 @@ console.log("banner", banners);
 
   if (!Array.isArray(banners)) return <div>Loading...</div>;
 
-  const tableData: TableData[] = banners
-    .map((item) => {
-      if (!item || !item._id || !Array.isArray(item.images)) {
-        console.warn('Invalid banner item:', item);
-        return null;
-      }
-      return {
-        id: item._id,
-        _id: item._id,
-        images: item.images,
-        page: item.page,
-        status: item.isDeleted ? 'Deleted' : 'Active',
-      };
-    })
-    .filter((item): item is TableData => item !== null);
+const tableData: TableData[] = banners
+  .map((item) => {
+    if (!item || !item._id || !Array.isArray(item.images)) {
+      console.warn('Invalid banner item:', item);
+      return null;
+    }
+
+    // Filter valid images which have url, category, and module strings
+    const validImages: ImageInfo[] = item.images
+      .filter(img => img && typeof img.url === 'string' && typeof img.category === 'string' && typeof img.module === 'string')
+      .map(img => ({
+        url: img.url,
+        category: img.category,
+        module: img.module,
+      }));
+
+    return {
+      id: item._id,
+      _id: item._id,
+      images: validImages,
+      page: item.page,
+      status: item.isDeleted ? 'Deleted' : 'Active',
+    };
+  })
+  .filter((item): item is TableData => item !== null);
+
+console.log(tableData);
+
 
   const columns = [
     {
-      header: 'Images',
-      accessor: 'images',
-      render: (row: TableData) => (
-        <div className="flex gap-2 flex-wrap">
-          {row.images.map((img, index) => (
-            <div key={index} className="w-24 h-24 relative border rounded overflow-hidden">
-              <Image src={img} alt={`Banner ${index}`} fill className="object-cover" />
-            </div>
-          ))}
-        </div>
-      ),
-    },
+    header: 'Images',
+    accessor: 'images',
+    render: (row: TableData) => (
+      <div className="flex gap-2 flex-wrap">
+        {row.images.map((img, index) => (
+          <div key={index} className="w-24 h-24 relative border rounded overflow-hidden">
+            <Image
+              src={img.url}
+              alt={`Banner Image ${index}`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    header: 'Category',
+    accessor: 'category',
+    render: (row: TableData) => (
+      <div className="flex flex-col gap-1">
+        {row.images.map((img, index) => (
+          <span key={index} className="text-sm text-gray-700">
+            {img.category}
+          </span>
+        ))}
+      </div>
+    ),
+  },
+  {
+    header: 'Module',
+    accessor: 'module',
+    render: (row: TableData) => (
+      <div className="flex flex-col gap-1">
+        {row.images.map((img, index) => (
+          <span key={index} className="text-sm text-gray-700">
+            {img.module}
+          </span>
+        ))}
+      </div>
+    ),
+  },
     {
       header: 'Page',
       accessor: 'page',
