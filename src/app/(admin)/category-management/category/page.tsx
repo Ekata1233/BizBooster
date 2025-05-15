@@ -260,10 +260,6 @@ const Category = () => {
     }
   };
 
-  if (!categories || !Array.isArray(categories)) {
-    return <div>Loading...</div>;
-  }
-
   const getFilteredByStatus = () => {
     if (activeTab === 'active') {
       return filteredCategory.filter(cat => cat.status === 'Active');
@@ -273,6 +269,9 @@ const Category = () => {
     return filteredCategory;
   };
 
+    if (!categories || !Array.isArray(categories)) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
