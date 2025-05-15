@@ -1,20 +1,33 @@
-// src/models/Banner.ts
-
 import mongoose, { Document, Schema } from "mongoose";
 
 export type BannerPageType = "homepage" | "categorypage";
 
+interface ImageInfo {
+  url: string;
+  category: string;
+  module: string;
+}
+
 export interface IBanner extends Document {
-  images: string[]; // array of image URLs
+  images: ImageInfo[];
   page: BannerPageType;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
+const imageInfoSchema = new Schema<ImageInfo>(
+  {
+    url: { type: String, required: true },
+    category: { type: String, required: true },
+    module: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const bannerSchema = new Schema<IBanner>(
   {
-    images: { type: [String], required: true }, // array of image URLs
+    images: { type: [imageInfoSchema], required: true },
     page: {
       type: String,
       enum: ["homepage", "categorypage"],
