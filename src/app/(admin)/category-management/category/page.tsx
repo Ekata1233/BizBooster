@@ -67,9 +67,7 @@ const Category = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
   const [selectedModule, setSelectedModule] = useState<string>('');
-
-  console.log("selectedModule : ", selectedModule)
-
+  const [activeTab, setActiveTab] = useState('all');
 
 
   const moduleOptions = modules.map((module) => ({
@@ -234,6 +232,7 @@ const Category = () => {
       setEditingCategoryId(null);
       setCategoryName('');
       setSelectedFile(null);
+      fetchFilteredCategory();
     } catch (error) {
       console.error('Error updating Category:', error);
     }
@@ -254,6 +253,7 @@ const Category = () => {
     try {
       await deleteCategory(id);
       alert('Category deleted successfully');
+      fetchFilteredCategory();
     } catch (error) {
       const err = error as Error;
       alert('Error deleting category: ' + err.message);
@@ -263,6 +263,16 @@ const Category = () => {
   if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
   }
+
+  const getFilteredByStatus = () => {
+    if (activeTab === 'active') {
+      return filteredCategory.filter(cat => cat.status === 'Active');
+    } else if (activeTab === 'inactive') {
+      return filteredCategory.filter(cat => cat.status === 'Deleted');
+    }
+    return filteredCategory;
+  };
+
 
   return (
     <div>
@@ -299,8 +309,31 @@ const Category = () => {
             </div>
           </div>
 
+          <div className="border-b border-gray-200">
+            <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+              <li
+                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                onClick={() => setActiveTab('all')}
+              >
+                All
+              </li>
+              <li
+                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                onClick={() => setActiveTab('active')}
+              >
+                Active
+              </li>
+              <li
+                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                onClick={() => setActiveTab('inactive')}
+              >
+                Inactive
+              </li>
+            </ul>
+          </div>
           <div>
-            <BasicTableOne columns={columns} data={filteredCategory} />
+            <BasicTableOne columns={columns} data={getFilteredByStatus()} />
+
           </div>
         </ComponentCard>
       </div>

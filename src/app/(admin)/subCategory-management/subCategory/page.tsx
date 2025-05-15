@@ -62,7 +62,7 @@ const Subcategory = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
-
+    const [activeTab, setActiveTab] = useState('all');
 
     console.log("data in categories : ", categories)
     useEffect(() => {
@@ -107,7 +107,7 @@ const Subcategory = () => {
 
     useEffect(() => {
         fetchFilteredSubcategory()
-    }, [selectedCategory,searchQuery])
+    }, [selectedCategory, searchQuery])
 
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
@@ -129,13 +129,10 @@ const Subcategory = () => {
     const handleUpdateData = async () => {
 
         if (!editingId || !subcategoryName || !selectedCategoryId) return;
-
         const formData = new FormData();
         formData.append("name", subcategoryName);
         formData.append("category", selectedCategoryId);
         if (selectedFile) formData.append("image", selectedFile);
-
-
         try {
             await updateSubcategory(editingId, formData);
             alert('Subcategory updated successfully');
@@ -143,6 +140,7 @@ const Subcategory = () => {
             setEditingId(null);
             setSubcategoryName('');
             setSelectedFile(null);
+            fetchFilteredSubcategory();
         } catch (error) {
             console.error('Error updating subcategory:', error);
         }
@@ -155,6 +153,7 @@ const Subcategory = () => {
         try {
             await deleteSubcategory(id);
             alert('Subcategory deleted successfully');
+            fetchFilteredSubcategory();
         } catch (error) {
             console.error("Error deleting subcategory:", error);
         }
@@ -162,13 +161,6 @@ const Subcategory = () => {
 
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
-    // const tableData: TableData[] = subcategories.map((subcat) => ({
-    //     id: subcat._id,
-    //     categoryName: subcat.category?.name || 'N/A',
-    //     name: subcat.name,
-    //     image: subcat.image || '',
-    //     status: subcat.isDeleted ? 'Deleted' : 'Active',
-    // }));
 
     const columns = [
         { header: 'Subcategory Name', accessor: 'name' },
@@ -252,6 +244,16 @@ const Subcategory = () => {
         },
     ];
 
+    const getFilteredByStatus = () => {
+        if (activeTab === 'active') {
+            return filteredSubcategory.filter(subCat => subCat.status === 'Active');
+        } else if (activeTab === 'inactive') {
+            return filteredSubcategory.filter(subCat => subCat.status === 'Deleted');
+        }
+        return filteredSubcategory;
+    };
+
+
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />
@@ -286,7 +288,34 @@ const Subcategory = () => {
                             </div>
                         </div>
                     </div>
-                    <BasicTableOne columns={columns} data={filteredSubcategory} />
+
+                    <div className="border-b border-gray-200">
+                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('all')}
+                            >
+                                All
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('active')}
+                            >
+                                Active
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('inactive')}
+                            >
+                                Inactive
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
+
+                    </div>
                 </ComponentCard>
             </div>
 

@@ -92,7 +92,8 @@ export async function PUT(req: Request) {
 
     const updateData: Record<string, unknown> = {
       name,
-      module: moduleId, // ✅ renamed here too
+      module: moduleId,
+      isDeleted: false, // ✅ renamed here too
     };
     if (imageUrl) updateData.image = imageUrl;
 

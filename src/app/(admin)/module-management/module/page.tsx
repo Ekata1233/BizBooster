@@ -83,8 +83,6 @@ const Module = () => {
         fetchFilteredModules()
     }, [searchQuery])
 
-
-
     const columns = [
         {
             header: 'Module Name',
@@ -197,6 +195,7 @@ const Module = () => {
             setEditingModuleId(null);
             setModuleName('');
             setSelectedFile(null);
+            fetchFilteredModules();
         } catch (error) {
             console.error('Error updating module:', error);
         }
@@ -217,6 +216,7 @@ const Module = () => {
         try {
             await deleteModule(id);
             alert('Module deleted successfully');
+            fetchFilteredModules();
         } catch (error) {
             console.error('Error deleting module:', error); // ✅ using the error
         }
