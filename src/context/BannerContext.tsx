@@ -38,7 +38,6 @@ export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error fetching banners:", error);
     }
   };
-console.log(banners);
 
   useEffect(() => {
     fetchBanners();
@@ -65,15 +64,16 @@ console.log(banners);
       const res = await fetch(`/api/banner/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete banner");
       setBanners((prev) => prev.filter((b) => b._id !== id));
+      fetchBanners();
     } catch (error) {
       console.error("Error deleting banner:", error);
     }
   };
 
-  // Update banner by ID
+  // ✅ FIXED: Update banner by ID
   const updateBanner = async (formData: FormData) => {
     try {
-      const id = formData.get("id") as string;
+      const id = formData.get("id")?.toString();
       if (!id) throw new Error("Missing banner ID in form data");
 
       const res = await fetch(`/api/banner/${id}`, {
@@ -86,6 +86,7 @@ console.log(banners);
       setBanners((prev) =>
         prev.map((banner) => (banner._id === id ? json.data : banner))
       );
+      fetchBanners();
     } catch (error) {
       console.error("Error updating banner:", error);
     }
