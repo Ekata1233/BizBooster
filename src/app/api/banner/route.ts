@@ -55,6 +55,7 @@ export async function POST(req: Request) {
       });
     }
 
+console.log("gfgbdg",Banner);
 
     const newBanner = await Banner.create({
       images,

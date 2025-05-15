@@ -4,8 +4,8 @@ export type BannerPageType = "homepage" | "categorypage";
 
 interface ImageInfo {
   url: string;
-  category: string;
-  module: string;
+  category:  { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+  module: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
 }
 
 export interface IBanner extends Document {

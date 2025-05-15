@@ -26,9 +26,7 @@ const AddBanner = () => {
   const { modules } = useModule()
   const { categories } = useCategory()
   const { addBanner } = useBannerContext()
-
-  
-  const [page, setPage] = useState('') // homepage or categorypage
+  const [page, setPage] = useState('')
   const [imageEntries, setImageEntries] = useState<ImageEntry[]>([
     { module: '', category: '', files: [] },
   ])
@@ -110,16 +108,9 @@ const AddBanner = () => {
       imageEntries.forEach(({ module, category, files }, entryIndex) => {
         files.forEach((file, fileIndex) => {
           formData.append('newImages', file)
-          // To send module/category for each image, you can repeat arrays as JSON string
-          // But since backend expects category/module per image, we send them all as JSON strings:
         })
       })
 
-      // Send extra data for images: serialize all module/category pairs per image in the same order as files
-      // The backend expects images array with {url, category, module} — so you must send the arrays to backend
-      // Since you are sending files separately, pass category/module as JSON arrays
-
-      // Gather category and module for each file in order
       const categoryArr: string[] = []
       const moduleArr: string[] = []
       imageEntries.forEach(({ module, category, files }) => {
@@ -202,7 +193,6 @@ const AddBanner = () => {
               <div className="flex-1 min-w-[180px]">
                 <Label>Select Images</Label>
                 <FileInput
-                  multiple
                   onChange={(e) => handleFileChange(idx, e)}
                   className="custom-class"
                 />
