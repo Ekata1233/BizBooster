@@ -42,6 +42,7 @@ const Banner = () => {
       console.error('Error deleting banner:', error);
     }
   };
+console.log("banner", banners);
 
   const handleEdit = (banner: BannerType) => {
     setCurrentBanner(banner);

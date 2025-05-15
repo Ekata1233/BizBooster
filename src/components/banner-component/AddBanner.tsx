@@ -27,6 +27,7 @@ const AddBanner = () => {
   const { categories } = useCategory()
   const { addBanner } = useBannerContext()
 
+  
   const [page, setPage] = useState('') // homepage or categorypage
   const [imageEntries, setImageEntries] = useState<ImageEntry[]>([
     { module: '', category: '', files: [] },
