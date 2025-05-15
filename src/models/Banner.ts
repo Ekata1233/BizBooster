@@ -4,8 +4,8 @@ export type BannerPageType = "homepage" | "categorypage";
 
 interface ImageInfo {
   url: string;
-  category:  { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
-  module: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
+  category: mongoose.Types.ObjectId;
+  module: mongoose.Types.ObjectId;
 }
 
 export interface IBanner extends Document {
@@ -19,8 +19,8 @@ export interface IBanner extends Document {
 const imageInfoSchema = new Schema<ImageInfo>(
   {
     url: { type: String, required: true },
-    category: { type: String, required: true },
-    module: { type: String, required: true },
+    category:  { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    module: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
   },
   { _id: false }
 );

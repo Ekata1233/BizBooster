@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Always fetch all with populate
-    const categories = await Category.find({  }).populate("module");
+    const categories = await Category.find({}).populate("module");
 
     // Filter in-memory for `name` and `module.name`
     let filteredCategories = categories;
@@ -121,23 +121,23 @@ export async function GET(req: NextRequest) {
     // }
 
     if (search || selectedModule) {
-  const regex = search ? new RegExp(search, "i") : null;
+      const regex = search ? new RegExp(search, "i") : null;
 
-  filteredCategories = categories.filter((cat) => {
-    const matchesSearch = regex
-      ? regex.test(cat.name) || regex.test(cat.module?.name)
-      : true;
+      filteredCategories = categories.filter((cat) => {
+        const matchesSearch = regex
+          ? regex.test(cat.name) || regex.test(cat.module?.name)
+          : true;
 
-    const matchesModule = selectedModule
-      ? cat.module?._id?.toString() === selectedModule
-      : true;
+        const matchesModule = selectedModule
+          ? cat.module?._id?.toString() === selectedModule
+          : true;
 
-    return matchesSearch && matchesModule;
-  });
-}
+        return matchesSearch && matchesModule;
+      });
+    }
 
 
-     const categoriesWithSubcategoryCount = await Promise.all(
+    const categoriesWithSubcategoryCount = await Promise.all(
       filteredCategories.map(async (category) => {
         // Count the number of subcategories related to this category
         const subcategoryCount = await Subcategory.countDocuments({
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json(
-      { success: true, data: categoriesWithSubcategoryCount   },
+      { success: true, data: categoriesWithSubcategoryCount },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

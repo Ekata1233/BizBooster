@@ -65,6 +65,7 @@ console.log(banners);
       const res = await fetch(`/api/banner/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete banner");
       setBanners((prev) => prev.filter((b) => b._id !== id));
+      fetchBanners();
     } catch (error) {
       console.error("Error deleting banner:", error);
     }
