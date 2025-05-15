@@ -26,7 +26,6 @@ const AddBanner = () => {
   const { modules } = useModule()
   const { categories } = useCategory()
   const { addBanner } = useBannerContext()
-
   const [page, setPage] = useState('')
   const [imageEntries, setImageEntries] = useState<ImageEntry[]>([
     { module: '', category: '', files: [] },
