@@ -8,6 +8,7 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import { TrashBinIcon, PencilIcon } from '@/icons';
 import { useBannerContext } from '@/context/BannerContext';
 import { Modal } from '@/components/ui/modal';
+import AddBanner from '@/components/banner-component/AddBanner';
 
 interface BannerType {
   _id: string;
@@ -15,6 +16,7 @@ interface BannerType {
   page: 'homepage' | 'categorypage';
   isDeleted?: boolean;
 }
+
 interface TableData {
   id: string;
   _id: string;
@@ -22,7 +24,6 @@ interface TableData {
   page: 'homepage' | 'categorypage';
   status: string;
 }
-
 
 const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBannerContext();
@@ -75,24 +76,23 @@ const Banner = () => {
     }
   };
 
-  if (!Array.isArray(banners)) return <div>Loading...</div>; // Ensure banners is an array
+  if (!Array.isArray(banners)) return <div>Loading...</div>;
 
-  // Safely map the banners array to the tableData
   const tableData: TableData[] = banners
     .map((item) => {
-      // Safeguard to ensure item is valid
       if (!item || !item._id || !Array.isArray(item.images)) {
         console.warn('Invalid banner item:', item);
-        return null; // Return null for invalid items
+        return null;
       }
       return {
         id: item._id,
+        _id: item._id,
         images: item.images,
         page: item.page,
         status: item.isDeleted ? 'Deleted' : 'Active',
       };
     })
-    .filter((item): item is TableData => item !== null); // Filter out null values (invalid items)
+    .filter((item): item is TableData => item !== null);
 
   const columns = [
     {
@@ -113,6 +113,13 @@ const Banner = () => {
       accessor: 'page',
       render: (row: TableData) => (
         <span className="capitalize">{row.page}</span>
+      ),
+    },
+    {
+      header: 'Banner ID',
+      accessor: '_id',
+      render: (row: TableData) => (
+        <span className="text-xs text-gray-600 break-all">{row._id}</span>
       ),
     },
     {
@@ -162,6 +169,9 @@ const Banner = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="Banners" />
+      <div className="my-5">
+        <AddBanner />
+      </div>
       <div className="my-5">
         <ComponentCard title="All Banners">
           <BasicTableOne columns={columns} data={tableData} />
