@@ -110,7 +110,7 @@ const columns = [
                 case "Deleted":
                     colorClass = "text-red-500 bg-red-100 border border-red-300";
                     break;
-                case "Active":
+                case "Verified":
                     colorClass = "text-green-600 bg-green-100 border border-green-300";
                     break;
                 case "Not Verified":
@@ -157,8 +157,7 @@ const UserList = () => {
     const [filteredUsers, setFilteredUsers] = useState<TableData[]>([]);
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
-
-    console.log("user : ", users);
+    const [activeTab, setActiveTab] = useState('all');
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -199,7 +198,7 @@ const UserList = () => {
                     referredBy: user.referredBy || "N/A",
                     totalBookings: "0",
                     totalEarnings: "0",
-                    status: user.isDeleted ? "Deleted" : user.otp?.verified ? "Active" : "Not Verified"
+                    status: user.isDeleted ? "Deleted" : user.otp?.verified ? "Verified" : "Not Verified"
                 }));
                 setFilteredUsers(mapped);
                 setMessage('');
@@ -214,6 +213,17 @@ const UserList = () => {
     useEffect(() => {
         fetchFilteredUsers();
     }, [startDate, endDate, sort, searchQuery]);
+
+    const getFilteredByStatus = () => {
+        if (activeTab === 'verified') {
+            return filteredUsers.filter(user => user.status === 'Verified');
+        } else if (activeTab === 'notVerified') {
+            return filteredUsers.filter(user => user.status === 'Not Verified');
+        }
+        return filteredUsers;
+    };
+
+
 
     if (!users) {
         return <div>Loading...</div>;
@@ -282,11 +292,33 @@ const UserList = () => {
             </div>
 
             <div>
-                <ComponentCard title="Table" className="">
+                <ComponentCard title="User List" className="">
+                    <div className="border-b border-gray-200">
+                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('all')}
+                            >
+                                All
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'verified' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('verified')}
+                            >
+                                Verified
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'notVerified' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('notVerified')}
+                            >
+                                Not Verified
+                            </li>
+                        </ul>
+                    </div>
                     {message ? (
                         <p className="text-red-500 text-center my-4">{message}</p>
                     ) : (
-                        <BasicTableOne columns={columns} data={filteredUsers} />
+                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
                     )}
 
                 </ComponentCard>

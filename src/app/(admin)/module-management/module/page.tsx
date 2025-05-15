@@ -47,8 +47,7 @@ const Module = () => {
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
-
-
+    const [activeTab, setActiveTab] = useState('all');
 
     console.log("category count module : ", modules);
 
@@ -82,8 +81,6 @@ const Module = () => {
     useEffect(() => {
         fetchFilteredModules()
     }, [searchQuery])
-
-
 
     const columns = [
         {
@@ -197,6 +194,7 @@ const Module = () => {
             setEditingModuleId(null);
             setModuleName('');
             setSelectedFile(null);
+            fetchFilteredModules();
         } catch (error) {
             console.error('Error updating module:', error);
         }
@@ -217,12 +215,22 @@ const Module = () => {
         try {
             await deleteModule(id);
             alert('Module deleted successfully');
+            fetchFilteredModules();
         } catch (error) {
             console.error('Error deleting module:', error); // ✅ using the error
         }
     };
 
-        if (!modules || !Array.isArray(modules)) {
+    const getFilteredByStatus = () => {
+        if (activeTab === 'active') {
+            return filteredModules.filter(mod => mod.status === 'Active');
+        } else if (activeTab === 'inactive') {
+            return filteredModules.filter(mod => mod.status === 'Deleted');
+        }
+        return filteredModules;
+    };
+
+    if (!modules || !Array.isArray(modules)) {
         return <div>Loading...</div>;
     }
 
@@ -246,8 +254,31 @@ const Module = () => {
                         />
 
                     </div>
+
+                    <div className="border-b border-gray-200">
+                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('all')}
+                            >
+                                All
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('active')}
+                            >
+                                Active
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('inactive')}
+                            >
+                                Inactive
+                            </li>
+                        </ul>
+                    </div>
                     <div>
-                        <BasicTableOne columns={columns} data={filteredModules} />
+                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
                     </div>
                 </ComponentCard>
             </div>

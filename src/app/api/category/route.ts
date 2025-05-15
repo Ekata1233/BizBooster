@@ -104,6 +104,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
+  const selectedModule = searchParams.get("selectedModule") || "";
 
   try {
     // Always fetch all with populate
@@ -112,12 +113,29 @@ export async function GET(req: NextRequest) {
     // Filter in-memory for `name` and `module.name`
     let filteredCategories = categories;
 
-    if (search) {
-      const regex = new RegExp(search, "i");
-      filteredCategories = categories.filter((cat) => 
-        regex.test(cat.name) || regex.test(cat.module?.name)
-      );
-    }
+    // if (search) {
+    //   const regex = new RegExp(search, "i");
+    //   filteredCategories = categories.filter((cat) => 
+    //     regex.test(cat.name) || regex.test(cat.module?.name) 
+    //   );
+    // }
+
+    if (search || selectedModule) {
+  const regex = search ? new RegExp(search, "i") : null;
+
+  filteredCategories = categories.filter((cat) => {
+    const matchesSearch = regex
+      ? regex.test(cat.name) || regex.test(cat.module?.name)
+      : true;
+
+    const matchesModule = selectedModule
+      ? cat.module?._id?.toString() === selectedModule
+      : true;
+
+    return matchesSearch && matchesModule;
+  });
+}
+
 
      const categoriesWithSubcategoryCount = await Promise.all(
       filteredCategories.map(async (category) => {

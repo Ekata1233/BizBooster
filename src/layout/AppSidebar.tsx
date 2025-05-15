@@ -232,7 +232,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "module" | "customer";
+    type: "main"  | "customer"| "module";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -246,7 +246,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "module", "customer"].forEach((menuType) => {
+    ["main", "customer", "module"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
@@ -258,7 +258,7 @@ const AppSidebar: React.FC = () => {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "module" | "customer",
+                type: menuType as "main"  | "customer"| "module",
                 index,
               });
               submenuMatched = true;
@@ -287,7 +287,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "module" | "customer") => {
+  const handleSubmenuToggle = (index: number, menuType: "main"  | "customer"| "module") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -373,12 +373,12 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Module MANAGEMENT"
+                  "CUSTOMER MANAGEMENT"
                 ) : (
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(moduleItems, "module")}
+              {renderMenuItems(customerItems, "customer")}
             </div>
 
             <div className="">
@@ -389,13 +389,15 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "CUSTOMER MANAGEMENT"
+                  "Module MANAGEMENT"
                 ) : (
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(customerItems, "customer")}
+              {renderMenuItems(moduleItems, "module")}
             </div>
+
+            
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

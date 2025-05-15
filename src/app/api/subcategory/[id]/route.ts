@@ -61,7 +61,7 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    console.log("formdata for update : ",formData );
+    console.log("formdata for update : ", formData);
 
     const name = formData.get("name") as string;
     const category = formData.get("category") as string;
@@ -89,12 +89,13 @@ export async function PUT(req: Request) {
       imageUrl = uploadResponse.url;
     }
 
-    const updateData: Record<string, unknown> = { name, category };
+    const updateData: Record<string, unknown> = { name, category, isDeleted: false };
     if (imageUrl) updateData.image = imageUrl;
 
     const updatedSubcategory = await Subcategory.findByIdAndUpdate(
       id,
       updateData,
+
       { new: true }
     );
 

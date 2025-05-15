@@ -52,6 +52,7 @@ export async function PUT(req: Request) {
     const updateData: Record<string, unknown> = {
       name,
       categories,
+      isDeleted: false,
     };
     if (imageUrl) updateData.image = imageUrl;
 

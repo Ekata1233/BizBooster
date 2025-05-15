@@ -9,7 +9,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import { useModal } from '@/hooks/useModal';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 import Input from '@/components/form/input/InputField';
+import Select from '@/components/form/Select';
 
 // Types
 interface Category {
@@ -60,8 +61,8 @@ const Subcategory = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
-
-
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [activeTab, setActiveTab] = useState('all');
 
     console.log("data in categories : ", categories)
     useEffect(() => {
@@ -70,9 +71,16 @@ const Subcategory = () => {
             .catch(err => console.error("Error fetching categories", err));
     }, []);
 
+    const categoryOptions = categories.map((cat) => ({
+        value: cat._id, // or value: module if you want full object
+        label: cat.name,
+        image: cat.image,
+    }));
+
     const fetchFilteredSubcategory = async () => {
         try {
             const params = {
+                ...(selectedCategory && { selectedCategory }),
                 ...(searchQuery && { search: searchQuery }),
             };
 
@@ -99,7 +107,7 @@ const Subcategory = () => {
 
     useEffect(() => {
         fetchFilteredSubcategory()
-    }, [searchQuery])
+    }, [selectedCategory, searchQuery])
 
     const handleEdit = (id: string) => {
         const subcat = subcategories.find(item => item._id === id);
@@ -121,13 +129,10 @@ const Subcategory = () => {
     const handleUpdateData = async () => {
 
         if (!editingId || !subcategoryName || !selectedCategoryId) return;
-
         const formData = new FormData();
         formData.append("name", subcategoryName);
         formData.append("category", selectedCategoryId);
         if (selectedFile) formData.append("image", selectedFile);
-
-
         try {
             await updateSubcategory(editingId, formData);
             alert('Subcategory updated successfully');
@@ -135,6 +140,7 @@ const Subcategory = () => {
             setEditingId(null);
             setSubcategoryName('');
             setSelectedFile(null);
+            fetchFilteredSubcategory();
         } catch (error) {
             console.error('Error updating subcategory:', error);
         }
@@ -147,6 +153,7 @@ const Subcategory = () => {
         try {
             await deleteSubcategory(id);
             alert('Subcategory deleted successfully');
+            fetchFilteredSubcategory();
         } catch (error) {
             console.error("Error deleting subcategory:", error);
         }
@@ -154,13 +161,6 @@ const Subcategory = () => {
 
     if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
 
-    // const tableData: TableData[] = subcategories.map((subcat) => ({
-    //     id: subcat._id,
-    //     categoryName: subcat.category?.name || 'N/A',
-    //     name: subcat.name,
-    //     image: subcat.image || '',
-    //     status: subcat.isDeleted ? 'Deleted' : 'Active',
-    // }));
 
     const columns = [
         { header: 'Subcategory Name', accessor: 'name' },
@@ -244,6 +244,16 @@ const Subcategory = () => {
         },
     ];
 
+    const getFilteredByStatus = () => {
+        if (activeTab === 'active') {
+            return filteredSubcategory.filter(subCat => subCat.status === 'Active');
+        } else if (activeTab === 'inactive') {
+            return filteredSubcategory.filter(subCat => subCat.status === 'Deleted');
+        }
+        return filteredSubcategory;
+    };
+
+
     return (
         <div>
             <PageBreadcrumb pageTitle="Module" />
@@ -253,16 +263,59 @@ const Subcategory = () => {
 
             <div className="my-5">
                 <ComponentCard title="All Subcategories">
+                    <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+                        <div>
+                            <Label>Filter by Name</Label>
+                            <Input
+                                type="text"
+                                placeholder="Search by Subcategory and Category name"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <Label>Select Input</Label>
+                            <div className="relative">
+                                <Select
+                                    options={categoryOptions}
+                                    placeholder="Categories"
+                                    onChange={(value: string) => setSelectedCategory(value)}
+                                    className="dark:bg-dark-900"
+                                />
+                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                    <ChevronDownIcon />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-b border-gray-200">
+                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('all')}
+                            >
+                                All
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('active')}
+                            >
+                                Active
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('inactive')}
+                            >
+                                Inactive
+                            </li>
+                        </ul>
+                    </div>
+
                     <div>
-                        <Input
-                            type="text"
-                            placeholder="Search by Subcategory and Category name"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
 
                     </div>
-                    <BasicTableOne columns={columns} data={filteredSubcategory} />
                 </ComponentCard>
             </div>
 

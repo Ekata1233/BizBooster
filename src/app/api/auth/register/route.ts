@@ -24,13 +24,37 @@ export const POST = async (req: Request) => {
     const body = await req.json();
     const parsedData = userValidationSchema.parse(body);
 
-    const existingUser = await User.findOne({
-      $or: [{ email: parsedData.email }, { mobileNumber: parsedData.mobileNumber }],
-    });
+    // const existingUser = await User.findOne({
+    //   $or: [{ email: parsedData.email }, { mobileNumber: parsedData.mobileNumber }],
+    // });
 
-    if (existingUser) {
+     const existingUserByEmail = await User.findOne({ email: parsedData.email });
+    const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
+
+    // if (existingUser) {
+    //   return NextResponse.json(
+    //     { error: 'Email or Mobile already exists' },
+    //     { status: 400, headers: corsHeaders }
+    //   );
+    // }
+
+    if (existingUserByEmail && existingUserByMobile) {
       return NextResponse.json(
-        { error: 'Email or Mobile already exists' },
+        { error: 'Email and Mobile already exists' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (existingUserByEmail) {
+      return NextResponse.json(
+        { error: 'Email already exists' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (existingUserByMobile) {
+      return NextResponse.json(
+        { error: 'Mobile already exists' },
         { status: 400, headers: corsHeaders }
       );
     }

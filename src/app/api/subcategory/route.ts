@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
+const selectedCategory = searchParams.get("selectedCategory") || "";
 
   try {
     // Fetch all subcategories with populated 'category'
@@ -45,12 +46,29 @@ export async function GET(req: NextRequest) {
     // Filter in-memory for `name` and `category.name`
     let filteredSubcategories = subcategories;
 
-    if (search) {
-      const regex = new RegExp(search, "i");
-      filteredSubcategories = subcategories.filter((sub) =>
-        regex.test(sub.name) || regex.test(sub.category?.name)
-      );
-    }
+    // if (search || selectedCategory) {
+    //   const regex = new RegExp(search, "i");
+    //   filteredSubcategories = subcategories.filter((sub) =>
+    //     regex.test(sub.name) || regex.test(sub.category?.name)
+    //   );
+    // }
+
+    if (search || selectedCategory) {
+  const regex = search ? new RegExp(search, "i") : null;
+
+  filteredSubcategories = subcategories.filter((sub) => {
+    const matchesSearch = regex
+      ? regex.test(sub.name) || regex.test(sub.category?.name)
+      : true;
+
+    const matchesCategory = selectedCategory
+      ? sub.category?._id?.toString() === selectedCategory
+      : true;
+
+    return matchesSearch && matchesCategory;
+  });
+}
+
 
     return NextResponse.json(
       { success: true, data: filteredSubcategories },
