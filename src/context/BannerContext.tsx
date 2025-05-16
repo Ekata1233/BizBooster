@@ -1,109 +1,62 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-interface ImageInfo {
-  url: string;
-  category: string;
-  module: string;
-}
+import axios from 'axios';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface Banner {
   _id: string;
-  images: ImageInfo[];
-  page: "homepage" | "categorypage";
+  page: string;
+  selectionType: string;
+  category?: string;
+  subcategory?: string;
+  service?: string;
+  referralUrl?: string;
+  file: string;
   isDeleted: boolean;
 }
 
 interface BannerContextType {
   banners: Banner[];
-  addBanner: (formData: FormData) => Promise<void>;
-  deleteBanner: (id: string) => Promise<void>;
-  updateBanner: (formData: FormData) => Promise<void>;
+  fetchBanners: () => void;
+  createBanner: (data: FormData) => void;
+  updateBanner: (id: string, data: FormData) => void;
+  deleteBanner: (id: string) => void;
 }
 
 const BannerContext = createContext<BannerContextType | undefined>(undefined);
 
-export const BannerProvider = ({ children }: { children: React.ReactNode }) => {
+export const useBanner = () => useContext(BannerContext)!;
+
+export const BannerProvider = ({ children }: { children: ReactNode }) => {
   const [banners, setBanners] = useState<Banner[]>([]);
 
-  // Fetch all banners
   const fetchBanners = async () => {
-    try {
-      const res = await fetch("/api/banner");
-      if (!res.ok) throw new Error("Failed to fetch banners");
-      const json = await res.json();
-      setBanners(json.data);
-    } catch (error) {
-      console.error("Error fetching banners:", error);
-    }
+    const res = await axios.get('/api/banner');
+    setBanners(res.data);
+  };
+
+  const createBanner = async (formData: FormData) => {
+    await axios.post('/api/banner', formData);
+    fetchBanners();
+  };
+
+  const updateBanner = async (id: string, formData: FormData) => {
+    await axios.put(`/api/banner/${id}`, formData);
+    fetchBanners();
+  };
+
+  const deleteBanner = async (id: string) => {
+    await axios.delete(`/api/banner/${id}`);
+    fetchBanners();
   };
 
   useEffect(() => {
     fetchBanners();
   }, []);
 
-  // Add a new banner
-  const addBanner = async (formData: FormData) => {
-    try {
-      const res = await fetch("/api/banner", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Failed to add banner");
-      const json = await res.json();
-      setBanners((prev) => [...prev, json.data]);
-    } catch (error) {
-      console.error("Error adding banner:", error);
-    }
-  };
-
-  // Delete a banner by ID (soft delete)
-  const deleteBanner = async (id: string) => {
-    try {
-      const res = await fetch(`/api/banner/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete banner");
-      setBanners((prev) => prev.filter((b) => b._id !== id));
-      fetchBanners();
-    } catch (error) {
-      console.error("Error deleting banner:", error);
-    }
-  };
-
-  // ✅ FIXED: Update banner by ID
-  const updateBanner = async (formData: FormData) => {
-    try {
-      const id = formData.get("id")?.toString();
-      if (!id) throw new Error("Missing banner ID in form data");
-
-      const res = await fetch(`/api/banner/${id}`, {
-        method: "PUT",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Failed to update banner");
-      const json = await res.json();
-
-      setBanners((prev) =>
-        prev.map((banner) => (banner._id === id ? json.data : banner))
-      );
-      fetchBanners();
-    } catch (error) {
-      console.error("Error updating banner:", error);
-    }
-  };
-
   return (
-    <BannerContext.Provider
-      value={{ banners, addBanner, deleteBanner, updateBanner }}
-    >
+    <BannerContext.Provider value={{ banners, fetchBanners, createBanner, updateBanner, deleteBanner }}>
       {children}
     </BannerContext.Provider>
   );
-};
-
-export const useBannerContext = () => {
-  const context = useContext(BannerContext);
-  if (!context)
-    throw new Error("useBannerContext must be used within BannerProvider");
-  return context;
 };

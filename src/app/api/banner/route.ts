@@ -1,68 +1,54 @@
-import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
-import Banner from "@/models/Banner";
-import { v4 as uuidv4 } from "uuid";
+import { NextResponse } from 'next/server';
+import Banner from '@/models/Banner';
+import imagekit from '@/utils/imagekit';
+import { v4 as uuidv4 } from 'uuid';
+import { connectToDatabase } from '@/utils/db';
 
-// Avoid using `module` as a variable name
-type BannerModule = string;
-
+// POST - Create a new banner
 export async function POST(req: Request) {
   await connectToDatabase();
-
   try {
     const formData = await req.formData();
-    console.log("formadata of the banner : ", formData);
-    const files = formData.getAll("newImages") as File[];
-    const page = formData.get("page")?.toString();
-    const category = JSON.parse(formData.get("category")?.toString() || "[]") as string[];
-    const bannerModule = JSON.parse(formData.get("module")?.toString() || "[]") as BannerModule[];
+    const file: File = formData.get('file') as File;
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const fileName = `banner_${uuidv4()}`;
 
-    if (!page || !["homepage", "categorypage"].includes(page) || !category || !bannerModule) {
-      return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
-    }
-
-    const images: { url: string; category: string; module: string }[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/banners",
-      });
-
-      images.push({
-        url: upload.url,
-        category: category[i],
-        module: bannerModule[i],
-      });
-    }
-
-    const newBanner = await Banner.create({
-      images,
-      page,
-      isDeleted: false,
+    const uploadRes = await imagekit.upload({
+      file: buffer,
+      fileName,
     });
 
-    return NextResponse.json({ success: true, data: newBanner }, { status: 201 });
-  } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : "Upload failed";
-    return NextResponse.json({ success: false, message: errMsg }, { status: 500 });
+    const data = {
+      page: formData.get('page'),
+      selectionType: formData.get('selectionType'),
+      category: formData.get('category') || undefined,
+      subcategory: formData.get('subcategory') || undefined,
+      service: formData.get('service') || undefined,
+      referralUrl: formData.get('referralUrl') || undefined,
+      file: uploadRes.url,
+    };
+
+    const newBanner = await Banner.create(data);
+    return NextResponse.json(newBanner, { status: 201 });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to create banner' }, { status: 500 });
   }
 }
 
+// GET - Get all banners (that are not deleted)
 export async function GET() {
   await connectToDatabase();
-
   try {
-    const banners = await Banner.find().sort();
-    return NextResponse.json({ success: true, data: banners });
-  } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : "Fetch failed";
-    return NextResponse.json({ success: false, message: errMsg }, { status: 500 });
+    const banners = await Banner.find({ isDeleted: false })
+      .populate('category')
+      // .populate('subcategory')
+      // .populate('service')
+      // .sort({ createdAt: -1 });
+
+    return NextResponse.json(banners, { status: 200 });
+  } catch (err: any) {
+    console.error('GET /api/banner error:', err.message || err);
+    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
   }
 }
+

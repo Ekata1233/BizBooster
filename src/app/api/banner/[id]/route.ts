@@ -1,118 +1,54 @@
-import { NextResponse } from "next/server";
-import Banner from "@/models/Banner";
-import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
-import { v4 as uuidv4 } from "uuid";
+import { NextResponse } from 'next/server';
+import Banner from '@/models/Banner';
+import imagekit from '@/utils/imagekit';
+import { connectToDatabase } from '@/utils/db';
 
-// Enable CORS for all methods
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-// Handle preflight request
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  await connectToDatabase();
+  try {
+    const banner = await Banner.findById(params.id);
+    return NextResponse.json(banner);
+  } catch {
+    return NextResponse.json({ error: 'Banner not found' }, { status: 404 });
+  }
 }
 
-// GET a specific banner by ID
-export async function GET(req: Request) {
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
   await connectToDatabase();
+  try {
+    const formData = await req.formData();
+    const updates: any = {
+      page: formData.get('page'),
+      selectionType: formData.get('selectionType'),
+      category: formData.get('category') || undefined,
+      subcategory: formData.get('subcategory') || undefined,
+      service: formData.get('service') || undefined,
+      referralUrl: formData.get('referralUrl') || undefined,
+    };
 
-  const id = req.url.split("/").pop();
-  if (!id) {
-    return NextResponse.json(
-      { success: false, message: "Missing ID" },
-      { status: 400, headers: corsHeaders }
-    );
+    const file = formData.get('file');
+    if (file && typeof file !== 'string') {
+      const buffer = Buffer.from(await (file as File).arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `banner_update_${Date.now()}`,
+      });
+      updates.file = upload.url;
+    }
+
+    const updated = await Banner.findByIdAndUpdate(params.id, updates, { new: true });
+    return NextResponse.json(updated);
+  } catch (err) {
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
-
-  const banner = await Banner.findById(id);
-  if (!banner || banner.isDeleted) {
-    return NextResponse.json(
-      { success: false, message: "Not found" },
-      { status: 404, headers: corsHeaders }
-    );
-  }
-
-  return NextResponse.json({ success: true, data: banner }, { status: 200, headers: corsHeaders });
 }
 
-// UPDATE a specific banner by ID
-export async function PUT(req: Request) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   await connectToDatabase();
-
-  const id = req.url.split("/").pop();
-  if (!id) {
-    return NextResponse.json(
-      { success: false, message: "Missing ID" },
-      { status: 400, headers: corsHeaders }
-    );
+  try {
+    await Banner.findByIdAndUpdate(params.id, { isDeleted: true });
+    return NextResponse.json({ message: 'Banner deleted' });
+  } catch {
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
-
-  const formData = await req.formData();
-  const existingImages = JSON.parse(formData.get("existingImages") as string || "[]") as { url: string; category: string; module: string }[];
-  const newFiles = formData.getAll("newImages") as File[];
-  const category = formData.get("category")?.toString();
-  const moduleName = formData.get("module")?.toString(); // ✅ Renamed
-
-  const newUploadedImages: { url: string; category: string; module: string }[] = [];
-
-  for (const file of newFiles) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const upload = await imagekit.upload({
-      file: buffer,
-      fileName: `${uuidv4()}-${file.name}`,
-      folder: "/banners",
-    });
-
-    newUploadedImages.push({ url: upload.url, category: category || "", module: moduleName || "" });
-  }
-
-  const finalImages = [...existingImages, ...newUploadedImages];
-
-  const updatedBanner = await Banner.findByIdAndUpdate(
-    id,
-    { images: finalImages, page: formData.get("page")?.toString(), isDeleted: false },
-    { new: true, runValidators: true }
-  );
-
-  if (!updatedBanner) {
-    return NextResponse.json(
-      { success: false, message: "Banner not found or failed to update" },
-      { status: 404, headers: corsHeaders }
-    );
-  }
-
-  return NextResponse.json({ success: true, data: updatedBanner }, { status: 200, headers: corsHeaders });
-}
-
-// DELETE (soft delete) a specific banner by ID
-export async function DELETE(req: Request) {
-  await connectToDatabase();
-
-  const id = req.url.split("/").pop();
-  if (!id) {
-    return NextResponse.json(
-      { success: false, message: "Missing ID" },
-      { status: 400, headers: corsHeaders }
-    );
-  }
-
-  const deletedBanner = await Banner.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
-
-  if (!deletedBanner) {
-    return NextResponse.json(
-      { success: false, message: "Banner not found" },
-      { status: 404, headers: corsHeaders }
-    );
-  }
-
-  return NextResponse.json(
-    { success: true, message: "Deleted successfully" },
-    { status: 200, headers: corsHeaders }
-  );
 }

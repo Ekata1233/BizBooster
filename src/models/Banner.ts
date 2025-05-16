@@ -1,42 +1,70 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose';
 
-export type BannerPageType = "homepage" | "categorypage";
-
-interface ImageInfo {
-  url: string;
-  category: mongoose.Types.ObjectId;
-  module: mongoose.Types.ObjectId;
-}
+export type SelectionType = 'category' | 'subcategory' | 'service' | 'referralUrl';
+export type PageType = 'home' | 'category';
 
 export interface IBanner extends Document {
-  images: ImageInfo[];
-  page: BannerPageType;
+  page: PageType;
+  selectionType: SelectionType;
+  category?: mongoose.Types.ObjectId;
+  subcategory?: mongoose.Types.ObjectId;
+  service?: mongoose.Types.ObjectId;
+  referralUrl?: string;
+  file: string;
   isDeleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const imageInfoSchema = new Schema<ImageInfo>(
+const BannerSchema = new Schema<IBanner>(
   {
-    url: { type: String, required: true },
-    category:  { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
-    module: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
-  },
-  { _id: false }
-);
-
-const bannerSchema = new Schema<IBanner>(
-  {
-    images: { type: [imageInfoSchema], required: true },
     page: {
       type: String,
-      enum: ["homepage", "categorypage"],
+      enum: ['home', 'category'],
       required: true,
     },
-    isDeleted: { type: Boolean, default: false },
+    selectionType: {
+      type: String,
+      enum: ['category', 'subcategory', 'service', 'referralUrl'],
+      required: true,
+    },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      required: function (this: IBanner) {
+        return this.selectionType === 'category';
+      },
+    },
+    subcategory: {
+      type: Schema.Types.ObjectId,
+      ref: 'Subcategory',
+      required: function (this: IBanner) {
+        return this.selectionType === 'subcategory';
+      },
+    },
+    service: {
+      type: Schema.Types.ObjectId,
+      ref: 'Service',
+      required: function (this: IBanner) {
+        return this.selectionType === 'service';
+      },
+    },
+    referralUrl: {
+      type: String,
+      required: function (this: IBanner) {
+        return this.selectionType === 'referralUrl';
+      },
+    },
+    file: {
+      type: String,
+      required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Banner ||
-  mongoose.model<IBanner>("Banner", bannerSchema);
+export default mongoose.models.Banner || mongoose.model<IBanner>('Banner', BannerSchema);
