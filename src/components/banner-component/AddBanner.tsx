@@ -9,18 +9,7 @@ import { useModule } from '@/context/ModuleContext'
 import { useCategory } from '@/context/CategoryContext'
 import { useBannerContext } from '@/context/BannerContext'
 
-interface ModuleType {
-  _id: string
-  name: string
-}
 
-interface CategoryType {
-  _id?: string
-  name: string
-  module?: {
-    _id: string
-  }
-}
 
 const AddBanner = () => {
   const { modules } = useModule()
@@ -105,8 +94,8 @@ const AddBanner = () => {
       formData.append('page', page)
 
       // Append all images with their module/category info as separate fields
-      imageEntries.forEach(({ module, category, files }, entryIndex) => {
-        files.forEach((file, fileIndex) => {
+      imageEntries.forEach(({files }) => {
+        files.forEach((file) => {
           formData.append('newImages', file)
         })
       })

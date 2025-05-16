@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import Image from 'next/image';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -53,8 +53,8 @@ const Banner = () => {
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedImages, setUpdatedImages] = useState<ImageInfo[]>([]);
   const [newImages, setNewImages] = useState<FileList | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading] = useState<boolean>(false);
+  const [error] = useState<string | null>(null);
 
   // Prepare dropdown options from context
   const moduleOptions = moduleData.map((mod) => mod.name);
