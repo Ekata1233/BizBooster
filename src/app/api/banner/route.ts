@@ -3,6 +3,9 @@ import Banner from '@/models/Banner';
 import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '@/utils/db';
+import '@/models/Category'; // ✅ Register model
+import '@/models/Subcategory'; // ✅ Register model
+// Removed: import '@/models/Service';
 
 // POST - Create a new banner
 export async function POST(req: Request) {
@@ -41,9 +44,8 @@ export async function GET() {
   try {
     const banners = await Banner.find({ isDeleted: false })
       .populate('category')
-      // .populate('subcategory')
-      // .populate('service')
-      // .sort({ createdAt: -1 });
+      .populate('subcategory');
+      // Removed .populate('service')
 
     return NextResponse.json(banners, { status: 200 });
   } catch (err: any) {
@@ -51,4 +53,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
   }
 }
-
