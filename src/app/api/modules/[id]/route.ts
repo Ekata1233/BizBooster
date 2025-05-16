@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import Banner from "@/models/Banner";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,14 +20,14 @@ export async function PUT(req: Request) {
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop(); // Get the last part of the URL
+    const id = url.pathname.split("/").pop();
 
     const formData = await req.formData();
 
-    const name = formData.get("name") as string;
-    const categories = JSON.parse(formData.get("categories") as string);
+    const title = formData.get("title") as string;
+    const subtitle = formData.get("subtitle") as string;
 
-    if (!name || !id) {
+    if (!title || !subtitle || !id) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
@@ -36,32 +37,32 @@ export async function PUT(req: Request) {
     let imageUrl = "";
     const file = formData.get("image") as File | null;
 
-    if (file && typeof file === "object" && file instanceof File) {
+    if (file && file instanceof File) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${file.name}`,
-        folder: "/uploads", // optional
+        folder: "/banner",
       });
 
       imageUrl = uploadResponse.url;
     }
 
     const updateData: Record<string, unknown> = {
-      name,
-      categories,
+      title,
+      subtitle,
       isDeleted: false,
     };
     if (imageUrl) updateData.image = imageUrl;
 
-    const updatedModule = await Module.findByIdAndUpdate(id, updateData, {
+    const updatedBanner = await Banner.findByIdAndUpdate(id, updateData, {
       new: true,
     });
 
     return NextResponse.json(
-      { success: true, data: updatedModule },
+      { success: true, data: updatedBanner },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
