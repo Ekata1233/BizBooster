@@ -9,7 +9,12 @@ import { useModule } from '@/context/ModuleContext'
 import { useCategory } from '@/context/CategoryContext'
 import { useBannerContext } from '@/context/BannerContext'
 
-
+// ✅ Add this missing type to fix the error
+type ImageEntry = {
+  module: string;
+  category: string;
+  files: File[];
+};
 
 const AddBanner = () => {
   const { modules } = useModule()
@@ -30,30 +35,27 @@ const AddBanner = () => {
     label: mod.name,
   }))
 
-    const getCategoryOptions = (moduleId: string) => {
+  const getCategoryOptions = (moduleId: string) => {
     if (!moduleId) return []
     return categories
       .filter((cat) => cat.module?._id === moduleId)
       .map((cat) => ({ value: cat._id ?? '', label: cat.name }))
   }
 
-  // Update specific image entry's module
   const handleModuleChange = (index: number, moduleId: string) => {
     const updatedEntries = [...imageEntries]
     updatedEntries[index].module = moduleId
-    updatedEntries[index].category = '' // reset category when module changes
-    updatedEntries[index].files = [] // reset files when module changes (optional)
+    updatedEntries[index].category = ''
+    updatedEntries[index].files = []
     setImageEntries(updatedEntries)
   }
 
-  // Update specific image entry's category
   const handleCategoryChange = (index: number, categoryId: string) => {
     const updatedEntries = [...imageEntries]
     updatedEntries[index].category = categoryId
     setImageEntries(updatedEntries)
   }
 
-  // Update specific image entry's files
   const handleFileChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files) return
@@ -62,18 +64,13 @@ const AddBanner = () => {
     setImageEntries(updatedEntries)
   }
 
-  // Add new empty image entry
   const addImageEntry = () => {
     setImageEntries([...imageEntries, { module: '', category: '', files: [] }])
   }
 
-  // Remove image entry at index (optional)
   const removeImageEntry = (index: number) => {
     setImageEntries(imageEntries.filter((_, i) => i !== index))
   }
-
-  // Filter categories by module for a given entry
-
 
   const handleSubmit = async () => {
     if (!page) {
@@ -81,7 +78,6 @@ const AddBanner = () => {
       return
     }
 
-    // Validate all image entries filled properly
     for (const [idx, entry] of imageEntries.entries()) {
       if (!entry.module || !entry.category || entry.files.length === 0) {
         alert(`Please fill all fields for image entry #${idx + 1}.`)
@@ -93,8 +89,7 @@ const AddBanner = () => {
       const formData = new FormData()
       formData.append('page', page)
 
-      // Append all images with their module/category info as separate fields
-      imageEntries.forEach(({files }) => {
+      imageEntries.forEach(({ files }) => {
         files.forEach((file) => {
           formData.append('newImages', file)
         })
@@ -197,7 +192,6 @@ const AddBanner = () => {
                 </Button>
               )}
 
-
               {idx === imageEntries.length - 1 && (
                 <div className="mt-4">
                   <Button size="sm" variant="outline" className='!text-green-500 !border !border-green-600 !bg-white' onClick={addImageEntry}>
@@ -205,11 +199,8 @@ const AddBanner = () => {
                   </Button>
                 </div>
               )}
-
             </div>
-
           ))}
-
 
           <div className="mt-6">
             <Button size="sm" variant="primary" onClick={handleSubmit}>
