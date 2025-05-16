@@ -55,7 +55,7 @@ export async function PUT(req: Request) {
   const existingImages = JSON.parse(formData.get("existingImages") as string || "[]") as { url: string; category: string; module: string }[];
   const newFiles = formData.getAll("newImages") as File[];
   const category = formData.get("category")?.toString();
-  const module = formData.get("module")?.toString();
+  const moduleName = formData.get("module")?.toString(); // ✅ Renamed
 
   const newUploadedImages: { url: string; category: string; module: string }[] = [];
 
@@ -69,7 +69,7 @@ export async function PUT(req: Request) {
       folder: "/banners",
     });
 
-    newUploadedImages.push({ url: upload.url, category: category || "", module: module || "" });
+    newUploadedImages.push({ url: upload.url, category: category || "", module: moduleName || "" });
   }
 
   const finalImages = [...existingImages, ...newUploadedImages];
@@ -89,7 +89,6 @@ export async function PUT(req: Request) {
 
   return NextResponse.json({ success: true, data: updatedBanner }, { status: 200, headers: corsHeaders });
 }
-
 
 // DELETE (soft delete) a specific banner by ID
 export async function DELETE(req: Request) {
