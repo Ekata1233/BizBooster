@@ -40,6 +40,8 @@ const Banner = () => {
   const { modules: moduleData } = useModule();
   const { categories: categoryData } = useCategory();
 
+
+  
   // Create mapping objects for easy lookup
   const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
