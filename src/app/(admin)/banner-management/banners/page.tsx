@@ -19,7 +19,7 @@ interface BannerType {
   page: string;
   selectionType: string;
   category?: string | { _id: string; name: string };
-  subcategory?: string;
+  subcategory?: string | { _id: string; name: string };
   service?: string;
   referralUrl?: string;
   isDeleted?: boolean;
@@ -89,10 +89,14 @@ const Banner = () => {
       ? currentBanner.category?._id
       : currentBanner.category;
 
+      const subcategoryId = typeof currentBanner.subcategory === 'object'
+      ? currentBanner.subcategory?._id
+      : currentBanner.subcategory;
+
     if (currentBanner.selectionType === 'category' && categoryId) {
       formData.append('category', categoryId);
-    } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
-      formData.append('subcategory', currentBanner.subcategory);
+    } else if (currentBanner.selectionType === 'subcategory' && subcategoryId) {
+      formData.append('subcategory', subcategoryId);
     } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
       formData.append('service', currentBanner.service);
     } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
@@ -106,7 +110,8 @@ const Banner = () => {
     }
 
     try {
-      await updateBanner(formData);
+      // Pass both id and formData as separate arguments
+      await updateBanner(currentBanner._id, formData);
       alert('Banner updated successfully');
       setEditModalOpen(false);
       setNewImage(null);
@@ -311,7 +316,7 @@ const Banner = () => {
                   }
                 >
                   <option value="">Select Category</option>
-                  {categoryData.map((cat) => (
+                  {subcategoryData.map((cat) => (
                     <option key={cat._id} value={cat._id}>
                       {cat.name}
                     </option>
@@ -323,17 +328,26 @@ const Banner = () => {
             {currentBanner?.selectionType === 'subcategory' && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium">Subcategory</label>
-                <input
-                  type="text"
+                <select
                   className="w-full border px-3 py-2 rounded"
-                  value={currentBanner?.subcategory || ''}
+                  value={
+                    typeof currentBanner?.subcategory === 'object'
+                      ? currentBanner.subcategory?._id
+                      : currentBanner?.subcategory || ''
+                  }
                   onChange={(e) =>
                     setCurrentBanner((prev) =>
                       prev ? { ...prev, subcategory: e.target.value } : null
                     )
                   }
-                  placeholder="Enter subcategory ID"
-                />
+                >
+                  <option value="">Select Subcategory</option>
+                  {categoryData.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 
