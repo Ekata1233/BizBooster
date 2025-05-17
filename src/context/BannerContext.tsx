@@ -44,6 +44,7 @@ export const BannerProvider = ({ children }: { children: ReactNode }) => {
     await axios.put(`/api/banner/${id}`, formData);
     fetchBanners();
   };
+console.log("Banners ",banners);
 
   const deleteBanner = async (id: string) => {
     await axios.delete(`/api/banner/${id}`);
