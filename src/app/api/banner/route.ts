@@ -34,7 +34,10 @@ export async function POST(req: Request) {
     const newBanner = await Banner.create(data);
     return NextResponse.json(newBanner, { status: 201 });
   } catch (err) {
+    console.log(err);
     return NextResponse.json({ error: 'Failed to create banner' }, { status: 500 });
+    
+    
   }
 }
 

@@ -39,7 +39,7 @@ interface TableData {
 
 const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBanner();
-  const { modules: moduleData } = useModule();
+  // const { modules: moduleData } = useModule();
   const { categories: categoryData } = useCategory();
   const { subcategories: subcategoryData } = useSubcategory();
 
