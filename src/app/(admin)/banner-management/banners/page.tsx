@@ -12,17 +12,15 @@ import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useBanner } from '@/context/BannerContext';
 
-interface ImageInfo {
-  url: string;
-  category?: string;
-  module?: string;
-}
-
 interface BannerType {
   _id: string;
   file: string;
   page: string;
-  selectionType?: string;
+  selectionType: string;
+  category?: string | { _id: string; name: string };
+  subcategory?: string;
+  service?: string;
+  referralUrl?: string;
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -30,12 +28,11 @@ interface BannerType {
 
 interface TableData {
   id: string;
-  _id: string;
   file: string;
   page: string;
+  selectionType: string;
+  navigationTarget: string;
   status: string;
- selectionType: string;
-  category?: string;
 }
 
 const Banner = () => {
@@ -43,6 +40,7 @@ const Banner = () => {
   const { modules: moduleData } = useModule();
   const { categories: categoryData } = useCategory();
 
+  // Create mapping objects for easy lookup
   const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
 
@@ -53,9 +51,8 @@ const Banner = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // const moduleOptions = moduleData.map((mod) => mod.name);
-  // const categoryOptions = categoryData.map((cat) => cat.name);
-  const pageOptions = ['homepage', 'category'];
+  const pageOptions = ['home', 'category'];
+  const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
@@ -77,11 +74,30 @@ const Banner = () => {
     if (!currentBanner) return;
     setIsLoading(true);
     const formData = new FormData();
+    
     formData.append('id', currentBanner._id);
     formData.append('page', currentBanner.page);
-    formData.append('file', updatedFile);
+    formData.append('selectionType', currentBanner.selectionType);
+    
+    // Handle category object case
+    const categoryId = typeof currentBanner.category === 'object' 
+      ? currentBanner.category?._id 
+      : currentBanner.category;
+    
+    if (currentBanner.selectionType === 'category' && categoryId) {
+      formData.append('category', categoryId);
+    } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
+      formData.append('subcategory', currentBanner.subcategory);
+    } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
+      formData.append('service', currentBanner.service);
+    } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
+      formData.append('referralUrl', currentBanner.referralUrl);
+    }
+    
     if (newImage) {
-      formData.append('newImage', newImage);
+      formData.append('file', newImage);
+    } else {
+      formData.append('file', currentBanner.file);
     }
 
     try {
@@ -98,14 +114,32 @@ const Banner = () => {
 
   if (!Array.isArray(banners)) return <div>Loading...</div>;
 
-  const tableData: TableData[] = banners.map((item) => ({
-    id: item._id,
-    _id: item._id,
-    file: item.file,
-    page: item.page,
-    nagivateto: item.selectionType,
-    category: item.selectionType === 'category' ? categoryMap[item.file] : undefined,
-    status: item.isDeleted ? 'Deleted' : 'Active',
+  // Helper function to get navigation target display text
+  const getNavigationTarget = (banner: BannerType): string => {
+    switch (banner.selectionType) {
+      case 'category':
+        if (typeof banner.category === 'object') {
+          return banner.category?.name || '-';
+        }
+        return banner.category ? categoryMap[banner.category] || banner.category : '-';
+      case 'subcategory':
+        return banner.subcategory || '-';
+      case 'service':
+        return banner.service || '-';
+      case 'referralUrl':
+        return banner.referralUrl ? 'External Link' : '-';
+      default:
+        return '-';
+    }
+  };
+
+  const tableData: TableData[] = banners.map((banner) => ({
+    id: banner._id,
+    file: banner.file,
+    page: banner.page,
+    selectionType: banner.selectionType,
+    navigationTarget: getNavigationTarget(banner),
+    status: banner.isDeleted ? 'Deleted' : 'Active',
   }));
 
   const columns = [
@@ -118,39 +152,38 @@ const Banner = () => {
       header: 'Image',
       accessor: 'file',
       render: (row: TableData) => (
-        <div className="flex flex-wrap gap-2">
-          <div className="w-24 h-24 relative border rounded overflow-hidden">
-            <Image src={row.file} alt="Banner" fill className="object-cover" />
-          </div>
+        <div className="w-24 h-24 relative border rounded overflow-hidden">
+          <Image 
+            src={row.file} 
+            alt="Banner" 
+            fill 
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         </div>
       ),
     },
     {
-      header: 'Navigate to',
-      accessor: 'nagivateto',
+      header: 'Selection Type',
+      accessor: 'selectionType',
       render: (row: TableData) => (
-        <div className="flex flex-col gap-1">
-          <span>{row.selectionType || '-'}</span>
-        </div>
+        <span className="capitalize">{row.selectionType || '-'}</span>
       ),
     },
     {
-      header: 'Category',
-      accessor: 'category',
+      header: 'Navigate To',
+      accessor: 'navigationTarget',
       render: (row: TableData) => (
-        <div className="flex flex-col gap-1">
-          <span>{row.category || '-'}</span>
-        </div>
+        <span className="truncate max-w-xs inline-block">{row.navigationTarget}</span>
       ),
     },
     {
       header: 'Status',
       accessor: 'status',
       render: (row: TableData) => {
-        const statusColor =
-          row.status === 'Deleted'
-            ? 'text-red-600 bg-red-100 border border-red-300'
-            : 'text-green-600 bg-green-100 border border-green-300';
+        const statusColor = row.status === 'Deleted' 
+          ? 'text-red-600 bg-red-100 border border-red-300' 
+          : 'text-green-600 bg-green-100 border border-green-300';
         return (
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColor}`}>
             {row.status}
@@ -201,50 +234,8 @@ const Banner = () => {
           <h2 className="text-lg font-semibold mb-4">Edit Banner</h2>
           {error && <div className="text-red-500 mb-4">{error}</div>}
 
-          <div className="grid md:grid-cols-3 gap-4 mb-4">
-            {/* Module */}
-            <div>
-              <label className="block text-sm font-medium">Module</label>
-              <select
-                className="w-full border px-3 py-2 rounded"
-                value={currentBanner?.selectionType === 'module' ? currentBanner.file : ''}
-                onChange={(e) =>
-                  setCurrentBanner((prev) =>
-                    prev ? { ...prev, file: e.target.value, selectionType: 'module' } : null
-                  )
-                }
-              >
-                <option value="">Select Module</option>
-                {moduleData.map((mod) => (
-                  <option key={mod._id} value={mod._id}>
-                    {mod.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium">Category</label>
-              <select
-                className="w-full border px-3 py-2 rounded"
-                value={currentBanner?.selectionType === 'category' ? currentBanner.file : ''}
-                onChange={(e) =>
-                  setCurrentBanner((prev) =>
-                    prev ? { ...prev, file: e.target.value, selectionType: 'category' } : null
-                  )
-                }
-              >
-                <option value="">Select Category</option>
-                {categoryData.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Page */}
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            {/* Page Selection */}
             <div>
               <label className="block text-sm font-medium">Page</label>
               <select
@@ -264,6 +255,112 @@ const Banner = () => {
                 ))}
               </select>
             </div>
+
+            {/* Selection Type */}
+            <div>
+              <label className="block text-sm font-medium">Navigate To</label>
+              <select
+                className="w-full border px-3 py-2 rounded"
+                value={currentBanner?.selectionType || ''}
+                onChange={(e) =>
+                  setCurrentBanner((prev) =>
+                    prev ? { 
+                      ...prev, 
+                      selectionType: e.target.value,
+                      category: undefined,
+                      subcategory: undefined,
+                      service: undefined,
+                      referralUrl: undefined
+                    } : null
+                  )
+                }
+              >
+                <option value="">Select Navigation Target</option>
+                {selectionTypeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Dynamic Field Based on Selection Type */}
+            {currentBanner?.selectionType === 'category' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Category</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={
+                    typeof currentBanner?.category === 'object' 
+                      ? currentBanner.category?._id 
+                      : currentBanner?.category || ''
+                  }
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, category: e.target.value } : null
+                    )
+                  }
+                >
+                  <option value="">Select Category</option>
+                  {categoryData.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {currentBanner?.selectionType === 'subcategory' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Subcategory</label>
+                <input
+                  type="text"
+                  className="w-full border px-3 py-2 rounded"
+                  value={currentBanner?.subcategory || ''}
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, subcategory: e.target.value } : null
+                    )
+                  }
+                  placeholder="Enter subcategory ID"
+                />
+              </div>
+            )}
+
+            {currentBanner?.selectionType === 'service' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Service</label>
+                <input
+                  type="text"
+                  className="w-full border px-3 py-2 rounded"
+                  value={currentBanner?.service || ''}
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, service: e.target.value } : null
+                    )
+                  }
+                  placeholder="Enter service ID"
+                />
+              </div>
+            )}
+
+            {currentBanner?.selectionType === 'referralUrl' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Referral URL</label>
+                <input
+                  type="text"
+                  className="w-full border px-3 py-2 rounded"
+                  value={currentBanner?.referralUrl || ''}
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, referralUrl: e.target.value } : null
+                    )
+                  }
+                  placeholder="Enter referral URL"
+                />
+              </div>
+            )}
           </div>
 
           {/* Existing Image */}
@@ -271,7 +368,13 @@ const Banner = () => {
             <label className="block text-sm font-medium mb-1">Current Image</label>
             <div className="flex gap-4 flex-wrap">
               <div className="relative w-24 h-24 border rounded overflow-hidden">
-                <Image src={updatedFile} alt="Banner" fill className="object-cover" />
+                <Image 
+                  src={updatedFile} 
+                  alt="Banner" 
+                  fill 
+                  className="object-cover"
+                  sizes="100vw"
+                />
               </div>
             </div>
           </div>
@@ -282,7 +385,12 @@ const Banner = () => {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => e.target.files && setNewImage(e.target.files[0])}
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  setNewImage(e.target.files[0]);
+                  setUpdatedFile(URL.createObjectURL(e.target.files[0]));
+                }
+              }}
               className="border px-3 py-2 rounded w-full"
             />
           </div>
