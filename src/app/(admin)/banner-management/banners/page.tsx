@@ -29,6 +29,7 @@ interface BannerType {
 
 interface TableData {
   id: string;
+  
   file: string;
   page: string;
   selectionType: string;
