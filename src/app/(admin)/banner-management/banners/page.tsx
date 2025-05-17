@@ -41,7 +41,7 @@ const Banner = () => {
   const { categories: categoryData } = useCategory();
 
 
-  
+
   // Create mapping objects for easy lookup
   const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
@@ -73,46 +73,47 @@ const Banner = () => {
   };
 
   const handleUpdate = async () => {
-    if (!currentBanner) return;
-    setIsLoading(true);
-    const formData = new FormData();
-    
-    formData.append('id', currentBanner._id);
-    formData.append('page', currentBanner.page);
-    formData.append('selectionType', currentBanner.selectionType);
-    
-    // Handle category object case
-    const categoryId = typeof currentBanner.category === 'object' 
-      ? currentBanner.category?._id 
-      : currentBanner.category;
-    
-    if (currentBanner.selectionType === 'category' && categoryId) {
-      formData.append('category', categoryId);
-    } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
-      formData.append('subcategory', currentBanner.subcategory);
-    } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
-      formData.append('service', currentBanner.service);
-    } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
-      formData.append('referralUrl', currentBanner.referralUrl);
-    }
-    
-    if (newImage) {
-      formData.append('file', newImage);
-    } else {
-      formData.append('file', currentBanner.file);
-    }
+  if (!currentBanner) return;
+  setIsLoading(true);
+  const formData = new FormData();
+  
+  // Append all fields to formData
+  formData.append('page', currentBanner.page);
+  formData.append('selectionType', currentBanner.selectionType);
+  
+  // Handle category object case
+  const categoryId = typeof currentBanner.category === 'object' 
+    ? currentBanner.category?._id 
+    : currentBanner.category;
+  
+  if (currentBanner.selectionType === 'category' && categoryId) {
+    formData.append('category', categoryId);
+  } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
+    formData.append('subcategory', currentBanner.subcategory);
+  } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
+    formData.append('service', currentBanner.service);
+  } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
+    formData.append('referralUrl', currentBanner.referralUrl);
+  }
+  
+  if (newImage) {
+    formData.append('file', newImage);
+  } else {
+    formData.append('file', currentBanner.file);
+  }
 
-    try {
-      await updateBanner(formData);
-      alert('Banner updated successfully');
-      setEditModalOpen(false);
-      setNewImage(null);
-    } catch (err) {
-      setError('Failed to update banner.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    // Pass both id and formData as separate arguments
+    await updateBanner(currentBanner._id, formData);
+    alert('Banner updated successfully');
+    setEditModalOpen(false);
+    setNewImage(null);
+  } catch (err) {
+    setError('Failed to update banner.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   if (!Array.isArray(banners)) return <div>Loading...</div>;
 
