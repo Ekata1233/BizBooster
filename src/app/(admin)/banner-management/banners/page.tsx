@@ -11,6 +11,7 @@ import AddBanner from '@/components/banner-component/AddBanner';
 import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useBanner } from '@/context/BannerContext';
+import { useSubcategory } from '@/context/SubcategoryContext';
 
 interface BannerType {
   _id: string;
@@ -39,12 +40,14 @@ const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBanner();
   const { modules: moduleData } = useModule();
   const { categories: categoryData } = useCategory();
+  const { subcategories: subcategoryData } = useSubcategory();
 
-
+  console.log("Banners : ", banners);
 
   // Create mapping objects for easy lookup
   const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
+  const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
@@ -73,34 +76,34 @@ const Banner = () => {
   };
 
   const handleUpdate = async () => {
-  if (!currentBanner) return;
-  setIsLoading(true);
-  const formData = new FormData();
-  
-  // Append all fields to formData
-  formData.append('page', currentBanner.page);
-  formData.append('selectionType', currentBanner.selectionType);
-  
-  // Handle category object case
-  const categoryId = typeof currentBanner.category === 'object' 
-    ? currentBanner.category?._id 
-    : currentBanner.category;
-  
-  if (currentBanner.selectionType === 'category' && categoryId) {
-    formData.append('category', categoryId);
-  } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
-    formData.append('subcategory', currentBanner.subcategory);
-  } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
-    formData.append('service', currentBanner.service);
-  } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
-    formData.append('referralUrl', currentBanner.referralUrl);
-  }
-  
-  if (newImage) {
-    formData.append('file', newImage);
-  } else {
-    formData.append('file', currentBanner.file);
-  }
+    if (!currentBanner) return;
+    setIsLoading(true);
+    const formData = new FormData();
+
+    formData.append('id', currentBanner._id);
+    formData.append('page', currentBanner.page);
+    formData.append('selectionType', currentBanner.selectionType);
+
+    // Handle category object case
+    const categoryId = typeof currentBanner.category === 'object'
+      ? currentBanner.category?._id
+      : currentBanner.category;
+
+    if (currentBanner.selectionType === 'category' && categoryId) {
+      formData.append('category', categoryId);
+    } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
+      formData.append('subcategory', currentBanner.subcategory);
+    } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
+      formData.append('service', currentBanner.service);
+    } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
+      formData.append('referralUrl', currentBanner.referralUrl);
+    }
+
+    if (newImage) {
+      formData.append('file', newImage);
+    } else {
+      formData.append('file', currentBanner.file);
+    }
 
   try {
     // Pass both id and formData as separate arguments
@@ -126,7 +129,11 @@ const Banner = () => {
         }
         return banner.category ? categoryMap[banner.category] || banner.category : '-';
       case 'subcategory':
-        return banner.subcategory || '-';
+        // return banner.subcategory || '-';
+        if (typeof banner.subcategory === 'object') {
+          return banner.subcategory?.name || '-';
+        }
+        return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
         return banner.service || '-';
       case 'referralUrl':
@@ -156,10 +163,10 @@ const Banner = () => {
       accessor: 'file',
       render: (row: TableData) => (
         <div className="w-24 h-24 relative border rounded overflow-hidden">
-          <Image 
-            src={row.file} 
-            alt="Banner" 
-            fill 
+          <Image
+            src={row.file}
+            alt="Banner"
+            fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
@@ -184,8 +191,8 @@ const Banner = () => {
       header: 'Status',
       accessor: 'status',
       render: (row: TableData) => {
-        const statusColor = row.status === 'Deleted' 
-          ? 'text-red-600 bg-red-100 border border-red-300' 
+        const statusColor = row.status === 'Deleted'
+          ? 'text-red-600 bg-red-100 border border-red-300'
           : 'text-green-600 bg-green-100 border border-green-300';
         return (
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColor}`}>
@@ -267,8 +274,8 @@ const Banner = () => {
                 value={currentBanner?.selectionType || ''}
                 onChange={(e) =>
                   setCurrentBanner((prev) =>
-                    prev ? { 
-                      ...prev, 
+                    prev ? {
+                      ...prev,
                       selectionType: e.target.value,
                       category: undefined,
                       subcategory: undefined,
@@ -294,8 +301,8 @@ const Banner = () => {
                 <select
                   className="w-full border px-3 py-2 rounded"
                   value={
-                    typeof currentBanner?.category === 'object' 
-                      ? currentBanner.category?._id 
+                    typeof currentBanner?.category === 'object'
+                      ? currentBanner.category?._id
                       : currentBanner?.category || ''
                   }
                   onChange={(e) =>
@@ -371,10 +378,10 @@ const Banner = () => {
             <label className="block text-sm font-medium mb-1">Current Image</label>
             <div className="flex gap-4 flex-wrap">
               <div className="relative w-24 h-24 border rounded overflow-hidden">
-                <Image 
-                  src={updatedFile} 
-                  alt="Banner" 
-                  fill 
+                <Image
+                  src={updatedFile}
+                  alt="Banner"
+                  fill
                   className="object-cover"
                   sizes="100vw"
                 />
