@@ -19,7 +19,7 @@ interface BannerType {
   page: string;
   selectionType: string;
   category?: string | { _id: string; name: string };
-  subcategory?: string;
+  subcategory?: string | { _id: string; name: string };
   service?: string;
   referralUrl?: string;
   isDeleted?: boolean;
@@ -46,7 +46,7 @@ const Banner = () => {
   console.log("Banners : ", banners);
 
   // Create mapping objects for easy lookup
-  const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
+  // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
 
@@ -90,10 +90,14 @@ const Banner = () => {
       ? currentBanner.category?._id
       : currentBanner.category;
 
+      const subcategoryId = typeof currentBanner.subcategory === 'object'
+      ? currentBanner.subcategory?._id
+      : currentBanner.subcategory;
+
     if (currentBanner.selectionType === 'category' && categoryId) {
       formData.append('category', categoryId);
-    } else if (currentBanner.selectionType === 'subcategory' && currentBanner.subcategory) {
-      formData.append('subcategory', currentBanner.subcategory);
+    } else if (currentBanner.selectionType === 'subcategory' && subcategoryId) {
+      formData.append('subcategory', subcategoryId);
     } else if (currentBanner.selectionType === 'service' && currentBanner.service) {
       formData.append('service', currentBanner.service);
     } else if (currentBanner.selectionType === 'referralUrl' && currentBanner.referralUrl) {
@@ -106,18 +110,20 @@ const Banner = () => {
       formData.append('file', currentBanner.file);
     }
 
-  try {
-    // Pass both id and formData as separate arguments
-    await updateBanner(currentBanner._id, formData);
-    alert('Banner updated successfully');
-    setEditModalOpen(false);
-    setNewImage(null);
-  } catch (err) {
-    setError('Failed to update banner.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      // Pass both id and formData as separate arguments
+      await updateBanner(currentBanner._id, formData);
+      alert('Banner updated successfully');
+      setEditModalOpen(false);
+      setNewImage(null);
+    } catch (err) {
+      setError('Failed to update banner.');
+      console.log(err);
+      
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!Array.isArray(banners)) return <div>Loading...</div>;
 
@@ -313,7 +319,7 @@ const Banner = () => {
                   }
                 >
                   <option value="">Select Category</option>
-                  {categoryData.map((cat) => (
+                  {subcategoryData.map((cat) => (
                     <option key={cat._id} value={cat._id}>
                       {cat.name}
                     </option>
@@ -325,17 +331,26 @@ const Banner = () => {
             {currentBanner?.selectionType === 'subcategory' && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium">Subcategory</label>
-                <input
-                  type="text"
+                <select
                   className="w-full border px-3 py-2 rounded"
-                  value={currentBanner?.subcategory || ''}
+                  value={
+                    typeof currentBanner?.subcategory === 'object'
+                      ? currentBanner.subcategory?._id
+                      : currentBanner?.subcategory || ''
+                  }
                   onChange={(e) =>
                     setCurrentBanner((prev) =>
                       prev ? { ...prev, subcategory: e.target.value } : null
                     )
                   }
-                  placeholder="Enter subcategory ID"
-                />
+                >
+                  <option value="">Select Subcategory</option>
+                  {categoryData.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 

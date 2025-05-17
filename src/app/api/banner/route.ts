@@ -48,8 +48,9 @@ export async function GET() {
       // Removed .populate('service')
 
     return NextResponse.json(banners, { status: 200 });
-  } catch (err: any) {
-    console.error('GET /api/banner error:', err.message || err);
-    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
-  }
+  } catch (err: unknown) {
+  const errorMessage = err instanceof Error ? err.message : String(err);
+  console.error('GET /api/banner error:', errorMessage);
+  return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
+}
 }

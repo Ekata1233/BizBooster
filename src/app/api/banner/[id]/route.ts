@@ -54,7 +54,7 @@ export async function PUT(req: Request) {
       fileUrl = uploadResponse.url;
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       page,
       selectionType,
       category: category || undefined,
