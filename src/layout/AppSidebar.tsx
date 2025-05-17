@@ -75,15 +75,15 @@ const moduleItems: NavItem[] = [
       { name: "Category", path: "/category-management/category", pro: false },
     ],
   },
-    {
+  {
     icon: <BoxIcon />,
     name: "SubCategory",
     subItems: [
       { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
     ],
   },
-   {
-    icon: <BoxIcon />,
+  {
+    icon: <FolderIcon />,
     name: "Banner",
     subItems: [
       { name: "Banner", path: "/banner-management/banners", pro: false },
@@ -110,13 +110,35 @@ const customerItems: NavItem[] = [
 
 ];
 
+const providerItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Provider",
+    subItems: [
+      { name: "Add Provider", path: "/provider-management/provider/add-provider", pro: false },
+      { name: "Provider List", path: "/provider-management/provider/provider-list", pro: false },
+    ],
+  },
+];
+
+const serviceItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Server",
+    subItems: [
+      { name: "Add New Service", path: "/service-management/add-service", pro: false },
+      { name: "Service List", path: "/service-management/service-list", pro: false },
+    ],
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer"
+    menuType: "main" | "module" | "customer" | "provider" | "service"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -232,7 +254,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main"  | "customer"| "module";
+    type: "main" | "customer" | "module" | "provider" | "service";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -246,19 +268,21 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
           : menuType === "module"
-            ? moduleItems
-            : customerItems;
+            ? moduleItems : menuType === "provider"
+              ? providerItems : menuType === "service"
+                ? serviceItems
+                : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main"  | "customer"| "module",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service",
                 index,
               });
               submenuMatched = true;
@@ -287,7 +311,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main"  | "customer"| "module") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -397,7 +421,38 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(moduleItems, "module")}
             </div>
 
-            
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "PROVIDER MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(providerItems, "provider")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "SERVICE MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(serviceItems, "service")}
+            </div>
+
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

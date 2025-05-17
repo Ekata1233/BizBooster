@@ -169,7 +169,7 @@ const Banner = () => {
       header: 'Image',
       accessor: 'file',
       render: (row: TableData) => (
-        <div className="w-24 h-24 relative border rounded overflow-hidden">
+        <div className="w-40 h-20 relative border rounded overflow-hidden">
           <Image
             src={row.file}
             alt="Banner"
