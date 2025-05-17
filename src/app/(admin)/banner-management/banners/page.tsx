@@ -53,8 +53,8 @@ const Banner = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const moduleOptions = moduleData.map((mod) => mod.name);
-  const categoryOptions = categoryData.map((cat) => cat.name);
+  // const moduleOptions = moduleData.map((mod) => mod.name);
+  // const categoryOptions = categoryData.map((cat) => cat.name);
   const pageOptions = ['homepage', 'category'];
 
   const handleDelete = async (id: string) => {
