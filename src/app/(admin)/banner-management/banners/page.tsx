@@ -8,7 +8,7 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import { TrashBinIcon, PencilIcon } from '@/icons';
 import { Modal } from '@/components/ui/modal';
 import AddBanner from '@/components/banner-component/AddBanner';
-import { useModule } from '@/context/ModuleContext';
+// import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useBanner } from '@/context/BannerContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
