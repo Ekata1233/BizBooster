@@ -1,36 +1,66 @@
 'use client';
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import axios from "axios";
 
-const ServiceContext = createContext<any>(null);
+type Service = {
+  // Define the properties of a Service object according to your API response
+  _id: string;
+  name: string;
+  // add other fields if necessary
+};
 
-export const ServiceProvider = ({ children }: { children: React.ReactNode }) => {
-  const [services, setServices] = useState([]);
+type ServiceContextType = {
+  services: Service[];
+  createService: (formData: FormData) => Promise<Service | undefined>;
+  updateService: (id: string, data: any) => Promise<Service | undefined>;
+  deleteService: (id: string) => Promise<void>;
+};
 
-  const fetchServices = async () => {
-    const res = await axios.get("/api/service");
-    setServices(res.data);
-  };
+const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
+
+export const ServiceProvider = ({ children }: { children: ReactNode }) => {
+  const [services, setServices] = useState<Service[]>([]);
+
+  const fetchServices = useCallback(async () => {
+    try {
+      const res = await axios.get<Service[]>("/api/service");
+      setServices(res.data);
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [fetchServices]);
 
   const createService = async (formData: FormData) => {
-    const res = await axios.post("/api/service", formData);
-    fetchServices();
-    return res.data;
+    try {
+      const res = await axios.post<Service>("/api/service", formData);
+      await fetchServices();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to create service:", error);
+    }
   };
 
   const updateService = async (id: string, data: any) => {
-    const res = await axios.put(`/api/service/${id}`, data);
-    fetchServices();
-    return res.data;
+    try {
+      const res = await axios.put<Service>(`/api/service/${id}`, data);
+      await fetchServices();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to update service:", error);
+    }
   };
 
   const deleteService = async (id: string) => {
-    await axios.delete(`/api/service/${id}`);
-    fetchServices();
+    try {
+      await axios.delete(`/api/service/${id}`);
+      await fetchServices();
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+    }
   };
 
   return (
@@ -40,4 +70,10 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
-export const useService = () => useContext(ServiceContext);
+export const useService = (): ServiceContextType => {
+  const context = useContext(ServiceContext);
+  if (!context) {
+    throw new Error("useService must be used within a ServiceProvider");
+  }
+  return context;
+};

@@ -94,7 +94,7 @@ export async function PUT(req: Request) {
     }
 
     // Handle banner images upload (optional, multiple)
-    let bannerImagesUrls: string[] = [];
+    const bannerImagesUrls: string[] = [];
     const bannerFiles = formData.getAll("bannerImages") as File[];
     for (const file of bannerFiles) {
       if (file && file instanceof File) {
@@ -111,8 +111,20 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Prepare update data object
-    const updateData: any = {
+    // Define the type for updateData to avoid using any
+    interface UpdateData {
+      serviceName: string;
+      category: string;
+      subcategory: string;
+      price: number;
+      serviceDetails: object;
+      franchiseDetails: object;
+      isDeleted: boolean;
+      thumbnailImage?: string;
+      bannerImages?: string[];
+    }
+
+    const updateData: UpdateData = {
       serviceName,
       category,
       subcategory,
