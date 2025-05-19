@@ -10,7 +10,7 @@ interface Subcategory {
   _id: string;
   id: string;
   name: string;
-  category: { name: string };
+  category: {  _id: string,name: string };
   image?: string;
   isDeleted?: boolean;
   // Add any other fields that are part of your subcategory
