@@ -41,30 +41,31 @@ const AddModule = () => {
         }
     };
     return (
-        <div><ComponentCard title="Add New Module">
-            <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
-                <div>
-                    <Label>Module Name</Label>
-                    <Input
-                        type="text"
-                        placeholder="Enter Module"
-                        value={moduleName}
-                        onChange={(e) => setModuleName(e.target.value)}
-                    />
+        <div>
+            <ComponentCard title="Add New Module">
+                <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+                    <div>
+                        <Label>Module Name</Label>
+                        <Input
+                            type="text"
+                            placeholder="Enter Module"
+                            value={moduleName}
+                            onChange={(e) => setModuleName(e.target.value)}
+                        />
 
-                </div>
-                <div>
-                    <Label>Select Image</Label>
-                    <FileInput onChange={handleFileChange} className="custom-class" />
+                    </div>
+                    <div>
+                        <Label>Select Image</Label>
+                        <FileInput onChange={handleFileChange} className="custom-class" />
 
+                    </div>
+                    <div className='mt-6 '>
+                        <Button size="sm" variant="primary" onClick={handleSubmit}>
+                            Add Module
+                        </Button>
+                    </div>
                 </div>
-                <div className='mt-6 '>
-                    <Button size="sm" variant="primary" onClick={handleSubmit}>
-                        Add Module
-                    </Button>
-                </div>
-            </div>
-        </ComponentCard></div>
+            </ComponentCard></div>
     )
 }
 

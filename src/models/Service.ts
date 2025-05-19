@@ -39,19 +39,22 @@ const serviceSchema = new mongoose.Schema({
     document: {
       type: String
     },
-    whyChoose: {
-      type: String
-    },
+    whyChoose: [{
+      title: { type: String, required: true },
+      description: { type: String },
+      image: { type: String } // image URL or path
+    }],
     howItWorks: {
       type: String
     },
     termsAndConditions: {
       type: String
     },
-    faq: {
-      type: String
-    },
-     extraSections: [{
+    faq: [{
+      question: { type: String, required: true },
+      answer: { type: String }
+    }],
+    extraSections: [{
       title: { type: String, required: true },
       description: { type: String }
     }]
@@ -69,12 +72,12 @@ const serviceSchema = new mongoose.Schema({
     termsAndConditions: {
       type: String
     },
-     extraSections: [{
+    extraSections: [{
       title: { type: String, required: true },
       description: { type: String }
     }]
   },
-   isDeleted: {
+  isDeleted: {
     type: Boolean,
     default: false
   }
