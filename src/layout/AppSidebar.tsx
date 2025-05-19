@@ -124,7 +124,7 @@ const providerItems: NavItem[] = [
 const serviceItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
-    name: "Server",
+    name: "Service",
     subItems: [
       { name: "Add New Service", path: "/service-management/add-service", pro: false },
       { name: "Service List", path: "/service-management/service-list", pro: false },
