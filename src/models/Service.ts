@@ -6,8 +6,7 @@ const extraSectionSchema = new mongoose.Schema({
 }, { _id: false });
 
 const serviceDetailsSchema = new mongoose.Schema({
-  benefits: String,
-  overview: String,
+ 
   highlight: String,
   document: String,
   whyChoose: String,
