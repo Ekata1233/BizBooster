@@ -1,129 +1,150 @@
 import React, { useState } from 'react'
 import ComponentCard from '../common/ComponentCard'
+import BasicDetailsForm from './BasicDetailsForm';
+import ServiceDetailsForm from './ServiceDetailsForm';
+import FranchiseDetailsForm from './FranchiseDetailsForm';
 
 const AddNewService = () => {
     const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    basic: '',
-    service: '',
-    franchise: '',
-  });
+    const [formData, setFormData] = useState({
+        basic: '',
+        service: '',
+        franchise: '',
+    });
 
-  const handleChange = (e:any) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-  const nextStep = () => {
-    if (step < 3) setStep(step + 1);
-  };
+    const nextStep = () => {
+        if (step < 3) setStep(step + 1);
+    };
 
-  const prevStep = () => {
-    if (step > 1) setStep(step - 1);
-  };
+    const prevStep = () => {
+        if (step > 1) setStep(step - 1);
+    };
 
-  const handleSubmit = (e:any) => {
-    e.preventDefault();
-    alert("Form Submitted!\n" + JSON.stringify(formData, null, 2));
-  };
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        alert("Form Submitted!\n" + JSON.stringify(formData, null, 2));
+    };
 
-  const getProgress = () => (step / 3) * 100;
+    const getProgress = () => (step / 3) * 100;
     return (
         <div>
             <ComponentCard title="Add New Service">
                 <div>
-                    <div className="mb-6">
-        <div className="flex justify-between text-sm font-medium text-gray-600 mb-1">
-          <span>Basic</span>
-          <span>Service</span>
-          <span>Franchise</span>
-        </div>
-        <div className="w-full bg-gray-200 h-2 rounded-full">
-          <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${getProgress()}%` }}
-          />
-        </div>
-        <p className="text-center text-sm mt-2 text-gray-500">Step {step} of 3</p>
-      </div>
+                    <div className="flex items-center justify-between mb-10 relative">
+                        {['Basic', 'Service', 'Franchise'].map((label, index) => {
+                            const stepNumber = index + 1;
+                            const isCompleted = step > stepNumber;
+                            const isActive = step === stepNumber;
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {step === 1 && (
-          <div>
-            <label className="block font-medium mb-1">Basic Info</label>
-            <input
-              type="text"
-              name="basic"
-              value={formData.basic}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter basic info"
-              required
-            />
-          </div>
-        )}
+                            return (
+                                <div key={label} className="flex-1 flex flex-col items-center relative">
+                                    {/* Line Between Steps (after the circle, not on first) */}
+                                    {index !== 0 && (
+                                        <div className="absolute top-5 left-[-50%] w-full h-1">
+                                            <div
+                                                className={`h-1 w-full ${step > stepNumber
+                                                    ? 'bg-blue-600'
+                                                    : step === stepNumber
+                                                        ? 'bg-blue-600'
+                                                        : 'bg-gray-300'
+                                                    }`}
+                                            ></div>
+                                        </div>
+                                    )}
 
-        {step === 2 && (
-          <div>
-            <label className="block font-medium mb-1">Service Info</label>
-            <input
-              type="text"
-              name="service"
-              value={formData.service}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter service info"
-              required
-            />
-          </div>
-        )}
+                                    {/* Circle */}
+                                    <div
+                                        className={`z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300
+            ${isCompleted
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : isActive
+                                                    ? 'bg-white text-blue-600 border-blue-600'
+                                                    : 'bg-white text-gray-400 border-gray-300'
+                                            }`}
+                                    >
+                                        {isCompleted ? (
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        ) : (
+                                            stepNumber
+                                        )}
+                                    </div>
 
-        {step === 3 && (
-          <div>
-            <label className="block font-medium mb-1">Franchise Info</label>
-            <input
-              type="text"
-              name="franchise"
-              value={formData.franchise}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter franchise info"
-              required
-            />
-          </div>
-        )}
+                                    {/* Label */}
+                                    <span
+                                        className={`mt-2 text-sm text-center ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'
+                                            }`}
+                                    >
+                                        {label}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
 
-        {/* Buttons */}
-        <div className="flex justify-between pt-4">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              Previous
-            </button>
-          ) : <div></div>}
 
-          {step < 3 ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="ml-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Next
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="ml-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              Submit
-            </button>
-          )}
-        </div>
-      </form>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {step === 1 && (
+                            <div>
+                                <BasicDetailsForm />
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div>
+                                <ServiceDetailsForm />
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div>
+                                <FranchiseDetailsForm />
+                            </div>
+                        )}
+
+                        {/* Buttons */}
+                        <div className="flex justify-between pt-4">
+                            {step > 1 ? (
+                                <button
+                                    type="button"
+                                    onClick={prevStep}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                >
+                                    Previous
+                                </button>
+                            ) : <div></div>}
+
+                            {step < 3 ? (
+                                <button
+                                    type="button"
+                                    onClick={nextStep}
+                                    className="ml-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    Next
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    className="ml-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    Submit
+                                </button>
+                            )}
+                        </div>
+                    </form>
                 </div>
             </ComponentCard>
         </div>
