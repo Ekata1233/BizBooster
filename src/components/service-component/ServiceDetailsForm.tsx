@@ -11,6 +11,7 @@ import Button from '../ui/button/Button';
 interface RowData {
   title: string;
   description: string;
+  
 }
 
 type FAQ = {
@@ -40,11 +41,12 @@ const ServiceDetailsForm = () => {
     setRows(updatedRows);
   };
 
-  const handleRowChange = (index: number, field: string, value: string) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
-    setRows(updatedRows);
-  };
+  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
+  const updatedRows = [...rows];
+  updatedRows[index][field] = value;
+  setRows(updatedRows);
+};
+
 
 
 
@@ -73,7 +75,7 @@ const ServiceDetailsForm = () => {
           <CKEditor
             editor={ClassicEditor as any}
             data={benefits}
-            onChange={(event, editor) => {
+            onChange={(editor) => {
               const data = editor.getData();
               setBenefits(data);
             }}
