@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Handle bannerImages (array of files)
-    let bannerImagesUrls: string[] = [];
     const bannerFiles = formData.getAll("bannerImages") as File[]; // getAll for multiple files
+    const bannerImagesUrls: string[] = [];
     for (const file of bannerFiles) {
       if (file) {
         const arrayBuffer = await file.arrayBuffer();
@@ -136,7 +136,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
 
-    const filter: any = { isDeleted: false };
+    interface ServiceFilter {
+      isDeleted: boolean;
+      serviceName?: { $regex: string; $options: string };
+    }
+    const filter: ServiceFilter = { isDeleted: false };
 
     if (search) {
       const searchRegex = { $regex: search, $options: "i" };
