@@ -6,6 +6,7 @@ export type PageType = 'home' | 'category';
 export interface IBanner extends Document {
   page: PageType;
   selectionType: SelectionType;
+  module?: mongoose.Types.ObjectId;
   category?: mongoose.Types.ObjectId;
   subcategory?: mongoose.Types.ObjectId;
   service?: mongoose.Types.ObjectId;
@@ -27,6 +28,10 @@ const BannerSchema = new Schema<IBanner>(
       type: String,
       enum: ['category', 'subcategory', 'service', 'referralUrl'],
       required: true,
+    },
+    module: {
+      type: Schema.Types.ObjectId,
+      ref: 'Module',
     },
     category: {
       type: Schema.Types.ObjectId,
