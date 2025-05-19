@@ -1,41 +1,89 @@
-import mongoose from 'mongoose';
-
-const extraSectionSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-}, { _id: false });
-
-const serviceDetailsSchema = new mongoose.Schema({
- 
-  highlight: String,
-  document: String,
-  whyChoose: String,
-  howItWorks: String,
-  termsAndConditions: String,
-  faq: String,
-  extraSections: [extraSectionSchema],
-}, { _id: false });
-
-const franchiseDetailsSchema = new mongoose.Schema({
-  commission: String,
-  overview: String,
-  howItWorks: String,
-  termsAndConditions: String,
-  extraSections: [extraSectionSchema],
-}, { _id: false });
+const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
-  serviceName: { type: String, required: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-  subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
-  price: { type: Number, required: true },
-  thumbnailImage: { type: String, required: true },
-  bannerImages: [String],
-  serviceDetails: serviceDetailsSchema,
-  franchiseDetails: franchiseDetailsSchema,
-  isDeleted: { type: Boolean, default: false },
+  serviceName: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
+  },
+  subcategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subcategory',
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  thumbnailImage: {
+    type: String, // URL or path to image
+    required: true
+  },
+  bannerImages: [{
+    type: String // Array of URLs or image paths
+  }],
+  serviceDetails: {
+    benefits: {
+      type: String // HTML content from CKEditor
+    },
+    overview: {
+      type: String
+    },
+    highlight: {
+      type: String
+    },
+    document: {
+      type: String
+    },
+    whyChoose: [{
+      title: { type: String, required: true },
+      description: { type: String },
+      image: { type: String } // image URL or path
+    }],
+    howItWorks: {
+      type: String
+    },
+    termsAndConditions: {
+      type: String
+    },
+    faq: [{
+      question: { type: String, required: true },
+      answer: { type: String }
+    }],
+    extraSections: [{
+      title: { type: String, required: true },
+      description: { type: String }
+    }]
+  },
+  franchiseDetails: {
+    commission: {
+      type: String // HTML content from CKEditor
+    },
+    overview: {
+      type: String
+    },
+    howItWorks: {
+      type: String
+    },
+    termsAndConditions: {
+      type: String
+    },
+    extraSections: [{
+      title: { type: String, required: true },
+      description: { type: String }
+    }]
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });
 
-export default mongoose.models.Service || mongoose.model('Service', serviceSchema);
+const Service = mongoose.models.Service || mongoose.model("Service", serviceSchema);
+export default Service;
