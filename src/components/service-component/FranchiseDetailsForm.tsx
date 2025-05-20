@@ -11,42 +11,73 @@ interface RowData {
   description: string;
 }
 
-const FranchiseDetailsForm = () => {
+interface FranchiseDetailsFormProps {
+  data: {
+    commission?: string | number;
+    overview?: string;
+    howItWorks? : string;
+    terms?: string;
+    rows?: RowData[];
+  };
+  setData: (newData: Partial<any>) => void;
+}
+
+const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
 
+  const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData({ commission: e.target.value });
+  };
+
+  // Handle Overview change from CKEditor
+  const handleOverviewChange = (event: any, editor: any) => {
+    const dataOverview = editor.getData();
+    setData({ overview: dataOverview });
+  };
+
+  const handleHowItWorkChange = (event: any, editor: any) => {
+    const dataHowItWork = editor.getData();
+    setData({ howItWorks: dataHowItWork });
+  }; 
+
+  // Handle Terms change from CKEditor
+  const handleTermsChange = (event: any, editor: any) => {
+    const dataTerms = editor.getData();
+    setData({ terms: dataTerms });
+  };
+
   const handleAddRow = () => {
-    setRows([...rows, { title: '', description: '' }]);
+    const newRows = [...(data.rows || []), { title: '', description: '' }];
+    setData({ rows: newRows });
   };
 
   const handleRemoveRow = (index: number) => {
-    const updatedRows = [...rows];
-    updatedRows.splice(index, 1);
-    setRows(updatedRows);
+    const newRows = [...(data.rows || [])];
+    newRows.splice(index, 1);
+    setData({ rows: newRows });
   };
 
-  const handleRowChange = (
-    index: number,
-    field: keyof RowData,
-    value: string
-  ) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
-    setRows(updatedRows);
-  };
+  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
+    const newRows = [...(data.rows || [])];
+    newRows[index] = { ...newRows[index], [field]: value };
+    setData({ rows: newRows });
+  }
 
 
   return (
     <div>
-      <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
+      <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Franchise Details</h4>
       <div className="space-y-4">
         <div>
           <Label>Commission</Label>
           <Input
             type="number"
             placeholder="Commission"
+            value={data.commission || ''}
+            onChange={handleCommissionChange}
           />
         </div>
 
@@ -56,10 +87,18 @@ const FranchiseDetailsForm = () => {
             <CKEditor
               editor={ClassicEditor as any}
               data={overview}
-              onChange={(event, editor) => {
-                const data = editor.getData();
-                setOverview(data);
-              }}
+              onChange={handleOverviewChange}
+            />
+          </div>
+        </div>
+
+        <div className='my-3'>
+          <Label>How It's Works</Label>
+          <div className="my-editor">
+            <CKEditor
+              editor={ClassicEditor as any}
+              data={howItWorks}
+              onChange={handleHowItWorkChange}
             />
           </div>
         </div>
@@ -70,27 +109,12 @@ const FranchiseDetailsForm = () => {
             <CKEditor
               editor={ClassicEditor as any}
               data={terms}
-              onChange={(event, editor) => {
-                const data = editor.getData();
-                setTerms(data);
-              }}
+             onChange={handleTermsChange}
             />
           </div>
         </div>
 
-        <div className='my-3'>
-          <Label>Overview</Label>
-          <div className="my-editor">
-            <CKEditor
-              editor={ClassicEditor as any}
-              data={overview}
-              onChange={(event, editor) => {
-                const data = editor.getData();
-                setOverview(data);
-              }}
-            />
-          </div>
-        </div>
+        
 
         <div className="my-3">
           {rows.map((row, index) => (

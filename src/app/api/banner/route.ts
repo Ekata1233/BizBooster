@@ -7,6 +7,15 @@ import '@/models/Category'; // ✅ Register model
 import '@/models/Subcategory'; // ✅ Register model
 // Removed: import '@/models/Service';
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 // POST - Create a new banner
 export async function POST(req: Request) {
   await connectToDatabase();
@@ -35,10 +44,14 @@ export async function POST(req: Request) {
     };
 
     const newBanner = await Banner.create(data);
-    return NextResponse.json(newBanner, { status: 201 });
+    return NextResponse.json(newBanner, {
+      status: 201, // or 200 depending on your use case
+      headers: corsHeaders
+    });
+
   } catch (err) {
     console.log(err);
-    return NextResponse.json({ error: 'Failed to create banner' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create banner' }, { status: 500, headers: corsHeaders });
 
 
   }
@@ -54,10 +67,10 @@ export async function GET() {
       .populate('subcategory');
     // Removed .populate('service')
 
-    return NextResponse.json(banners, { status: 200 });
+    return NextResponse.json(banners, { status: 200, headers: corsHeaders });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : String(err);
     console.error('GET /api/banner error:', errorMessage);
-    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500, headers: corsHeaders });
   }
 }

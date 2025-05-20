@@ -115,8 +115,8 @@ const providerItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Provider",
     subItems: [
-      { name: "Add Provider", path: "/provider-management/provider/add-provider", pro: false },
-      { name: "Provider List", path: "/provider-management/provider/provider-list", pro: false },
+      { name: "Add Provider", path: "/provider-management/add-provider", pro: false },
+      { name: "Provider List", path: "/provider-management/provider-list", pro: false },
     ],
   },
 ];

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
@@ -7,11 +7,11 @@ import {
   TrashBinIcon
 } from "../../icons/index";
 import Button from '../ui/button/Button';
+import FileInput from '../form/input/FileInput';
 
 interface RowData {
   title: string;
   description: string;
-
 }
 
 type FAQ = {
@@ -26,7 +26,10 @@ type WhyChoose = {
 };
 
 
-const ServiceDetailsForm = () => {
+const ServiceDetailsForm = ({ data, setData }: {
+  data: any;
+  setData: (newData: Partial<any>) => void;
+}) => {
   const [benefits, setBenefits] = useState('');
   const [overview, setOverview] = useState('');
   const [highlight, setHighlight] = useState('');
@@ -35,9 +38,30 @@ const ServiceDetailsForm = () => {
   const [terms, setTerms] = useState('');
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [rows, setRows] = useState<RowData[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
     { title: '', description: '', image: '' }
   ]);
+
+useEffect(() => {
+  const newData = {
+    benefits,
+    overview,
+    highlight,
+    document,
+    whyChoose,
+    howItWorks,
+    terms,
+    faqs,
+    rows,
+  };
+  console.log("service details",newData );
+
+  // Only call setData if any of the values actually changed
+  if (JSON.stringify(newData) !== JSON.stringify(data)) {
+    setData(newData);
+  }
+}, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
 
 
   const handleAddRow = () => {
@@ -79,7 +103,7 @@ const ServiceDetailsForm = () => {
   const handleWhyChooseChange = (
     index: number,
     field: keyof WhyChoose,
-    value: string
+    value: string 
   ) => {
     const updated = [...whyChoose];
     updated[index][field] = value;
@@ -99,17 +123,29 @@ const ServiceDetailsForm = () => {
     setWhyChoose(updated);
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // setSelectedFile(file);
+      const updated = [...whyChoose];
+      // For simplicity, let's just set the first WhyChoose's image
+      // Or you could update based on some index or UI approach
+      updated[0].image = URL.createObjectURL(file);
+      setWhyChoose(updated);
+    }
+  };
+
   return (
     <div>
       <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Service Details</h4>
 
       <div className='my-3'>
-        <label>Benefits</label>
+        <Label>Benefits</Label>
         <div className="my-editor">
           <CKEditor
             editor={ClassicEditor as any}
             data={benefits}
-            onChange={(_, editor) => {
+            onChange={(event, editor) => {
               const data = editor.getData();
               setBenefits(data);
             }}
@@ -192,14 +228,8 @@ const ServiceDetailsForm = () => {
 
               {/* Image URL Input */}
               <div className="flex-1">
-                <Label>Image URL</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter image URL"
-                  value={item.image}
-                  onChange={(e) => handleWhyChooseChange(index, 'image', e.target.value)}
-                  className="w-full"
-                />
+                <Label>Select Image</Label>
+                <FileInput onChange={handleFileChange} className="custom-class" />
               </div>
             </div>
 

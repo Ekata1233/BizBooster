@@ -7,7 +7,10 @@ import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
 
-const BasicDetailsForm = () => {
+const BasicDetailsForm = ({ data, setData }: {
+    data: any;
+    setData: (newData: Partial<any>) => void;
+}) => {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -21,9 +24,10 @@ const BasicDetailsForm = () => {
         image: cat.image || '',
     }));
 
-    const filteredSubcategories = selectedCategory
-        ? subcategories.filter((subcat) => subcat.category?._id === selectedCategory)
+    const filteredSubcategories = data.category
+        ? subcategories.filter((subcat) => subcat.category?._id === data.category)
         : [];
+
 
     const subcategoryOptions = filteredSubcategories.map((subcat) => ({
         value: subcat._id as string,
@@ -32,8 +36,27 @@ const BasicDetailsForm = () => {
     }));
 
     useEffect(() => {
-        setSelectedSubcategory('');
-    }, [selectedCategory]);
+        setSelectedCategory(data.category || '');
+    }, [data.category]);
+
+    useEffect(() => {
+        if (data.category !== selectedCategory) {
+            setData({ subcategory: '' });
+            setSelectedCategory(data.category || '');
+        }
+    }, [data.category]);
+
+
+    useEffect(() => {
+        setData({ thumbnail: selectedFile });
+    }, [selectedFile]);
+
+    useEffect(() => {
+        setData({ covers: selectedMultiFiles });
+    }, [selectedMultiFiles]);
+
+
+
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -62,6 +85,8 @@ const BasicDetailsForm = () => {
                         <Input
                             type="text"
                             placeholder="Service name"
+                            value={data.name}
+                            onChange={(e) => setData({ name: e.target.value })}
                         />
                     </div>
 
@@ -71,7 +96,8 @@ const BasicDetailsForm = () => {
                             <Select
                                 options={categoryOptions}
                                 placeholder="Categories"
-                                onChange={(value: string) => setSelectedCategory(value)}
+                                // onChange={(value: string) => setSelectedCategory(value)}
+                                onChange={(value: string) => setData({ category: value })}
                                 className="dark:bg-dark-900"
                             />
                             <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -86,7 +112,7 @@ const BasicDetailsForm = () => {
                             <Select
                                 options={subcategoryOptions}
                                 placeholder="Subcategories"
-                                onChange={(value: string) => setSelectedSubcategory(value)}
+                                onChange={(value: string) => setData({ subcategory: value })}
                                 className="dark:bg-dark-900"
                             />
                             <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -100,7 +126,10 @@ const BasicDetailsForm = () => {
                         <Input
                             type="number"
                             placeholder="Price"
+                            value={data.price}
+                            onChange={(e) => setData({ price: Number(e.target.value) })}
                         />
+
                     </div>
                 </div>
 

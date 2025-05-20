@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ComponentCard from '../common/ComponentCard'
 import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm from './ServiceDetailsForm';
@@ -8,11 +8,39 @@ import { useService } from '@/context/ServiceContext';
 const AddNewService = () => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        basic: '',
-        service: '',
-        franchise: '',
+        basic: {
+            name: '',
+            category: '',
+            subcategory: '',
+            price: '',
+            thumbnail: null,
+            covers: [],
+        },
+        service: {
+            benefits: '',
+            overview: '',
+            highlight: '',
+            document: '',
+            whyChoose: [],
+            howItWorks: '',
+            terms: '',
+            faqs: [],
+            rows: [],
+        },
+        franchise: {
+            commission: '',
+            overview: '',
+            howItWorks: '',
+            terms: '',
+            rows: [],
+        },
     });
-    const {createService} = useService();
+
+    useEffect(()=>{
+        console.log("formdata of console : ", formData)
+    },[])
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { createService } = useService();
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
@@ -27,8 +55,30 @@ const AddNewService = () => {
         if (step > 1) setStep(step - 1);
     };
 
-    const handleSubmit = (e: any) => {
-        e.preventDefault();
+    const buildFormData = (data: any, formDataInstance = new FormData(), parentKey = '') => {
+        if (data && typeof data === 'object' && !(data instanceof File)) {
+            Object.keys(data).forEach(key => {
+                const value = data[key];
+                const fullKey = parentKey ? `${parentKey}[${key}]` : key;
+                buildFormData(value, formDataInstance, fullKey);
+            });
+        } else {
+            formDataInstance.append(parentKey, data);
+        }
+        return formDataInstance;
+    };
+
+
+    const handleSubmit = async (e: any) => {
+        setIsSubmitting(true);
+        try {
+            const fd = buildFormData(formData);
+            await createService(fd);
+            alert("Service added successfully!");
+        } catch (err) {
+            console.error("Failed to add service:", err);
+            alert("Failed to add service");
+        }
     };
 
     const getProgress = () => (step / 3) * 100;
@@ -100,19 +150,28 @@ const AddNewService = () => {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {step === 1 && (
                             <div>
-                                <BasicDetailsForm />
+                                <BasicDetailsForm data={formData.basic}
+                                    setData={(newData) =>
+                                        setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))
+                                    } />
                             </div>
                         )}
 
                         {step === 2 && (
                             <div>
-                                <ServiceDetailsForm />
+                                <ServiceDetailsForm data={formData.service}
+                                    setData={(newData) =>
+                                        setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))
+                                    } />
                             </div>
                         )}
 
                         {step === 3 && (
                             <div>
-                                <FranchiseDetailsForm />
+                                <FranchiseDetailsForm data={formData.franchise}
+                                    setData={(newData) =>
+                                        setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
+                                    } />
                             </div>
                         )}
 
