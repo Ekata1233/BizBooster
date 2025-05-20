@@ -22,7 +22,7 @@ interface ModuleType {
 const AddBanner = () => {
   const { createBanner } = useBanner();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedValue, setSelectedValue] = useState<string>("category");
+  const [selectedValue, setSelectedValue] = useState<string>("subcategory");
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
   const [referralUrl, setReferralUrl] = useState<string>('');
@@ -136,14 +136,14 @@ const AddBanner = () => {
 
           <div className='col-span-2 flex flex-wrap items-center gap-4 mt-4'>
             {/* <Label>Select navigation option</Label> */}
-            <Radio
+            {/* <Radio
               id="category"
               name="linkType"
               value="category"
               checked={selectedValue === "category"}
               onChange={handleRadioChange}
               label="Category"
-            />
+            /> */}
             <Radio
               id="subcategory"
               name="linkType"
