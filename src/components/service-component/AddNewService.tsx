@@ -3,6 +3,7 @@ import ComponentCard from '../common/ComponentCard'
 import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
+import { useService } from '@/context/ServiceContext';
 
 const AddNewService = () => {
     const [step, setStep] = useState(1);
@@ -11,6 +12,7 @@ const AddNewService = () => {
         service: '',
         franchise: '',
     });
+    const {createService} = useService();
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;

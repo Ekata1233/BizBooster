@@ -10,18 +10,26 @@ import { Category, useCategory } from '@/context/CategoryContext'
 import { ChevronDownIcon } from '@/icons'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import { useBanner } from '@/context/BannerContext'
+import { useModule } from '@/context/ModuleContext'
 
 export type PageType = 'home' | 'category';
+
+interface ModuleType {
+  _id: string;
+  name: string;
+}
 
 const AddBanner = () => {
   const { createBanner } = useBanner();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedValue, setSelectedValue] = useState<string>("category");
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedModule, setSelectedModule] = useState('');
   const [referralUrl, setReferralUrl] = useState<string>('');
   const [pageType, setPageType] = useState<PageType>('home');
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
+  const { modules } = useModule();
 
   const handleRadioChange = (value: string) => {
     setSelectedValue(value);
@@ -48,6 +56,7 @@ const AddBanner = () => {
     formData.append('file', selectedFile);
 
     formData.append('selectionType', selectedValue);
+    formData.append('module', selectedModule);
 
     if (selectedValue === 'category') {
       formData.append('category', selectedCategory);
@@ -64,6 +73,7 @@ const AddBanner = () => {
       alert('Banner added successfully!');
       setPageType(pageType);
       setSelectedFile(null);
+      setSelectedModule('');
       setSelectedValue('category');
       setReferralUrl('');
       setSelectedCategory('');
@@ -89,10 +99,20 @@ const AddBanner = () => {
     setSelectedCategory(value);
   };
 
+  const handleSelectModule = (value: string) => {
+    console.log("Selected value:", value);
+    setSelectedModule(value);
+  };
+
   const pageTypeOptions = [
     { value: 'home', label: 'Home' },
     { value: 'category', label: 'Category' }
   ];
+
+  const options = modules.map((mod: ModuleType) => ({
+    value: mod._id,
+    label: mod.name,
+  }));
 
   return (
     <div>
@@ -153,6 +173,22 @@ const AddBanner = () => {
 
         {/* Row 2: Dropdown (conditional) + File input */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+
+          <div>
+            <Label>Select Module</Label>
+            <div className="relative">
+              <Select
+                options={options}
+                placeholder="Select an option"
+                onChange={handleSelectModule}
+                className="dark:bg-dark-900"
+              />
+              <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                <ChevronDownIcon />
+              </span>
+            </div>
+          </div>
+
           {(selectedValue === 'category' || selectedValue === 'subcategory' || selectedValue === 'service') && (
             <div>
               <Label>

@@ -16,6 +16,8 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileName = `banner_${uuidv4()}`;
 
+    console.log("Formdata : ", formData);
+
     const uploadRes = await imagekit.upload({
       file: buffer,
       fileName,
@@ -24,6 +26,7 @@ export async function POST(req: Request) {
     const data = {
       page: formData.get('page'),
       selectionType: formData.get('selectionType'),
+      module: formData.get('module') || undefined,
       category: formData.get('category') || undefined,
       subcategory: formData.get('subcategory') || undefined,
       service: formData.get('service') || undefined,
@@ -36,8 +39,8 @@ export async function POST(req: Request) {
   } catch (err) {
     console.log(err);
     return NextResponse.json({ error: 'Failed to create banner' }, { status: 500 });
-    
-    
+
+
   }
 }
 
@@ -46,14 +49,15 @@ export async function GET() {
   await connectToDatabase();
   try {
     const banners = await Banner.find({ isDeleted: false })
+      .populate('module')
       .populate('category')
       .populate('subcategory');
-      // Removed .populate('service')
+    // Removed .populate('service')
 
     return NextResponse.json(banners, { status: 200 });
   } catch (err: unknown) {
-  const errorMessage = err instanceof Error ? err.message : String(err);
-  console.error('GET /api/banner error:', errorMessage);
-  return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
-}
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error('GET /api/banner error:', errorMessage);
+    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
+  }
 }
