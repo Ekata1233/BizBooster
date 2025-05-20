@@ -18,6 +18,7 @@ import axios from 'axios';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
+import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 
 // Types
 interface Category {
@@ -259,6 +260,10 @@ const Subcategory = () => {
             <PageBreadcrumb pageTitle="Module" />
             <div className="my-5">
                 <AddSubcategory />
+            </div>
+
+            <div>
+                <ModuleStatCard />
             </div>
 
             <div className="my-5">
