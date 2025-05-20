@@ -4,9 +4,14 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import { PencilIcon, TrashBinIcon, EyeIcon } from '@/icons';
+import { PencilIcon, TrashBinIcon, EyeIcon, ChevronDownIcon } from '@/icons';
 import Link from 'next/link';
 import { useService } from '@/context/ServiceContext';
+import ComponentCard from '@/components/common/ComponentCard';
+import ModuleStatCard from '@/components/module-component/ModuleStatCard';
+import Label from '@/components/form/Label';
+import Select from '@/components/form/Select';
+import Input from '@/components/form/input/InputField';
 
 interface Service {
   _id: string;
@@ -33,6 +38,13 @@ interface ServicesResponse {
   data: Service[];
 }
 
+const options = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "ascending", label: "Ascending" },
+  { value: "descending", label: "Descending" },
+];
+
 
 const ServiceList = () => {
   const { services } = useService();
@@ -40,6 +52,7 @@ const ServiceList = () => {
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
+  const [sort, setSort] = useState<string>('oldest');
 
   // Update filteredServices when services, searchQuery or activeTab changes
   useEffect(() => {
@@ -149,42 +162,73 @@ const ServiceList = () => {
     <div>
       <PageBreadcrumb pageTitle="Service List" />
 
+      <div>
+        <ModuleStatCard />
+      </div>
+
       <div className="my-5">
-        <input
-          type="text"
-          placeholder="Search by service name"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="border border-gray-300 rounded px-4 py-2 mb-4 w-full max-w-sm"
-        />
+        <ComponentCard title="Search Filter">
+          <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
 
-        <div className="border-b border-gray-200 mb-4">
-          <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500 cursor-pointer">
-            <li
-              className={`px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                }`}
-              onClick={() => setActiveTab('all')}
-            >
-              All
-            </li>
-            <li
-              className={`px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                }`}
-              onClick={() => setActiveTab('active')}
-            >
-              Active
-            </li>
-            <li
-              className={`px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                }`}
-              onClick={() => setActiveTab('inactive')}
-            >
-              Inactive
-            </li>
-          </ul>
-        </div>
+            <div>
+              <Label>Select Input</Label>
+              <div className="relative">
+                <Select
+                  options={options}
+                  placeholder="Sort By"
+                  onChange={(value: string) => setSort(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+            <div>
+              <Label>Other Filter</Label>
+              <Input
+                type="text"
+                placeholder="Search by name, email, or phone"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
 
-        <BasicTableOne columns={columns} data={filteredServices} />
+            </div>
+          </div>
+        </ComponentCard>
+      </div>
+
+      <div>
+        <ComponentCard title="Service List" className="">
+          <div className="border-b border-gray-200 mb-4">
+            <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500 cursor-pointer">
+              <li
+                className={`px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                  }`}
+                onClick={() => setActiveTab('all')}
+              >
+                All
+              </li>
+              <li
+                className={`px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                  }`}
+                onClick={() => setActiveTab('active')}
+              >
+                Active
+              </li>
+              <li
+                className={`px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                  }`}
+                onClick={() => setActiveTab('inactive')}
+              >
+                Inactive
+              </li>
+            </ul>
+          </div>
+
+          <BasicTableOne columns={columns} data={filteredServices} />
+
+        </ComponentCard>
       </div>
     </div>
   );

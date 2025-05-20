@@ -7,6 +7,7 @@ import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 
 import AddModule from '@/components/module-component/AddModule';
+import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
@@ -107,8 +108,7 @@ const Module = () => {
         {
             header: 'category Count',
             accessor: 'categoryCount',
-            render: (row: TableData) => {
-                console.log("Row data: ", row);  // Log the row data
+            render: (row: TableData) => {  // Log the row data
                 return (
                     <div className="flex justify-center items-center">
                         {row.categoryCount}
@@ -241,7 +241,9 @@ const Module = () => {
                 <AddModule />
             </div>
 
-
+            <div>
+                <ModuleStatCard />
+            </div>
 
             <div className="my-5">
                 <ComponentCard title="All Modules">

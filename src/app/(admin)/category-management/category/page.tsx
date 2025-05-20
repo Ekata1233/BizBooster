@@ -17,6 +17,7 @@ import { useModal } from '@/hooks/useModal'
 import { useModule } from '@/context/ModuleContext'
 import axios from 'axios'
 import Select from '@/components/form/Select'
+import ModuleStatCard from '@/components/module-component/ModuleStatCard'
 
 interface Module {
   _id: string;
@@ -269,7 +270,7 @@ const Category = () => {
     return filteredCategory;
   };
 
-    if (!categories || !Array.isArray(categories)) {
+  if (!categories || !Array.isArray(categories)) {
     return <div>Loading...</div>;
   }
 
@@ -279,6 +280,11 @@ const Category = () => {
       <div className='my-5'>
         <AddCategory />
       </div>
+
+      <div>
+        <ModuleStatCard />
+      </div>
+
       <div className='my-5'>
         <ComponentCard title="All Categories">
           <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
