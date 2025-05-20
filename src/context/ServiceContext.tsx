@@ -2,11 +2,48 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import axios from "axios";
 
+interface ExtraSection {
+  title: string;
+  description: string;
+}
+
+interface WhyChooseItem {
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+interface ServiceDetails {
+  overview: string;
+  highlight: string;
+  benefits: string;
+  howItWorks: string;
+  termsAndConditions: string;
+  document: string;
+  extraSections?: ExtraSection[]; // <-- add this
+  whyChoose?: WhyChooseItem[];    // <-- and this
+  faq?: FaqItem[];                // <-- and this
+}
+
 type Service = {
-  // Define the properties of a Service object according to your API response
   _id: string;
-  name: string;
-  // add other fields if necessary
+  serviceName: string;
+  thumbnailImage: string;
+  price: number;
+  category: { name: string };
+  subcategory: { name: string };
+  serviceDetails: ServiceDetails;
+  franchiseDetails: {
+    overview: string;
+    commission: string;
+    howItWorks: string;
+    termsAndConditions: string;
+  };
 };
 
 type ServiceContextType = {
@@ -14,13 +51,32 @@ type ServiceContextType = {
   createService: (formData: FormData) => Promise<Service | undefined>;
   updateService: (id: string, data: any) => Promise<Service | undefined>;
   deleteService: (id: string) => Promise<void>;
+    fetchSingleService: (id: string) => Promise<void>;           // ✅ new
+  singleService: Service | null;                               // ✅ new
+  singleServiceLoading: boolean;                               // ✅ new
+  singleServiceError: string | null;      
 };
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
 export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const [services, setServices] = useState<Service[]>([]);
+const [singleService, setSingleService] = useState<Service | null>(null);
+const [singleServiceLoading, setSingleServiceLoading] = useState<boolean>(false);
+const [singleServiceError, setSingleServiceError] = useState<string | null>(null);
 
+const fetchSingleService = async (id: string) => {
+  setSingleServiceLoading(true);
+  try {
+    const res = await axios.get(`/api/service/${id}`);
+    setSingleService(res.data?.data || null);
+    setSingleServiceError(null);
+  } catch (err: unknown) {
+    console.log(err)
+  } finally {
+    setSingleServiceLoading(false);
+  }
+};
   const fetchServices = useCallback(async () => {
     try {
       const res = await axios.get<Service[]>("/api/service");
@@ -33,6 +89,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
+// console.log("services",services);
 
   const createService = async (formData: FormData) => {
     try {
@@ -62,11 +119,24 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to delete service:", error);
     }
   };
-
+ 
   return (
-    <ServiceContext.Provider value={{ services, createService, updateService, deleteService }}>
-      {children}
-    </ServiceContext.Provider>
+    <ServiceContext.Provider
+  value={{
+    services,
+    createService,
+    updateService,
+    deleteService,
+    
+    fetchSingleService,         // ✅ new
+    singleService,              // ✅ new
+    singleServiceLoading,       // ✅ new
+    singleServiceError,         // ✅ new
+  }}
+>
+  {children}
+</ServiceContext.Provider>
+
   );
 };
 

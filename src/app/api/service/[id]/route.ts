@@ -13,6 +13,43 @@ const corsHeaders = {
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const service = await Service.findById(id).populate("category")
+      .populate("subcategory");
+
+    if (!service || service.isDeleted) {
+      return NextResponse.json(
+        { success: false, message: "Service not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: service },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
 
 export async function PUT(req: Request) {
   await connectToDatabase();
