@@ -27,7 +27,6 @@ const AddNewService = () => {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        alert("Form Submitted!\n" + JSON.stringify(formData, null, 2));
     };
 
     const getProgress = () => (step / 3) * 100;
