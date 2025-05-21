@@ -14,6 +14,7 @@ import { useModule } from '@/context/ModuleContext'
 
 export type PageType = 'home' | 'category';
 
+
 interface ModuleType {
   _id: string;
   name: string;
@@ -24,6 +25,7 @@ const AddBanner = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedValue, setSelectedValue] = useState<string>("subcategory");
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCat, setSelectedCat] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
   const [referralUrl, setReferralUrl] = useState<string>('');
   const [pageType, setPageType] = useState<PageType>('home');
@@ -84,15 +86,29 @@ const AddBanner = () => {
     }
   };
 
-  const categoryOptions = categories.map((cat: Category) => ({
-    value: cat._id ?? '',
-    label: cat.name,
+const filteredCategories = categories.filter(
+  (cat) => cat.module?._id === selectedModule
+);
+
+const categoryOptions = filteredCategories.map((cat: Category) => ({
+  value: cat._id ?? '',
+  label: cat.name,
+}));
+
+
+  const filteredSubcategories = subcategories.filter(
+    (sub) => sub.category?._id === selectedCat
+  );
+
+  const subcategoryOptions = filteredSubcategories.map((sub) => ({
+    value: sub._id ?? '',
+    label: sub.name,
   }));
 
-  const subcategoryOptions = subcategories.map((cat) => ({
-    value: cat._id ?? '',
-    label: cat.name,
-  }));
+    const handleSelectCat = (value: string) => {
+    console.log("Selected value:", value);
+    setSelectedCat(value);
+  };
 
   const handleSelectChange = (value: string) => {
     console.log("Selected value:", value);
@@ -171,16 +187,31 @@ const AddBanner = () => {
           </div>
         </div>
 
-        {/* Row 2: Dropdown (conditional) + File input */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
 
+        <div >
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
           <div>
             <Label>Select Module</Label>
             <div className="relative">
               <Select
                 options={options}
-                placeholder="Select an option"
+                placeholder="Select Module"
                 onChange={handleSelectModule}
+                className="dark:bg-dark-900"
+              />
+              <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                <ChevronDownIcon />
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <Label>Select Category</Label>
+            <div className="relative">
+              <Select
+                options={categoryOptions}
+                placeholder="Select Category"
+                onChange={handleSelectCat}
                 className="dark:bg-dark-900"
               />
               <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -228,13 +259,15 @@ const AddBanner = () => {
             </div>
           )}
 
-          <div>
-            <Label>Select Image</Label>
-            <FileInput onChange={handleFileChange} className="custom-class" />
-          </div>
+
+        </div>
+        <div>
+          <Label>Select Image</Label>
+          <FileInput onChange={handleFileChange} className="custom-class" />
+        </div>
         </div>
 
-        {/* Row 3: Add Button */}
+        {/* Row 4: Add Button */}
         <div className="flex justify-start">
           <Button size="sm" variant="primary" onClick={handleSubmit}>
             Add Banner

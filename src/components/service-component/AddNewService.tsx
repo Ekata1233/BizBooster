@@ -51,13 +51,21 @@ const AddNewService = () => {
                 );
             case 2:
                 return (
+                    !!formData?.service?.benefits?.trim() &&
                     !!formData?.service?.overview?.trim() &&
-                    !!formData?.service?.howItWorks?.trim()
+                    !!formData?.service?.howItWorks?.trim() &&
+                    !!formData?.service?.highlight?.trim() &&
+                    !!formData?.service?.document?.trim() &&
+                    !!formData?.service?.terms?.trim() &&
+                    !!formData?.service?.faqs &&
+                    !!formData?.service?.whyChoose
                 );
             case 3:
                 return (
                     !!formData?.franchise?.commission?.trim() &&
-                    !!formData?.franchise?.overview?.trim()
+                    !!formData?.franchise?.overview?.trim() &&
+                    !!formData?.franchise?.howItWorks?.trim() &&
+                    !!formData?.franchise?.terms?.trim() 
                 );
             default:
                 return false;

@@ -3,11 +3,13 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
+import dynamic from 'next/dynamic';
 import {
   TrashBinIcon
 } from "../../icons/index";
 import Button from '../ui/button/Button';
 import FileInput from '../form/input/FileInput';
+
 
 interface RowData {
   title: string;
@@ -42,6 +44,23 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
     { title: '', description: '', image: null }
   ]);
+
+  console.log("data in service form : ", data)
+
+  useEffect(() => {
+    if (data) {
+      setBenefits(data.benefits || '');
+      setOverview(data.overview || '');
+      setHighlight(data.highlight || '');
+      setDocument(data.document || '');
+      setHowItWorks(data.howItWorks || '');
+      setTerms(data.terms || '');
+      setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
+      setRows(data.rows?.length ? data.rows : []);
+      setWhyChoose(data.whyChoose?.length ? data.whyChoose : [{ title: '', description: '', image: null }]);
+    }
+  }, []);
+
 
   useEffect(() => {
     const newData = {

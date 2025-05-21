@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Label from '../form/Label'
 import Input from '../form/input/InputField'
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Button from '../ui/button/Button';
+import dynamic from 'next/dynamic';
 import { TrashBinIcon } from '@/icons';
+
 
 interface RowData {
   title: string;
@@ -27,6 +28,15 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      setOverview(data.overview || '');
+      setHowItWorks(data.howItWorks || '');
+      setTerms(data.terms || '');
+      setRows(data.rows?.length ? data.rows : []);
+    }
+  }, []);
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ commission: e.target.value });
