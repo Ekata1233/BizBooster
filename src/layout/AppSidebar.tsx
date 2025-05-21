@@ -86,6 +86,7 @@ const moduleItems: NavItem[] = [
     icon: <FolderIcon />,
     name: "Banner",
     subItems: [
+       { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
       { name: "Banner", path: "/banner-management/banners", pro: false },
     ],
   },
