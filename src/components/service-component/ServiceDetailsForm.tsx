@@ -3,11 +3,13 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
+import dynamic from 'next/dynamic';
 import {
   TrashBinIcon
 } from "../../icons/index";
 import Button from '../ui/button/Button';
 import FileInput from '../form/input/FileInput';
+
 
 interface RowData {
   title: string;
@@ -22,7 +24,7 @@ type FAQ = {
 type WhyChoose = {
   title: string;
   description: string;
-  image: string;
+  image: File | string | null;
 };
 
 
@@ -40,28 +42,44 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [rows, setRows] = useState<RowData[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
-    { title: '', description: '', image: '' }
+    { title: '', description: '', image: null }
   ]);
 
-useEffect(() => {
-  const newData = {
-    benefits,
-    overview,
-    highlight,
-    document,
-    whyChoose,
-    howItWorks,
-    terms,
-    faqs,
-    rows,
-  };
-  console.log("service details",newData );
+  console.log("data in service form : ", data)
 
-  // Only call setData if any of the values actually changed
-  if (JSON.stringify(newData) !== JSON.stringify(data)) {
-    setData(newData);
-  }
-}, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+  useEffect(() => {
+    if (data) {
+      setBenefits(data.benefits || '');
+      setOverview(data.overview || '');
+      setHighlight(data.highlight || '');
+      setDocument(data.document || '');
+      setHowItWorks(data.howItWorks || '');
+      setTerms(data.terms || '');
+      setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
+      setRows(data.rows?.length ? data.rows : []);
+      setWhyChoose(data.whyChoose?.length ? data.whyChoose : [{ title: '', description: '', image: null }]);
+    }
+  }, []);
+
+
+  useEffect(() => {
+    const newData = {
+      benefits,
+      overview,
+      highlight,
+      document,
+      whyChoose,
+      howItWorks,
+      terms,
+      faqs,
+      rows,
+    };
+
+    // Only call setData if any of the values actually changed
+    if (JSON.stringify(newData) !== JSON.stringify(data)) {
+      setData(newData);
+    }
+  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
 
 
   const handleAddRow = () => {
@@ -103,7 +121,7 @@ useEffect(() => {
   const handleWhyChooseChange = (
     index: number,
     field: keyof WhyChoose,
-    value: string 
+    value: string
   ) => {
     const updated = [...whyChoose];
     updated[index][field] = value;
@@ -123,17 +141,18 @@ useEffect(() => {
     setWhyChoose(updated);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      // setSelectedFile(file);
       const updated = [...whyChoose];
-      // For simplicity, let's just set the first WhyChoose's image
-      // Or you could update based on some index or UI approach
-      updated[0].image = URL.createObjectURL(file);
+      updated[index].image = file; // store the actual file
       setWhyChoose(updated);
     }
   };
+
 
   return (
     <div>
@@ -229,7 +248,7 @@ useEffect(() => {
               {/* Image URL Input */}
               <div className="flex-1">
                 <Label>Select Image</Label>
-                <FileInput onChange={handleFileChange} className="custom-class" />
+                <FileInput onChange={(e) => handleFileChange(index, e)} className="custom-class" />
               </div>
             </div>
 
@@ -251,14 +270,23 @@ useEffect(() => {
           </div>
         ))}
 
-        <Button
+        {/* <Button
+          type="button"
           size="sm"
           variant="primary"
           onClick={handleAddWhyChoose}
           className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           + Add New
-        </Button>
+        </Button> */}
+        <button
+          type="button"
+          onClick={handleAddWhyChoose}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          + Add New
+        </button>
+
       </div>
 
 
@@ -333,13 +361,20 @@ useEffect(() => {
           </div>
         ))}
 
-        <Button
+        {/* <Button
           size="sm" variant="primary"
           onClick={handleAddFaq}
           className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           + Add New FAQ
-        </Button>
+        </Button> */}
+        <button
+          type="button"
+          onClick={handleAddFaq}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+        >
+          + Add New FAQ
+        </button>
 
       </div>
 
@@ -385,14 +420,22 @@ useEffect(() => {
           </div>
         ))}
 
-        <Button
+        {/* <Button
           size="sm"
           variant="primary"
           onClick={handleAddRow}
           className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           + Add New Row
-        </Button>
+        </Button> */}
+        <button
+          type="button"
+          onClick={handleAddRow}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+        >
+          + Add New Row
+        </button>
+
       </div>
 
     </div>

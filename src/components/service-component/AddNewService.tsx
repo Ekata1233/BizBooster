@@ -47,29 +47,38 @@ const AddNewService = () => {
     return value !== null && value !== undefined && value !== '';
   };
 
-  const isStepComplete = (stepNumber: number) => {
-    switch (stepNumber) {
-      case 1:
-        return (
-          isNotEmpty(formData.basic.name) &&
-          isNotEmpty(formData.basic.category) &&
-          isNotEmpty(formData.basic.subcategory) &&
-          isNotEmpty(formData.basic.price)
-        );
-      case 2:
-        return (
-          isNotEmpty(formData.service.overview) &&
-          isNotEmpty(formData.service.howItWorks)
-        );
-      case 3:
-        return (
-          isNotEmpty(formData.franchise.commission) &&
-          isNotEmpty(formData.franchise.overview)
-        );
-      default:
-        return false;
-    }
-  };
+    const isStepComplete = (stepNumber: number) => {
+        switch (stepNumber) {
+            case 1:
+                return (
+                    !!formData?.basic?.name?.trim() &&
+                    !!formData?.basic?.category &&
+                    !!formData?.basic?.subcategory
+                );
+            case 2:
+                return (
+                    !!formData?.service?.benefits?.trim() &&
+                    !!formData?.service?.overview?.trim() &&
+                    !!formData?.service?.howItWorks?.trim() &&
+                    !!formData?.service?.highlight?.trim() &&
+                    !!formData?.service?.document?.trim() &&
+                    !!formData?.service?.terms?.trim() &&
+                    !!formData?.service?.faqs &&
+                    !!formData?.service?.whyChoose
+                );
+            case 3:
+                return (
+                    !!formData?.franchise?.commission?.trim() &&
+                    !!formData?.franchise?.overview?.trim() &&
+                    !!formData?.franchise?.howItWorks?.trim() &&
+                    !!formData?.franchise?.terms?.trim() 
+                );
+            default:
+                return false;
+        }
+    };
+
+
 
   const nextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevent page refresh on click
@@ -107,24 +116,53 @@ const AddNewService = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submit reload
 
-    if (completedSteps.length < 3 || !isStepComplete(3)) {
-      alert('Please complete all steps before submitting');
-      return;
-    }
+        if (!isStepComplete(3)) {
+            alert("Please complete all steps before submitting");
+            return;
+        }
 
-    setIsSubmitting(true);
-    try {
-      const fd = buildFormData(formData);
-      await createService(fd);
-      alert('Service added successfully!');
-      // Do NOT reset formData here, so data stays after submit.
-    } catch (err) {
-      console.error('Failed to add service:', err);
-      alert('Failed to add service');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        setIsSubmitting(true);
+        try {
+            const fd = buildFormData(formData);
+            await createService(fd);
+            alert("Service added successfully!");
+            setFormData({
+                basic: {
+                    name: '',
+                    category: '',
+                    subcategory: '',
+                    price: '',
+                    thumbnail: null,
+                    covers: [],
+                },
+                service: {
+                    benefits: '',
+                    overview: '',
+                    highlight: '',
+                    document: '',
+                    whyChoose: [],
+                    howItWorks: '',
+                    terms: '',
+                    faqs: [],
+                    rows: [],
+                },
+                franchise: {
+                    commission: '',
+                    overview: '',
+                    howItWorks: '',
+                    terms: '',
+                    rows: [],
+                },
+            });
+            setStep(1);
+            setCompletedSteps([]);
+        } catch (err) {
+            console.error("Failed to add service:", err);
+            alert("Failed to add service");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
   return (
     <div>

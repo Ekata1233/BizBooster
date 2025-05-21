@@ -12,6 +12,8 @@ import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import Label from '@/components/form/Label';
 import Select from '@/components/form/Select';
 import Input from '@/components/form/input/InputField';
+import { Category, useCategory } from '@/context/CategoryContext';
+import { useSubcategory } from '@/context/SubcategoryContext';
 
 interface Service {
   _id: string;
@@ -48,12 +50,15 @@ const options = [
 
 const ServiceList = () => {
   const { services } = useService();
+  const { categories } = useCategory();
+  const { subcategories } = useSubcategory();
   console.log("services", services);
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [sort, setSort] = useState<string>('oldest');
-
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   // Update filteredServices when services, searchQuery or activeTab changes
   useEffect(() => {
     if (!services?.data || !Array.isArray(services.data)) return;
@@ -79,9 +84,6 @@ const ServiceList = () => {
 
     setFilteredServices(filtered);
   }, [services, searchQuery, activeTab]);
-
-
-
 
   const columns = [
     {
@@ -157,6 +159,32 @@ const ServiceList = () => {
     },
   ];
 
+  console.log("category option : ", categories)
+  console.log("subcategory option : ", subcategories)
+
+  const categoryOptions = categories.map((cat: Category) => ({
+    value: cat._id ?? '',
+    label: cat.name,
+  }));
+
+  const filteredSubcategories = subcategories.filter(
+    (sub) => sub.category?._id === selectedCategory
+  );
+
+  const subcategoryOptions = filteredSubcategories.map((sub) => ({
+    value: sub._id ?? '',
+    label: sub.name,
+  }));
+
+  const handleSelectChange = (value: string) => {
+    console.log("Selected value:", value);
+    setSelectedCategory(value); // required to set the selected module
+  };
+
+  const handleSelectSubcategory = (value: string) => {
+    console.log("Selected value:", value);
+    setSelectedSubcategory(value); // required to set the selected module
+  };
 
   return (
     <div>
@@ -169,6 +197,36 @@ const ServiceList = () => {
       <div className="my-5">
         <ComponentCard title="Search Filter">
           <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+
+            <div>
+              <Label>Select Category</Label>
+              <div className="relative">
+                <Select
+                  options={categoryOptions}
+                  placeholder="Select Category"
+                  onChange={handleSelectChange}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label>Select Subcategory</Label>
+              <div className="relative">
+                <Select
+                  options={subcategoryOptions}
+                  placeholder="Select Subcategory"
+                  onChange={handleSelectSubcategory}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
 
             <div>
               <Label>Select Input</Label>
@@ -184,6 +242,7 @@ const ServiceList = () => {
                 </span>
               </div>
             </div>
+
             <div>
               <Label>Other Filter</Label>
               <Input

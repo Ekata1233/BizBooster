@@ -18,6 +18,18 @@ const BasicDetailsForm = ({ data, setData }: {
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
 
+    useEffect(() => {
+        if (data) {
+            if (data.category) setSelectedCategory(data.category);
+            if (data.subcategory) setSelectedSubcategory(data.subcategory);
+            if (data.thumbnail instanceof File) setSelectedFile(data.thumbnail);
+            if (data.covers instanceof FileList || data.covers?.length) setSelectedMultiFiles(data.covers);
+        }
+    }, [data]);
+
+
+    console.log("data in the basic details : ", data)
+
     const categoryOptions = categories.map((cat) => ({
         value: cat._id as string,
         label: cat.name,
@@ -97,6 +109,7 @@ console.log();
                             <Select
                                 options={categoryOptions}
                                 placeholder="Categories"
+                                value={selectedCategory}
                                 // onChange={(value: string) => setSelectedCategory(value)}
                                 onChange={(value: string) => setData({ category: value })}
                                 className="dark:bg-dark-900"
@@ -113,6 +126,7 @@ console.log();
                             <Select
                                 options={subcategoryOptions}
                                 placeholder="Subcategories"
+                                value={selectedSubcategory}
                                 onChange={(value: string) => setData({ subcategory: value })}
                                 className="dark:bg-dark-900"
                             />
