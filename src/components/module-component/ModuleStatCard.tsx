@@ -18,7 +18,6 @@ const ModuleStatCard = () => {
   const { subcategories } = useSubcategory();
   const { services } = useService();
 
-  console.log("services in count : ", services)
 
   if (!services) {
     return <div>Loading...</div>;
