@@ -23,6 +23,7 @@ const BasicDetailsForm = ({ data, setData }: {
         label: cat.name,
         image: cat.image || '',
     }));
+console.log();
 
     const filteredSubcategories = data.category
         ? subcategories.filter((subcat) => subcat.category?._id === data.category)
