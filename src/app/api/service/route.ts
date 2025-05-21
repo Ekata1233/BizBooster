@@ -16,13 +16,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    console.log("Service",formData)
+    console.log("Service in backend", formData)
 
     // Required fields from formData (adjust based on your schema)
-    const serviceName = formData.get("serviceName") as string;
-    const category = formData.get("category") as string;
-    const subcategory = formData.get("subcategory") as string;
-    const priceStr = formData.get("price") as string;
+    const serviceName = formData.get("basic[name]") as string;
+    const category = formData.get("basic[category]") as string;
+    const subcategory = formData.get("basic[subcategory]") as string;
+    const priceStr = formData.get("basic[price]");
 
     if (!serviceName || !category || !subcategory || !priceStr) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const price = parseFloat(priceStr);
+    const price = parseFloat(priceStr as string);
     if (isNaN(price)) {
       return NextResponse.json(
         { success: false, message: "Price must be a valid number." },
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     // Handle images
     let thumbnailImageUrl = "";
-    const thumbnailFile = formData.get("thumbnailImage") as File;
+    const thumbnailFile = formData.get("basic[thumbnail]") as File;
     if (thumbnailFile) {
       const arrayBuffer = await thumbnailFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
@@ -59,49 +59,133 @@ export async function POST(req: NextRequest) {
     }
 
     // Handle bannerImages (array of files)
-    const bannerFiles = formData.getAll("bannerImages") as File[]; // getAll for multiple files
     const bannerImagesUrls: string[] = [];
+    const bannerFiles: File[] = [];
+
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("basic[covers]") && value instanceof File) {
+        bannerFiles.push(value);
+      }
+    }
+
     for (const file of bannerFiles) {
-      if (file) {
-        const arrayBuffer = await file.arrayBuffer();
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/services/banners",
+      });
+      bannerImagesUrls.push(uploadResponse.url);
+    }
+
+
+    // serviceDetails - JSON string or individual fields? Assuming JSON string here:
+    // const serviceDetailsStr = formData.get("serviceDetails") as string;
+    // let serviceDetails = {};
+    // if (serviceDetailsStr) {
+    //   try {
+    //     serviceDetails = JSON.parse(serviceDetailsStr);
+    //   } catch {
+    //     // Ignore or return error
+    //     return NextResponse.json(
+    //       { success: false, message: "Invalid JSON for serviceDetails." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    // }
+
+    // // franchiseDetails - similarly, parse JSON if present
+    // const franchiseDetailsStr = formData.get("franchiseDetails") as string;
+    // let franchiseDetails = {};
+    // if (franchiseDetailsStr) {
+    //   try {
+    //     franchiseDetails = JSON.parse(franchiseDetailsStr);
+    //   } catch {
+    //     return NextResponse.json(
+    //       { success: false, message: "Invalid JSON for franchiseDetails." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    // }
+
+    const extractArray = (
+      prefix: string,
+      fields: string[],
+      formData: FormData
+    ) => {
+      const result = [];
+      let index = 0;
+      while (true) {
+        const item: Record<string, string> = {};
+        let hasData = false;
+
+        for (const field of fields) {
+          const key = `${prefix}[${index}][${field}]`;
+          const value = formData.get(key) as string | null;
+          if (value !== null && value !== "") {
+            item[field] = value;
+            hasData = true;
+          }
+        }
+
+        if (!hasData) break;
+        result.push(item);
+        index++;
+      }
+      return result;
+    };
+
+    const whyChooseItems = [];
+    let index = 0;
+    while (true) {
+      const title = formData.get(`service[whyChoose][${index}][title]`) as string | null;
+      const description = formData.get(`service[whyChoose][${index}][description]`) as string | null;
+      const imageFile = formData.get(`service[whyChoose][${index}][image]`) as File | null;
+
+      if (!title && !description && !imageFile) break;
+
+      let imageUrl = "";
+      if (imageFile && imageFile.size > 0) {
+        const arrayBuffer = await imageFile.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const uploadResponse = await imagekit.upload({
           file: buffer,
-          fileName: `${uuidv4()}-${file.name}`,
-          folder: "/services/banners",
+          fileName: `${uuidv4()}-${imageFile.name}`,
+          folder: "/services/whyChoose",
         });
-        bannerImagesUrls.push(uploadResponse.url);
+        imageUrl = uploadResponse.url;
       }
+
+      whyChooseItems.push({
+        title: title ?? "",
+        description: description ?? "",
+        image: imageUrl,
+      });
+
+      index++;
     }
 
-    // serviceDetails - JSON string or individual fields? Assuming JSON string here:
-    const serviceDetailsStr = formData.get("serviceDetails") as string;
-    let serviceDetails = {};
-    if (serviceDetailsStr) {
-      try {
-        serviceDetails = JSON.parse(serviceDetailsStr);
-      } catch {
-        // Ignore or return error
-        return NextResponse.json(
-          { success: false, message: "Invalid JSON for serviceDetails." },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-    }
+    const serviceDetails = {
+      benefits: formData.get("service[benefits]") as string,
+      overview: formData.get("service[overview]") as string,
+      highlight: formData.get("service[highlight]") as string,
+      document: formData.get("service[document]") as string,
+      howItWorks: formData.get("service[howItWorks]") as string,
+      termsAndConditions: formData.get("service[terms]") as string,
+      faq: extractArray("service[faqs]", ["question", "answer"], formData),
+      extraSections: extractArray("service[rows]", ["title", "description"], formData),
+      whyChoose: whyChooseItems,
+    };
 
-    // franchiseDetails - similarly, parse JSON if present
-    const franchiseDetailsStr = formData.get("franchiseDetails") as string;
-    let franchiseDetails = {};
-    if (franchiseDetailsStr) {
-      try {
-        franchiseDetails = JSON.parse(franchiseDetailsStr);
-      } catch {
-        return NextResponse.json(
-          { success: false, message: "Invalid JSON for franchiseDetails." },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-    }
+    // 🛠 Manually construct franchiseDetails
+    const franchiseDetails = {
+      commission: formData.get("franchise[commission]") as string,
+      overview: formData.get("franchise[overview]") as string,
+      howItWorks: formData.get("franchise[howItWorks]") as string,
+      termsAndConditions: formData.get("franchise[terms]") as string,
+      extraSections: extractArray("franchise[rows]", ["title", "description"], formData),
+    };
 
     const newService = await Service.create({
       serviceName,

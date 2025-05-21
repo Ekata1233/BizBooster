@@ -30,21 +30,25 @@ interface ServiceDetails {
   faq?: FaqItem[];                // <-- and this
 }
 
-type Service = {
-  _id: string;
-  serviceName: string;
-  thumbnailImage: string;
-  price: number;
-  category: { name: string };
-  subcategory: { name: string };
-  serviceDetails: ServiceDetails;
-  franchiseDetails: {
+interface FranchiseDetails {
     overview: string;
     commission: string;
     howItWorks: string;
     termsAndConditions: string;
-  };
-};
+    extraSections?: ExtraSection[];
+}
+
+interface Service {
+    _id: string;
+    serviceName: string;
+    thumbnailImage: string;
+    bannerImages: string[];
+    category: { name: string };
+    subcategory: { name: string };
+    price: number;
+    serviceDetails: ServiceDetails;
+    franchiseDetails: FranchiseDetails;
+}
 
 type ServiceContextType = {
   services: Service[];

@@ -15,7 +15,7 @@ interface FranchiseDetailsFormProps {
   data: {
     commission?: string | number;
     overview?: string;
-    howItWorks? : string;
+    howItWorks?: string;
     terms?: string;
     rows?: RowData[];
   };
@@ -41,7 +41,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const handleHowItWorkChange = (event: any, editor: any) => {
     const dataHowItWork = editor.getData();
     setData({ howItWorks: dataHowItWork });
-  }; 
+  };
 
   // Handle Terms change from CKEditor
   const handleTermsChange = (event: any, editor: any) => {
@@ -50,21 +50,28 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   };
 
   const handleAddRow = () => {
-    const newRows = [...(data.rows || []), { title: '', description: '' }];
+    const newRows = [...rows, { title: '', description: '' }];
+    setRows(newRows);
     setData({ rows: newRows });
   };
 
   const handleRemoveRow = (index: number) => {
-    const newRows = [...(data.rows || [])];
-    newRows.splice(index, 1);
-    setData({ rows: newRows });
+    const updatedRows = [...rows];
+    updatedRows.splice(index, 1);
+    setRows(updatedRows);
+    setData({ rows: updatedRows }); // <-- Update parent data
   };
 
-  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
-    const newRows = [...(data.rows || [])];
-    newRows[index] = { ...newRows[index], [field]: value };
-    setData({ rows: newRows });
-  }
+  const handleRowChange = (
+    index: number,
+    field: keyof RowData,
+    value: string
+  ) => {
+    const updatedRows = [...rows];
+    updatedRows[index][field] = value;
+    setRows(updatedRows);
+    setData({ rows: updatedRows });
+  };
 
 
   return (
@@ -109,12 +116,12 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             <CKEditor
               editor={ClassicEditor as any}
               data={terms}
-             onChange={handleTermsChange}
+              onChange={handleTermsChange}
             />
           </div>
         </div>
 
-        
+
 
         <div className="my-3">
           {rows.map((row, index) => (
@@ -158,14 +165,22 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             </div>
           ))}
 
-          <Button
-            size="sm"
-            variant="primary"
+          {/* <Button
+          size="sm"
+          variant="primary"
+          onClick={handleAddRow}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          + Add New Row
+        </Button> */}
+          <button
+            type="button"
             onClick={handleAddRow}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
           >
             + Add New Row
-          </Button>
+          </button>
+
         </div>
 
       </div>
