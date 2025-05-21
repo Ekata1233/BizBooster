@@ -6,8 +6,9 @@ import Image from 'next/image';
 import { useService } from '@/context/ServiceContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
-import { FaCheckCircle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md';
+import {
+    ChevronDownIcon,
+} from "../../../../../icons/index";
 
 interface ExtraSection {
     title: string;
@@ -131,8 +132,8 @@ const ServiceDetailsPage = () => {
             {activeTab === 'service' && (
                 <ComponentCard title="Service Details">
                     <div className="space-y-4">
-                        <SectionCard icon={<FaInfoCircle />} title="Overview" content={service.serviceDetails.overview} />
-                        <SectionCard icon={<FaCheckCircle />} title="Highlight" content={service.serviceDetails.highlight} />
+                        <SectionCard title="Overview" content={service.serviceDetails.overview} />
+                        <SectionCard title="Highlight" content={service.serviceDetails.highlight} />
                         <SectionCard title="Benefits" isHtml content={service.serviceDetails.benefits} />
                         <SectionCard title="How It Works" content={service.serviceDetails.howItWorks} />
                         <SectionCard title="Terms & Conditions" content={service.serviceDetails.termsAndConditions} />
@@ -152,54 +153,54 @@ const ServiceDetailsPage = () => {
 
 
                         {/* Why Choose */}
-                       {service.serviceDetails.whyChoose && service.serviceDetails.whyChoose.length > 0 && (
-  <ComponentCard title="Why Choose Us">
-    <div className="grid sm:grid-cols-2 gap-4">
-      {service.serviceDetails.whyChoose.map((item: any, i: number) => (
-        <div key={i} className="flex gap-4 items-start p-3 border rounded">
-          <img src={item.image} alt="Why Choose" className="w-12 h-12 rounded object-cover" />
-          <div>
-            <p className="font-semibold">{item.title}</p>
-            <p className="text-sm text-gray-600">{item.description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </ComponentCard>
-)}
+                        {service.serviceDetails.whyChoose && service.serviceDetails.whyChoose.length > 0 && (
+                            <ComponentCard title="Why Choose Us">
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    {service.serviceDetails.whyChoose.map((item: any, i: number) => (
+                                        <div key={i} className="flex gap-4 items-start p-3 border rounded">
+                                            <img src={item.image} alt="Why Choose" className="w-12 h-12 rounded object-cover" />
+                                            <div>
+                                                <p className="font-semibold">{item.title}</p>
+                                                <p className="text-sm text-gray-600">{item.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ComponentCard>
+                        )}
 
-{/* FAQs */}
-{service.serviceDetails.faq && service.serviceDetails.faq.length > 0 && (
-  <ComponentCard title="FAQs">
-    <div className="space-y-2">
-      {service.serviceDetails.faq.map((item: any, i: number) => (
-        <div key={i} className="border rounded-md p-3 shadow-sm bg-white">
-          <button
-            onClick={() =>
-              setOpenFaqIndex(openFaqIndex === i ? null : i)
-            }
-            className="flex items-center justify-between w-full text-left"
-          >
-            <span className="flex items-center font-medium text-primary">
-              <FaQuestionCircle className="mr-2" />
-              Q: {item.question}
-            </span>
-            {openFaqIndex === i ? (
-              <MdKeyboardArrowUp className="text-xl" />
-            ) : (
-              <MdKeyboardArrowDown className="text-xl" />
-            )}
-          </button>
-          {openFaqIndex === i && (
-            <div className="mt-2 ml-6 text-gray-700 text-sm">
-              <strong>A:</strong> {item.answer}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  </ComponentCard>
-)}
+                        {/* FAQs */}
+                        {service.serviceDetails.faq && service.serviceDetails.faq.length > 0 && (
+                            <ComponentCard title="FAQs">
+                                <div className="space-y-2">
+                                    {service.serviceDetails.faq.map((item: any, i: number) => (
+                                        <div key={i} className="border rounded-md p-3 shadow-sm bg-white">
+                                            <button
+                                                onClick={() =>
+                                                    setOpenFaqIndex(openFaqIndex === i ? null : i)
+                                                }
+                                                className="flex items-center justify-between w-full text-left"
+                                            >
+                                                <span className="flex items-center font-medium text-primary">
+                                                    <ChevronDownIcon className="mr-2" />
+                                                    Q: {item.question}
+                                                </span>
+                                                {openFaqIndex === i ? (
+                                                    <ChevronDownIcon className="text-xl" />
+                                                ) : (
+                                                    <ChevronDownIcon className="text-xl" />
+                                                )}
+                                            </button>
+                                            {openFaqIndex === i && (
+                                                <div className="mt-2 ml-6 text-gray-700 text-sm">
+                                                    <strong>A:</strong> {item.answer}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </ComponentCard>
+                        )}
 
                     </div>
                 </ComponentCard>
