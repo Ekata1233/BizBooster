@@ -52,31 +52,13 @@ const AddProvider = () => {
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const { modules } = useModule();
   const { createProvider } = useProvider();
-  const [companyName, setCompanyName] = useState('');
-  const [phoneNo, setPhoneNo] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [zone, setSort] = useState('');
-  const [logo, setLogo] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null);
-  const [identityType, setId] = useState('');
-  const [identity, setIdentityNo] = useState('');
-  const [idImage, setIdImage] = useState(null);
-  const [accountEmail, setAccountEmail] = useState('');
-  const [accountPhone, setAccountPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [latitude , setLatitude] = useState('');
-  const [longitude , setLongitude] = useState('');
+
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
-  const onMapClick = useCallback((event) => {
+  const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
@@ -86,51 +68,18 @@ const AddProvider = () => {
     }
   }, [setValue]);
 
-  const handleLogoChange = (e) => {
-    setLogo(e.target.files[0]);
+  const onSubmit = (data: any) => {
+    console.log('Form Data:', data);
+    alert('Form submitted! Check console for data.');
   };
 
-  const handleSelectModule = (selected) => {
-    setSelectedModule(selected);
-  };
-
-  const handleIdImageChange = (e) => {
-    setIdImage(e.target.files[0]);
-  };
-
-  const onSubmit = () => {
-    const providerData = {
-      companyName,
-      phoneNo,
-      email,
-      address,
-      zone,
-      logo,
-      selectedModule,
-      identityType,
-      identity,
-      idImage,
-      accountEmail,
-      accountPhone,
-      password,
-      confirmPassword,
-      contactName,
-      contactPhone,
-      contactEmail,
-      latitude: markerPosition.lat,
-      longitude: markerPosition.lng,
-    };
-
-    console.log("provider data : ", providerData);
-
-    createProvider(providerData);
-  };
-
-  const moduleOptions = modules.map((mod) => ({ value: mod._id, label: mod.name }));
+  const options = modules.map((mod: ModuleType) => ({
+    value: mod._id,
+    label: mod.name,
+  }));
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
-
 
   return (
     <div className="container mx-auto p-4">
@@ -216,7 +165,7 @@ const AddProvider = () => {
                   <label className="block mb-1 font-medium text-gray-700">Select Module</label>
                   <div className="relative">
                     <Select
-                      options={moduleOptions}
+                      options={options}
                       placeholder="Select Module"
                       onChange={handleSelectModule}
                       className="dark:bg-dark-900"
@@ -322,31 +271,31 @@ const AddProvider = () => {
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Contact Person Name</Label>
                 <Input
-                  type="text"
-                  placeholder="Enter Name"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                />
+                    type="text"
+                    placeholder="Enter Name"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                  />
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
                 <Input
-                  type="text"
-                  placeholder="Enter Phone No"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                />
+                    type="text"
+                    placeholder="Enter Phone No"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                  />
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Email</Label>
                 <Input
-                  type="email"
-                  placeholder="Enter Email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                />
+                    type="email"
+                    placeholder="Enter Email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                  />
               </div>
             </div>
           </section>
@@ -371,20 +320,20 @@ const AddProvider = () => {
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
                 <Input
-                  type="number"
-                  placeholder="Enter Latitude"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                />
+                    type="number"
+                    placeholder="Enter Latitude"
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                  />
               </div>
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
                 <Input
-                  type="number"
-                  placeholder="Enter Longitude"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                />
+                    type="number"
+                    placeholder="Enter Longitude"
+                    value={longiture}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
               </div>
             </div>
           </section>

@@ -23,25 +23,25 @@ export async function POST(req: NextRequest) {
     console.log("formdata of the provider : ",formData);
 
     // Extract fields
-    const name = formData.get('name') as string;
+    const name = formData.get('companyName') as string;
     const phoneNo = formData.get('phoneNo') as string;
     const email = formData.get('email') as string;
     const address = formData.get('address') as string;
     const zone = formData.get('zone') as string;
-    const companyLogoFile = formData.get('companyLogo') as File | null;
-    const module = formData.get('module') as string;
+    const companyLogoFile = formData.get('logo') as File | null;
+    const module = formData.get('selectedModule') as string;
     const identityType = formData.get('identityType') as 'passport' | 'driving license' | 'other';
-    const identityNumber = formData.get('identityNumber') as string;
-    const identificationImageFile = formData.get('identificationImage') as File;
-    const contactPersonName = formData.get('contactPerson.name') as string;
-    const contactPersonPhoneNo = formData.get('contactPerson.phoneNo') as string;
-    const contactPersonEmail = formData.get('contactPerson.email') as string;
-    const accountEmail = formData.get('accountInformation.email') as string;
-    const accountPhoneNo = formData.get('accountInformation.phoneNo') as string;
+    const identityNumber = formData.get('identity') as string;
+    const identificationImageFile = formData.get('idImage') as File;
+    const contactPersonName = formData.get('contactName') as string;
+    const contactPersonPhoneNo = formData.get('contactPhone') as string;
+    const contactPersonEmail = formData.get('contactEmail') as string;
+    const accountEmail = formData.get('accountEmail') as string;
+    const accountPhoneNo = formData.get('accountPhone') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
-    const addressLatitude = Number(formData.get('addressLatitude'));
-    const addressLongitude = Number(formData.get('addressLongitude'));
+    const addressLatitude = Number(formData.get('latitude'));
+    const addressLongitude = Number(formData.get('longitude'));
     const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
 
     if (!name || !phoneNo || !email || !address || !identityType || !identityNumber || !identificationImageFile || !contactPersonName || !contactPersonPhoneNo || !contactPersonEmail || !accountEmail || !accountPhoneNo || !password || !confirmPassword || !addressLatitude || !addressLongitude) {
