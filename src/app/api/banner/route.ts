@@ -67,8 +67,7 @@ export async function GET(req: NextRequest) {
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
 
-    const filter: any = { isDeleted: false };
-
+ const filter: Record<string, unknown> = { isDeleted: false };
     if (search) {
       filter.$or = [
         { page: { $regex: search, $options: 'i' } }

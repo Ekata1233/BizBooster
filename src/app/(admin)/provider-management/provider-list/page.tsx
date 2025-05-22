@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import { PencilIcon, TrashBinIcon, EyeIcon } from '@/icons';
+import { TrashBinIcon, EyeIcon } from '@/icons';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import Select from '@/components/form/Select';

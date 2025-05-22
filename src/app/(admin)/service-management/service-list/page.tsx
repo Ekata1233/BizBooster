@@ -6,7 +6,6 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { PencilIcon, TrashBinIcon, EyeIcon, ChevronDownIcon } from '@/icons';
 import Link from 'next/link';
-import { useService } from '@/context/ServiceContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import Label from '@/components/form/Label';
@@ -80,10 +79,7 @@ interface ServiceTableData {
   status: string;
 }
 
-interface ServicesResponse {
-  success: boolean;
-  data: Service[];
-}
+
 
 const options = [
   { value: "latest", label: "Latest" },

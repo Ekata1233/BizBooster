@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    console.log("formdata of the provider : ",formData);
+    console.log("formdata of the provider : ", formData);
 
     // Extract fields
     const name = formData.get('companyName') as string;
@@ -44,7 +44,12 @@ export async function POST(req: NextRequest) {
     const addressLongitude = Number(formData.get('longitude'));
     const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
 
-    if (!name || !phoneNo || !email || !address || !identityType || !identityNumber || !identificationImageFile || !contactPersonName || !contactPersonPhoneNo || !contactPersonEmail || !accountEmail || !accountPhoneNo || !password || !confirmPassword || !addressLatitude || !addressLongitude) {
+    if (
+      !name || !phoneNo || !email || !address || !identityType || !identityNumber ||
+      !identificationImageFile || !contactPersonName || !contactPersonPhoneNo || !contactPersonEmail ||
+      !accountEmail || !accountPhoneNo || !password || !confirmPassword ||
+      !addressLatitude || !addressLongitude
+    ) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400, headers: corsHeaders });
     }
 
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Passwords do not match' }, { status: 400, headers: corsHeaders });
     }
 
-    // Upload identificationImage to ImageKit
+    // Upload identification image
     const identificationImageBuffer = Buffer.from(await identificationImageFile.arrayBuffer());
     const identificationImageUpload = await imagekit.upload({
       file: identificationImageBuffer,
@@ -60,7 +65,7 @@ export async function POST(req: NextRequest) {
       folder: '/provider-identifications',
     });
 
-    // Upload companyLogo if provided
+    // Upload company logo if provided
     let companyLogoUrl = '';
     if (companyLogoFile) {
       const companyLogoBuffer = Buffer.from(await companyLogoFile.arrayBuffer());
@@ -80,7 +85,7 @@ export async function POST(req: NextRequest) {
       address,
       zone,
       companyLogo: companyLogoUrl || undefined,
-      module,
+      module: moduleValue, // ✅ Safe usage of 'module'
       identityType,
       identityNumber,
       identificationImage: identificationImageUpload.url,
@@ -94,7 +99,7 @@ export async function POST(req: NextRequest) {
         phoneNo: accountPhoneNo,
       },
       password,
-      confirmPassword, // only for validation, you can remove in your model if you want
+      confirmPassword, // optional: can be excluded from DB schema
       addressLatitude,
       addressLongitude,
       setBusinessPlan,
@@ -111,7 +116,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Get All Providers
-export async function GET(req: NextRequest) {
+export async function GET() {
   await connectToDatabase();
 
   try {

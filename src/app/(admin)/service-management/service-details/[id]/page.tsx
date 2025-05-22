@@ -10,54 +10,6 @@ import {
     ChevronDownIcon,
 } from "../../../../../icons/index";
 
-interface ExtraSection {
-    title: string;
-    description: string;
-}
-
-interface WhyChooseItem {
-    title: string;
-    description: string;
-    image: string;
-}
-
-interface FaqItem {
-    question: string;
-    answer: string;
-}
-
-interface ServiceDetails {
-    overview: string;
-    highlight: string;
-    benefits: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    document: string;
-    extraSections?: ExtraSection[]; // <-- add this
-    whyChoose?: WhyChooseItem[];    // <-- and this
-    faq?: FaqItem[];                // <-- and this
-}
-
-interface FranchiseDetails {
-    overview: string;
-    commission: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    extraSections?: ExtraSection[];
-}
-
-interface Service {
-    _id: string;
-    serviceName: string;
-    thumbnailImage: string;
-    bannerImages: string[];
-    category: { name: string };
-    subcategory: { name: string };
-    price: number;
-    serviceDetails: ServiceDetails;
-    franchiseDetails: FranchiseDetails;
-}
-
 
 const ServiceDetailsPage = () => {
     const params = useParams();
@@ -164,16 +116,23 @@ const ServiceDetailsPage = () => {
                         {service.serviceDetails.whyChoose && service.serviceDetails.whyChoose.length > 0 && (
                             <ComponentCard title="Why Choose Us">
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    {service.serviceDetails.whyChoose.map((item: any, i: number) => (
-                                        <div key={i} className="flex gap-4 items-start p-3 border rounded">
-                                            <img src={item.image} alt="Why Choose" className="w-12 h-12 rounded object-cover" />
-                                            <div>
-                                                <p className="font-semibold">{item.title}</p>
-                                                <p className="text-sm text-gray-600">{item.description}</p>
+                                    {service.serviceDetails.whyChoose.map(
+                                        (item: { image: string; title: string; description: string }, i: number) => (
+                                            <div key={i} className="flex gap-4 items-start p-3 border rounded">
+                                                <img
+                                                    src={item.image}
+                                                    alt="Why Choose"
+                                                    className="w-12 h-12 rounded object-cover"
+                                                />
+                                                <div>
+                                                    <p className="font-semibold">{item.title}</p>
+                                                    <p className="text-sm text-gray-600">{item.description}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    )}
                                 </div>
+
                             </ComponentCard>
                         )}
 
@@ -181,45 +140,49 @@ const ServiceDetailsPage = () => {
                         {service.serviceDetails.faq && service.serviceDetails.faq.length > 0 && (
                             <ComponentCard title="FAQs">
                                 <div className="space-y-2">
-                                    {service.serviceDetails.faq.map((item: any, i: number) => (
-                                        <div key={i} className="border rounded-md p-3 shadow-sm bg-white">
-                                            <button
-                                                onClick={() =>
-                                                    setOpenFaqIndex(openFaqIndex === i ? null : i)
-                                                }
-                                                className="flex items-center justify-between w-full text-left"
-                                            >
-                                                <span className="flex items-center font-medium text-primary">
-                                                    <ChevronDownIcon className="mr-2" />
-                                                    Q: {item.question}
-                                                </span>
-                                                {openFaqIndex === i ? (
-                                                    <ChevronDownIcon className="text-xl" />
-                                                ) : (
-                                                    <ChevronDownIcon className="text-xl" />
+                                    {service.serviceDetails.faq.map(
+                                        (item: { question: string; answer: string }, i: number) => (
+                                            <div key={i} className="border rounded-md p-3 shadow-sm bg-white">
+                                                <button
+                                                    onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+                                                    className="flex items-center justify-between w-full text-left"
+                                                >
+                                                    <span className="flex items-center font-medium text-primary">
+                                                        <ChevronDownIcon className="mr-2" />
+                                                        Q: {item.question}
+                                                    </span>
+                                                    {openFaqIndex === i ? (
+                                                        <ChevronDownIcon className="text-xl" />
+                                                    ) : (
+                                                        <ChevronDownIcon className="text-xl" />
+                                                    )}
+                                                </button>
+                                                {openFaqIndex === i && (
+                                                    <div className="mt-2 ml-6 text-gray-700 text-sm">
+                                                        <strong>A:</strong> {item.answer}
+                                                    </div>
                                                 )}
-                                            </button>
-                                            {openFaqIndex === i && (
-                                                <div className="mt-2 ml-6 text-gray-700 text-sm">
-                                                    <strong>A:</strong> {item.answer}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                            </div>
+                                        )
+                                    )}
                                 </div>
+
                             </ComponentCard>
                         )}
 
                         {/* Extra Sections */}
                         {service.serviceDetails.extraSections && service.serviceDetails.extraSections.length > 0 && (
                             <ComponentCard title="Extra Sections">
-                                {service.serviceDetails.extraSections.map((item: any, i: number) => (
-                                    <div key={i} className="mb-4">
-                                        <p className="font-medium">{item.title}</p>
-                                        <p className="text-sm text-gray-700">{item.description}</p>
-                                    </div>
-                                ))}
+                                {service.serviceDetails.extraSections.map(
+                                    (item: { title: string; description: string }, i: number) => (
+                                        <div key={i} className="mb-4">
+                                            <p className="font-medium">{item.title}</p>
+                                            <p className="text-sm text-gray-700">{item.description}</p>
+                                        </div>
+                                    )
+                                )}
                             </ComponentCard>
+
                         )}
 
                     </div>
@@ -237,13 +200,16 @@ const ServiceDetailsPage = () => {
 
                         {service.franchiseDetails.extraSections && service.franchiseDetails.extraSections.length > 0 && (
                             <ComponentCard title="Extra Sections">
-                                {service.franchiseDetails.extraSections.map((item: any, i: number) => (
-                                    <div key={i} className="mb-4">
-                                        <p className="font-medium">{item.title}</p>
-                                        <p className="text-sm text-gray-700">{item.description}</p>
-                                    </div>
-                                ))}
+                                {service.franchiseDetails.extraSections.map(
+                                    (item: { title: string; description: string }, i: number) => (
+                                        <div key={i} className="mb-4">
+                                            <p className="font-medium">{item.title}</p>
+                                            <p className="text-sm text-gray-700">{item.description}</p>
+                                        </div>
+                                    )
+                                )}
                             </ComponentCard>
+
                         )}
                     </div>
                 </ComponentCard>

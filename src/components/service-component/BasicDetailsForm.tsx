@@ -6,7 +6,14 @@ import { ChevronDownIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
-
+interface BasicDetailsData {
+  name: string;
+  category: string;
+  subcategory: string;
+  price: number;
+  thumbnail?: File | null;
+  covers?: FileList | null;
+}
 const BasicDetailsForm = ({ data, setData }: {
     data: any;
     setData: (newData: Partial<any>) => void;

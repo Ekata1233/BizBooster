@@ -66,9 +66,13 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       const res = await axios.get('/api/provider');
       setProviders(res.data.data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch providers');
-    } finally {
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message || 'Failed to delete provider');
+  } else {
+    setError('Failed to delete provider');
+  }
+} finally {
       setLoading(false);
     }
   };
@@ -81,9 +85,13 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       });
       setProviders((prev) => [...prev, res.data.data]);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create provider');
-    } finally {
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message || 'Failed to delete provider');
+  } else {
+    setError('Failed to delete provider');
+  }
+} finally {
       setLoading(false);
     }
   };
@@ -98,9 +106,13 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
         prev.map((p) => (p._id === id ? res.data.data : p))
       );
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update provider');
-    } finally {
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message || 'Failed to delete provider');
+  } else {
+    setError('Failed to delete provider');
+  }
+} finally {
       setLoading(false);
     }
   };
@@ -111,9 +123,13 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       await axios.delete(`/api/provider/${id}`);
       setProviders((prev) => prev.filter((p) => p._id !== id));
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete provider');
-    } finally {
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message || 'Failed to delete provider');
+  } else {
+    setError('Failed to delete provider');
+  }
+}finally {
       setLoading(false);
     }
   };
@@ -134,9 +150,13 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       } else {
         setError(res.data.message || 'Login failed');
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message || 'Failed to delete provider');
+  } else {
+    setError('Failed to delete provider');
+  }
+}finally {
       setLoading(false);
     }
   };

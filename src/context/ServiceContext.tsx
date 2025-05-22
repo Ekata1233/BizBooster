@@ -31,33 +31,33 @@ interface ServiceDetails {
 }
 
 interface FranchiseDetails {
-    overview: string;
-    commission: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    extraSections?: ExtraSection[];
+  overview: string;
+  commission: string;
+  howItWorks: string;
+  termsAndConditions: string;
+  extraSections?: ExtraSection[];
 }
 
 interface Service {
-    _id: string;
-    serviceName: string;
-    thumbnailImage: string;
-    bannerImages: string[];
-    category: { name: string };
-    subcategory: { name: string };
-    price: number;
-    serviceDetails: ServiceDetails;
-    franchiseDetails: FranchiseDetails;
+  _id: string;
+  serviceName: string;
+  thumbnailImage: string;
+  bannerImages: string[];
+  category: { name: string };
+  subcategory: { name: string };
+  price: number;
+  serviceDetails: ServiceDetails;
+  franchiseDetails: FranchiseDetails;
 }
 
 type ServiceContextType = {
   services: Service[];
   createService: (formData: FormData) => Promise<Service | undefined>;
-  updateService: (id: string, data: any) => Promise<Service | undefined>;
+  updateService: (id: string, data: Partial<Service>) => Promise<Service | undefined>;
   deleteService: (id: string) => Promise<void>;
-    fetchSingleService: (id: string) => Promise<void>;           // ✅ new
-  singleService: Service | null;                               // ✅ new
-  singleServiceLoading: boolean;                               // ✅ new
+  fetchSingleService: (id: string) => Promise<void>;
+  singleService: Service | null;
+  singleServiceLoading: boolean;
   singleServiceError: string | null;      
 };
 
@@ -65,22 +65,23 @@ const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
 export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const [services, setServices] = useState<Service[]>([]);
-const [singleService, setSingleService] = useState<Service | null>(null);
-const [singleServiceLoading, setSingleServiceLoading] = useState<boolean>(false);
-const [singleServiceError, setSingleServiceError] = useState<string | null>(null);
+  const [singleService, setSingleService] = useState<Service | null>(null);
+  const [singleServiceLoading, setSingleServiceLoading] = useState<boolean>(false);
+  const [singleServiceError, setSingleServiceError] = useState<string | null>(null);
 
-const fetchSingleService = async (id: string) => {
-  setSingleServiceLoading(true);
-  try {
-    const res = await axios.get(`/api/service/${id}`);
-    setSingleService(res.data?.data || null);
-    setSingleServiceError(null);
-  } catch (err: unknown) {
-    console.log(err)
-  } finally {
-    setSingleServiceLoading(false);
-  }
-};
+  const fetchSingleService = async (id: string) => {
+    setSingleServiceLoading(true);
+    try {
+      const res = await axios.get(`/api/service/${id}`);
+      setSingleService(res.data?.data || null);
+      setSingleServiceError(null);
+    } catch (err: unknown) {
+      console.log(err);
+    } finally {
+      setSingleServiceLoading(false);
+    }
+  };
+
   const fetchServices = useCallback(async () => {
     try {
       const res = await axios.get<Service[]>("/api/service");
@@ -93,7 +94,8 @@ const fetchSingleService = async (id: string) => {
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
-// console.log("services",services);
+
+  // console.log("services",services);
 
   const createService = async (formData: FormData) => {
     try {
@@ -105,7 +107,7 @@ const fetchSingleService = async (id: string) => {
     }
   };
 
-  const updateService = async (id: string, data: any) => {
+  const updateService = async (id: string, data: Partial<Service>) => {
     try {
       const res = await axios.put<Service>(`/api/service/${id}`, data);
       fetchServices();
@@ -123,24 +125,22 @@ const fetchSingleService = async (id: string) => {
       console.error("Failed to delete service:", error);
     }
   };
- 
+
   return (
     <ServiceContext.Provider
-  value={{
-    services,
-    createService,
-    updateService,
-    deleteService,
-    
-    fetchSingleService,         // ✅ new
-    singleService,              // ✅ new
-    singleServiceLoading,       // ✅ new
-    singleServiceError,         // ✅ new
-  }}
->
-  {children}
-</ServiceContext.Provider>
-
+      value={{
+        services,
+        createService,
+        updateService,
+        deleteService,
+        fetchSingleService,
+        singleService,
+        singleServiceLoading,
+        singleServiceError,
+      }}
+    >
+      {children}
+    </ServiceContext.Provider>
   );
 };
 
