@@ -5,13 +5,17 @@ import Image from 'next/image';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import { TrashBinIcon, PencilIcon } from '@/icons';
+import { TrashBinIcon, PencilIcon, ChevronDownIcon, UserIcon, ArrowUpIcon } from '@/icons';
 import { Modal } from '@/components/ui/modal';
 import AddBanner from '@/components/banner-component/AddBanner';
 // import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useBanner } from '@/context/BannerContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
+import Label from '@/components/form/Label';
+import Select from '@/components/form/Select';
+import Input from '@/components/form/input/InputField';
+import StatCard from '@/components/common/StatCard';
 
 interface BannerType {
   _id: string;
@@ -29,7 +33,7 @@ interface BannerType {
 
 interface TableData {
   id: string;
-  
+
   file: string;
   page: string;
   selectionType: string;
@@ -37,19 +41,24 @@ interface TableData {
   status: string;
 }
 
+const options = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "ascending", label: "Ascending" },
+  { value: "descending", label: "Descending" },
+];
+
 const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBanner();
-  // const { modules: moduleData } = useModule();
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const { categories: categoryData } = useCategory();
   const { subcategories: subcategoryData } = useSubcategory();
-
-  console.log("Banners : ", banners);
-
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
-
+  const [sort, setSort] = useState<string>('oldest');
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedFile, setUpdatedFile] = useState<string>('');
@@ -90,7 +99,7 @@ const Banner = () => {
       ? currentBanner.category?._id
       : currentBanner.category;
 
-      const subcategoryId = typeof currentBanner.subcategory === 'object'
+    const subcategoryId = typeof currentBanner.subcategory === 'object'
       ? currentBanner.subcategory?._id
       : currentBanner.subcategory;
 
@@ -119,7 +128,7 @@ const Banner = () => {
     } catch (err) {
       setError('Failed to update banner.');
       console.log(err);
-      
+
     } finally {
       setIsLoading(false);
     }
@@ -233,12 +242,89 @@ const Banner = () => {
     },
   ];
 
+  const subcategoryOptions = subcategoryData.map((sub) => ({
+    value: sub._id ?? '',
+    label: sub.name,
+  }));
+
+
+
+  const handleSelectSubcategory = (value: string) => {
+    setSelectedSubcategory(value); // required to set the selected module
+  };
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Banners" />
-      <div className="my-5">
+      {/* <div className="my-5">
         <AddBanner />
+      </div> */}
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left section - Search Filter */}
+        <div className="w-full lg:w-3/4 my-5">
+          <ComponentCard title="Search Filter">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 py-3">
+              {/* Subcategory Select */}
+              <div>
+                <Label>Select Subcategory</Label>
+                <div className="relative">
+                  <Select
+                    options={subcategoryOptions}
+                    placeholder="Select Subcategory"
+                    onChange={handleSelectSubcategory}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+
+              {/* Sort Select */}
+              <div>
+                <Label>Select Input</Label>
+                <div className="relative">
+                  <Select
+                    options={options}
+                    placeholder="Sort By"
+                    onChange={(value) => setSort(value)}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+
+              {/* Search Input */}
+              <div>
+                <Label>Other Filter</Label>
+                <Input
+                  type="text"
+                  placeholder="Search by service name"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+          </ComponentCard>
+        </div>
+
+        {/* Right section - StatCard */}
+        <div className="w-full lg:w-1/4 my-5">
+          <StatCard
+            title="Total Banners"
+            value={banners.length}
+            icon={UserIcon}
+            badgeColor="success"
+            badgeValue="0.00%"
+            badgeIcon={ArrowUpIcon}
+          />
+        </div>
       </div>
+
+
       <div className="my-5">
         <ComponentCard title="All Banners">
           <BasicTableOne columns={columns} data={tableData} />

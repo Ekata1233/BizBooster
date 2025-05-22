@@ -13,8 +13,8 @@ const containerStyle = {
 };
 
 const centerDefault = {
-  lat: 37.7749,
-  lng: -122.4194,
+  lat: 18.501426841362647,
+  lng: 73.88318878735599,
 };
 
 const identityTypes = [
@@ -147,20 +147,20 @@ const { modules } = useModule();
               </h2>
               <div className="space-y-4">
                 <div>
-          <label className="block mb-1 font-medium text-gray-700">Select Module</label>
-          <select
-            {...register('moduleId', { required: 'Module selection is required' })}
-            className="input-field"
-          >
-            <option value="">Select a Module</option>
-            {modules.map((module) => (
-              <option key={module._id} value={module._id}>
-                {module.name}
-              </option>
-            ))}
-          </select>
-          {errors.moduleId && <p className="text-red-600 text-sm mt-1">{errors.moduleId.message}</p>}
-        </div>
+                  <label className="block mb-1 font-medium text-gray-700">Select Module</label>
+                  <select
+                    {...register('moduleId', { required: 'Module selection is required' })}
+                    className="input-field"
+                  >
+                    <option value="">Select a Module</option>
+                    {modules.map((module) => (
+                      <option key={module._id} value={module._id}>
+                        {module.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.moduleId && <p className="text-red-600 text-sm mt-1">{errors.moduleId.message}</p>}
+                </div>
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Identity Type</Label>

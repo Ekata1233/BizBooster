@@ -14,6 +14,7 @@ import Select from '@/components/form/Select';
 import Input from '@/components/form/input/InputField';
 import { Category, useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
+import axios from 'axios';
 
 interface Service {
   _id: string;
@@ -52,38 +53,83 @@ const ServiceList = () => {
   const { services } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  console.log("services", services);
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [sort, setSort] = useState<string>('oldest');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [message, setMessage] = useState('');
+
   // Update filteredServices when services, searchQuery or activeTab changes
+  // useEffect(() => {
+  //   if (!services?.data || !Array.isArray(services.data)) return;
+
+  //   const filtered = services.data
+  //     .filter((service: Service) => {
+  //       if (activeTab === 'active') return !service.isDeleted;
+  //       if (activeTab === 'inactive') return service.isDeleted;
+  //       return true;
+  //     })
+  //     .filter((service: Service) =>
+  //       service.serviceName.toLowerCase().replace(/"/g, '').includes(searchQuery.toLowerCase())
+  //     )
+  //     .map((service: Service) => ({
+  //       id: service._id,
+  //       name: service.serviceName.replace(/"/g, ''),
+  //       thumbnailImage: service.thumbnailImage,
+  //       categoryName: service.category?.name || 'N/A',
+  //       subcategoryName: service.subcategory?.name || 'N/A',
+  //       price: service.price,
+  //       status: service.isDeleted ? 'Inactive' : 'Active',
+  //     }));
+
+  //   setFilteredServices(filtered);
+  // }, [services, searchQuery, activeTab]);
+
+  const fetchFilteredServices = async () => {
+    try {
+      const params = {
+        ...(searchQuery && { search: searchQuery }),
+        ...(selectedCategory && { category: selectedCategory }),
+        ...(selectedSubcategory && { subcategory: selectedSubcategory }),
+        ...(sort && { sort }),
+      };
+
+      const response = await axios.get('/api/service', { params });
+
+      const serviceData = response.data;
+
+      console.log("service data in frontend  : ", serviceData)
+
+      if (serviceData.data.length === 0) {
+        setFilteredServices([]);
+        setMessage(serviceData.message || 'No services found');
+      } else {
+        const mapped = serviceData.data.map((service: Service) => ({
+          id: service._id,
+          name: service.serviceName.replace(/"/g, ''),
+          thumbnailImage: service.thumbnailImage,
+          categoryName: service.category?.name || 'N/A',
+          subcategoryName: service.subcategory?.name || 'N/A',
+          price: service.price,
+          status: service.isDeleted ? 'Inactive' : 'Active',
+        }));
+
+        setFilteredServices(mapped);
+        setMessage('');
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      setFilteredServices([]);
+      setMessage('Something went wrong while fetching services');
+    }
+  };
+
   useEffect(() => {
-    if (!services?.data || !Array.isArray(services.data)) return;
+    fetchFilteredServices();
+  }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
 
-    const filtered = services.data
-      .filter((service: Service) => {
-        if (activeTab === 'active') return !service.isDeleted;
-        if (activeTab === 'inactive') return service.isDeleted;
-        return true;
-      })
-      .filter((service: Service) =>
-        service.serviceName.toLowerCase().replace(/"/g, '').includes(searchQuery.toLowerCase())
-      )
-      .map((service: Service) => ({
-        id: service._id,
-        name: service.serviceName.replace(/"/g, ''),
-        thumbnailImage: service.thumbnailImage,
-        categoryName: service.category?.name || 'N/A',
-        subcategoryName: service.subcategory?.name || 'N/A',
-        price: service.price,
-        status: service.isDeleted ? 'Inactive' : 'Active',
-      }));
-
-    setFilteredServices(filtered);
-  }, [services, searchQuery, activeTab]);
 
   const columns = [
     {
@@ -159,8 +205,6 @@ const ServiceList = () => {
     },
   ];
 
-  console.log("category option : ", categories)
-  console.log("subcategory option : ", subcategories)
 
   const categoryOptions = categories.map((cat: Category) => ({
     value: cat._id ?? '',
@@ -177,12 +221,10 @@ const ServiceList = () => {
   }));
 
   const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
     setSelectedCategory(value); // required to set the selected module
   };
 
   const handleSelectSubcategory = (value: string) => {
-    console.log("Selected value:", value);
     setSelectedSubcategory(value); // required to set the selected module
   };
 
@@ -247,7 +289,7 @@ const ServiceList = () => {
               <Label>Other Filter</Label>
               <Input
                 type="text"
-                placeholder="Search by name, email, or phone"
+                placeholder="Search by service name"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />

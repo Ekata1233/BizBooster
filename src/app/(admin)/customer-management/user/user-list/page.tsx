@@ -189,19 +189,7 @@ const UserList = () => {
                 setFilteredUsers([]);
                 setMessage(data.message || 'No users found');
             } else {
-                // const mapped = data.users.map((user: User) => ({
-                //     id: user._id,
-                //     user: {
-                //         image: user.image || "/images/logo/user1.webp",
-                //         fullName: user.fullName,
-                //     },
-                //     email: user.email,
-                //     mobileNumber: user.mobileNumber,
-                //     referredBy: user.referredBy || "N/A",
-                //     totalBookings: "0",
-                //     totalEarnings: "0",
-                //     status: user.isDeleted ? "Deleted" : user.otp?.verified ? "Verified" : "Not Verified"
-                // }));
+                
                 const mapped = data.users.map((user: User) => {
                     const referrer = data.users.find((u: User) => u._id === user.referredBy);
                     return {

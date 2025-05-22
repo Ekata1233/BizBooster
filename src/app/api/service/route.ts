@@ -218,30 +218,72 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search");
+    const search = searchParams.get('search');
+    const category = searchParams.get('category');
+    const subcategory = searchParams.get('subcategory');
+    const sort = searchParams.get('sort');
 
-    interface ServiceFilter {
-      isDeleted: boolean;
-      serviceName?: { $regex: string; $options: string };
-    }
-    const filter: ServiceFilter = { isDeleted: false };
+    console.log('search params of service:', {
+      search,
+      category,
+      subcategory,
+      sort
+    });
+
+    // Build filter
+    const filter: any = { isDeleted: false };
 
     if (search) {
-      const searchRegex = { $regex: search, $options: "i" };
-      filter.serviceName = searchRegex;
+      filter.serviceName = { $regex: search, $options: 'i' };
     }
 
-    // Populate category and subcategory references if you want
+    if (category) {
+      filter.category = category; // should be ObjectId string
+    }
+
+    if (subcategory) {
+      filter.subcategory = subcategory;
+    }
+
+    // Build query
+     let sortOption: Record<string, 1 | -1> = {};
+
+    switch (sort) {
+      case 'latest':
+        sortOption = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortOption = { createdAt: 1 };
+        break;
+      case 'ascending':
+        sortOption = { serviceName: 1 };
+        break;
+      case 'descending':
+        sortOption = { serviceName: -1 };
+        break;
+      case 'asc':
+        sortOption = { price: 1 };
+        break;
+      case 'desc':
+        sortOption = { price: -1 };
+        break;
+      default:
+        sortOption = { createdAt: -1 };
+    }
+
+    // Build query with filter and sort
     const services = await Service.find(filter)
-      .populate("category")
-      .populate("subcategory");
+      .populate('category')
+      .populate('subcategory')
+      .sort(sortOption)
+      .exec();
 
     return NextResponse.json(
       { success: true, data: services },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { success: false, message },
       { status: 500, headers: corsHeaders }
