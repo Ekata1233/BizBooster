@@ -1,5 +1,4 @@
-import { Schema } from "mongoose";
-const mongoose = require('mongoose');
+import mongoose, { Schema } from "mongoose";
 import bcrypt from 'bcrypt';
 
 interface ContactPerson {
@@ -19,6 +18,8 @@ export interface ProviderDocument extends Document {
   email: string;
   address: string;
   companyLogo?: string;
+  zone: 'east' | 'west' | 'south' | 'north' | 'central'; // ✅ added zone
+  module: mongoose.Types.ObjectId;
   identityType: 'passport' | 'driving license' | 'other';
   identityNumber: string;
   identificationImage: string;
@@ -29,7 +30,7 @@ export interface ProviderDocument extends Document {
   addressLatitude: number;
   addressLongitude: number;
   setBusinessPlan: 'commission base' | 'other';
-  isDeleted : boolean;
+  isDeleted: boolean;
 }
 
 const providerSchema = new Schema<ProviderDocument>({
@@ -54,8 +55,18 @@ const providerSchema = new Schema<ProviderDocument>({
     type: String,
     required: true,
   },
+  zone: {
+    type: String,
+    enum: ['east', 'west', 'south', 'north', 'central'],
+    required: true,
+  },
   companyLogo: {
     type: String, // URL or path to the image
+  },
+  module: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Module',
+    required: true,
   },
   identityType: {
     type: String,
@@ -95,7 +106,7 @@ const providerSchema = new Schema<ProviderDocument>({
       lowercase: true,
       trim: true,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           return v === this.email; // Must be same as main email
         },
         message: props => `${props.value} must be the same as provider email!`
@@ -111,16 +122,16 @@ const providerSchema = new Schema<ProviderDocument>({
     type: String,
     required: true,
   },
-//   confirmPassword: {
-//     type: String,
-//     required: true,
-//     validate: {
-//       validator: function(v) {
-//         return v === this.password;
-//       },
-//       message: 'Passwords do not match!'
-//     }
-//   },
+  //   confirmPassword: {
+  //     type: String,
+  //     required: true,
+  //     validate: {
+  //       validator: function(v) {
+  //         return v === this.password;
+  //       },
+  //       message: 'Passwords do not match!'
+  //     }
+  //   },
   addressLatitude: {
     type: Number,
     required: true,

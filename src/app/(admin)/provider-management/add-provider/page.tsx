@@ -5,6 +5,11 @@ import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
 import { useModule } from '@/context/ModuleContext';
+import { useProvider } from '@/context/ProviderContext';
+import Input from '@/components/form/input/InputField';
+import Select from '@/components/form/Select';
+import { ChevronDownIcon } from '@/icons';
+import FileInput from '@/components/form/input/FileInput';
 
 const containerStyle = {
   width: '100%',
@@ -23,15 +28,55 @@ const identityTypes = [
   'Other',
 ];
 
+interface ModuleType {
+  _id: string;
+  name: string;
+}
+
+const zoneOptions = [
+  { value: "east", label: "East" },
+  { value: "west", label: "West" },
+  { value: "south", label: "South" },
+  { value: "north", label: "North" },
+  { value: "central", label: "Central" },
+];
+
+const idOptions = [
+  { value: "passport", label: "Passport" },
+  { value: "drivingLicense", label: "Driving License" },
+  { value: "other", label: "Other" },
+];
+
 const AddProvider = () => {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const { modules } = useModule();
+  const { createProvider } = useProvider();
+  const [companyName, setCompanyName] = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [zone, setSort] = useState('');
+  const [logo, setLogo] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [identityType, setId] = useState('');
+  const [identity, setIdentityNo] = useState('');
+  const [idImage, setIdImage] = useState(null);
+  const [accountEmail, setAccountEmail] = useState('');
+  const [accountPhone, setAccountPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [latitude , setLatitude] = useState('');
+  const [longitude , setLongitude] = useState('');
+
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
-  const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
+  const onMapClick = useCallback((event) => {
     if (event.latLng) {
       const lat = event.latLng.lat();
       const lng = event.latLng.lng();
@@ -41,13 +86,51 @@ const AddProvider = () => {
     }
   }, [setValue]);
 
-  const onSubmit = (data: any) => {
-    console.log('Form Data:', data);
-    alert('Form submitted! Check console for data.');
+  const handleLogoChange = (e) => {
+    setLogo(e.target.files[0]);
   };
+
+  const handleSelectModule = (selected) => {
+    setSelectedModule(selected);
+  };
+
+  const handleIdImageChange = (e) => {
+    setIdImage(e.target.files[0]);
+  };
+
+  const onSubmit = () => {
+    const providerData = {
+      companyName,
+      phoneNo,
+      email,
+      address,
+      zone,
+      logo,
+      selectedModule,
+      identityType,
+      identity,
+      idImage,
+      accountEmail,
+      accountPhone,
+      password,
+      confirmPassword,
+      contactName,
+      contactPhone,
+      contactEmail,
+      latitude: markerPosition.lat,
+      longitude: markerPosition.lng,
+    };
+
+    console.log("provider data : ", providerData);
+
+    createProvider(providerData);
+  };
+
+  const moduleOptions = modules.map((mod) => ({ value: mod._id, label: mod.name }));
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
+
 
   return (
     <div className="container mx-auto p-4">
@@ -61,75 +144,62 @@ const AddProvider = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Name</Label>
-                <input
-                  {...register('name', { required: 'Name is required' })}
-                  className="input-field"
+                <Input
                   type="text"
-                  placeholder="Provider Name"
+                  placeholder="Enter Company / Individual Name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
                 />
-                {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
-                <input
-                  {...register('phone', { required: 'Phone is required' })}
-                  className="input-field"
-                  type="tel"
-                  placeholder="Phone Number"
+                <Input
+                  type="number"
+                  placeholder="Enter Category"
+                  value={phoneNo}
+                  onChange={(e) => setPhoneNo(e.target.value)}
                 />
-                {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Email</Label>
-                <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' },
-                  })}
-                  className="input-field"
+                <Input
                   type="email"
-                  placeholder="Email Address"
+                  placeholder="Enter Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-                {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Address</Label>
-                <input
-                  {...register('address', { required: 'Address is required' })}
-                  className="input-field"
+                <Input
                   type="text"
-                  placeholder="Address"
+                  placeholder="Enter Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
                 />
-                {errors.address && <p className="text-red-600 text-sm mt-1">{errors.address.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Zone</Label>
-                <select
-                  {...register('zone', { required: 'Zone is required' })}
-                  className="input-field"
-                >
-                  <option value="">Select Zone</option>
-                  <option value="North">North</option>
-                  <option value="South">South</option>
-                  <option value="East">East</option>
-                  <option value="West">West</option>
-                  <option value="Central">Central</option>
-                </select>
-                {errors.zone && <p className="text-red-600 text-sm mt-1">{errors.zone.message}</p>}
+                <div className="relative">
+                  <Select
+                    options={zoneOptions}
+                    placeholder="Select Zone"
+                    onChange={(value) => setSort(value)}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Company Logo</Label>
-                <input
-                  {...register('companyLogo')}
-                  type="file"
-                  accept="image/*"
-                  className="input-field"
-                />
+                <FileInput onChange={handleLogoChange} className="custom-class" />
               </div>
             </div>
           </section>
@@ -144,54 +214,48 @@ const AddProvider = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block mb-1 font-medium text-gray-700">Select Module</label>
-                  <select
-                    {...register('moduleId', { required: 'Module selection is required' })}
-                    className="input-field"
-                  >
-                    <option value="">Select a Module</option>
-                    {modules.map((module) => (
-                      <option key={module._id} value={module._id}>
-                        {module.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.moduleId && <p className="text-red-600 text-sm mt-1">{errors.moduleId.message}</p>}
+                  <div className="relative">
+                    <Select
+                      options={moduleOptions}
+                      placeholder="Select Module"
+                      onChange={handleSelectModule}
+                      className="dark:bg-dark-900"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <ChevronDownIcon />
+                    </span>
+                  </div>
                 </div>
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Identity Type</Label>
-                  <select
-                    {...register('identityType', { required: 'Select identity type' })}
-                    className="input-field"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Select identity type</option>
-                    {identityTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                  {errors.identityType && <p className="text-red-600 text-sm mt-1">{errors.identityType.message}</p>}
+                  <div className="relative">
+                    <Select
+                      options={idOptions}
+                      placeholder="Select Identity Type"
+                      onChange={(value) => setId(value)}
+                      className="dark:bg-dark-900"
+                    />
+                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                      <ChevronDownIcon />
+                    </span>
+                  </div>
                 </div>
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Identity Number</Label>
-                  <input
-                    {...register('identityNumber', { required: 'Identity number is required' })}
-                    className="input-field"
-                    type="text"
-                    placeholder="Identity Number"
+                  <Input
+                    type="number"
+                    placeholder="Enter Indentity Number"
+                    value={identity}
+                    onChange={(e) => setIdentityNo(e.target.value)}
                   />
-                  {errors.identityNumber && <p className="text-red-600 text-sm mt-1">{errors.identityNumber.message}</p>}
                 </div>
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Identification Image</Label>
-                  <input
-                    {...register('identificationImage')}
-                    type="file"
-                    accept="image/*"
-                    className="input-field"
-                  />
+                  <FileInput onChange={handleIdImageChange} />
+
                 </div>
               </div>
             </section>
@@ -202,57 +266,54 @@ const AddProvider = () => {
                 Account Information
               </h2>
               <div className="space-y-4">
-                <div>
-                  <Label className="block mb-1 font-medium text-gray-700">Name</Label>
-                  <input
-                    {...register('accountName', { required: 'Account name required' })}
-                    className="input-field"
-                    type="text"
-                    placeholder="Account Name"
-                  />
-                  {errors.accountName && <p className="text-red-600 text-sm mt-1">{errors.accountName.message}</p>}
-                </div>
+
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Email</Label>
-                  <input
-                    {...register('accountEmail', {
-                      required: 'Account email required',
-                      pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                    })}
-                    className="input-field"
+                  <Input
                     type="email"
-                    placeholder="Account Email"
+                    placeholder="Enter Account Email"
+                    value={accountEmail}
+                    onChange={(e) => setAccountEmail(e.target.value)}
                   />
-                  {errors.accountEmail && <p className="text-red-600 text-sm mt-1">{errors.accountEmail.message}</p>}
                 </div>
 
                 <div>
                   <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
-                  <input
-                    {...register('accountPhone', { required: 'Account phone required' })}
-                    className="input-field"
-                    type="tel"
-                    placeholder="Account Phone"
+                  <Input
+                    type="number"
+                    placeholder="Enter Account Phone No"
+                    value={accountPhone}
+                    onChange={(e) => setAccountPhone(e.target.value)}
                   />
-                  {errors.accountPhone && <p className="text-red-600 text-sm mt-1">{errors.accountPhone.message}</p>}
                 </div>
 
-                <div>
+                {/* Password and Confirm Password Side-by-Side */}
+
+                <div className="w-1/2">
                   <Label className="block mb-1 font-medium text-gray-700">Password</Label>
-                  <input
-                    {...register('accountPassword', { required: 'Password required' })}
-                    className="input-field"
+                  <Input
                     type="password"
-                    placeholder="Password"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
-                  {errors.accountPassword && <p className="text-red-600 text-sm mt-1">{errors.accountPassword.message}</p>}
                 </div>
+                <div className="w-1/2">
+                  <Label className="block mb-1 font-medium text-gray-700">Confirm Password</Label>
+                  <Input
+                    type="password"
+                    placeholder="Enter Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+
               </div>
             </section>
+
           </div>
 
-          {/* Contact Person - Full width */}
           <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
             <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
               Contact Person
@@ -260,38 +321,32 @@ const AddProvider = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Contact Person Name</Label>
-                <input
-                  {...register('contactPersonName', { required: 'Contact person name required' })}
-                  className="input-field"
+                <Input
                   type="text"
-                  placeholder="Contact Person Name"
+                  placeholder="Enter Name"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
                 />
-                {errors.contactPersonName && <p className="text-red-600 text-sm mt-1">{errors.contactPersonName.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
-                <input
-                  {...register('contactPersonPhone', { required: 'Contact person phone required' })}
-                  className="input-field"
-                  type="tel"
-                  placeholder="Contact Person Phone"
+                <Input
+                  type="text"
+                  placeholder="Enter Phone No"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
                 />
-                {errors.contactPersonPhone && <p className="text-red-600 text-sm mt-1">{errors.contactPersonPhone.message}</p>}
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Email</Label>
-                <input
-                  {...register('contactPersonEmail', {
-                    required: 'Contact person email required',
-                    pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                  })}
-                  className="input-field"
+                <Input
                   type="email"
-                  placeholder="Contact Person Email"
+                  placeholder="Enter Email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
                 />
-                {errors.contactPersonEmail && <p className="text-red-600 text-sm mt-1">{errors.contactPersonEmail.message}</p>}
               </div>
             </div>
           </section>
@@ -315,24 +370,20 @@ const AddProvider = () => {
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
-                <input
-                  {...register('latitude', { required: true })}
+                <Input
                   type="number"
-                  step="any"
-                  className="input-field"
-                  readOnly
-                  value={markerPosition.lat}
+                  placeholder="Enter Latitude"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
                 />
               </div>
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
-                <input
-                  {...register('longitude', { required: true })}
+                <Input
                   type="number"
-                  step="any"
-                  className="input-field"
-                  readOnly
-                  value={markerPosition.lng}
+                  placeholder="Enter Longitude"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
                 />
               </div>
             </div>

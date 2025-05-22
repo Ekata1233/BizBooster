@@ -20,14 +20,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-console.log(formData);
+    console.log("formdata of the provider : ",formData);
 
     // Extract fields
     const name = formData.get('name') as string;
     const phoneNo = formData.get('phoneNo') as string;
     const email = formData.get('email') as string;
     const address = formData.get('address') as string;
+    const zone = formData.get('zone') as string;
     const companyLogoFile = formData.get('companyLogo') as File | null;
+    const module = formData.get('module') as string;
     const identityType = formData.get('identityType') as 'passport' | 'driving license' | 'other';
     const identityNumber = formData.get('identityNumber') as string;
     const identificationImageFile = formData.get('identificationImage') as File;
@@ -76,7 +78,9 @@ console.log(formData);
       phoneNo,
       email,
       address,
+      zone,
       companyLogo: companyLogoUrl || undefined,
+      module,
       identityType,
       identityNumber,
       identificationImage: identificationImageUpload.url,
