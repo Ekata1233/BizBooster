@@ -6,17 +6,47 @@ import Image from 'next/image';
 import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
-import Provider from '@/models/Provider';
+
+// Define interface matching your provider object
+interface ContactPerson {
+    name?: string;
+    email?: string;
+    phoneNo?: string;
+}
+
+interface AccountInformation {
+    email?: string;
+    phoneNo?: string;
+}
+
+interface Provider {
+    _id: string;
+    name: string;
+    email: string;
+    phoneNo?: string;
+    address?: string;
+    addressLongitude?: string | number;
+    addressLatitude?: string | number;
+    setBusinessPlan?: string;
+    identityType?: string;
+    identityNumber?: string;
+    identificationImage?: string;
+    companyLogo?: string;
+    contactPerson?: ContactPerson;
+    accountInformation?: AccountInformation;
+}
 
 const ProviderDetailsPage = () => {
     const { id } = useParams();
     const { providers } = useProvider();
-    const [provider, setProvider] = useState<any>(null);
+
+    // Use Provider | null instead of any
+    const [provider, setProvider] = useState<Provider | null>(null);
     const [activeTab, setActiveTab] = useState('info');
 
     useEffect(() => {
         if (providers.length > 0) {
-            const selected = providers.find((p) => p._id === id);
+            const selected = providers.find((p) => p._id === id) || null;
             setProvider(selected);
         }
     }, [providers, id]);
@@ -32,15 +62,16 @@ const ProviderDetailsPage = () => {
     return (
         <div className="container mx-auto p-4">
             <PageBreadcrumb pageTitle="Provider Details" />
-            
+
             <div className="space-y-6">
                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
                     <UserMetaCard
                         imageSrc={provider.companyLogo || "/images/logo/default-provider.webp"}
                         name={provider.name}
                         role={provider.email}
-                        location={provider.address}
+                        location={provider.address || "No address provided"}  // fallback string here
                     />
+
                 </div>
 
                 {/* Tabs Navigation */}

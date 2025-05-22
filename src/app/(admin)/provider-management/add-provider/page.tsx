@@ -21,17 +21,7 @@ const centerDefault = {
   lng: 73.88318878735599,
 };
 
-const identityTypes = [
-  'Passport',
-  'Driver License',
-  'National ID',
-  'Other',
-];
 
-interface ModuleType {
-  _id: string;
-  name: string;
-}
 
 const zoneOptions = [
   { value: "east", label: "East" },

@@ -36,10 +36,7 @@ interface ServiceTableData {
   thumbnailImage?: string;
 }
 
-interface ServicesResponse {
-  success: boolean;
-  data: Service[];
-}
+
 
 const options = [
   { value: "latest", label: "Latest" },
@@ -50,7 +47,6 @@ const options = [
 
 
 const ServiceList = () => {
-  const { services } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);

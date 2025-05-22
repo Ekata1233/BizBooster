@@ -7,7 +7,6 @@ import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { TrashBinIcon, PencilIcon, ChevronDownIcon, UserIcon, ArrowUpIcon } from '@/icons';
 import { Modal } from '@/components/ui/modal';
-import AddBanner from '@/components/banner-component/AddBanner';
 // import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useBanner } from '@/context/BannerContext';
@@ -70,7 +69,9 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
-
+ useEffect(() => {
+    fetchFilteredBanners();
+  }, [searchQuery, selectedSubcategory, sort])
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
     try {
@@ -195,18 +196,9 @@ const Banner = () => {
     }
   }
 
-  useEffect(() => {
-    fetchFilteredBanners();
-  }, [searchQuery, selectedSubcategory, sort])
+ 
 
-  const tableData: TableData[] = banners.map((banner) => ({
-    id: banner._id,
-    file: banner.file,
-    page: banner.page,
-    selectionType: banner.selectionType,
-    navigationTarget: getNavigationTarget(banner),
-    status: banner.isDeleted ? 'Deleted' : 'Active',
-  }));
+  
 
   const columns = [
     {

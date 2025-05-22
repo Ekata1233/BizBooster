@@ -17,7 +17,7 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
-  const { searchParams, pathname } = new URL(req.url);
+  const { pathname } = new URL(req.url);
   const id = pathname.split('/').pop();
 
   try {
