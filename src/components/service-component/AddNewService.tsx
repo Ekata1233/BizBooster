@@ -41,11 +41,7 @@ const AddNewService = () => {
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  const isNotEmpty = (value: any) => {
-    if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
-    return value !== null && value !== undefined && value !== '';
-  };
+  
 
     const isStepComplete = (stepNumber: number) => {
         switch (stepNumber) {
@@ -100,18 +96,41 @@ const AddNewService = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const buildFormData = (data: any, formDataInstance = new FormData(), parentKey = '') => {
-    if (data && typeof data === 'object' && !(data instanceof File)) {
-      Object.keys(data).forEach((key) => {
-        const value = data[key];
-        const fullKey = parentKey ? `${parentKey}[${key}]` : key;
-        buildFormData(value, formDataInstance, fullKey);
-      });
-    } else {
-      formDataInstance.append(parentKey, data);
-    }
-    return formDataInstance;
-  };
+ const buildFormData = (
+  data: unknown,
+  formDataInstance = new FormData(),
+  parentKey = ''
+): FormData => {
+  if (
+    data !== null &&
+    typeof data === 'object' &&
+    !(data instanceof File) &&
+    !(data instanceof Blob)
+  ) {
+    Object.keys(data).forEach((key) => {
+      const value = (data as Record<string, unknown>)[key];
+      const fullKey = parentKey ? `${parentKey}[${key}]` : key;
+      buildFormData(value, formDataInstance, fullKey);
+    });
+  } else if (typeof data === 'boolean') {
+    // FormData only accepts string or Blob, convert boolean to string
+    formDataInstance.append(parentKey, data ? 'true' : 'false');
+  } else if (typeof data === 'number') {
+    // convert number to string
+    formDataInstance.append(parentKey, data.toString());
+  } else if (data === null || data === undefined) {
+    // Append empty string for null or undefined to avoid errors
+    formDataInstance.append(parentKey, '');
+  } else if (typeof data === 'string' || data instanceof Blob) {
+    formDataInstance.append(parentKey, data);
+  } else {
+    // fallback if any other type (symbol, function, etc.) - just convert to string
+    formDataInstance.append(parentKey, String(data));
+  }
+
+  return formDataInstance;
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submit reload

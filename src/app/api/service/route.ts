@@ -224,7 +224,7 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get('sort');
 
     // Build filter
-    const filter: any = { isDeleted: false };
+const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
       filter.serviceName = { $regex: search, $options: 'i' };

@@ -26,29 +26,6 @@ interface FaqItem {
     answer: string;
 }
 
-interface ServiceDetails {
-    overview: string;
-    highlight: string;
-    benefits: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    document: string;
-    extraSections?: ExtraSection[]; // <-- add this
-    whyChoose?: WhyChooseItem[];    // <-- and this
-    faq?: FaqItem[];                // <-- and this
-}
-
-interface FranchiseDetails {
-    overview: string;
-    commission: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    extraSections?: ExtraSection[];
-}
-
-
-
-
 const ServiceDetailsPage = () => {
     const params = useParams();
     const id = params?.id as string;
