@@ -108,7 +108,7 @@ const fetchSingleService = async (id: string) => {
   const updateService = async (id: string, data: any) => {
     try {
       const res = await axios.put<Service>(`/api/service/${id}`, data);
-      await fetchServices();
+      fetchServices();
       return res.data;
     } catch (error) {
       console.error("Failed to update service:", error);

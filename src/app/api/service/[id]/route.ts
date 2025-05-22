@@ -57,6 +57,9 @@ export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
+
+    console.log("id of service : ",id);
+    
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing ID parameter." },
@@ -66,13 +69,51 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+    console.log("service data for the update : ", formData)
+
     // Extract fields (adjust according to your schema)
-    const serviceName = formData.get("serviceName") as string;
+    const serviceName = formData.get("name") as string;
     const category = formData.get("category") as string;
     const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
-    const serviceDetailsStr = formData.get("serviceDetails") as string;
-    const franchiseDetailsStr = formData.get("franchiseDetails") as string;
+    // const serviceDetailsStr = formData.get("serviceDetails") as string;
+    // const franchiseDetailsStr = formData.get("franchiseDetails") as string;
+
+    function parseNestedFormData(formData: FormData): Record<string, any> {
+      const data: Record<string, any> = {};
+
+      for (const [key, value] of formData.entries()) {
+        if (typeof value === "object") continue; // skip files for now
+
+        const keys = key
+          .replace(/\]/g, "")
+          .split("[")
+          .flatMap(k => k.split(".")); // support both [key] and dot.key
+
+        let current = data;
+        for (let i = 0; i < keys.length; i++) {
+          const part = keys[i];
+          if (i === keys.length - 1) {
+            current[part] = value;
+          } else {
+            if (!current[part]) {
+              // check if next is array index
+              const nextIsArrayIndex = /^\d+$/.test(keys[i + 1]);
+              current[part] = nextIsArrayIndex ? [] : {};
+            }
+            current = current[part];
+          }
+        }
+      }
+
+      return data;
+    }
+
+    const fullData = parseNestedFormData(formData);
+    const serviceDetails = fullData.serviceDetails || {};
+    const franchiseDetails = fullData.franchiseDetails || {};
+
+
 
     if (!serviceName || !category || !subcategory || !priceStr) {
       return NextResponse.json(
@@ -90,29 +131,29 @@ export async function PUT(req: Request) {
     }
 
     // Parse JSON fields
-    let serviceDetails = {};
-    if (serviceDetailsStr) {
-      try {
-        serviceDetails = JSON.parse(serviceDetailsStr);
-      } catch {
-        return NextResponse.json(
-          { success: false, message: "Invalid JSON for serviceDetails." },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-    }
+    // let serviceDetails = {};
+    // if (serviceDetailsStr) {
+    //   try {
+    //     serviceDetails = JSON.parse(serviceDetailsStr);
+    //   } catch {
+    //     return NextResponse.json(
+    //       { success: false, message: "Invalid JSON for serviceDetails." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    // }
 
-    let franchiseDetails = {};
-    if (franchiseDetailsStr) {
-      try {
-        franchiseDetails = JSON.parse(franchiseDetailsStr);
-      } catch {
-        return NextResponse.json(
-          { success: false, message: "Invalid JSON for franchiseDetails." },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-    }
+    // let franchiseDetails = {};
+    // if (franchiseDetailsStr) {
+    //   try {
+    //     franchiseDetails = JSON.parse(franchiseDetailsStr);
+    //   } catch {
+    //     return NextResponse.json(
+    //       { success: false, message: "Invalid JSON for franchiseDetails." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    // }
 
     // Handle thumbnail image upload (optional)
     let thumbnailImageUrl = "";

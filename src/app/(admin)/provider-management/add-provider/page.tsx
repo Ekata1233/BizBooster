@@ -48,11 +48,29 @@ const idOptions = [
 ];
 
 const AddProvider = () => {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
+  const { handleSubmit, setValue, formState: { } } = useForm();
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const { modules } = useModule();
   const { createProvider } = useProvider();
-
+  const [companyName, setCompanyName] = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [zone, setSort] = useState('');
+  const [logo, setLogo] = useState<File | null>(null);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [identityType, setId] = useState('');
+  const [identity, setIdentityNo] = useState('');
+  const [idImage, setIdImage] = useState<File | null>(null);
+  const [accountEmail, setAccountEmail] = useState('');
+  const [accountPhone, setAccountPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -68,10 +86,84 @@ const AddProvider = () => {
     }
   }, [setValue]);
 
-  const onSubmit = (data: any) => {
-    console.log('Form Data:', data);
-    alert('Form submitted! Check console for data.');
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; // Fix: safe access
+    if (file) {
+      setLogo(file);
+    }
   };
+
+  const handleSelectModule = (selected: string) => {
+    setSelectedModule(selected);
+  };
+
+
+  const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setIdImage(e.target.files[0]);
+    }
+  };
+
+  const onSubmit = async () => {
+    try {
+      const providerData = {
+        companyName,
+        phoneNo,
+        email,
+        address,
+        zone,
+        logo,
+        selectedModule,
+        identityType,
+        identity,
+        idImage,
+        accountEmail,
+        accountPhone,
+        password,
+        confirmPassword,
+        contactName,
+        contactPhone,
+        contactEmail,
+        latitude: markerPosition.lat,
+        longitude: markerPosition.lng,
+      };
+
+      console.log("Provider Data:", providerData);
+
+      // Check for basic validation (example)
+      if (!companyName || !email || !phoneNo || !password || !confirmPassword) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      // Convert providerData object to FormData
+      const formData = new FormData();
+
+      Object.entries(providerData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
+      await createProvider(formData); // Make sure this is a promise
+      alert("Provider registered successfully!");
+    } catch (error) {
+      console.error("Error while registering provider:", error);
+      alert("An error occurred while registering the provider. Please try again.");
+    }
+  };
+
+
 
   const options = modules.map((mod: ModuleType) => ({
     value: mod._id,
@@ -105,7 +197,7 @@ const AddProvider = () => {
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
                 <Input
                   type="number"
-                  placeholder="Enter Category"
+                  placeholder="Enter Phone No"
                   value={phoneNo}
                   onChange={(e) => setPhoneNo(e.target.value)}
                 />
@@ -271,31 +363,31 @@ const AddProvider = () => {
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Contact Person Name</Label>
                 <Input
-                    type="text"
-                    placeholder="Enter Name"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                  />
+                  type="text"
+                  placeholder="Enter Name"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                />
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
                 <Input
-                    type="text"
-                    placeholder="Enter Phone No"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                  />
+                  type="text"
+                  placeholder="Enter Phone No"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                />
               </div>
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Email</Label>
                 <Input
-                    type="email"
-                    placeholder="Enter Email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                  />
+                  type="email"
+                  placeholder="Enter Email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                />
               </div>
             </div>
           </section>
@@ -320,20 +412,42 @@ const AddProvider = () => {
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
                 <Input
-                    type="number"
-                    placeholder="Enter Latitude"
-                    value={latitude}
-                    onChange={(e) => setLatitude(e.target.value)}
-                  />
+                  type="number"
+                  placeholder="Enter Latitude"
+                  value={markerPosition.lat}
+
+                  onChange={(e) => setLatitude(e.target.value)}
+                />
               </div>
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
                 <Input
-                    type="number"
-                    placeholder="Enter Longitude"
-                    value={longiture}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
+                  type="number"
+                  placeholder="Enter Longitude"
+                  value={markerPosition.lng}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+
+
+                {/* <input
+                  {...register('latitude', { required: true })}
+                  type="number"
+                  step="any"
+                  className="input-field"
+                  readOnly
+                  value={markerPosition.lat}
+                />
+              </div>
+              <div>
+                <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
+                <input
+                  {...register('longitude', { required: true })}
+                  type="number"
+                  step="any"
+                  className="input-field"
+                  readOnly
+                  value={markerPosition.lng}
+                /> */}
               </div>
             </div>
           </section>
