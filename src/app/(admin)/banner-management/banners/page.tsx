@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -16,6 +16,7 @@ import Label from '@/components/form/Label';
 import Select from '@/components/form/Select';
 import Input from '@/components/form/input/InputField';
 import StatCard from '@/components/common/StatCard';
+import axios from 'axios';
 
 interface BannerType {
   _id: string;
@@ -65,7 +66,8 @@ const Banner = () => {
   const [newImage, setNewImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [filteredBanner, setFilteredBanners] = useState<TableData[]>([]);
+  const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
 
@@ -159,6 +161,44 @@ const Banner = () => {
     }
   };
 
+  const fetchFilteredBanners = async () => {
+    try {
+      const params = {
+        ...(searchQuery && { search: searchQuery }),
+        ...(selectedSubcategory && { subcategory: selectedSubcategory }),
+        ...(sort && { sort }),
+      }
+
+      const response = await axios.get('/api/banner', { params });
+      const bannerData = response.data;
+      console.log("Banner data in frontend  : ", bannerData);
+
+      if (bannerData.length === 0) {
+        setFilteredBanners([]);
+        setMessage(bannerData.message || 'No services found');
+      } else {
+        const mapped = bannerData.map((banner: BannerType) => ({
+          id: banner._id,
+          file: banner.file,
+          page: banner.page,
+          selectionType: banner.selectionType,
+          navigationTarget: getNavigationTarget(banner),
+          status: banner.isDeleted ? 'Deleted' : 'Active',
+        }));
+
+        setFilteredBanners(mapped);
+        setMessage('');
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFilteredBanners();
+  }, [searchQuery, selectedSubcategory, sort])
+
   const tableData: TableData[] = banners.map((banner) => ({
     id: banner._id,
     file: banner.file,
@@ -247,8 +287,6 @@ const Banner = () => {
     label: sub.name,
   }));
 
-
-
   const handleSelectSubcategory = (value: string) => {
     setSelectedSubcategory(value); // required to set the selected module
   };
@@ -302,7 +340,7 @@ const Banner = () => {
                 <Label>Other Filter</Label>
                 <Input
                   type="text"
-                  placeholder="Search by service name"
+                  placeholder="Search by page name"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -327,7 +365,11 @@ const Banner = () => {
 
       <div className="my-5">
         <ComponentCard title="All Banners">
-          <BasicTableOne columns={columns} data={tableData} />
+          {message ? (
+            <p className="text-red-500 text-center my-4">{message}</p>
+          ) : (
+            <BasicTableOne columns={columns} data={filteredBanner} />
+          )}
         </ComponentCard>
       </div>
 

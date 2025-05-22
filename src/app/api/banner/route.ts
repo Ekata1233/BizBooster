@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Banner from '@/models/Banner';
 import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
@@ -58,13 +58,53 @@ export async function POST(req: Request) {
 }
 
 // GET - Get all banners (that are not deleted)
-export async function GET() {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
   try {
-    const banners = await Banner.find({ isDeleted: false })
+    const { searchParams } = new URL(req.url);
+    console.log("search params : ", searchParams)
+    const search = searchParams.get('search');
+    const subcategory = searchParams.get('subcategory');
+    const sort = searchParams.get('sort');
+
+    const filter: any = { isDeleted: false };
+
+    if (search) {
+      filter.$or = [
+        { page: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (subcategory) {
+      filter.subcategory = subcategory;
+    }
+
+    // Build query
+    let sortOption: Record<string, 1 | -1> = {};
+
+    switch (sort) {
+      case 'latest':
+        sortOption = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortOption = { createdAt: 1 };
+        break;
+      case 'ascending':
+        sortOption = { subcategory: 1 };
+        break;
+      case 'descending':
+        sortOption = { subcategory: -1 };
+        break;
+      default:
+        sortOption = { createdAt: -1 };
+    }
+
+    const banners = await Banner.find(filter)
       .populate('module')
       .populate('category')
-      .populate('subcategory');
+      .populate('subcategory')
+      .sort(sortOption)
+      .exec();
     // Removed .populate('service')
 
     return NextResponse.json(banners, { status: 200, headers: corsHeaders });

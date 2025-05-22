@@ -223,13 +223,6 @@ export async function GET(req: NextRequest) {
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
 
-    console.log('search params of service:', {
-      search,
-      category,
-      subcategory,
-      sort
-    });
-
     // Build filter
     const filter: any = { isDeleted: false };
 

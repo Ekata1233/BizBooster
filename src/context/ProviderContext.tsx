@@ -20,6 +20,8 @@ export interface Provider {
   phoneNo: string;
   email: string;
   address: string;
+  zone: 'east' | 'west' | 'south' | 'north' | 'central'; // ✅ added zone
+  module: string;
   companyLogo?: string;
   identityType: 'passport' | 'driving license' | 'other';
   identityNumber: string;
@@ -163,8 +165,6 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
         createProvider,
         updateProvider,
         deleteProvider,
-
-        // *** Provide login related data and function ***
         loginProvider,
         token,
         loggedInProvider,

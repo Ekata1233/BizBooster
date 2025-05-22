@@ -327,8 +327,11 @@ const ServiceList = () => {
             </ul>
           </div>
 
-          <BasicTableOne columns={columns} data={filteredServices} />
-
+          {message ? (
+            <p className="text-red-500 text-center my-4">{message}</p>
+          ) : (
+            <BasicTableOne columns={columns} data={filteredServices} />
+          )}
         </ComponentCard>
       </div>
     </div>
