@@ -10,21 +10,6 @@ import {
     ChevronDownIcon,
 } from "../../../../../icons/index";
 
-interface ExtraSection {
-    title: string;
-    description: string;
-}
-
-interface WhyChooseItem {
-    title: string;
-    description: string;
-    image: string;
-}
-
-interface FaqItem {
-    question: string;
-    answer: string;
-}
 
 const ServiceDetailsPage = () => {
     const params = useParams();
