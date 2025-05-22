@@ -27,10 +27,10 @@ const identityTypes = [
 const AddProvider = () => {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
-const { modules } = useModule();
-  const {createProvider} = useProvider();
-  
-  
+  const { modules } = useModule();
+  const { createProvider } = useProvider();
+
+
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
@@ -202,78 +202,77 @@ const { modules } = useModule();
 
             {/* Account Information */}
             <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
-  <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
-    Account Information
-  </h2>
-  <div className="space-y-4">
-    <div>
-      <Label className="block mb-1 font-medium text-gray-700">Name</Label>
-      <input
-        {...register('accountName', { required: 'Account name required' })}
-        className="input-field"
-        type="text"
-        placeholder="Account Name"
-      />
-      {errors.accountName && <p className="text-red-600 text-sm mt-1">{errors.accountName.message}</p>}
-    </div>
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
+                Account Information
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <Label className="block mb-1 font-medium text-gray-700">Name</Label>
+                  <input
+                    {...register('accountName', { required: 'Account name required' })}
+                    className="input-field"
+                    type="text"
+                    placeholder="Account Name"
+                  />
+                  {errors.accountName && <p className="text-red-600 text-sm mt-1">{errors.accountName.message}</p>}
+                </div>
 
-    <div>
-      <Label className="block mb-1 font-medium text-gray-700">Email</Label>
-      <input
-        {...register('accountEmail', {
-          required: 'Account email required',
-          pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-        })}
-        className="input-field"
-        type="email"
-        placeholder="Account Email"
-      />
-      {errors.accountEmail && <p className="text-red-600 text-sm mt-1">{errors.accountEmail.message}</p>}
-    </div>
+                <div>
+                  <Label className="block mb-1 font-medium text-gray-700">Email</Label>
+                  <input
+                    {...register('accountEmail', {
+                      required: 'Account email required',
+                      pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+                    })}
+                    className="input-field"
+                    type="email"
+                    placeholder="Account Email"
+                  />
+                  {errors.accountEmail && <p className="text-red-600 text-sm mt-1">{errors.accountEmail.message}</p>}
+                </div>
 
-    <div>
-      <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
-      <input
-        {...register('accountPhone', { required: 'Account phone required' })}
-        className="input-field"
-        type="tel"
-        placeholder="Account Phone"
-      />
-      {errors.accountPhone && <p className="text-red-600 text-sm mt-1">{errors.accountPhone.message}</p>}
-    </div>
+                <div>
+                  <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
+                  <input
+                    {...register('accountPhone', { required: 'Account phone required' })}
+                    className="input-field"
+                    type="tel"
+                    placeholder="Account Phone"
+                  />
+                  {errors.accountPhone && <p className="text-red-600 text-sm mt-1">{errors.accountPhone.message}</p>}
+                </div>
 
-    {/* Password and Confirm Password Side-by-Side */}
-    <div className="flex gap-4">
-      <div className="w-1/2">
-        <Label className="block mb-1 font-medium text-gray-700">Password</Label>
-        <input
-          {...register('accountPassword', { required: 'Password required' })}
-          className="input-field"
-          type="password"
-          placeholder="Password"
-        />
-        {errors.accountPassword && <p className="text-red-600 text-sm mt-1">{errors.accountPassword.message}</p>}
-      </div>
-      <div className="w-1/2">
-        <Label className="block mb-1 font-medium text-gray-700">Confirm Password</Label>
-        <input
-          {...register('confirmPassword', {
-            required: 'Confirm password required',
-            validate: (value) => value === watch('accountPassword') || 'Passwords do not match',
-          })}
-          className="input-field"
-          type="password"
-          placeholder="Confirm Password"
-        />
-        {errors.confirmPassword && <p className="text-red-600 text-sm mt-1">{errors.confirmPassword.message}</p>}
-      </div>
-    </div>
-  </div>
-</section>
+                {/* Password and Confirm Password Side-by-Side */}
+                <div className="flex gap-4">
+                  <div className="w-1/2">
+                    <Label className="block mb-1 font-medium text-gray-700">Password</Label>
+                    <input
+                      {...register('accountPassword', { required: 'Password required' })}
+                      className="input-field"
+                      type="password"
+                      placeholder="Password"
+                    />
+                    {errors.accountPassword && <p className="text-red-600 text-sm mt-1">{errors.accountPassword.message}</p>}
+                  </div>
+                  <div className="w-1/2">
+                    <Label className="block mb-1 font-medium text-gray-700">Confirm Password</Label>
+                    <input
+                      {...register('confirmPassword', {
+                        required: 'Confirm password required',
+                        validate: (value) => value === watch('accountPassword') || 'Passwords do not match',
+                      })}
+                      className="input-field"
+                      type="password"
+                      placeholder="Confirm Password"
+                    />
+                    {errors.confirmPassword && <p className="text-red-600 text-sm mt-1">{errors.confirmPassword.message}</p>}
+                  </div>
+                </div>
+              </div>
+            </section>
 
           </div>
 
-          {/* Contact Person - Full width */}
           <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
             <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
               Contact Person
