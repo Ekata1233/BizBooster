@@ -81,7 +81,7 @@ export async function PUT(req: NextRequest) {
       imageUrl = uploaded.url;
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       title,
       description,
       extraSections,
