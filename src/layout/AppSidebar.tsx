@@ -87,7 +87,7 @@ const moduleItems: NavItem[] = [
     name: "Banner",
     subItems: [
        { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
-      { name: "Banner", path: "/banner-management/banners", pro: false },
+      { name: "Banner-list", path: "/banner-management/banners", pro: false },
     ],
   },
 
@@ -129,6 +129,7 @@ const serviceItems: NavItem[] = [
     subItems: [
       { name: "Add New Service", path: "/service-management/add-service", pro: false },
       { name: "Service List", path: "/service-management/service-list", pro: false },
+      { name: "Add Why Choose BizBooster", path: "/service-management/add-why-choose", pro: false },
     ],
   },
 ];

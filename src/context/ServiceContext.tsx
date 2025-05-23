@@ -110,7 +110,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const updateService = async (id: string, data: Partial<Service>) => {
     try {
       const res = await axios.put<Service>(`/api/service/${id}`, data);
-      await fetchServices();
+      fetchServices();
       return res.data;
     } catch (error) {
       console.error("Failed to update service:", error);

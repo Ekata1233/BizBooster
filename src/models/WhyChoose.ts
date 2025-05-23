@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const WhyChooseSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    image: { type: String, required: true },
-    description: { type: String, required: true },
+    title: { type: String },
+    image: { type: String,  required: true },
+    description: { type: String },
     extraSections: [
       {
-        description: { type: String, required: true }
+        description: { type: String }
       }
     ],
     isDeleted: { type: Boolean, default: false }, // Soft delete flag

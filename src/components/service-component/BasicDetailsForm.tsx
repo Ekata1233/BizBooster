@@ -35,14 +35,13 @@ const BasicDetailsForm = ({ data, setData }: {
     }, [data]);
 
 
-    console.log("data in the basic details : ", data)
 
     const categoryOptions = categories.map((cat) => ({
         value: cat._id as string,
         label: cat.name,
         image: cat.image || '',
     }));
-console.log();
+    console.log();
 
     const filteredSubcategories = data.category
         ? subcategories.filter((subcat) => subcat.category?._id === data.category)

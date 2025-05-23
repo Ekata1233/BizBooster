@@ -14,25 +14,70 @@ import Input from '@/components/form/input/InputField';
 import { Category, useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import axios from 'axios';
+import EditServiceModal from '@/components/service-component/EditServiceModal';
+import { useService } from '@/context/ServiceContext';
 
 interface Service {
   _id: string;
   serviceName: string;
   thumbnailImage: string;
-  category?: { name: string };
-  subcategory?: { name: string };
+  bannerImages: string[];
+  category: { _id: string; name: string };
+  subcategory: { _id: string; name: string };
   price: number;
+  serviceDetails: ServiceDetails;
+  franchiseDetails: FranchiseDetails;
   isDeleted: boolean;
 }
 
+interface ExtraSection {
+  title: string;
+  description: string;
+}
+
+interface WhyChooseItem {
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+interface ServiceDetails {
+  overview: string;
+  highlight: string;
+  benefits: string;
+  howItWorks: string;
+  termsAndConditions: string;
+  document: string;
+  extraSections?: ExtraSection[]; // <-- add this
+  whyChoose?: WhyChooseItem[];    // <-- and this
+  faq?: FaqItem[];                // <-- and this
+}
+
+interface FranchiseDetails {
+  overview: string;
+  commission: string;
+  howItWorks: string;
+  termsAndConditions: string;
+  extraSections?: ExtraSection[];
+}
+
 interface ServiceTableData {
+  _id: string;
   id: string;
   name: string;
-  image: string;
-  bannerImage: string;
+  thumbnailImage: string;
+  bannerImages: string[];
+  category: { _id: string, name: string };
+  subcategory: { _id: string, name: string };
   price: number;
+  serviceDetails: ServiceDetails;
+  franchiseDetails: FranchiseDetails;
   status: string;
-  thumbnailImage?: string;
 }
 
 
@@ -46,6 +91,7 @@ const options = [
 
 
 const ServiceList = () => {
+  const { services, updateService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
@@ -55,32 +101,8 @@ const ServiceList = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [message, setMessage] = useState('');
-
-  // Update filteredServices when services, searchQuery or activeTab changes
-  // useEffect(() => {
-  //   if (!services?.data || !Array.isArray(services.data)) return;
-
-  //   const filtered = services.data
-  //     .filter((service: Service) => {
-  //       if (activeTab === 'active') return !service.isDeleted;
-  //       if (activeTab === 'inactive') return service.isDeleted;
-  //       return true;
-  //     })
-  //     .filter((service: Service) =>
-  //       service.serviceName.toLowerCase().replace(/"/g, '').includes(searchQuery.toLowerCase())
-  //     )
-  //     .map((service: Service) => ({
-  //       id: service._id,
-  //       name: service.serviceName.replace(/"/g, ''),
-  //       thumbnailImage: service.thumbnailImage,
-  //       categoryName: service.category?.name || 'N/A',
-  //       subcategoryName: service.subcategory?.name || 'N/A',
-  //       price: service.price,
-  //       status: service.isDeleted ? 'Inactive' : 'Active',
-  //     }));
-
-  //   setFilteredServices(filtered);
-  // }, [services, searchQuery, activeTab]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceTableData | null>(null);
 
   const fetchFilteredServices = async () => {
     try {
@@ -105,9 +127,12 @@ const ServiceList = () => {
           id: service._id,
           name: service.serviceName.replace(/"/g, ''),
           thumbnailImage: service.thumbnailImage,
-          categoryName: service.category?.name || 'N/A',
-          subcategoryName: service.subcategory?.name || 'N/A',
+          bannerImages: service.bannerImages || [],
+          category: service.category || { _id: '', name: 'N/A' },
+          subcategory: service.subcategory || { _id: '', name: 'N/A' },
           price: service.price,
+          serviceDetails: service.serviceDetails,
+          franchiseDetails: service.franchiseDetails,
           status: service.isDeleted ? 'Inactive' : 'Active',
         }));
 
@@ -184,7 +209,9 @@ const ServiceList = () => {
       accessor: 'action',
       render: (row: ServiceTableData) => (
         <div className="flex gap-2">
-          <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white">
+          <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+            onClick={() => openModal(row)}
+          >
             <PencilIcon />
           </button>
           <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
@@ -222,6 +249,19 @@ const ServiceList = () => {
   const handleSelectSubcategory = (value: string) => {
     setSelectedSubcategory(value); // required to set the selected module
   };
+
+  const openModal = (service: ServiceTableData) => {
+    setSelectedService(service);
+    setIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+
+  };
+
+
+
 
   return (
     <div>
@@ -329,6 +369,16 @@ const ServiceList = () => {
           )}
         </ComponentCard>
       </div>
+
+      <EditServiceModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        service={selectedService}
+        onUpdate={async (id, formData) => {
+          await updateService(id, formData); 
+          fetchFilteredServices(); 
+        }}
+      />
     </div>
   );
 };

@@ -11,6 +11,10 @@ import Select from '@/components/form/Select';
 import { ChevronDownIcon } from '@/icons';
 import FileInput from '@/components/form/input/FileInput';
 
+type ModuleType = {
+  _id: string;
+  name: string;
+};
 const containerStyle = {
   width: '100%',
   height: '300px',
@@ -38,7 +42,7 @@ const idOptions = [
 ];
 
 const AddProvider = () => {
-  const {  handleSubmit, setValue,  formState: {} } = useForm();
+  const { handleSubmit, setValue, formState: { } } = useForm();
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const { modules } = useModule();
   const { createProvider } = useProvider();
@@ -47,8 +51,8 @@ const AddProvider = () => {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [zone, setSort] = useState('');
-const [logo, setLogo] = useState<File | null>(null);
-const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [logo, setLogo] = useState<File | null>(null);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [identityType, setId] = useState('');
   const [identity, setIdentityNo] = useState('');
   const [idImage, setIdImage] = useState<File | null>(null);
@@ -59,91 +63,109 @@ const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-  const [latitude , setLatitude] = useState('');
-  const [longitude , setLongitude] = useState('');
+const [ setLatitude] = useState<string>('');
+  
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
   const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
-  if (event.latLng) {
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-    setMarkerPosition({ lat, lng });
-    setValue('latitude', lat);
-    setValue('longitude', lng);
-  }
-}, [setValue]);
+    if (event.latLng) {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      setMarkerPosition({ lat, lng });
+      setValue('latitude', lat);
+      setValue('longitude', lng);
+    }
+  }, [setValue]);
 
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0]; // Fix: safe access
-  if (file) {
-    setLogo(file);
-  }
-};
+    const file = e.target.files?.[0]; // Fix: safe access
+    if (file) {
+      setLogo(file);
+    }
+  };
 
   const handleSelectModule = (selected: string) => {
-  setSelectedModule(selected);
-};
+    setSelectedModule(selected);
+  };
 
 
   const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
-    setIdImage(e.target.files[0]);
-  }
-};
-
- const onSubmit = () => {
-  const providerData = {
-    companyName,
-    phoneNo,
-    email,
-    address,
-    zone,
-    logo,
-    selectedModule,
-    identityType,
-    identity,
-    idImage,
-    accountEmail,
-    accountPhone,
-    password,
-    confirmPassword,
-    contactName,
-    contactPhone,
-    contactEmail,
-    latitude: markerPosition.lat,
-    longitude: markerPosition.lng,
+    if (e.target.files && e.target.files[0]) {
+      setIdImage(e.target.files[0]);
+    }
   };
 
-  console.log("provider data : ", providerData);
+  const onSubmit = async () => {
+    try {
+      const providerData = {
+        companyName,
+        phoneNo,
+        email,
+        address,
+        zone,
+        logo,
+        selectedModule,
+        identityType,
+        identity,
+        idImage,
+        accountEmail,
+        accountPhone,
+        password,
+        confirmPassword,
+        contactName,
+        contactPhone,
+        contactEmail,
+        latitude: markerPosition.lat,
+        longitude: markerPosition.lng,
+      };
 
-  // Convert providerData object to FormData
-  const formData = new FormData();
+      console.log("Provider Data:", providerData);
 
-  Object.entries(providerData).forEach(([key, value]) => {
-    // Handle nullable values properly, e.g. if null or undefined skip or append empty string
-    if (value !== null && value !== undefined) {
-      // For files (logo, idImage), append the File object directly
-      if (value instanceof File) {
-        formData.append(key, value);
-      } else {
-        formData.append(key, value.toString());
+      // Check for basic validation (example)
+      if (!companyName || !email || !phoneNo || !password || !confirmPassword) {
+        alert("Please fill all required fields.");
+        return;
       }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      // Convert providerData object to FormData
+      const formData = new FormData();
+
+      Object.entries(providerData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
+      await createProvider(formData); // Make sure this is a promise
+      alert("Provider registered successfully!");
+    } catch (error) {
+      console.error("Error while registering provider:", error);
+      alert("An error occurred while registering the provider. Please try again.");
     }
-  });
-
-  createProvider(formData);
-};
+  };
 
 
-  const moduleOptions = modules.map((mod) => ({ value: mod._id, label: mod.name }));
+
+  const options = modules.map((mod: ModuleType) => ({
+    value: mod._id,
+    label: mod.name,
+  }));
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
-
 
   return (
     <div className="container mx-auto p-4">
@@ -169,7 +191,7 @@ const [selectedModule, setSelectedModule] = useState<string | null>(null);
                 <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
                 <Input
                   type="number"
-                  placeholder="Enter Category"
+                  placeholder="Enter Phone No"
                   value={phoneNo}
                   onChange={(e) => setPhoneNo(e.target.value)}
                 />
@@ -229,7 +251,7 @@ const [selectedModule, setSelectedModule] = useState<string | null>(null);
                   <label className="block mb-1 font-medium text-gray-700">Select Module</label>
                   <div className="relative">
                     <Select
-                      options={moduleOptions}
+                      options={options}
                       placeholder="Select Module"
                       onChange={handleSelectModule}
                       className="dark:bg-dark-900"
@@ -386,7 +408,8 @@ const [selectedModule, setSelectedModule] = useState<string | null>(null);
                 <Input
                   type="number"
                   placeholder="Enter Latitude"
-                  value={latitude}
+                  value={markerPosition.lat}
+
                   onChange={(e) => setLatitude(e.target.value)}
                 />
               </div>
@@ -395,9 +418,30 @@ const [selectedModule, setSelectedModule] = useState<string | null>(null);
                 <Input
                   type="number"
                   placeholder="Enter Longitude"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
+                  value={markerPosition.lng}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+
+
+                {/* <input
+                  {...register('latitude', { required: true })}
+                  type="number"
+                  step="any"
+                  className="input-field"
+                  readOnly
+                  value={markerPosition.lat}
+                />
+              </div>
+              <div>
+                <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
+                <input
+                  {...register('longitude', { required: true })}
+                  type="number"
+                  step="any"
+                  className="input-field"
+                  readOnly
+                  value={markerPosition.lng}
+                /> */}
               </div>
             </div>
           </section>
