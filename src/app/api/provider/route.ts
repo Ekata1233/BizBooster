@@ -115,7 +115,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Get All Providers
 export async function GET() {
   await connectToDatabase();
 
