@@ -3,7 +3,8 @@ import WhyChoose from "@/models/WhyChoose";
 import imagekit from "@/utils/imagekit";
 import { connectToDatabase } from "@/utils/db";
 
-export const corsHeaders = {
+// Move corsHeaders inside the file without exporting it
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
