@@ -177,11 +177,15 @@ const ServiceList = () => {
     },
     {
       header: 'Category',
-      accessor: 'categoryName',
+      accessor: (row: ServiceTableData) => {
+        console.log('Row data of category :', row); 
+        return <span>{row.category?.name || 'N/A'}</span>;
+      },
     },
+
     {
       header: 'Subcategory',
-      accessor: 'subcategoryName',
+      accessor: (row: ServiceTableData) => <span>{row.subcategory?.name}</span>,
     },
     {
       header: 'Price',
@@ -375,8 +379,8 @@ const ServiceList = () => {
         onClose={closeModal}
         service={selectedService}
         onUpdate={async (id, formData) => {
-          await updateService(id, formData); 
-          fetchFilteredServices(); 
+          await updateService(id, formData);
+          fetchFilteredServices();
         }}
       />
     </div>

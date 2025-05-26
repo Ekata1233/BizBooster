@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const address = formData.get('address') as string;
     const zone = formData.get('zone') as string;
     const companyLogoFile = formData.get('logo') as File | null;
-    const module = formData.get('selectedModule') as string;
+    const moduleValue = formData.get('selectedModule') as string;
     const identityType = formData.get('identityType') as 'passport' | 'driving license' | 'other';
     const identityNumber = formData.get('identity') as string;
     const identificationImageFile = formData.get('idImage') as File;
