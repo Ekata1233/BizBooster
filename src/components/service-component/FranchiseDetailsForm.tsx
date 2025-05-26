@@ -42,7 +42,6 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setData({ commission: e.target.value });
   };
 
-  // Handle Overview change from CKEditor
   const handleOverviewChange = ( editor: any) => {
     const dataOverview = editor.getData();
     setData({ overview: dataOverview });
