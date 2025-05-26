@@ -188,7 +188,7 @@ const ProviderList = () => {
             </div>
 
             <div>
-              <Label>Search by Provider Name & Email</Label>
+              <Label>Search by Name & Email</Label>
               <Input
                 type="text"
                 placeholder="Enter Provider Name & Email"

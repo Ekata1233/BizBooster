@@ -3,11 +3,9 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
-import dynamic from 'next/dynamic';
 import {
   TrashBinIcon
 } from "../../icons/index";
-import Button from '../ui/button/Button';
 import FileInput from '../form/input/FileInput';
 
 
@@ -27,10 +25,23 @@ type WhyChoose = {
   image: File | string | null;
 };
 
+type ServiceDetails = {
+  benefits: string;
+  overview: string;
+  highlight: string;
+  document: string;
+  howItWorks: string;
+  terms: string;
+  faqs: FAQ[];
+  rows: RowData[];
+  whyChoose: WhyChoose[];
+};
+
+
 
 const ServiceDetailsForm = ({ data, setData }: {
-  data: any;
-  setData: (newData: Partial<any>) => void;
+  data: ServiceDetails;
+  setData: (newData: Partial<ServiceDetails>) => void;
 }) => {
   const [benefits, setBenefits] = useState('');
   const [overview, setOverview] = useState('');
@@ -40,7 +51,6 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [terms, setTerms] = useState('');
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [rows, setRows] = useState<RowData[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
     { title: '', description: '', image: null }
   ]);

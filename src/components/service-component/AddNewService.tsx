@@ -5,9 +5,61 @@ import ServiceDetailsForm from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 import { useService } from '@/context/ServiceContext';
 
+
+type FAQ = {
+  question: string;
+  answer: string;
+};
+
+type WhyChoose = {
+  title: string;
+  description: string;
+  image: File | string | null;
+};
+
+type RowData = {
+  title: string;
+  description: string;
+};
+
+type ServiceDetails = {
+  benefits: string;
+  overview: string;
+  highlight: string;
+  document: string;
+  howItWorks: string;
+  terms: string;
+  faqs: FAQ[];
+  rows: RowData[];
+  whyChoose: WhyChoose[];
+};
+
+type FranchiseDetails = {
+  commission: string;
+  overview: string;
+  howItWorks: string;
+  terms: string;
+  rows: RowData[];
+};
+
+type BasicDetails = {
+  name: string;
+  category: string;
+  subcategory: string;
+  price: string;
+  thumbnail: File | null;
+  covers: File[];
+};
+
+type FormDataType = {
+  basic: BasicDetails;
+  service: ServiceDetails;
+  franchise: FranchiseDetails;
+};
+
 const AddNewService = () => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     basic: {
       name: '',
       category: '',
@@ -21,18 +73,18 @@ const AddNewService = () => {
       overview: '',
       highlight: '',
       document: '',
-      whyChoose: [],
       howItWorks: '',
       terms: '',
-      faqs: [],
-      rows: [],
+      faqs: [{ question: '', answer: '' }],
+      rows: [{ title: '', description: '' }],
+      whyChoose: [{ title: '', description: '', image: null }],
     },
     franchise: {
       commission: '',
       overview: '',
       howItWorks: '',
       terms: '',
-      rows: [],
+      rows: [{ title: '', description: '' }],
     },
   });
 
@@ -41,7 +93,7 @@ const AddNewService = () => {
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  
+
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -96,40 +148,40 @@ const AddNewService = () => {
     if (step > 1) setStep(step - 1);
   };
 
- const buildFormData = (
-  data: unknown,
-  formDataInstance = new FormData(),
-  parentKey = ''
-): FormData => {
-  if (
-    data !== null &&
-    typeof data === 'object' &&
-    !(data instanceof File) &&
-    !(data instanceof Blob)
-  ) {
-    Object.keys(data).forEach((key) => {
-      const value = (data as Record<string, unknown>)[key];
-      const fullKey = parentKey ? `${parentKey}[${key}]` : key;
-      buildFormData(value, formDataInstance, fullKey);
-    });
-  } else if (typeof data === 'boolean') {
-    // FormData only accepts string or Blob, convert boolean to string
-    formDataInstance.append(parentKey, data ? 'true' : 'false');
-  } else if (typeof data === 'number') {
-    // convert number to string
-    formDataInstance.append(parentKey, data.toString());
-  } else if (data === null || data === undefined) {
-    // Append empty string for null or undefined to avoid errors
-    formDataInstance.append(parentKey, '');
-  } else if (typeof data === 'string' || data instanceof Blob) {
-    formDataInstance.append(parentKey, data);
-  } else {
-    // fallback if any other type (symbol, function, etc.) - just convert to string
-    formDataInstance.append(parentKey, String(data));
-  }
+  const buildFormData = (
+    data: unknown,
+    formDataInstance = new FormData(),
+    parentKey = ''
+  ): FormData => {
+    if (
+      data !== null &&
+      typeof data === 'object' &&
+      !(data instanceof File) &&
+      !(data instanceof Blob)
+    ) {
+      Object.keys(data).forEach((key) => {
+        const value = (data as Record<string, unknown>)[key];
+        const fullKey = parentKey ? `${parentKey}[${key}]` : key;
+        buildFormData(value, formDataInstance, fullKey);
+      });
+    } else if (typeof data === 'boolean') {
+      // FormData only accepts string or Blob, convert boolean to string
+      formDataInstance.append(parentKey, data ? 'true' : 'false');
+    } else if (typeof data === 'number') {
+      // convert number to string
+      formDataInstance.append(parentKey, data.toString());
+    } else if (data === null || data === undefined) {
+      // Append empty string for null or undefined to avoid errors
+      formDataInstance.append(parentKey, '');
+    } else if (typeof data === 'string' || data instanceof Blob) {
+      formDataInstance.append(parentKey, data);
+    } else {
+      // fallback if any other type (symbol, function, etc.) - just convert to string
+      formDataInstance.append(parentKey, String(data));
+    }
 
-  return formDataInstance;
-};
+    return formDataInstance;
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -285,8 +337,8 @@ const AddNewService = () => {
                   onClick={nextStep}
                   disabled={!isStepComplete(step)}
                   className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(step)
-                      ? 'bg-blue-600 hover:bg-blue-700'
-                      : 'bg-gray-400 cursor-not-allowed'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-400 cursor-not-allowed'
                     }`}
                 >
                   Next
@@ -296,8 +348,8 @@ const AddNewService = () => {
                   type="submit"
                   disabled={!isStepComplete(3) || isSubmitting}
                   className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(3)
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-gray-400 cursor-not-allowed'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-gray-400 cursor-not-allowed'
                     }`}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit'}
