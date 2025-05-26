@@ -28,7 +28,7 @@ interface ServiceDetails {
     highlight: string;
     benefits: string;
     howItWorks: string;
-    terms: string;
+    termsAndConditions: string;
     document: string;
     extraSections?: ExtraSection[];
     whyChoose?: WhyChooseItem[];
@@ -86,7 +86,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             highlight: '',
             benefits: '',
             howItWorks: '',
-            terms: '',
+            termsAndConditions: '',
             document: '',
             extraSections: [] as ExtraSection[],
             whyChoose: [] as WhyChooseItem[],
@@ -117,7 +117,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     highlight: service.serviceDetails.highlight,
                     benefits: service.serviceDetails.benefits,
                     howItWorks: service.serviceDetails.howItWorks,
-                    terms : service.serviceDetails.termsAndConditions,
+                    termsAndConditions: service.serviceDetails.termsAndConditions,
                     document: service.serviceDetails.document,
                     extraSections: service.serviceDetails.extraSections || [],
                     whyChoose: service.serviceDetails.whyChoose || [],
@@ -149,7 +149,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     !!formData.service.highlight.trim() &&
                     !!formData.service.benefits.trim() &&
                     !!formData.service.howItWorks.trim() &&
-                    !!formData.service.terms.trim() &&
+                    !!formData.service.termsAndConditions.trim() &&
                     !!formData.service.document.trim()
                 );
             case 3:
@@ -206,7 +206,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             formDataToSend.append('serviceDetails[highlight]', formData.service.highlight);
             formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
             formDataToSend.append('serviceDetails[howItWorks]', formData.service.howItWorks);
-            formDataToSend.append('serviceDetails[termsAndConditions]', formData.service.terms);
+            formDataToSend.append('serviceDetails[termsAndConditions]', formData.service.termsAndConditions);
             formDataToSend.append('serviceDetails[document]', formData.service.document);
 
             // Append service arrays
