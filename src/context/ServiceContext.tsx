@@ -82,10 +82,10 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchServices = useCallback(async () => {
+ const fetchServices = useCallback(async () => {
     try {
-      const res = await axios.get<Service[]>("/api/service");
-      setServices(res.data);
+      const res = await axios.get<{ data: Service[] }>("/api/service");
+      setServices(res.data.data);
     } catch (error) {
       console.error("Failed to fetch services:", error);
     }

@@ -60,7 +60,7 @@ const ModuleStatCard = () => {
         />
         <StatCard
           title="Total Services"
-          value={services?.data?.length || 0}
+          value={services?.length || 0}
           icon={BoxCubeIcon}
           badgeColor="success"
           badgeValue="0.00%"
