@@ -9,7 +9,7 @@ import { ModuleProvider } from '@/context/ModuleContext';
 import { CategoryProvider } from '@/context/CategoryContext';
 import { SubcategoryProvider } from '@/context/SubcategoryContext';
 import { BannerProvider } from '@/context/BannerContext';
-import { ServiceProvider } from '@/context/ServiceContext';
+// import { ServiceProvider } from '@/context/ServiceContext';
 import { ProviderProvider } from '@/context/ProviderContext';
 import { WhyChooseProvider } from '@/context/WhyChooseContext';
 
@@ -33,14 +33,14 @@ export default function RootLayout({
                   <CategoryProvider>
                     <SubcategoryProvider>
                       <BannerProvider>
-                        <ServiceProvider>
+                        {/* <ServiceProvider> */}
                           <ProviderProvider>
                             <WhyChooseProvider>
-                    {children}
-                    </WhyChooseProvider>
-                    </ProviderProvider>
-                    </ServiceProvider>
-                    </BannerProvider>
+                              {children}
+                            </WhyChooseProvider>
+                          </ProviderProvider>
+                        {/* </ServiceProvider> */}
+                      </BannerProvider>
                     </SubcategoryProvider>
                   </CategoryProvider>
                 </ModuleProvider>
