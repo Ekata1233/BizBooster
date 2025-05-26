@@ -91,7 +91,7 @@ const options = [
 
 
 const ServiceList = () => {
-  const { services, updateService } = useService();
+  const {updateService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);

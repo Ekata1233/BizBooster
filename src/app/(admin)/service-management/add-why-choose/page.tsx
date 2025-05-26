@@ -1,6 +1,6 @@
 "use client";
 
-import { useWhyChoose } from '@/context/WhyChooseContext';
+import { useWhyChoose, WhyChooseItem } from '@/context/WhyChooseContext';
 import React, { useMemo, useState } from 'react';
 import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -17,7 +17,7 @@ const Page = () => {
     const [activeTab, setActiveTab] = useState('all');
 
     const [showModal, setShowModal] = useState(false);
-    const [editItem, setEditItem] = useState<any | null>(null);
+const [editItem, setEditItem] = useState<WhyChooseItem | null>(null);
     const [formState, setFormState] = useState({
         title: '',
         description: '',
@@ -31,13 +31,13 @@ const Page = () => {
         }
     };
 
-    const handleEdit = (item: any) => {
+    const handleEdit = (item: WhyChooseItem) => {
         setEditItem(item);
         setFormState({
             title: item.title,
             description: item.description,
             image: item.image,
-            extraSections: item.extraSections?.map((e: any) => e.description).join(', ') || ''
+            extraSections: item.extraSections?.map((e) => e.description).join(', ') || ''
         });
         setShowModal(true);
     };
@@ -71,7 +71,7 @@ const Page = () => {
         {
             header: "Image",
             accessor: "image",
-            render: (row: any) => (
+            render: (row: WhyChooseItem) => (
                 row.image ? (
                     <div className="w-70 h-30 overflow-hidden">
                         {row.image.startsWith("http") ? (
@@ -98,7 +98,7 @@ const Page = () => {
         {
             header: "Title",
             accessor: "title",
-            render: (row: any) => (
+            render: (row: WhyChooseItem) => (
                 <span className="font-medium text-sm text-gray-800 dark:text-white/90">
                     {row.title ?? "—"}
                 </span>
@@ -107,7 +107,7 @@ const Page = () => {
         {
             header: "Description",
             accessor: "description",
-            render: (row: any) => (
+            render: (row: WhyChooseItem) => (
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                     {row.description ?? "—"}
                 </p>
@@ -116,10 +116,10 @@ const Page = () => {
         {
             header: "Extra Sections",
             accessor: "extraSections",
-            render: (row: any) => (
+            render: (row: WhyChooseItem) => (
                 <div>
                     {row.extraSections?.length > 0 ? (
-                        row.extraSections.map((extra: any, index: number) => (
+                        row.extraSections.map((extra, index) => (
                             <p key={index} className="text-sm text-gray-600 dark:text-gray-300">
                                 {extra.description ?? "—"}
                             </p>
@@ -133,7 +133,7 @@ const Page = () => {
         {
             header: "Action",
             accessor: "action",
-            render: (row: any) => (
+            render: (row: WhyChooseItem) => (
                 <div className="flex gap-2">
                     <button
                         title="Edit"
