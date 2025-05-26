@@ -42,17 +42,17 @@ type FranchiseDetails = {
   rows: RowData[];
 };
 
-type BasicDetails = {
-  name: string;
-  category: string;
-  subcategory: string;
-  price: string;
-  thumbnail: File | null;
-  covers: File[];
+type BasicDetailsData = {
+ name?: string;
+    category?: string;
+    subcategory?: string;
+    price?: number;
+    thumbnail?: File | null;
+    covers?: FileList | File[] | null;
 };
 
 type FormDataType = {
-  basic: BasicDetails;
+  basic: BasicDetailsData;
   service: ServiceDetails;
   franchise: FranchiseDetails;
 };
@@ -64,7 +64,7 @@ const AddNewService = () => {
       name: '',
       category: '',
       subcategory: '',
-      price: '',
+      price: 0,
       thumbnail: null,
       covers: [],
     },
@@ -202,7 +202,7 @@ const AddNewService = () => {
           name: '',
           category: '',
           subcategory: '',
-          price: '',
+          price: 0,
           thumbnail: null,
           covers: [],
         },
