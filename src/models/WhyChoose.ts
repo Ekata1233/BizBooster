@@ -10,7 +10,7 @@ const WhyChooseSchema = new mongoose.Schema(
         description: { type: String }
       }
     ],
-    isDeleted: { type: Boolean, default: false }, // Soft delete flag
+    isDeleted: { type: Boolean, default: false }, 
 
   },
   { timestamps: true }
