@@ -19,10 +19,7 @@ const containerStyle = {
   width: '100%',
   height: '300px',
 };
- const [markerPosition, setMarkerPosition] = useState({
-    lat: 0,
-    lng: 0,
-  });
+ 
 const centerDefault = {
   lat: 18.501426841362647,
   lng: 73.88318878735599,
