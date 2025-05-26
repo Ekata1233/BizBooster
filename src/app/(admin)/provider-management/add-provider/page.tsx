@@ -66,11 +66,11 @@ const AddProvider = () => {
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-// const [ setLatitude] = useState<number>(0);
+const [ setLatitude] = useState<number>(0);
 
  const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newLat = parseFloat(e.target.value) || 0; // Fallback to 0 if input is empty
-    // setLatitude(newLat); // update separate latitude (if you want to track it separately)
+    setLatitude(newLat); // update separate latitude (if you want to track it separately)
     setMarkerPosition((prev) => ({
       ...prev,
       lat: newLat, // also update in markerPosition object
