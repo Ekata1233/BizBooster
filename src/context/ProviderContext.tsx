@@ -21,7 +21,7 @@ export interface Provider {
   email: string;
   address: string;
   zone: 'east' | 'west' | 'south' | 'north' | 'central'; // ✅ added zone
-  module: string;
+  module?: { name: string }
   companyLogo?: string;
   identityType: 'passport' | 'driving license' | 'other';
   identityNumber: string;
@@ -67,12 +67,12 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       setProviders(res.data.data);
       setError(null);
     } catch (err: unknown) {
-  if (err instanceof Error) {
-    setError(err.message || 'Failed to delete provider');
-  } else {
-    setError('Failed to delete provider');
-  }
-} finally {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to delete provider');
+      } else {
+        setError('Failed to delete provider');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -86,12 +86,12 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       setProviders((prev) => [...prev, res.data.data]);
       setError(null);
     } catch (err: unknown) {
-  if (err instanceof Error) {
-    setError(err.message || 'Failed to delete provider');
-  } else {
-    setError('Failed to delete provider');
-  }
-} finally {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to delete provider');
+      } else {
+        setError('Failed to delete provider');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -107,12 +107,12 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       );
       setError(null);
     } catch (err: unknown) {
-  if (err instanceof Error) {
-    setError(err.message || 'Failed to delete provider');
-  } else {
-    setError('Failed to delete provider');
-  }
-} finally {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to delete provider');
+      } else {
+        setError('Failed to delete provider');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -124,12 +124,12 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       setProviders((prev) => prev.filter((p) => p._id !== id));
       setError(null);
     } catch (err: unknown) {
-  if (err instanceof Error) {
-    setError(err.message || 'Failed to delete provider');
-  } else {
-    setError('Failed to delete provider');
-  }
-}finally {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to delete provider');
+      } else {
+        setError('Failed to delete provider');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -151,12 +151,12 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
         setError(res.data.message || 'Login failed');
       }
     } catch (err: unknown) {
-  if (err instanceof Error) {
-    setError(err.message || 'Failed to delete provider');
-  } else {
-    setError('Failed to delete provider');
-  }
-}finally {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to delete provider');
+      } else {
+        setError('Failed to delete provider');
+      }
+    } finally {
       setLoading(false);
     }
   };

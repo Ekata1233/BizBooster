@@ -299,7 +299,7 @@ const Category = () => {
 
             </div>
             <div>
-              <Label>Select Input</Label>
+              <Label>Select Module</Label>
               <div className="relative">
                 <Select
                   options={moduleOptions}

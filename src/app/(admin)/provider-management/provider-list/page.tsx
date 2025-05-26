@@ -4,12 +4,21 @@ import React, { useEffect, useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import { TrashBinIcon, EyeIcon } from '@/icons';
+import { TrashBinIcon, EyeIcon, ChevronDownIcon } from '@/icons';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import Select from '@/components/form/Select';
 import { useProvider } from '@/context/ProviderContext';
 import Link from 'next/link';
+import { useModule } from '@/context/ModuleContext';
+import axios from 'axios';
+
+const options = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "ascending", label: "Ascending" },
+  { value: "descending", label: "Descending" },
+];
 
 interface Provider {
   _id: string;
@@ -17,6 +26,9 @@ interface Provider {
   email: string;
   phoneNo: string;
   address: string;
+  module?: {
+    name: string;
+  };
   setBusinessPlan: string;
   isDeleted?: boolean;
 }
@@ -27,70 +39,81 @@ interface ProviderTableData {
   email: string;
   phone: string;
   address: string;
-  businessPlan: string;
+  module: string;
   status: string;
 }
 
-const sortOptions = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'ascending', label: 'Ascending A-Z' },
-  { value: 'descending', label: 'Descending Z-A' },
-];
 
 const ProviderList = () => {
   const { providers } = useProvider();
+  const { modules } = useModule();
+  const [selectedModule, setSelectedModule] = useState<string>('');
   const [filteredProviders, setFilteredProviders] = useState<ProviderTableData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState('latest');
+  const [message, setMessage] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedPlan, setSelectedPlan] = useState('');
-console.log(providers);
+  console.log(providers);
+
+  console.log("provider list : ", providers);
+
+  const fetchFilteredProviders = async () => {
+    try {
+      
+      const params = {
+        ...(selectedModule && {selectedModule: selectedModule}),
+        ...(sort && { sort }),
+        ...(searchQuery && { search: searchQuery }),
+      };
+
+      const response = await axios.get('/api/provider', { params });
+      // console.log("response of the providers : ", response)
+      const data = response.data.data;
+
+      console.log("response of the providers : ", data)
+
+      if (!Array.isArray(data) || data.length === 0) {
+        setFilteredProviders([]);
+        setMessage(data.message || 'No providers found');
+      } else {
+        const updatedProviders = data.map((provider: Provider): ProviderTableData => ({
+          id: provider._id,
+          name: provider.name,
+          email: provider.email,
+          phone: provider.phoneNo,
+          address: provider.address,
+          module: provider.module?.name || "N/A",
+          status: provider.isDeleted ? 'Inactive' : 'Active',
+        }));
+
+        setFilteredProviders(updatedProviders);
+        setMessage('');
+      }
+    } catch (error) {
+      console.error('Error fetching providers:', error);
+      setFilteredProviders([]);
+      setMessage('Something went wrong while fetching providers');
+    }
+  };
 
   useEffect(() => {
-    if (!Array.isArray(providers)) return;
+    fetchFilteredProviders();
+  }, [sort, searchQuery,selectedModule]);
 
-    let filtered = providers
-      .filter((provider: Provider) => {
-        if (activeTab === 'active') return !provider.isDeleted;
-        if (activeTab === 'inactive') return provider.isDeleted;
-        return true;
-      })
-      .filter((provider: Provider) =>
-        provider.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .filter((provider: Provider) =>
-        selectedPlan ? provider.setBusinessPlan === selectedPlan : true
-      )
-      .map((provider: Provider) => ({
-        id: provider._id,
-        name: provider.name,
-        email: provider.email,
-        phone: provider.phoneNo,
-        address: provider.address,
-        businessPlan: provider.setBusinessPlan || 'N/A',
-        status: provider.isDeleted ? 'Inactive' : 'Active',
-      }));
 
-    if (sort === 'ascending') {
-      filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sort === 'descending') {
-      filtered = filtered.sort((a, b) => b.name.localeCompare(a.name));
-    }
-
-    setFilteredProviders(filtered);
-  }, [providers, searchQuery, activeTab, sort, selectedPlan]);
-
-  const businessPlanOptions = Array.from(
-    new Set(providers.map((p: Provider) => p.setBusinessPlan))
-  ).map((plan) => ({ value: plan, label: plan }));
+  const moduleOptions = modules.map((module) => ({
+    value: module._id, // or value: module if you want full object
+    label: module.name,
+    image: module.image,
+  }));
 
   const columns = [
     { header: 'Name', accessor: 'name' },
     { header: 'Email', accessor: 'email' },
     { header: 'Phone', accessor: 'phone' },
     { header: 'Address', accessor: 'address' },
-    { header: 'Business Plan', accessor: 'businessPlan' },
+    { header: 'Module', accessor: 'module' },
     {
       header: 'Status',
       accessor: 'status',
@@ -111,7 +134,7 @@ console.log(providers);
       accessor: 'action',
       render: (row: ProviderTableData) => (
         <div className="flex gap-2">
-          
+
           <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
             <TrashBinIcon />
           </button>
@@ -125,63 +148,65 @@ console.log(providers);
     },
   ];
 
+  console.log("selected module : ", selectedModule)
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Provider List" />
       <div className="my-5">
         <ComponentCard title="Search Filter">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
             <div>
-              <Label>Search by Name</Label>
+              <Label>Select Module</Label>
+              <div className="relative">
+                <Select
+                  options={moduleOptions}
+                  placeholder="Select Module"
+                  onChange={(value: string) => setSelectedModule(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label>Select Input</Label>
+              <div className="relative">
+                <Select
+                  options={options}
+                  placeholder="Sort By"
+                  onChange={(value: string) => setSort(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label>Search by Provider Name & Email</Label>
               <Input
                 type="text"
-                placeholder="Enter name"
+                placeholder="Enter Provider Name & Email"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div>
-              <Label>Sort</Label>
-              <Select
-                options={sortOptions}
-                placeholder="Select Sort"
-                onChange={(val) => setSort(val)}
-              />
-            </div>
-            <div>
-              <Label>Business Plan</Label>
-              <Select
-                options={businessPlanOptions}
-                placeholder="Select Plan"
-                onChange={(val) => setSelectedPlan(val)}
-              />
-            </div>
-            <div className="flex items-end gap-3">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 rounded ${activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setActiveTab('active')}
-                className={`px-4 py-2 rounded ${activeTab === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100'}`}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setActiveTab('inactive')}
-                className={`px-4 py-2 rounded ${activeTab === 'inactive' ? 'bg-red-600 text-white' : 'bg-gray-100'}`}
-              >
-                Inactive
-              </button>
-            </div>
+
           </div>
         </ComponentCard>
       </div>
 
       <ComponentCard title="Provider List Table">
-        <BasicTableOne columns={columns} data={filteredProviders} />
+        {message ? (
+          <p className="text-red-500 text-center my-4">{message}</p>
+        ) : (
+          <BasicTableOne columns={columns} data={filteredProviders} />
+        )}
       </ComponentCard>
     </div>
   );

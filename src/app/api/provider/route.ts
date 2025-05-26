@@ -115,14 +115,75 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const providers = await Provider.find({ isDeleted: false }).lean();
-    return NextResponse.json({ success: true, data: providers }, { status: 200, headers: corsHeaders });
+    const { searchParams } = new URL(req.url);
+    const sort = searchParams.get('sort');
+    const search = searchParams.get('search');
+    const selectedModule = searchParams.get('selectedModule');
+
+    console.log("search in backend : ", searchParams);
+
+    // Construct filter object
+    const filter: {
+      isDeleted: boolean;
+      module?: string;
+      $or?: { [key: string]: { $regex: string; $options: string } }[];
+    } = {
+      isDeleted: false,
+    };
+
+    // If selectedModule is provided
+    if (selectedModule) {
+      filter.module = selectedModule;
+    }
+
+    // Search logic
+    if (search) {
+      const searchRegex = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { name: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    // Sorting logic
+    let sortOption: Record<string, 1 | -1> = {};
+    switch (sort) {
+      case 'latest':
+        sortOption = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortOption = { createdAt: 1 };
+        break;
+      case 'ascending':
+        sortOption = { name: 1 };
+        break;
+      case 'descending':
+        sortOption = { name: -1 };
+        break;
+      default:
+        sortOption = { createdAt: -1 };
+    }
+
+    // Apply filter and sort
+    const providers = await Provider.find(filter)
+      .sort(sortOption)
+      .populate('module')
+      .lean();
+
+    return NextResponse.json(
+      { success: true, data: providers },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
