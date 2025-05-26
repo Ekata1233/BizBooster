@@ -3,7 +3,6 @@ import Label from '../form/Label'
 import Input from '../form/input/InputField'
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import dynamic from 'next/dynamic';
 import { TrashBinIcon } from '@/icons';
 
 
@@ -12,16 +11,35 @@ interface RowData {
   description: string;
 }
 
-interface FranchiseDetailsFormProps {
-  data: {
-    commission?: string | number;
-    overview?: string;
-    howItWorks?: string;
-    terms?: string;
-    rows?: RowData[];
-  };
-  setData: (newData: Partial<any>) => void;
+interface FranchiseDetailsData {
+  commission?: string | number;
+  overview?: string;
+  howItWorks?: string;
+  terms?: string;
+  rows?: RowData[];
 }
+
+// 1. Define the RowData type
+interface RowData {
+  title: string;
+  description: string;
+}
+
+// 2. Define the main form data type
+interface FranchiseDetailsData {
+  commission?: string | number;
+  overview?: string;
+  howItWorks?: string;
+  terms?: string;
+  rows?: RowData[];
+}
+
+// 3. Use it in your props
+interface FranchiseDetailsFormProps {
+  data: FranchiseDetailsData;
+  setData: (newData: Partial<FranchiseDetailsData>) => void;
+}
+
 
 const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');

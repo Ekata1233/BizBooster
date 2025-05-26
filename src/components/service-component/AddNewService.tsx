@@ -35,11 +35,11 @@ type ServiceDetails = {
 };
 
 type FranchiseDetails = {
-  commission: string;
-  overview: string;
-  howItWorks: string;
-  terms: string;
-  rows: RowData[];
+   commission?: string | number;
+  overview?: string;
+  howItWorks?: string;
+  terms?: string;
+  rows?: RowData[];
 };
 
 type BasicDetailsData = {
@@ -116,7 +116,7 @@ const AddNewService = () => {
         );
       case 3:
         return (
-          !!formData?.franchise?.commission?.trim() &&
+          !!formData?.franchise?.commission &&
           !!formData?.franchise?.overview?.trim() &&
           !!formData?.franchise?.howItWorks?.trim() &&
           !!formData?.franchise?.terms?.trim()
