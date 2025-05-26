@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import ComponentCard from '../common/ComponentCard';
-import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm from './ServiceDetailsForm';
-import FranchiseDetailsForm from './FranchiseDetailsForm';
 import { useService } from '@/context/ServiceContext';
+import BasicDetailsForm from './BasicDetailsForm';
+import FranchiseDetailsForm from './FranchiseDetailsForm';
 
 
 type FAQ = {

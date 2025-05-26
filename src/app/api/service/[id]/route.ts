@@ -76,11 +76,13 @@ export async function PUT(req: Request) {
     const category = formData.get("category") as string;
     const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
-    // const serviceDetailsStr = formData.get("serviceDetails") as string;
-    // const franchiseDetailsStr = formData.get("franchiseDetails") as string;
 
-    function parseNestedFormData(formData: FormData): Record<string, any> {
-      const data: Record<string, any> = {};
+    interface NestedFormData {
+      [key: string]: string | NestedFormData | NestedFormData[];
+    }
+
+    function parseNestedFormData(formData: FormData): NestedFormData {
+      const data: NestedFormData = {};
 
       for (const [key, value] of formData.entries()) {
         if (typeof value === "object") continue; // skip files for now
@@ -94,14 +96,14 @@ export async function PUT(req: Request) {
         for (let i = 0; i < keys.length; i++) {
           const part = keys[i];
           if (i === keys.length - 1) {
-            current[part] = value;
+            current[part] = value.toString();
           } else {
             if (!current[part]) {
               // check if next is array index
               const nextIsArrayIndex = /^\d+$/.test(keys[i + 1]);
               current[part] = nextIsArrayIndex ? [] : {};
             }
-            current = current[part];
+            current = current[part] as NestedFormData;
           }
         }
       }
@@ -110,10 +112,8 @@ export async function PUT(req: Request) {
     }
 
     const fullData = parseNestedFormData(formData);
-    const serviceDetails = fullData.serviceDetails || {};
-    const franchiseDetails = fullData.franchiseDetails || {};
-
-
+    const serviceDetails = fullData.serviceDetails as NestedFormData || {};
+    const franchiseDetails = fullData.franchiseDetails as NestedFormData || {};
 
     if (!serviceName || !category || !subcategory || !priceStr) {
       return NextResponse.json(
@@ -164,14 +164,14 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Define the type for updateData to avoid using any
+    // Define the type for updateData
     interface UpdateData {
       serviceName: string;
       category: string;
       subcategory: string;
       price: number;
-      serviceDetails: object;
-      franchiseDetails: object;
+      serviceDetails: NestedFormData;
+      franchiseDetails: NestedFormData;
       isDeleted: boolean;
       thumbnailImage?: string;
       bannerImages?: string[];

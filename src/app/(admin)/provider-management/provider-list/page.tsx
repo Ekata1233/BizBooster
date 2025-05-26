@@ -52,8 +52,8 @@ const ProviderList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState('latest');
   const [message, setMessage] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
-  const [selectedPlan, setSelectedPlan] = useState('');
+  // const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
+  // const [selectedPlan, setSelectedPlan] = useState('');
   console.log(providers);
 
   console.log("provider list : ", providers);

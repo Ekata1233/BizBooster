@@ -6,22 +6,26 @@ import { ChevronDownIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
+
 interface BasicDetailsData {
-  name: string;
-  category: string;
-  subcategory: string;
-  price: number;
-  thumbnail?: File | null;
-  covers?: FileList | null;
+    name?: string;
+    category?: string;
+    subcategory?: string;
+    price?: number;
+    thumbnail?: File | null;
+    covers?: FileList | File[] | null;
 }
-const BasicDetailsForm = ({ data, setData }: {
-    data: any;
-    setData: (newData: Partial<any>) => void;
-}) => {
+
+interface BasicDetailsFormProps {
+    data: BasicDetailsData;
+    setData: (newData: Partial<BasicDetailsData>) => void;
+}
+
+const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [selectedMultiFiles, setSelectedMultiFiles] = useState<FileList | null>(null);
+    const [selectedMultiFiles, setSelectedMultiFiles] = useState<FileList | File[] | null>(null);
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
 
@@ -30,23 +34,21 @@ const BasicDetailsForm = ({ data, setData }: {
             if (data.category) setSelectedCategory(data.category);
             if (data.subcategory) setSelectedSubcategory(data.subcategory);
             if (data.thumbnail instanceof File) setSelectedFile(data.thumbnail);
-            if (data.covers instanceof FileList || data.covers?.length) setSelectedMultiFiles(data.covers);
+            if (data.covers instanceof FileList || (Array.isArray(data.covers) && data.covers.length)) {
+                setSelectedMultiFiles(data.covers);
+            }
         }
     }, [data]);
-
-
 
     const categoryOptions = categories.map((cat) => ({
         value: cat._id as string,
         label: cat.name,
         image: cat.image || '',
     }));
-    console.log();
 
     const filteredSubcategories = data.category
         ? subcategories.filter((subcat) => subcat.category?._id === data.category)
         : [];
-
 
     const subcategoryOptions = filteredSubcategories.map((subcat) => ({
         value: subcat._id as string,
@@ -65,7 +67,6 @@ const BasicDetailsForm = ({ data, setData }: {
         }
     }, [data.category]);
 
-
     useEffect(() => {
         setData({ thumbnail: selectedFile });
     }, [selectedFile]);
@@ -73,9 +74,6 @@ const BasicDetailsForm = ({ data, setData }: {
     useEffect(() => {
         setData({ covers: selectedMultiFiles });
     }, [selectedMultiFiles]);
-
-
-
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -92,7 +90,6 @@ const BasicDetailsForm = ({ data, setData }: {
     };
 
     return (
-
         <div>
             <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -116,7 +113,6 @@ const BasicDetailsForm = ({ data, setData }: {
                                 options={categoryOptions}
                                 placeholder="Categories"
                                 value={selectedCategory}
-                                // onChange={(value: string) => setSelectedCategory(value)}
                                 onChange={(value: string) => setData({ category: value })}
                                 className="dark:bg-dark-900"
                             />
@@ -150,7 +146,6 @@ const BasicDetailsForm = ({ data, setData }: {
                             value={data.price}
                             onChange={(e) => setData({ price: Number(e.target.value) })}
                         />
-
                     </div>
                 </div>
 
@@ -158,11 +153,7 @@ const BasicDetailsForm = ({ data, setData }: {
                 <div className="space-y-3">
                     <div>
                         <Label>Thumbnail Image</Label>
-
                         <FileInput onChange={handleFileChange} className="custom-class" />
-                        {/* <p className="text-xs text-gray-500 mb-1">
-                            Image format - <strong>jpg, png, jpeg, gif</strong> | Size - <strong>max 2MB</strong> | Ratio - <strong>1:1</strong>
-                        </p> */}
                         {selectedFile && (
                             <img
                                 src={URL.createObjectURL(selectedFile)}
@@ -175,9 +166,6 @@ const BasicDetailsForm = ({ data, setData }: {
                     <div>
                         <Label>Cover Images</Label>
                         <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
-                        {/* <p className="text-xs text-gray-500 mb-1">
-                            Image format - <strong>jpg, png, jpeg, gif</strong> | Size - <strong>max 2MB</strong> | Ratio - <strong>3:1</strong>
-                        </p> */}
                         <div className="mt-2 flex gap-2 flex-wrap">
                             {selectedMultiFiles &&
                                 Array.from(selectedMultiFiles).map((file, index) => (

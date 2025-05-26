@@ -42,19 +42,17 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setData({ commission: e.target.value });
   };
 
-  // Handle Overview change from CKEditor
-  const handleOverviewChange = (event: any, editor: any) => {
+  const handleOverviewChange = ( editor: any) => {
     const dataOverview = editor.getData();
     setData({ overview: dataOverview });
   };
 
-  const handleHowItWorkChange = (event: any, editor: any) => {
+  const handleHowItWorkChange = ( editor: any) => {
     const dataHowItWork = editor.getData();
     setData({ howItWorks: dataHowItWork });
   };
 
-  // Handle Terms change from CKEditor
-  const handleTermsChange = (event: any, editor: any) => {
+  const handleTermsChange = ( editor: any) => {
     const dataTerms = editor.getData();
     setData({ terms: dataTerms });
   };
