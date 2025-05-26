@@ -158,7 +158,6 @@ export const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-// OPTIONS Handler
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
