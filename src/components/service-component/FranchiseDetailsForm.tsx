@@ -53,7 +53,6 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setData({ howItWorks: dataHowItWork });
   };
 
-  // Handle Terms change from CKEditor
   const handleTermsChange = ( editor: any) => {
     const dataTerms = editor.getData();
     setData({ terms: dataTerms });
