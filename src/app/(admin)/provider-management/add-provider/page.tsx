@@ -11,6 +11,10 @@ import Select from '@/components/form/Select';
 import { ChevronDownIcon } from '@/icons';
 import FileInput from '@/components/form/input/FileInput';
 
+type ModuleType = {
+  _id: string;
+  name: string;
+};
 const containerStyle = {
   width: '100%',
   height: '300px',
@@ -59,8 +63,8 @@ const AddProvider = () => {
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
+const [ setLatitude] = useState<string>('');
+  
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
