@@ -130,31 +130,6 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Parse JSON fields
-    // let serviceDetails = {};
-    // if (serviceDetailsStr) {
-    //   try {
-    //     serviceDetails = JSON.parse(serviceDetailsStr);
-    //   } catch {
-    //     return NextResponse.json(
-    //       { success: false, message: "Invalid JSON for serviceDetails." },
-    //       { status: 400, headers: corsHeaders }
-    //     );
-    //   }
-    // }
-
-    // let franchiseDetails = {};
-    // if (franchiseDetailsStr) {
-    //   try {
-    //     franchiseDetails = JSON.parse(franchiseDetailsStr);
-    //   } catch {
-    //     return NextResponse.json(
-    //       { success: false, message: "Invalid JSON for franchiseDetails." },
-    //       { status: 400, headers: corsHeaders }
-    //     );
-    //   }
-    // }
-
     // Handle thumbnail image upload (optional)
     let thumbnailImageUrl = "";
     const thumbnailFile = formData.get("thumbnailImage") as File | null;
