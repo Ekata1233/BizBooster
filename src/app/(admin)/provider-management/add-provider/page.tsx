@@ -63,19 +63,22 @@ const AddProvider = () => {
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-const [ setLatitude] = useState<number>(0);
+const [latitude, setLatitude] = useState<number>(0);
+console.log(latitude);
 
- const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newLat = parseFloat(e.target.value) || 0; // Fallback to 0 if input is empty
-    setLatitude(newLat); // update separate latitude (if you want to track it separately)
-    setMarkerPosition((prev) => ({
-      ...prev,
-      lat: newLat, // also update in markerPosition object
-    }));
-  };
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newLat = parseFloat(e.target.value) || 0; // Fallback to 0 if input is empty
+  setLatitude(newLat); // update separate latitude (if you want to track it separately)
+  setMarkerPosition((prev) => ({
+    ...prev,
+    lat: newLat, // also update in markerPosition object
+  }));
+};
+
+const { isLoaded, loadError } = useLoadScript({
+  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+});
+
 
   const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
