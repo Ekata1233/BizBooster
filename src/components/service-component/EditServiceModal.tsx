@@ -1,7 +1,6 @@
 // components/EditModuleModal.tsx
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../ui/modal';
-import Button from '../ui/button/Button';
 import ComponentCard from '../common/ComponentCard';
 import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm from './ServiceDetailsForm';
@@ -197,7 +196,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             if (formData.basic.thumbnail) {
                 formDataToSend.append('thumbnailImage', formData.basic.thumbnail);
             }
-            formData.basic.bannerImages.forEach((file, index) => {
+            formData.basic.bannerImages.forEach((file) => {
                 formDataToSend.append(`bannerImages`, file);
             });
 
