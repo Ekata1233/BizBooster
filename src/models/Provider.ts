@@ -1,40 +1,164 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from 'bcrypt';
 
-interface ContactPerson {
-  name: string;
-  phoneNo: string;
-  email: string;
+// Interfaces
+
+interface Location {
+  type: 'home' | 'office' | 'other';
+  coordinates: [number, number]; // [longitude, latitude]
 }
 
-interface AccountInfo {
-  email: string;
-  phoneNo: string;
+interface StoreInfo {
+  storeName: string;
+  storePhone: string;
+  storeEmail: string;
+  module: mongoose.Types.ObjectId;
+  zone: 'east' | 'west' | 'south' | 'north' | 'central';
+  logo?: string;
+  cover?: string;
+  tax: string;
+  location: Location;
+  address: string;
+  officeNo: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+interface KYC {
+  aadhaarCard: string[];
+  panCard: string[];
+  storeDocument: string[];
+  GST: string[];
+  other: string[];
 }
 
 export interface ProviderDocument extends Document {
-  name: string;
+  fullName: string;
   phoneNo: string;
   email: string;
-  address: string;
-  companyLogo?: string;
-  zone: 'east' | 'west' | 'south' | 'north' | 'central'; // ✅ added zone
-  module: mongoose.Types.ObjectId;
-  identityType: 'passport' | 'driving license' | 'other';
-  identityNumber: string;
-  identificationImage: string;
-  contactPerson: ContactPerson;
-  accountInformation: AccountInfo;
   password: string;
-  confirmPassword: string;
-  addressLatitude: number;
-  addressLongitude: number;
-  setBusinessPlan: 'commission base' | 'other';
+  confirmPassword?: string; // Usually not stored in DB
+  referralCode?: string;
+  storeInfo: StoreInfo;
+  kyc: KYC;
+  setBusinessPlan?: 'commission base' | 'other';
+  isVerified: boolean;
   isDeleted: boolean;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
+// Schema Definitions
+
+const locationSchema = new Schema<Location>({
+  type: {
+    type: String,
+    enum: ['home', 'office', 'other'],
+    required: true,
+  },
+  coordinates: {
+    type: [Number],
+    required: true,
+    validate: {
+      validator: function (v: number[]) {
+        return v.length === 2;
+      },
+      message: 'Coordinates must be an array of two numbers [longitude, latitude].'
+    }
+  }
+}, { _id: false });
+
+const storeInfoSchema = new Schema<StoreInfo>({
+  storeName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  storePhone: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  storeEmail: {
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true,
+  },
+  module: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Module',
+  },
+  zone: {
+    type: String,
+    enum: ['east', 'west', 'south', 'north', 'central'],
+    required: true,
+  },
+  logo: {
+    type: String,
+  },
+  cover: {
+    type: String,
+  },
+  tax: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: locationSchema,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  officeNo: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  state: {
+    type: String,
+    required: true,
+  },
+  country: {
+    type: String,
+    required: true,
+  },
+}, { _id: false });
+
+const kycSchema = new Schema<KYC>({
+  aadhaarCard: {
+    type: [String],
+    required: true,
+    default: [],
+  },
+  panCard: {
+    type: [String],
+    required: true,
+    default: [],
+  },
+  storeDocument: {
+    type: [String],
+    required: true,
+    default: [],
+  },
+  GST: {
+    type: [String],
+    default: [],
+  },
+  other: {
+    type: [String],
+    default: [],
+  }
+}, { _id: false });
+
 const providerSchema = new Schema<ProviderDocument>({
-  name: {
+  fullName: {
     type: String,
     required: true,
     trim: true,
@@ -51,117 +175,48 @@ const providerSchema = new Schema<ProviderDocument>({
     lowercase: true,
     trim: true,
   },
-  address: {
-    type: String,
-    required: true,
-  },
-  zone: {
-    type: String,
-    enum: ['east', 'west', 'south', 'north', 'central'],
-    required: true,
-  },
-  companyLogo: {
-    type: String, // URL or path to the image
-  },
-  module: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Module',
-    required: true,
-  },
-  identityType: {
-    type: String,
-    enum: ['passport', 'driving license', 'other'],
-    required: true,
-  },
-  identityNumber: {
-    type: String,
-    required: true,
-  },
-  identificationImage: {
-    type: String, // URL or path to the image
-    required: true,
-  },
-  contactPerson: {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    phoneNo: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-    },
-  },
-  accountInformation: {
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-      validate: {
-        validator: function (v) {
-          return v === this.email; // Must be same as main email
-        },
-        message: props => `${props.value} must be the same as provider email!`
-      }
-    },
-    phoneNo: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
   password: {
     type: String,
     required: true,
   },
-  //   confirmPassword: {
-  //     type: String,
-  //     required: true,
-  //     validate: {
-  //       validator: function(v) {
-  //         return v === this.password;
-  //       },
-  //       message: 'Passwords do not match!'
-  //     }
-  //   },
-  addressLatitude: {
-    type: Number,
+  referralCode: {
+    type: String,
+  },
+  storeInfo: {
+    type: storeInfoSchema,
     required: true,
   },
-  addressLongitude: {
-    type: Number,
+  kyc: {
+    type: kycSchema,
     required: true,
   },
   setBusinessPlan: {
     type: String,
     enum: ['commission base', 'other'],
-    // required: true,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   },
   isDeleted: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 }, { timestamps: true });
 
+// Password hash middleware
 providerSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
   next();
 });
+
+// Password comparison method
 providerSchema.methods.comparePassword = async function (
-  candidatePassword: string,
+  candidatePassword: string
 ) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// module.exports = mongoose.model('Provider', providerSchema);
-export default mongoose.models.Provider || mongoose.model('Provider', providerSchema);
+export default mongoose.models.Provider || mongoose.model<ProviderDocument>('Provider', providerSchema);
