@@ -1,7 +1,7 @@
 import React from 'react'
 import StatCard from '../common/StatCard'
 import {
-  BoxCubeIcon,
+  
   ArrowUpIcon,
   UserIcon,
   CalenderIcon,
@@ -10,20 +10,20 @@ import {
 import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
-import { useService } from '@/context/ServiceContext';
+// import { useService } from '@/context/ServiceContext';
 
 const ModuleStatCard = () => {
   const { modules } = useModule();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  const { services } = useService();
+  // const { services } = useService();
 
   console.log("services in module stat card : ", services)
 
 
-  if (!services) {
-    return <div>Loading...</div>;
-  }
+  // if (!services) {
+  //   return <div>Loading...</div>;
+  // }
   if (!modules) {
     return <div>Modules Loading...</div>;
   }
@@ -60,14 +60,14 @@ const ModuleStatCard = () => {
           badgeValue="0.00%"
           badgeIcon={ArrowUpIcon}
         />
-        <StatCard
+        {/* <StatCard
           title="Total Services"
           value={services?.length || 0}
           icon={BoxCubeIcon}
           badgeColor="success"
           badgeValue="0.00%"
           badgeIcon={ArrowUpIcon}
-        />
+        /> */}
       </div>
     </div>
   )

@@ -7,7 +7,7 @@ export interface Category {
   _id?: string;
   id:string;
   name: string;
-  module: {_id: string, name: string };
+  module: {_id:string, name: string };
   image?: string;
   isDeleted?: boolean;
 }

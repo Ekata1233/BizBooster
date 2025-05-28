@@ -19,7 +19,7 @@ const containerStyle = {
   width: '100%',
   height: '300px',
 };
-
+ 
 const centerDefault = {
   lat: 18.501426841362647,
   lng: 73.88318878735599,
@@ -63,12 +63,22 @@ const AddProvider = () => {
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-const [ setLatitude] = useState<string>('');
-  
+const [latitude, setLatitude] = useState<number>(0);
+console.log(latitude);
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newLat = parseFloat(e.target.value) || 0; // Fallback to 0 if input is empty
+  setLatitude(newLat); // update separate latitude (if you want to track it separately)
+  setMarkerPosition((prev) => ({
+    ...prev,
+    lat: newLat, // also update in markerPosition object
+  }));
+};
+
+const { isLoaded, loadError } = useLoadScript({
+  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+});
+
 
   const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
@@ -404,15 +414,15 @@ const [ setLatitude] = useState<string>('');
             </GoogleMap>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter Latitude"
-                  value={markerPosition.lat}
+      <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
+      <Input
+        type="number"
+        placeholder="Enter Latitude"
+        value={markerPosition.lat}
+        onChange={handleLatitudeChange}
+      />
+    </div>
 
-                  onChange={(e) => setLatitude(e.target.value)}
-                />
-              </div>
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
                 <Input
