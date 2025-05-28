@@ -15,6 +15,7 @@ import { useModule } from '@/context/ModuleContext'
 export type PageType = 'home' | 'category';
 
 
+
 interface ModuleType {
   _id: string;
   name: string;
