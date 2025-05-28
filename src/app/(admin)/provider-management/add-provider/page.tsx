@@ -35,58 +35,49 @@ const zoneOptions = [
   { value: "central", label: "Central" },
 ];
 
-const idOptions = [
-  { value: "passport", label: "Passport" },
-  { value: "drivingLicense", label: "Driving License" },
-  { value: "other", label: "Other" },
+const businessPlanOptions = [
+  { value: 'commission base', label: 'Commission Base' },
+  { value: 'other', label: 'Other' },
 ];
 
 const AddProvider = () => {
   const { handleSubmit, setValue, formState: { } } = useForm();
-  const [markerPosition, setMarkerPosition] = useState(centerDefault);
-  const { modules } = useModule();
-  const { createProvider } = useProvider();
-  const [companyName, setCompanyName] = useState('');
+  // State for all fields
+  const [fullName, setFullName] = useState('');
   const [phoneNo, setPhoneNo] = useState('');
   const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [zone, setSort] = useState('');
-  const [logo, setLogo] = useState<File | null>(null);
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  const [identityType, setId] = useState('');
-  const [identity, setIdentityNo] = useState('');
-  const [idImage, setIdImage] = useState<File | null>(null);
-  const [accountEmail, setAccountEmail] = useState('');
-  const [accountPhone, setAccountPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [latitude, setLatitude] = useState<number>(0);
-  console.log(latitude);
+  const [storeName, setStoreName] = useState('');
+  const [storePhone, setStorePhone] = useState('');
+  const [storeEmail, setStoreEmail] = useState('');
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [zone, setZone] = useState('');
+  const [logo, setLogo] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
+  const [tax, setTax] = useState('');
+  const [locationType, setLocationType] = useState('');
+  const [markerPosition, setMarkerPosition] = useState(centerDefault);
+  const [address, setAddress] = useState('');
+  const [officeNo, setOfficeNo] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
+  const [aadhaarCardFiles, setAadhaarCardFiles] = useState<File[]>([]);
+  const [panCardFiles, setPanCardFiles] = useState<File[]>([]);
+  const [storeDocumentFiles, setStoreDocumentFiles] = useState<File[]>([]);
+  const [gstFiles, setGstFiles] = useState<File[]>([]);
+  const [otherFiles, setOtherFiles] = useState<File[]>([]);
+  const [businessPlan, setBusinessPlan] = useState<'commission base' | 'other'>('commission base');
   const [activeTab, setActiveTab] = useState("Home");
 
+  const { modules } = useModule();
+  const { createProvider } = useProvider();
 
-  const handleLongitudeChange = (e) => {
-    setMarkerPosition((prev) => ({
-      ...prev,
-      lng: parseFloat(e.target.value),
-    }));
-  };
-  const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newLat = parseFloat(e.target.value) || 0; // Fallback to 0 if input is empty
-    setLatitude(newLat); // update separate latitude (if you want to track it separately)
-    setMarkerPosition((prev) => ({
-      ...prev,
-      lat: newLat, // also update in markerPosition object
-    }));
-  };
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
-
 
   const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (event.latLng) {
@@ -98,6 +89,81 @@ const AddProvider = () => {
     }
   }, [setValue]);
 
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setFiles: React.Dispatch<React.SetStateAction<File[]>>
+  ) => {
+    if (event.target.files) {
+      setFiles(Array.from(event.target.files));
+    }
+  };
+
+  // Submit handler
+  const onSubmit = async () => {
+    try {
+      // Basic validations
+      if (
+        !fullName || !phoneNo || !email || !password || !confirmPassword ||
+        !storeName || !storePhone || !storeEmail || !selectedModule || !zone ||
+        !tax  || !address || !officeNo || !city || !state || !country
+      ) {
+        alert('Please fill all required fields');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append('fullName', fullName);
+      formData.append('phoneNo', phoneNo);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('confirmPassword', confirmPassword);
+      formData.append('storeName', storeName);
+      formData.append('storePhone', storePhone);
+      formData.append('storeEmail', storeEmail);
+      formData.append('selectedModule', selectedModule);
+      formData.append('zone', zone);
+      formData.append('tax', tax);
+      formData.append('locationType', locationType);
+      formData.append('longitude', markerPosition.lng.toString());
+      formData.append('latitude', markerPosition.lat.toString());
+      formData.append('address', address);
+      formData.append('officeNo', officeNo);
+      formData.append('city', city);
+      formData.append('state', state);
+      formData.append('country', country);
+      formData.append('setBusinessPlan', businessPlan);
+
+      if (logo) formData.append('logo', logo);
+      if (cover) formData.append('cover', cover);
+
+      // Append multiple files
+      aadhaarCardFiles.forEach((file) => formData.append('aadhaarCard', file));
+      panCardFiles.forEach((file) => formData.append('panCard', file));
+      storeDocumentFiles.forEach((file) => formData.append('storeDocument', file));
+      gstFiles.forEach((file) => formData.append('GST', file));
+      otherFiles.forEach((file) => formData.append('other', file));
+
+      await createProvider(formData);
+      alert('Provider registered successfully!');
+      // Optionally, reset form here
+    } catch (error) {
+      console.error('Error while registering provider:', error);
+      alert('An error occurred while registering the provider. Please try again.');
+    }
+  };
+
+  if (loadError) return <div>Error loading maps</div>;
+  if (!isLoaded) return <div>Loading Maps...</div>;
+
+  const handleSelectModule = (selected: string) => {
+    setSelectedModule(selected);
+  };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; // Fix: safe access
@@ -106,75 +172,11 @@ const AddProvider = () => {
     }
   };
 
-  const handleSelectModule = (selected: string) => {
-    setSelectedModule(selected);
-  };
-
-
   const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setIdImage(e.target.files[0]);
+      setCover(e.target.files[0]);
     }
   };
-
-  const onSubmit = async () => {
-    try {
-      const providerData = {
-        companyName,
-        phoneNo,
-        email,
-        address,
-        zone,
-        logo,
-        selectedModule,
-        identityType,
-        identity,
-        idImage,
-        accountEmail,
-        accountPhone,
-        password,
-        confirmPassword,
-        contactName,
-        contactPhone,
-        contactEmail,
-        latitude: markerPosition.lat,
-        longitude: markerPosition.lng,
-      };
-
-      console.log("Provider Data:", providerData);
-
-      // Check for basic validation (example)
-      if (!companyName || !email || !phoneNo || !password || !confirmPassword) {
-        alert("Please fill all required fields.");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        alert("Passwords do not match.");
-        return;
-      }
-
-      // Convert providerData object to FormData
-      const formData = new FormData();
-
-      Object.entries(providerData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (value instanceof File) {
-            formData.append(key, value);
-          } else {
-            formData.append(key, value.toString());
-          }
-        }
-      });
-
-      await createProvider(formData); // Make sure this is a promise
-      alert("Provider registered successfully!");
-    } catch (error) {
-      console.error("Error while registering provider:", error);
-      alert("An error occurred while registering the provider. Please try again.");
-    }
-  };
-
 
 
   const options = modules.map((mod: ModuleType) => ({
@@ -199,9 +201,9 @@ const AddProvider = () => {
                 <Label className="block mb-1 font-medium text-gray-700">Full Name</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Company / Individual Name"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Enter Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
 
@@ -265,32 +267,32 @@ const AddProvider = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <div>
-                <Label className="block mb-1 font-medium text-gray-700">Name</Label>
+                <Label className="block mb-1 font-medium text-gray-700">Store Name</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Name"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Enter Store Name"
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
                 />
               </div>
 
               <div>
-                <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
+                <Label className="block mb-1 font-medium text-gray-700">Store Phone</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Phone No"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="Enter Store Phone No"
+                  value={storePhone}
+                  onChange={(e) => setStorePhone(e.target.value)}
                 />
               </div>
 
               <div>
-                <Label className="block mb-1 font-medium text-gray-700">Email</Label>
+                <Label className="block mb-1 font-medium text-gray-700">Store Email</Label>
                 <Input
                   type="email"
-                  placeholder="Enter Email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="Enter Store Email"
+                  value={storeEmail}
+                  onChange={(e) => setStoreEmail(e.target.value)}
                 />
               </div>
 
@@ -315,7 +317,7 @@ const AddProvider = () => {
                   <Select
                     options={zoneOptions}
                     placeholder="Select Zone"
-                    onChange={(value) => setSort(value)}
+                    onChange={(value) => setZone(value)}
                     className="dark:bg-dark-900"
                   />
                   <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
@@ -331,7 +333,7 @@ const AddProvider = () => {
 
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Store Cover Image</Label>
-                <FileInput className="custom-class" />
+                <FileInput className="custom-class" onChange={handleIdImageChange} />
               </div>
 
               <div>
@@ -339,6 +341,8 @@ const AddProvider = () => {
                 <Input
                   type="text"
                   placeholder="Enter Vat/Tax"
+                  value={tax}
+                  onChange={(e) => setTax(e.target.value)}
                 />
               </div>
 
@@ -357,6 +361,8 @@ const AddProvider = () => {
                 <Input
                   type="text"
                   placeholder="Enter Office No"
+                  value={officeNo}
+                  onChange={(e) => setOfficeNo(e.target.value)}
                 />
               </div>
 
@@ -365,14 +371,18 @@ const AddProvider = () => {
                 <Input
                   type="text"
                   placeholder="Enter City"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                 />
               </div>
 
               <div>
-                <Label className="block mb-1 font-medium text-gray-700">Status</Label>
+                <Label className="block mb-1 font-medium text-gray-700">State</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Status"
+                  placeholder="Enter State"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
                 />
               </div>
 
@@ -384,6 +394,8 @@ const AddProvider = () => {
               <Input
                 type="text"
                 placeholder="Enter Country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
               />
             </div>
           </section>
@@ -433,7 +445,7 @@ const AddProvider = () => {
                   type="number"
                   placeholder="Enter Latitude"
                   value={markerPosition.lat}
-                  onChange={handleLatitudeChange}
+                // onChange={handleLatitudeChange}
                 />
               </div>
               <div>
@@ -442,7 +454,7 @@ const AddProvider = () => {
                   type="number"
                   placeholder="Enter Longitude"
                   value={markerPosition.lng}
-                  onChange={handleLongitudeChange}
+                // onChange={handleLongitudeChange}
                 />
               </div>
             </div>
@@ -457,39 +469,39 @@ const AddProvider = () => {
               {/* Aadhaar Card */}
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Aadhaar Card</Label>
-                <FileInput />
+                <FileInput className="custom-class" multiple
+                  onChange={(e) => handleFileChange(e, setAadhaarCardFiles)} />
               </div>
 
               {/* PAN Card */}
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">PAN Card</Label>
-                <FileInput />
+                <FileInput className="custom-class" multiple
+                  onChange={(e) => handleFileChange(e, setPanCardFiles)} />
               </div>
 
               {/* Business Legal Document */}
               <div>
                 <Label className="block mb-1 font-medium text-gray-700">Business Legal Document</Label>
-                <FileInput />
+                <FileInput className="custom-class" multiple
+                  onChange={(e) => handleFileChange(e, setStoreDocumentFiles)} />
               </div>
 
               {/* GSTIN Number (optional) */}
               <div className="">
-              <Label className="block mb-1 font-medium text-gray-700">Other Document (Optional)</Label>
-              <FileInput />
-            </div>
-              
+                <Label className="block mb-1 font-medium text-gray-700">Other Document (Optional)</Label>
+                <FileInput className="custom-class" multiple
+                  onChange={(e) => handleFileChange(e, setOtherFiles)} />
+              </div>
+
             </div>
 
             {/* Other Document (optional) - single full-width row */}
-            <div className=''>
-                <Label className="block mb-1 font-medium text-gray-700">GSTIN Number (Optional)</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter GSTIN Number"
-                // value={gstin}
-                // onChange={(e) => setGstin(e.target.value)}
-                />
-              </div>
+            <div className='mt-4'>
+              <Label className="block mb-1 font-medium text-gray-700">GSTIN Number (Optional)</Label>
+              <FileInput className="custom-class" multiple
+                onChange={(e) => handleFileChange(e, setGstFiles)} />
+            </div>
           </section>
 
           <div className="flex justify-end">
