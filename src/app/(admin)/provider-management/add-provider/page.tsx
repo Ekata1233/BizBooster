@@ -481,7 +481,7 @@ const AddProvider = () => {
             </div>
 
             {/* Other Document (optional) - single full-width row */}
-            <div className='mt-4'>
+            <div className=''>
                 <Label className="block mb-1 font-medium text-gray-700">GSTIN Number (Optional)</Label>
                 <Input
                   type="text"
