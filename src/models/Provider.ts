@@ -40,6 +40,7 @@ export interface ProviderDocument extends Document {
   password: string;
   confirmPassword?: string; // Usually not stored in DB
   referralCode?: string;
+  referredBy: mongoose.Schema.Types.ObjectId,
   storeInfo: StoreInfo;
   kyc: KYC;
   setBusinessPlan?: 'commission base' | 'other';
@@ -181,6 +182,13 @@ const providerSchema = new Schema<ProviderDocument>({
   },
   referralCode: {
     type: String,
+    unique: true,
+    sparse: true,
+  },
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // reference to the User model
+    default: null,
   },
   storeInfo: {
     type: storeInfoSchema,

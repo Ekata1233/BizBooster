@@ -1,8 +1,44 @@
 import { z } from 'zod';
 
+// Sub-schemas
+
+const locationSchema = z.object({
+  type: z.enum(['home', 'office', 'other']),
+  coordinates: z
+    .array(z.number())
+    .length(2, { message: 'Coordinates must contain exactly two numbers' }),
+});
+
+const storeInfoSchema = z.object({
+  storeName: z.string().min(2).max(100),
+  storePhone: z.string().regex(/^\+?\d{10,15}$/, 'Invalid phone number'),
+  storeEmail: z.string().email('Invalid email format'),
+  module: z.string().length(24, 'Invalid module ID'),
+  zone: z.enum(['east', 'west', 'south', 'north', 'central']),
+  logo: z.string().url().optional(),
+  cover: z.string().url().optional(),
+  tax: z.string().min(1),
+  location: locationSchema,
+  address: z.string().min(5),
+  officeNo: z.string().min(1),
+  city: z.string().min(2),
+  state: z.string().min(2),
+  country: z.string().min(2),
+});
+
+const kycSchema = z.object({
+  aadhaarCard: z.array(z.string().url()).default([]),
+  panCard: z.array(z.string().url()).default([]),
+  storeDocument: z.array(z.string().url()).default([]),
+  GST: z.array(z.string().url()).default([]),
+  other: z.array(z.string().url()).default([]),
+});
+
+// Main schema
+
 export const providerValidationSchema = z
   .object({
-    name: z
+    fullName: z
       .string()
       .min(2)
       .max(50)
@@ -16,41 +52,6 @@ export const providerValidationSchema = z
 
     email: z.string().email('Invalid email format'),
 
-    address: z.string().min(5, 'Address is too short'),
-
-    companyLogo: z.string().url('Invalid logo URL').optional(),
-
-    identityType: z.enum(['passport', 'driving license', 'other'], {
-      required_error: 'Identity type is required',
-    }),
-
-    identityNumber: z.string().min(5, 'Identity number is too short'),
-
-    identificationImage: z.string().url('Invalid identification image URL'),
-
-    contactPerson: z.object({
-      name: z
-        .string()
-        .min(2)
-        .max(50)
-        .regex(/^[A-Za-z ]+$/, 'Name must contain only letters and spaces'),
-      phoneNo: z
-        .string()
-        .min(10)
-        .max(15)
-        .regex(/^\+?\d{10,15}$/, 'Invalid phone number'),
-      email: z.string().email('Invalid email format'),
-    }),
-
-    accountInformation: z.object({
-      email: z.string().email('Invalid email format'),
-      phoneNo: z
-        .string()
-        .min(10)
-        .max(15)
-        .regex(/^\+?\d{10,15}$/, 'Invalid phone number'),
-    }),
-
     password: z
       .string()
       .min(6)
@@ -62,20 +63,23 @@ export const providerValidationSchema = z
 
     confirmPassword: z.string().min(6).max(20),
 
-    addressLatitude: z.number().min(-90).max(90),
-    addressLongitude: z.number().min(-180).max(180),
+    referralCode: z.string().optional(),
 
-    setBusinessPlan: z.enum(['commission base', 'other'], {
-      required_error: 'Business plan is required',
-    }),
+    referredBy: z.string().length(24).optional(),
+
+    storeInfo: storeInfoSchema,
+
+    kyc: kycSchema,
+
+    setBusinessPlan: z.enum(['commission base', 'other']).optional(),
+
+    isVerified: z.boolean().optional(),
+
+    isDeleted: z.boolean().optional(),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
-  })
-  .refine(data => data.accountInformation.email === data.email, {
-    message: 'Account email must match provider email',
-    path: ['accountInformation', 'email'],
   });
 
 export type ProviderInput = z.infer<typeof providerValidationSchema>;

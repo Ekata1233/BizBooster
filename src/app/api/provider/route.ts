@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/utils/db';
 import imagekit from '@/utils/imagekit';
 import Provider from '@/models/Provider';
 import '@/models/Module';
+import { providerValidationSchema } from '@/validation/providerValidationSchema';
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -20,6 +21,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+    const data = Object.fromEntries(formData.entries());
+
+    // Now parse the plain object with Zod
+    const parsedData = providerValidationSchema.parse(data);
     console.log("formdata of the provider : ", formData);
 
     // Extract fields
@@ -28,7 +33,6 @@ export async function POST(req: NextRequest) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
-    const referralCode = formData.get('referralCode') as string;
 
     if (!fullName || !phoneNo || !email || !password || !confirmPassword) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400, headers: corsHeaders });
@@ -66,31 +70,53 @@ export async function POST(req: NextRequest) {
     const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
 
 
-    // Upload identification image
-const logoFile = formData.get('logo') as File | null;
-    const coverFile = formData.get('cover') as File | null;
-
     let logoUrl = '';
-    let coverUrl = '';
-
-    if (logoFile) {
-      const logoBuffer = Buffer.from(await logoFile.arrayBuffer());
+    if (logo) {
+      const logoBuffer = Buffer.from(await logo.arrayBuffer());
       const logoUpload = await imagekit.upload({
         file: logoBuffer,
-        fileName: `${uuidv4()}-${logoFile.name}`,
+        fileName: `${uuidv4()}-${logo.name}`,
         folder: '/provider-logos',
       });
       logoUrl = logoUpload.url;
     }
 
-    if (coverFile) {
-      const coverBuffer = Buffer.from(await coverFile.arrayBuffer());
+    // Upload cover
+    let coverUrl = '';
+    if (cover) {
+      const coverBuffer = Buffer.from(await cover.arrayBuffer());
       const coverUpload = await imagekit.upload({
         file: coverBuffer,
-        fileName: `${uuidv4()}-${coverFile.name}`,
+        fileName: `${uuidv4()}-${cover.name}`,
         folder: '/provider-covers',
       });
       coverUrl = coverUpload.url;
+    }
+
+
+    function generateReferralCode(length = 6) {
+      return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
+    }
+
+    let referralCode: string = '';
+    let exists = true;
+
+    while (exists) {
+      referralCode = generateReferralCode();
+      const existing = await Provider.findOne({ referralCode });
+      if (!existing) exists = false;
+    }
+
+    let referredBy = null;
+    if (parsedData.referredBy) {
+      const referringUser = await Provider.findOne({ referralCode: parsedData.referredBy });
+      if (!referringUser) {
+        return NextResponse.json(
+          { error: 'Referral code is not valid' },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+      referredBy = referringUser._id;
     }
 
     // Create provider document
@@ -182,10 +208,10 @@ export async function GET(req: NextRequest) {
         sortOption = { createdAt: 1 };
         break;
       case 'ascending':
-        sortOption = { name: 1 };
+        sortOption = { fullName: 1 };
         break;
       case 'descending':
-        sortOption = { name: -1 };
+        sortOption = { fullName: -1 };
         break;
       default:
         sortOption = { createdAt: -1 };
@@ -194,7 +220,6 @@ export async function GET(req: NextRequest) {
     // Apply filter and sort
     const providers = await Provider.find(filter)
       .sort(sortOption)
-      .populate('module')
       .lean();
 
     return NextResponse.json(
