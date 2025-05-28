@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import { useWhyChoose, WhyChooseItem } from '@/context/WhyChooseContext';
 import React, { useMemo, useState } from 'react';
@@ -53,6 +54,9 @@ const Page = () => {
   const handleSubmit = async () => {
     const formData = new FormData();
 
+    // Ensure all values are not undefined
+    formData.append("title", formState.title ?? "");
+    formData.append("description", formState.description ?? "");
     // Ensure all values are not undefined
     formData.append("title", formState.title ?? "");
     formData.append("description", formState.description ?? "");

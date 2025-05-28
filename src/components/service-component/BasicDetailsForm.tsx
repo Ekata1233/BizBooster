@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Label from '../form/Label'
 import Input from '../form/input/InputField'
 import Select from '../form/Select'
-import { ChevronDownIcon } from '@/icons'
+import { ChevronDownIcon, TrashBinIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
@@ -14,6 +14,12 @@ interface BasicDetailsData {
     price?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
+    keyValues?: KeyValue[];
+}
+
+interface KeyValue {
+    key: string;
+    value: string;
 }
 
 interface BasicDetailsFormProps {
@@ -26,6 +32,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedMultiFiles, setSelectedMultiFiles] = useState<FileList | File[] | null>(null);
+    const [rows, setRows] = useState<KeyValue[]>([]);
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
 
@@ -36,6 +43,13 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
             if (data.thumbnail instanceof File) setSelectedFile(data.thumbnail);
             if (data.covers instanceof FileList || (Array.isArray(data.covers) && data.covers.length)) {
                 setSelectedMultiFiles(data.covers);
+            }
+            if (Array.isArray(data.keyValues) && rows.length === 0) {
+                const keyValueWithId = data.keyValues.map(item => ({
+                    key: item.key || '',
+                    value: item.value || '',
+                }));
+                setRows(keyValueWithId);
             }
         }
     }, [data]);
@@ -75,6 +89,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setData({ covers: selectedMultiFiles });
     }, [selectedMultiFiles]);
 
+    useEffect(() => {
+        setData({ keyValues: rows });
+    }, [rows]);
+
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -87,6 +106,26 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         if (files && files.length > 0) {
             setSelectedMultiFiles(files);
         }
+    };
+
+    const handleAddRow = () => {
+        setRows([...rows, { key: '', value: '' }]);
+    };
+
+    const handleRemoveRow = (index: number) => {
+        const updatedRows = [...rows];
+        updatedRows.splice(index, 1);
+        setRows(updatedRows);
+    };
+
+    const handleRowChange = (
+        index: number,
+        field: keyof KeyValue,
+        value: string
+    ) => {
+        const updatedRows = [...rows];
+        updatedRows[index][field] = value;
+        setRows(updatedRows);
     };
 
     return (
@@ -177,6 +216,58 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                     />
                                 ))}
                         </div>
+                    </div>
+
+                    <div className="my-3">
+                        {rows.map((row, index) => (
+                            <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
+                                {/* Header Row */}
+                                <div className="flex justify-between items-center mb-2">
+                                    <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>
+                                    <button
+                                        type="button"
+                                        className="text-red-500 hover:text-red-700"
+                                        onClick={() => handleRemoveRow(index)}
+                                        aria-label="Remove Key-Value"
+                                    >
+                                        <TrashBinIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {/* Fields Row: Title + Description */}
+                                <div className="flex gap-4">
+                                    <div className="w-1/2">
+                                        <Label>Key</Label>
+                                        <Input
+                                            type="text"
+                                            placeholder="Enter Key"
+                                            value={row.key}
+                                            onChange={(e) => handleRowChange(index, 'key', e.target.value)}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    <div className="w-1/2">
+                                        <Label>Value</Label>
+                                        <Input
+                                            type="text"
+                                            placeholder="Enter Value"
+                                            value={row.value}
+                                            onChange={(e) => handleRowChange(index, 'value', e.target.value)}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={handleAddRow}
+                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+                        >
+                            + Add New Key-Value
+                        </button>
+
                     </div>
                 </div>
             </div>

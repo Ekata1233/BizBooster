@@ -11,11 +11,10 @@ type FAQ = {
   answer: string;
 };
 
-type WhyChoose = {
-  title: string;
-  description: string;
-  image: File | string | null;
-};
+interface WhyChoose {
+  _id?: string;
+}
+
 
 type RowData = {
   title: string;
@@ -35,20 +34,26 @@ type ServiceDetails = {
 };
 
 type FranchiseDetails = {
-   commission?: string | number;
+  commission?: string | number;
   overview?: string;
   howItWorks?: string;
   terms?: string;
   rows?: RowData[];
 };
 
+interface KeyValue {
+  key: string;
+  value: string;
+}
+
 type BasicDetailsData = {
- name?: string;
-    category?: string;
-    subcategory?: string;
-    price?: number;
-    thumbnail?: File | null;
-    covers?: FileList | File[] | null;
+  name?: string;
+  category?: string;
+  subcategory?: string;
+  price?: number;
+  thumbnail?: File | null;
+  covers?: FileList | File[] | null;
+  keyValues?: KeyValue[];
 };
 
 type FormDataType = {
@@ -67,6 +72,7 @@ const AddNewService = () => {
       price: 0,
       thumbnail: null,
       covers: [],
+      keyValues: [{ key: '', value: '' }],
     },
     service: {
       benefits: '',
@@ -77,7 +83,8 @@ const AddNewService = () => {
       terms: '',
       faqs: [{ question: '', answer: '' }],
       rows: [{ title: '', description: '' }],
-      whyChoose: [{ title: '', description: '', image: null }],
+      whyChoose: [],
+
     },
     franchise: {
       commission: '',
@@ -99,16 +106,16 @@ const AddNewService = () => {
     switch (stepNumber) {
       case 1:
         return (
-          !!formData?.basic?.name?.trim() &&
-          !!formData?.basic?.category &&
-          !!formData?.basic?.subcategory
+          !!formData?.basic?.name?.trim()
+          //  &&
+          // !!formData?.basic?.category &&
+          // !!formData?.basic?.subcategory
         );
       case 2:
         return (
           !!formData?.service?.benefits?.trim() &&
           !!formData?.service?.overview?.trim() &&
           !!formData?.service?.howItWorks?.trim() &&
-          !!formData?.service?.highlight?.trim() &&
           !!formData?.service?.document?.trim() &&
           !!formData?.service?.terms?.trim() &&
           !!formData?.service?.faqs &&

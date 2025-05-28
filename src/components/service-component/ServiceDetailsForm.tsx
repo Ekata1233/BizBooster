@@ -7,6 +7,7 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 
+
 interface RowData {
     title: string;
     description: string;
@@ -18,57 +19,64 @@ type FAQ = {
 };
 
 type WhyChoose = {
-
-    title: string;
-    description: string;
-    image: File | string | null;
+  _id?: string;
 };
 
+
 type ServiceDetails = {
-    benefits: string;
-    overview: string;
-    highlight: string;
-    document: string;
-    howItWorks: string;
-    terms: string;
-    faqs: FAQ[];
-    rows: RowData[];
-    whyChoose: WhyChoose[];
+  benefits: string;
+  overview: string;
+  highlight: File[] | FileList | null;
+  document: string;
+  howItWorks: string;
+  terms: string;
+  faqs: FAQ[];
+  rows: RowData[];
+  whyChoose: WhyChoose[];
 };
 
 const ServiceDetailsForm = ({ data, setData }: {
     data: ServiceDetails;
     setData: (newData: Partial<ServiceDetails>) => void;
 }) => {
-    const [benefits, setBenefits] = useState('');
-    const [overview, setOverview] = useState('');
-    const [highlight, setHighlight] = useState('');
-    const [document, setDocument] = useState('');
-    const [howItWorks, setHowItWorks] = useState('');
-    const [terms, setTerms] = useState('');
-    const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
-    const [rows, setRows] = useState<RowData[]>([]);
-    const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
-        { title: '', description: '', image: null }
-    ]);
-    const [showAll, setShowAll] = useState(false);
+  const [benefits, setBenefits] = useState('');
+  const [overview, setOverview] = useState('');
+  const [highlight, setHighlight] = useState<FileList | File[] | null>(null);
+  const [document, setDocument] = useState('');
+  const [howItWorks, setHowItWorks] = useState('');
+  const [terms, setTerms] = useState('');
+  const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
+  const [rows, setRows] = useState<RowData[]>([]);
+  const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
+    _id: ''
+  }]);
 
-    const whyChooseContext = useWhyChoose();
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(false);
 
-    useEffect(() => {
-        if (data) {
-            setBenefits(data.benefits || '');
-            setOverview(data.overview || '');
-            setHighlight(data.highlight || '');
-            setDocument(data.document || '');
-            setHowItWorks(data.howItWorks || '');
-            setTerms(data.terms || '');
-            setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
-            setRows(data.rows?.length ? data.rows : []);
-            setWhyChoose(data.whyChoose?.length ? data.whyChoose : [{ title: '', description: '', image: null }]);
-        }
-    }, []);
+  const whyChooseContext = useWhyChoose();
+
+  useEffect(() => {
+    console.log("whyChoose : ", whyChoose)
+  }, [whyChoose])
+
+  useEffect(() => {
+    if (data) {
+      setBenefits(data.benefits || '');
+      setOverview(data.overview || '');
+      setHighlight(
+        typeof data.highlight === 'string'
+          ? [] // or parse if it's JSON string of file names
+          : (data.highlight as File[]) || []
+      );
+      setDocument(data.document || '');
+      setHowItWorks(data.howItWorks || '');
+      setTerms(data.terms || '');
+      setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
+      setRows(data.rows?.length ? data.rows : []);
+      setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
+    }
+  }, []);
+
 
     useEffect(() => {
 
@@ -89,13 +97,20 @@ const ServiceDetailsForm = ({ data, setData }: {
         }
     }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
 
-    const handleCheckboxChange = (itemId: string) => {
-        setSelectedItems(prev =>
-            prev.includes(itemId)
-                ? prev.filter(id => id !== itemId)
-                : [...prev, itemId]
-        );
-    };
+  // Corrected handleCheckboxChange to work with array of WhyChoose objects:
+  const handleCheckboxChange = (itemId: string) => {
+    setWhyChoose(prev => {
+      if (prev.find(item => item._id === itemId)) {
+        // Remove the object with this _id
+        return prev.filter(item => item._id !== itemId);
+      } else {
+        // Add new object with _id
+        return [...prev, { _id: itemId }];
+      }
+    });
+  };
+
+
 
     const handleAddRow = () => {
         setRows([...rows, { title: '', description: '' }]);
@@ -132,23 +147,13 @@ const ServiceDetailsForm = ({ data, setData }: {
         setFaqs(updatedFaqs);
     };
 
-    const handleWhyChooseChange = (
-        index: number,
-        field: keyof WhyChoose,
-        value: string
-    ) => {
-        const updated = [...whyChoose];
-        updated[index][field] = value;
-        setWhyChoose(updated);
-    };
-
-    const handleAddWhyChoose = () => {
-        setWhyChoose([
-            ...whyChoose,
-            { title: '', description: '', image: '' }
-        ]);
-    };
-
+  const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setHighlight(fileArray);
+    }
+  };
 
 
     return (
@@ -183,19 +188,21 @@ const ServiceDetailsForm = ({ data, setData }: {
                 </div>
             </div>
 
-            <div className='my-3'>
-                <Label>Highlight</Label>
-                <div className="my-editor">
-                    <CKEditor
-                        editor={ClassicEditor as any}
-                        data={highlight}
-                        onChange={(event, editor) => {
-                            const data = editor.getData();
-                            setHighlight(data);
-                        }}
-                    />
-                </div>
-            </div>
+      <div className='my-3'>
+        <Label>Highlight Images (Select Multiple Images)</Label>
+        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
+        <div className="mt-2 flex gap-2 flex-wrap">
+          {highlight &&
+            Array.from(highlight).map((file, index) => (
+              <img
+                key={index}
+                src={URL.createObjectURL(file)}
+                alt={`Highlight Preview ${index}`}
+                className="w-42 h-24 object-cover rounded border"
+              />
+            ))}
+        </div>
+      </div>
 
             <div className='my-3'>
                 <Label>Document</Label>
@@ -211,82 +218,78 @@ const ServiceDetailsForm = ({ data, setData }: {
                 </div>
             </div>
 
-            <div className="my-3">
-                <Label>Why Choose BizBooster</Label>
+      <div className="my-3">
+        <Label>Why Choose BizBooster</Label>
 
-                {/* Context Data Section */}
-                {whyChooseContext.items && whyChooseContext.items.length > 0 && (
-                    <div className="space-y-4 mb-6">
-                        {/* Display only first two or all items based on toggle */}
-                        {(showAll ? whyChooseContext.items : whyChooseContext.items.slice(0, 2)).map((item) => (
-                            <div key={item._id} className="border p-4 rounded shadow-sm">
-                                <div className="flex flex-col md:flex-row gap-4">
-                                    {/* First Column - Checkbox, Title, Description, Extra Sections */}
-                                    <div className="flex-1 space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`select-${item._id ?? ''}`}
-                                                    checked={item._id ? selectedItems.includes(item._id) : false}
-                                                    onChange={() => item._id && handleCheckboxChange(item._id)}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Label className="font-bold">Title :</Label>
-                                            <p className="text-sm text-gray-600">{item.title}</p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Label className="font-bold">Description:</Label>
-                                            <p className="text-sm text-gray-600">{item.description}</p>
-                                        </div>
-
-                                        {item.extraSections && item.extraSections.length > 0 && (
-                                            <div className="flex gap-2">
-                                                <Label className="font-bold">Extra Sections</Label>
-                                                <div className="space-y-2">
-                                                    {item.extraSections.map((section, idx) => (
-                                                        <div key={idx}>
-                                                            <p className="text-sm text-gray-600">{section.description}</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Second Column - Image */}
-                                    <div className="flex-1 flex justify-center items-center">
-                                        {item.image && (
-                                            <div className="w-full h-28 md:h-44 relative rounded-md overflow-hidden">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* View All / View Less Button */}
-                        {whyChooseContext.items.length > 2 && (
-                            <div className="text-center">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowAll(!showAll)}
-                                    className="text-blue-500 hover:text-blue-700"
-                                >
-                                    {showAll ? 'View Less' : 'View All'}
-                                </button>
-                            </div>
-                        )}
+        {whyChooseContext.items && whyChooseContext.items.length > 0 && (
+          <div className="space-y-4 mb-6">
+            {(showAll ? whyChooseContext.items : whyChooseContext.items.slice(0, 2)).map(item => (
+              <div key={item._id} className="border p-4 rounded shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4">
+                  {/* Left column */}
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <input
+                        type="checkbox"
+                        id={`select-${item._id}`}
+                        checked={whyChoose.some(chosen => chosen._id === item._id)}
+                        onChange={() => item._id && handleCheckboxChange(item._id)}
+                      />
                     </div>
-                )}
-            </div>
+
+                    <div className="flex gap-2">
+                      <Label className="font-bold">Title :</Label>
+                      <p className="text-sm text-gray-600">{item.title}</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Label className="font-bold">Description:</Label>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+
+                    {item.extraSections && item.extraSections.length > 0 && (
+                      <div className="flex gap-2">
+                        <Label className="font-bold">Extra Sections</Label>
+                        <div className="space-y-2">
+                          {item.extraSections.map((section, idx) => (
+                            <p key={idx} className="text-sm text-gray-600">{section.description}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right column - Image */}
+                  <div className="flex-1 flex justify-center items-center">
+                    {item.image && (
+                      <div className="w-full h-28 md:h-44 relative rounded-md overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {whyChooseContext.items.length > 2 && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowAll(!showAll)}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  {showAll ? 'View Less' : 'View All'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
 
 
             <div className='my-3'>
@@ -406,16 +409,18 @@ const ServiceDetailsForm = ({ data, setData }: {
                     </div>
                 ))}
 
-                <button
-                    type="button"
-                    onClick={handleAddRow}
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-                >
-                    + Add New Row
-                </button>
-            </div>
-        </div>
-    );
+        <button
+          type="button"
+          onClick={handleAddRow}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+        >
+          + Add New Row
+        </button>
+
+      </div>
+
+    </div>
+  );
 };
 
 export default ServiceDetailsForm;

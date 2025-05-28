@@ -145,7 +145,6 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             case 2:
                 return (
                     !!formData.service.overview.trim() &&
-                    !!formData.service.highlight.trim() &&
                     !!formData.service.benefits.trim() &&
                     !!formData.service.howItWorks.trim() &&
                     !!formData.service.termsAndConditions.trim() &&

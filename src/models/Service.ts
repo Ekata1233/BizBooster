@@ -27,6 +27,10 @@ const serviceSchema = new mongoose.Schema({
   bannerImages: [{
     type: String // Array of URLs or image paths
   }],
+  keyValues: [{
+    key: { type: String, },
+    value: { type: String }
+  }],
   serviceDetails: {
     benefits: {
       type: String // HTML content from CKEditor
@@ -34,16 +38,15 @@ const serviceSchema = new mongoose.Schema({
     overview: {
       type: String
     },
-    highlight: {
-      type: String
-    },
+    highlight:  [{
+    type: String // Array of URLs or image paths
+  }],
     document: {
       type: String
     },
     whyChoose: [{
-      title: { type: String, required: true },
-      description: { type: String },
-      image: { type: String } // image URL or path
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'WhyChoose'
     }],
     howItWorks: {
       type: String
