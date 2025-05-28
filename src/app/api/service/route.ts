@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     const subcategory = formData.get("basic[subcategory]") as string;
     const priceStr = formData.get("basic[price]");
 
+
     if (!serviceName || !category || !subcategory || !priceStr) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
@@ -79,35 +80,26 @@ export async function POST(req: NextRequest) {
       bannerImagesUrls.push(uploadResponse.url);
     }
 
+    // Handle Highlight (array of files)
+    const highlightImagesUrls: string[] = [];
+    const highlightFiles: File[] = [];
 
-    // serviceDetails - JSON string or individual fields? Assuming JSON string here:
-    // const serviceDetailsStr = formData.get("serviceDetails") as string;
-    // let serviceDetails = {};
-    // if (serviceDetailsStr) {
-    //   try {
-    //     serviceDetails = JSON.parse(serviceDetailsStr);
-    //   } catch {
-    //     // Ignore or return error
-    //     return NextResponse.json(
-    //       { success: false, message: "Invalid JSON for serviceDetails." },
-    //       { status: 400, headers: corsHeaders }
-    //     );
-    //   }
-    // }
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("service[highlight]") && value instanceof File) {
+        highlightFiles.push(value);
+      }
+    }
 
-    // // franchiseDetails - similarly, parse JSON if present
-    // const franchiseDetailsStr = formData.get("franchiseDetails") as string;
-    // let franchiseDetails = {};
-    // if (franchiseDetailsStr) {
-    //   try {
-    //     franchiseDetails = JSON.parse(franchiseDetailsStr);
-    //   } catch {
-    //     return NextResponse.json(
-    //       { success: false, message: "Invalid JSON for franchiseDetails." },
-    //       { status: 400, headers: corsHeaders }
-    //     );
-    //   }
-    // }
+    for (const file of highlightFiles) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/services/highlight",
+      });
+      highlightImagesUrls.push(uploadResponse.url);
+    }
 
     const extractArray = (
       prefix: string,
@@ -136,46 +128,31 @@ export async function POST(req: NextRequest) {
       return result;
     };
 
-    const whyChooseItems = [];
+    const whyChooseIds: string[] = [];
     let index = 0;
     while (true) {
-      const title = formData.get(`service[whyChoose][${index}][title]`) as string | null;
-      const description = formData.get(`service[whyChoose][${index}][description]`) as string | null;
-      const imageFile = formData.get(`service[whyChoose][${index}][image]`) as File | null;
+      const id = formData.get(`service[whyChoose][${index}][_id]`) as string | null;
 
-      if (!title && !description && !imageFile) break;
+      if (!id) break; // if no id, assume no more items
 
-      let imageUrl = "";
-      if (imageFile && imageFile.size > 0) {
-        const arrayBuffer = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const uploadResponse = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${imageFile.name}`,
-          folder: "/services/whyChoose",
-        });
-        imageUrl = uploadResponse.url;
-      }
-
-      whyChooseItems.push({
-        title: title ?? "",
-        description: description ?? "",
-        image: imageUrl,
-      });
-
+      whyChooseIds.push(id);
       index++;
     }
+
+
+    const keyValues = extractArray("basic[keyValues]", ["key", "value"], formData);
+
 
     const serviceDetails = {
       benefits: formData.get("service[benefits]") as string,
       overview: formData.get("service[overview]") as string,
-      highlight: formData.get("service[highlight]") as string,
+      highlight: highlightImagesUrls,
       document: formData.get("service[document]") as string,
       howItWorks: formData.get("service[howItWorks]") as string,
       termsAndConditions: formData.get("service[terms]") as string,
       faq: extractArray("service[faqs]", ["question", "answer"], formData),
       extraSections: extractArray("service[rows]", ["title", "description"], formData),
-      whyChoose: whyChooseItems,
+      whyChoose: whyChooseIds,
     };
 
     // 🛠 Manually construct franchiseDetails
@@ -194,6 +171,7 @@ export async function POST(req: NextRequest) {
       price,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
+      keyValues,
       serviceDetails,
       franchiseDetails,
       isDeleted: false,
@@ -224,7 +202,7 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get('sort');
 
     // Build filter
-const filter: Record<string, unknown> = { isDeleted: false };
+    const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
       filter.serviceName = { $regex: search, $options: 'i' };
@@ -239,7 +217,7 @@ const filter: Record<string, unknown> = { isDeleted: false };
     }
 
     // Build query
-     let sortOption: Record<string, 1 | -1> = {};
+    let sortOption: Record<string, 1 | -1> = {};
 
     switch (sort) {
       case 'latest':
@@ -268,6 +246,7 @@ const filter: Record<string, unknown> = { isDeleted: false };
     const services = await Service.find(filter)
       .populate('category')
       .populate('subcategory')
+      .populate('serviceDetails.whyChoose')
       .sort(sortOption)
       .exec();
 

@@ -7,6 +7,7 @@ import {
   TrashBinIcon
 } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
+import { useWhyChoose } from '@/context/WhyChooseContext';
 
 
 interface RowData {
@@ -20,15 +21,14 @@ type FAQ = {
 };
 
 type WhyChoose = {
-  title: string;
-  description: string;
-  image: File | string | null;
+  _id?: string;
 };
+
 
 type ServiceDetails = {
   benefits: string;
   overview: string;
-  highlight: string;
+  highlight: File[] | FileList | null;
   document: string;
   howItWorks: string;
   terms: string;
@@ -45,29 +45,39 @@ const ServiceDetailsForm = ({ data, setData }: {
 }) => {
   const [benefits, setBenefits] = useState('');
   const [overview, setOverview] = useState('');
-  const [highlight, setHighlight] = useState('');
+  const [highlight, setHighlight] = useState<FileList | File[] | null>(null);
   const [document, setDocument] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [rows, setRows] = useState<RowData[]>([]);
-  const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([
-    { title: '', description: '', image: null }
-  ]);
+  const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
+    _id: ''
+  }]);
 
-  console.log("data in service form : ", data)
+  const [showAll, setShowAll] = useState(false);
+
+  const whyChooseContext = useWhyChoose();
+
+  useEffect(() => {
+    console.log("whyChoose : ", whyChoose)
+  }, [whyChoose])
 
   useEffect(() => {
     if (data) {
       setBenefits(data.benefits || '');
       setOverview(data.overview || '');
-      setHighlight(data.highlight || '');
+      setHighlight(
+        typeof data.highlight === 'string'
+          ? [] // or parse if it's JSON string of file names
+          : (data.highlight as File[]) || []
+      );
       setDocument(data.document || '');
       setHowItWorks(data.howItWorks || '');
       setTerms(data.terms || '');
       setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
       setRows(data.rows?.length ? data.rows : []);
-      setWhyChoose(data.whyChoose?.length ? data.whyChoose : [{ title: '', description: '', image: null }]);
+      setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
     }
   }, []);
 
@@ -90,6 +100,20 @@ const ServiceDetailsForm = ({ data, setData }: {
       setData(newData);
     }
   }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+
+  // Corrected handleCheckboxChange to work with array of WhyChoose objects:
+  const handleCheckboxChange = (itemId: string) => {
+    setWhyChoose(prev => {
+      if (prev.find(item => item._id === itemId)) {
+        // Remove the object with this _id
+        return prev.filter(item => item._id !== itemId);
+      } else {
+        // Add new object with _id
+        return [...prev, { _id: itemId }];
+      }
+    });
+  };
+
 
 
   const handleAddRow = () => {
@@ -128,38 +152,11 @@ const ServiceDetailsForm = ({ data, setData }: {
     setFaqs(updatedFaqs);
   };
 
-  const handleWhyChooseChange = (
-    index: number,
-    field: keyof WhyChoose,
-    value: string
-  ) => {
-    const updated = [...whyChoose];
-    updated[index][field] = value;
-    setWhyChoose(updated);
-  };
-
-  const handleAddWhyChoose = () => {
-    setWhyChoose([
-      ...whyChoose,
-      { title: '', description: '', image: '' }
-    ]);
-  };
-
-  const handleRemoveWhyChoose = (index: number) => {
-    const updated = [...whyChoose];
-    updated.splice(index, 1);
-    setWhyChoose(updated);
-  };
-
-  const handleFileChange = (
-    index: number,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const updated = [...whyChoose];
-      updated[index].image = file; // store the actual file
-      setWhyChoose(updated);
+  const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setHighlight(fileArray);
     }
   };
 
@@ -197,16 +194,18 @@ const ServiceDetailsForm = ({ data, setData }: {
       </div>
 
       <div className='my-3'>
-        <Label>Highlight</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={highlight}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setHighlight(data);
-            }}
-          />
+        <Label>Highlight Images (Select Multiple Images)</Label>
+        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
+        <div className="mt-2 flex gap-2 flex-wrap">
+          {highlight &&
+            Array.from(highlight).map((file, index) => (
+              <img
+                key={index}
+                src={URL.createObjectURL(file)}
+                alt={`Highlight Preview ${index}`}
+                className="w-42 h-24 object-cover rounded border"
+              />
+            ))}
         </div>
       </div>
 
@@ -226,78 +225,76 @@ const ServiceDetailsForm = ({ data, setData }: {
 
       <div className="my-3">
         <Label>Why Choose BizBooster</Label>
-        {whyChoose.map((item, index) => (
-          <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-            {/* Top Row: Title + Delete Button */}
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-md font-medium text-gray-700">Why Choose #{index + 1}</h2>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700"
-                onClick={() => handleRemoveWhyChoose(index)}
-                aria-label="Remove Reason"
-              >
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Title Field */}
-            <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-              {/* Title Input */}
-              <div className="flex-1">
-                <Label>Title</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter title"
-                  value={item.title}
-                  onChange={(e) => handleWhyChooseChange(index, 'title', e.target.value)}
-                  className="w-full"
-                />
+        {whyChooseContext.items && whyChooseContext.items.length > 0 && (
+          <div className="space-y-4 mb-6">
+            {(showAll ? whyChooseContext.items : whyChooseContext.items.slice(0, 2)).map(item => (
+              <div key={item._id} className="border p-4 rounded shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4">
+                  {/* Left column */}
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <input
+                        type="checkbox"
+                        id={`select-${item._id}`}
+                        checked={whyChoose.some(chosen => chosen._id === item._id)}
+                        onChange={() => item._id && handleCheckboxChange(item._id)}
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Label className="font-bold">Title :</Label>
+                      <p className="text-sm text-gray-600">{item.title}</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Label className="font-bold">Description:</Label>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+
+                    {item.extraSections && item.extraSections.length > 0 && (
+                      <div className="flex gap-2">
+                        <Label className="font-bold">Extra Sections</Label>
+                        <div className="space-y-2">
+                          {item.extraSections.map((section, idx) => (
+                            <p key={idx} className="text-sm text-gray-600">{section.description}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right column - Image */}
+                  <div className="flex-1 flex justify-center items-center">
+                    {item.image && (
+                      <div className="w-full h-28 md:h-44 relative rounded-md overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+            ))}
 
-              {/* Image URL Input */}
-              <div className="flex-1">
-                <Label>Select Image</Label>
-                <FileInput onChange={(e) => handleFileChange(index, e)} className="custom-class" />
+            {whyChooseContext.items.length > 2 && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowAll(!showAll)}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  {showAll ? 'View Less' : 'View All'}
+                </button>
               </div>
-            </div>
-
-
-            {/* Description Field */}
-            <div>
-              <Label>Description</Label>
-              <textarea
-                placeholder="Enter description"
-                value={item.description}
-                onChange={(e) => handleWhyChooseChange(index, 'description', e.target.value)}
-                className="w-full border rounded p-2 resize-none"
-                rows={4}
-              />
-            </div>
-
-            {/* Image Field */}
-
+            )}
           </div>
-        ))}
-
-        {/* <Button
-          type="button"
-          size="sm"
-          variant="primary"
-          onClick={handleAddWhyChoose}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add New
-        </Button> */}
-        <button
-          type="button"
-          onClick={handleAddWhyChoose}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add New
-        </button>
-
+        )}
       </div>
+
 
 
       <div className='my-3'>
@@ -430,14 +427,6 @@ const ServiceDetailsForm = ({ data, setData }: {
           </div>
         ))}
 
-        {/* <Button
-          size="sm"
-          variant="primary"
-          onClick={handleAddRow}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add New Row
-        </Button> */}
         <button
           type="button"
           onClick={handleAddRow}

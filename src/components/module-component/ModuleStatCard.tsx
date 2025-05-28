@@ -18,7 +18,7 @@ const ModuleStatCard = () => {
   const { subcategories } = useSubcategory();
   // const { services } = useService();
 
-  console.log("services in module stat card : ", services)
+  // console.log("services in module stat card : ", services)
 
 
   // if (!services) {
