@@ -61,7 +61,10 @@ type FormDataType = {
   service: ServiceDetails;
   franchise: FranchiseDetails;
 };
-
+interface ServiceData {
+  // other fields...
+  highlight: string | FileList | File[] | null;  // add all possible types here
+}
 const AddNewService = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormDataType>({

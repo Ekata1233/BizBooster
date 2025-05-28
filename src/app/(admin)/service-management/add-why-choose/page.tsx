@@ -13,6 +13,7 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import Button from '@/components/ui/button/Button';
 import Label from '@/components/form/Label';
 import { Modal } from '@/components/ui/modal';
+import FileInput from '@/components/form/input/FileInput';
 
 const Page = () => {
   const { items, loading, deleteItem, updateItem, addItem } = useWhyChoose();
@@ -20,6 +21,8 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState('all');
 
   const [showModal, setShowModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [editItem, setEditItem] = useState<WhyChooseItem | null>(null);
   const [formState, setFormState] = useState({
     title: '',
@@ -27,6 +30,15 @@ const Page = () => {
     image: '',
     extraSections: ''
   });
+  console.log(selectedFile);
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      console.log('Selected file:', file.name);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this item?")) {
@@ -73,10 +85,11 @@ const Page = () => {
     formData.append("extraSections", extraSections);
 
     if (editItem) {
-      await updateItem(editItem._id, formData);
+      await updateItem(editItem._id!, formData);
     } else {
       await addItem(formData);
     }
+
 
     setShowModal(false);
     setEditItem(null);
@@ -160,9 +173,10 @@ const Page = () => {
           </button>
           <button
             title="Delete"
-            onClick={() => handleDelete(row._id)}
+            onClick={() => handleDelete(row._id!)} // The `!` tells TypeScript that it's definitely a string
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
           >
+
             <TrashBinIcon />
           </button>
           <Link href={`/why-choose-us/${row._id}`} passHref>
@@ -214,15 +228,8 @@ const Page = () => {
             </div>
             <div>
               <Label>Select Image</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setFormState({ ...formState, image: e.target.files[0] });
-                  }
-                }}
-              />
+              <FileInput onChange={handleFileChange} className="custom-class" />
+
             </div>
             <div>
               <Label>Extra Sections (comma separated)</Label>
@@ -240,7 +247,7 @@ const Page = () => {
             </div>
           </div>
         </ComponentCard>
-        <ComponentCard>
+        <ComponentCard title="">
           <div className="mb-4">
             <Input
               type="text"
@@ -277,58 +284,54 @@ const Page = () => {
       </div>
 
       {editItem && showModal && (
-  <Modal isOpen={showModal} onClose={() => setShowModal(false)} className="max-w-[700px] m-4">
-    <div className="bg-white rounded-lg p-6 w-full">
-      <h2 className="text-xl font-semibold mb-4">Edit Item</h2>
-      <div className="space-y-3">
-        <Input
-          label="Title"
-          value={formState.title}
-          onChange={e => setFormState({ ...formState, title: e.target.value })}
-        />
-        <Input
-          label="Description"
-          value={formState.description}
-          onChange={e => setFormState({ ...formState, description: e.target.value })}
-        />
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Image</label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                setFormState({ ...formState, image: e.target.files[0] });
-              }
-            }}
-          />
-          {/* Show image preview if editing */}
-          {formState.image && typeof formState.image === 'string' && (
-            <div className="mt-2">
-              <Image
-                src={formState.image}
-                alt="Current"
-                width={100}
-                height={50}
-                className="object-cover rounded"
-              />
-            </div>
-          )}
-        </div>
+        <Modal isOpen={showModal} onClose={() => setShowModal(false)} className="max-w-[700px] m-4">
+          <div className="bg-white rounded-lg p-6 w-full">
+            <h2 className="text-xl font-semibold mb-4">Edit Item</h2>
+            <div className="space-y-3">
+              <Label>Title</Label>
+              <Input
 
-        <Input
-          label="Extra Sections (comma separated)"
-          value={formState.extraSections}
-          onChange={e => setFormState({ ...formState, extraSections: e.target.value })}
-        />
-        <div className="flex justify-end gap-2">
-          <Button onClick={() => setShowModal(false)} variant="outline">Cancel</Button>
-          <Button onClick={handleSubmit}>Update</Button>
-        </div>
-      </div>
-    </div>
-  </Modal>
-)}
+                value={formState.title}
+                onChange={e => setFormState({ ...formState, title: e.target.value })}
+              />
+
+              <Label>Description</Label>
+              <Input
+
+                value={formState.description}
+                onChange={e => setFormState({ ...formState, description: e.target.value })}
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Image</label>
+                <FileInput onChange={handleFileChange} className="custom-class" />
+
+                {/* Show image preview if editing */}
+                {formState.image && typeof formState.image === 'string' && (
+                  <div className="mt-2">
+                    <Image
+                      src={formState.image}
+                      alt="Current"
+                      width={100}
+                      height={50}
+                      className="object-cover rounded"
+                    />
+                  </div>
+                )}
+              </div>
+              <Label>Extra Sections (comma separated)</Label>
+
+              <Input
+                value={formState.extraSections}
+                onChange={e => setFormState({ ...formState, extraSections: e.target.value })}
+              />
+              <div className="flex justify-end gap-2">
+                <Button onClick={() => setShowModal(false)} variant="outline">Cancel</Button>
+                <Button onClick={handleSubmit}>Update</Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
 
 
     </div>

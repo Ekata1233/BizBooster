@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import Label from '../form/Label'
 import Input from '../form/input/InputField'
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import dynamic from 'next/dynamic';
+import { CKEditor } from '@ckeditor/ckeditor5-react'
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import { TrashBinIcon } from '@/icons';
+import type { EventInfo } from '@ckeditor/ckeditor5-utils';
 
 
 interface RowData {
@@ -12,15 +12,21 @@ interface RowData {
   description: string;
 }
 
+interface Editor {
+  getData: () => string;
+}
+
+interface FranchiseData {
+  commission?: string | number;
+  overview?: string;
+  howItWorks?: string;
+  terms?: string;
+  rows?: RowData[];
+}
+
 interface FranchiseDetailsFormProps {
-  data: {
-    commission?: string | number;
-    overview?: string;
-    howItWorks?: string;
-    terms?: string;
-    rows?: RowData[];
-  };
-  setData: (newData: Partial<any>) => void;
+  data: FranchiseData;
+  setData: (newData: Partial<FranchiseData>) => void;
 }
 
 const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
@@ -36,26 +42,27 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
       setTerms(data.terms || '');
       setRows(data.rows?.length ? data.rows : []);
     }
-  }, []);
+  }, [data]); // Added data to dependency array
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ commission: e.target.value });
   };
 
-  // Handle Overview change from CKEditor
-  const handleOverviewChange = (event: any, editor: any) => {
+  const handleOverviewChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataOverview = editor.getData();
+    setOverview(dataOverview);
     setData({ overview: dataOverview });
   };
 
-  const handleHowItWorkChange = (event: any, editor: any) => {
+  const handleHowItWorkChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataHowItWork = editor.getData();
+    setHowItWorks(dataHowItWork);
     setData({ howItWorks: dataHowItWork });
   };
 
-  // Handle Terms change from CKEditor
-  const handleTermsChange = (event: any, editor: any) => {
+  const handleTermsChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataTerms = editor.getData();
+    setTerms(dataTerms);
     setData({ terms: dataTerms });
   };
 
@@ -69,7 +76,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     const updatedRows = [...rows];
     updatedRows.splice(index, 1);
     setRows(updatedRows);
-    setData({ rows: updatedRows }); // <-- Update parent data
+    setData({ rows: updatedRows });
   };
 
   const handleRowChange = (
@@ -82,7 +89,6 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setRows(updatedRows);
     setData({ rows: updatedRows });
   };
-
 
   return (
     <div>
@@ -99,39 +105,35 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
         </div>
 
         <div className='my-3'>
-          <Label>Overview</Label>
-          <div className="my-editor">
-            <CKEditor
-              editor={ClassicEditor as any}
-              data={overview}
-              onChange={handleOverviewChange}
-            />
-          </div>
-        </div>
+  <Label>Overview</Label>
+  <div className="my-editor">
+    <CKEditor
+      editor={ClassicEditor}
+      data={overview}
+      onChange={handleOverviewChange}
+    />
+  </div>
+</div>
 
-        <div className='my-3'>
-          <Label>How It's Works</Label>
-          <div className="my-editor">
-            <CKEditor
-              editor={ClassicEditor as any}
-              data={howItWorks}
-              onChange={handleHowItWorkChange}
-            />
-          </div>
-        </div>
+<div className='my-3'>
+  <Label>How It&apos;s Works</Label>
+  <div className="my-editor">
+    <CKEditor
+      editor={ClassicEditor}
+      data={howItWorks}
+      onChange={handleHowItWorkChange}
+    />
+  </div>
+</div>
 
-        <div className='my-3'>
-          <Label>Terms & Conditions</Label>
-          <div className="my-editor">
-            <CKEditor
-              editor={ClassicEditor as any}
-              data={terms}
-              onChange={handleTermsChange}
-            />
-          </div>
-        </div>
-
-
+<div className='my-3'>
+  <Label>Terms &amp; Conditions</Label>
+  <CKEditor
+    editor={ClassicEditor}
+    data={terms}
+    onChange={handleTermsChange}
+  />
+</div>
 
         <div className="my-3">
           {rows.map((row, index) => (
@@ -175,14 +177,6 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             </div>
           ))}
 
-          {/* <Button
-          size="sm"
-          variant="primary"
-          onClick={handleAddRow}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add New Row
-        </Button> */}
           <button
             type="button"
             onClick={handleAddRow}
@@ -190,9 +184,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
           >
             + Add New Row
           </button>
-
         </div>
-
       </div>
     </div>
   )
