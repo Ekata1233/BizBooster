@@ -3,6 +3,7 @@ import Label from '../form/Label'
 import Input from '../form/input/InputField'
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import dynamic from 'next/dynamic';
 import { TrashBinIcon } from '@/icons';
 
 
@@ -11,35 +12,16 @@ interface RowData {
   description: string;
 }
 
-interface FranchiseDetailsData {
-  commission?: string | number;
-  overview?: string;
-  howItWorks?: string;
-  terms?: string;
-  rows?: RowData[];
-}
-
-// 1. Define the RowData type
-interface RowData {
-  title: string;
-  description: string;
-}
-
-// 2. Define the main form data type
-interface FranchiseDetailsData {
-  commission?: string | number;
-  overview?: string;
-  howItWorks?: string;
-  terms?: string;
-  rows?: RowData[];
-}
-
-// 3. Use it in your props
 interface FranchiseDetailsFormProps {
-  data: FranchiseDetailsData;
-  setData: (newData: Partial<FranchiseDetailsData>) => void;
+  data: {
+    commission?: string | number;
+    overview?: string;
+    howItWorks?: string;
+    terms?: string;
+    rows?: RowData[];
+  };
+  setData: (newData: Partial<any>) => void;
 }
-
 
 const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
@@ -60,17 +42,19 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setData({ commission: e.target.value });
   };
 
-  const handleOverviewChange = ( editor: any) => {
+  // Handle Overview change from CKEditor
+  const handleOverviewChange = (event: any, editor: any) => {
     const dataOverview = editor.getData();
     setData({ overview: dataOverview });
   };
 
-  const handleHowItWorkChange = ( editor: any) => {
+  const handleHowItWorkChange = (event: any, editor: any) => {
     const dataHowItWork = editor.getData();
     setData({ howItWorks: dataHowItWork });
   };
 
-  const handleTermsChange = ( editor: any) => {
+  // Handle Terms change from CKEditor
+  const handleTermsChange = (event: any, editor: any) => {
     const dataTerms = editor.getData();
     setData({ terms: dataTerms });
   };

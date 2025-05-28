@@ -10,20 +10,20 @@ import {
 import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
-// import { useService } from '@/context/ServiceContext';
+import { useService } from '@/context/ServiceContext';
 
 const ModuleStatCard = () => {
   const { modules } = useModule();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  // const { services } = useService();
+  const { services } = useService();
 
   console.log("services in module stat card : ", services)
 
 
-  // if (!services) {
-  //   return <div>Loading...</div>;
-  // }
+  if (!services) {
+    return <div>Loading...</div>;
+  }
   if (!modules) {
     return <div>Modules Loading...</div>;
   }

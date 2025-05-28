@@ -16,7 +16,7 @@ export async function OPTIONS() {
 
 export async function GET() {
   await connectToDatabase();
-  const data = await WhyChoose.find({ isDeleted: false }).sort({ createdAt: -1 });
+  const data = await WhyChoose.find({ isDeleted: false });
   return NextResponse.json(data, { headers: corsHeaders });
 }
 
