@@ -3,21 +3,19 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
-import {
-  TrashBinIcon
-} from "../../icons/index";
+import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 
 
 interface RowData {
-  title: string;
-  description: string;
+    title: string;
+    description: string;
 }
 
 type FAQ = {
-  question: string;
-  answer: string;
+    question: string;
+    answer: string;
 };
 
 type WhyChoose = {
@@ -37,11 +35,9 @@ type ServiceDetails = {
   whyChoose: WhyChoose[];
 };
 
-
-
 const ServiceDetailsForm = ({ data, setData }: {
-  data: ServiceDetails;
-  setData: (newData: Partial<ServiceDetails>) => void;
+    data: ServiceDetails;
+    setData: (newData: Partial<ServiceDetails>) => void;
 }) => {
   const [benefits, setBenefits] = useState('');
   const [overview, setOverview] = useState('');
@@ -82,24 +78,24 @@ const ServiceDetailsForm = ({ data, setData }: {
   }, []);
 
 
-  useEffect(() => {
-    const newData = {
-      benefits,
-      overview,
-      highlight,
-      document,
-      whyChoose,
-      howItWorks,
-      terms,
-      faqs,
-      rows,
-    };
+    useEffect(() => {
 
-    // Only call setData if any of the values actually changed
-    if (JSON.stringify(newData) !== JSON.stringify(data)) {
-      setData(newData);
-    }
-  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+        const newData = {
+            benefits,
+            overview,
+            highlight,
+            document,
+            whyChoose,
+            howItWorks,
+            terms,
+            faqs,
+            rows,
+        };
+
+        if (JSON.stringify(newData) !== JSON.stringify(data)) {
+            setData(newData);
+        }
+    }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
 
   // Corrected handleCheckboxChange to work with array of WhyChoose objects:
   const handleCheckboxChange = (itemId: string) => {
@@ -116,41 +112,40 @@ const ServiceDetailsForm = ({ data, setData }: {
 
 
 
-  const handleAddRow = () => {
-    setRows([...rows, { title: '', description: '' }]);
-  };
+    const handleAddRow = () => {
+        setRows([...rows, { title: '', description: '' }]);
+    };
 
-  const handleRemoveRow = (index: number) => {
-    const updatedRows = [...rows];
-    updatedRows.splice(index, 1);
-    setRows(updatedRows);
-  };
+    const handleRemoveRow = (index: number) => {
+        const updatedRows = [...rows];
+        updatedRows.splice(index, 1);
+        setRows(updatedRows);
+    };
 
-  const handleRowChange = (
-    index: number,
-    field: keyof RowData,
-    value: string
-  ) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
-    setRows(updatedRows);
-  };
+    const handleRowChange = (
+        index: number,
+        field: keyof RowData,
+        value: string
+    ) => {
+        const updatedRows = [...rows];
+        updatedRows[index][field] = value;
+        setRows(updatedRows);
+    };
 
+    const handleFaqChange = (index: number, field: keyof FAQ, value: string) => {
+        const updatedFaqs = [...faqs];
+        updatedFaqs[index][field] = value;
+        setFaqs(updatedFaqs);
+    };
 
-  const handleFaqChange = (index: number, field: keyof FAQ, value: string) => {
-    const updatedFaqs = [...faqs];
-    updatedFaqs[index][field] = value;
-    setFaqs(updatedFaqs);
-  };
+    const handleAddFaq = () => {
+        setFaqs([...faqs, { question: '', answer: '' }]);
+    };
 
-  const handleAddFaq = () => {
-    setFaqs([...faqs, { question: '', answer: '' }]);
-  };
-
-  const handleRemoveFaq = (index: number) => {
-    const updatedFaqs = faqs.filter((_, i) => i !== index);
-    setFaqs(updatedFaqs);
-  };
+    const handleRemoveFaq = (index: number) => {
+        const updatedFaqs = faqs.filter((_, i) => i !== index);
+        setFaqs(updatedFaqs);
+    };
 
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -161,37 +156,37 @@ const ServiceDetailsForm = ({ data, setData }: {
   };
 
 
-  return (
-    <div>
-      <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Service Details</h4>
+    return (
+        <div>
+            <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Service Details</h4>
 
-      <div className='my-3'>
-        <Label>Benefits</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={benefits}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setBenefits(data);
-            }}
-          />
-        </div>
-      </div>
+            <div className='my-3'>
+                <Label>Benefits</Label>
+                <div className="my-editor">
+                    <CKEditor
+                        editor={ClassicEditor as any}
+                        data={benefits}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setBenefits(data);
+                        }}
+                    />
+                </div>
+            </div>
 
-      <div className='my-3'>
-        <Label>Overview</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={overview}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setOverview(data);
-            }}
-          />
-        </div>
-      </div>
+            <div className='my-3'>
+                <Label>Overview</Label>
+                <div className="my-editor">
+                    <CKEditor
+                        editor={ClassicEditor as any}
+                        data={overview}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setOverview(data);
+                        }}
+                    />
+                </div>
+            </div>
 
       <div className='my-3'>
         <Label>Highlight Images (Select Multiple Images)</Label>
@@ -209,19 +204,19 @@ const ServiceDetailsForm = ({ data, setData }: {
         </div>
       </div>
 
-      <div className='my-3'>
-        <Label>Document</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={document}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setDocument(data);
-            }}
-          />
-        </div>
-      </div>
+            <div className='my-3'>
+                <Label>Document</Label>
+                <div className="my-editor">
+                    <CKEditor
+                        editor={ClassicEditor as any}
+                        data={document}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setDocument(data);
+                        }}
+                    />
+                </div>
+            </div>
 
       <div className="my-3">
         <Label>Why Choose BizBooster</Label>
@@ -297,135 +292,122 @@ const ServiceDetailsForm = ({ data, setData }: {
 
 
 
-      <div className='my-3'>
-        <Label>How It's Work</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={howItWorks}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setHowItWorks(data);
-            }}
-          />
-        </div>
-      </div>
-
-      <div className='my-3'>
-        <Label>Terms & Conditions</Label>
-        <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor as any}
-            data={terms}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setTerms(data);
-            }}
-          />
-        </div>
-      </div>
-
-      <div className='my-3'>
-        <Label>FAQ's</Label>
-        {faqs.map((faq, index) => (
-          <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-            {/* Top Row: Title + Delete Button */}
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-md font-medium text-gray-700">FAQ #{index + 1}</h2>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700"
-                onClick={() => handleRemoveFaq(index)}
-                aria-label="Remove FAQ"
-              >
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
+            <div className='my-3'>
+                <Label>How It's Work</Label>
+                <div className="my-editor">
+                    <CKEditor
+                        editor={ClassicEditor as any}
+                        data={howItWorks}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setHowItWorks(data);
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Question Field */}
-            <div>
-              <Label>Question</Label>
-              <Input
-                type="text"
-                placeholder="Enter question"
-                value={faq.question}
-                onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                className="w-full"
-              />
+            <div className='my-3'>
+                <Label>Terms & Conditions</Label>
+                <div className="my-editor">
+                    <CKEditor
+                        editor={ClassicEditor as any}
+                        data={terms}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setTerms(data);
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Answer Field */}
-            <div>
-              <Label>Answer</Label>
-              <textarea
-                placeholder="Enter answer"
-                value={faq.answer}
-                onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                className="w-full border rounded p-2 resize-none"
-                rows={4}
-              />
+            <div className='my-3'>
+                <Label>FAQ's</Label>
+                {faqs.map((faq, index) => (
+                    <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
+                        <div className="flex justify-between items-center mb-2">
+                            <h2 className="text-md font-medium text-gray-700">FAQ #{index + 1}</h2>
+                            <button
+                                type="button"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleRemoveFaq(index)}
+                                aria-label="Remove FAQ"
+                            >
+                                <TrashBinIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div>
+                            <Label>Question</Label>
+                            <Input
+                                type="text"
+                                placeholder="Enter question"
+                                value={faq.question}
+                                onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div>
+                            <Label>Answer</Label>
+                            <textarea
+                                placeholder="Enter answer"
+                                value={faq.answer}
+                                onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                                className="w-full border rounded p-2 resize-none"
+                                rows={4}
+                            />
+                        </div>
+                    </div>
+                ))}
+
+                <button
+                    type="button"
+                    onClick={handleAddFaq}
+                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+                >
+                    + Add New FAQ
+                </button>
             </div>
-          </div>
-        ))}
 
-        {/* <Button
-          size="sm" variant="primary"
-          onClick={handleAddFaq}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          + Add New FAQ
-        </Button> */}
-        <button
-          type="button"
-          onClick={handleAddFaq}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-        >
-          + Add New FAQ
-        </button>
+            <div className="my-3">
+                {rows.map((row, index) => (
+                    <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
+                        <div className="flex justify-between items-center mb-2">
+                            <h2 className="text-md font-medium text-gray-700">Row #{index + 1}</h2>
+                            <button
+                                type="button"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleRemoveRow(index)}
+                                aria-label="Remove Row"
+                            >
+                                <TrashBinIcon className="w-5 h-5" />
+                            </button>
+                        </div>
 
-      </div>
-
-      <div className="my-3">
-        {rows.map((row, index) => (
-          <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-            {/* Header Row */}
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-md font-medium text-gray-700">Row #{index + 1}</h2>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700"
-                onClick={() => handleRemoveRow(index)}
-                aria-label="Remove Row"
-              >
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Fields Row: Title + Description */}
-            <div className="flex gap-4">
-              <div className="w-1/2">
-                <Label>Title</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Document Name"
-                  value={row.title}
-                  onChange={(e) => handleRowChange(index, 'title', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-1/2">
-                <Label>Description</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Description"
-                  value={row.description}
-                  onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
+                        <div className="flex gap-4">
+                            <div className="w-1/2">
+                                <Label>Title</Label>
+                                <Input
+                                    type="text"
+                                    placeholder="Enter Document Name"
+                                    value={row.title}
+                                    onChange={(e) => handleRowChange(index, 'title', e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="w-1/2">
+                                <Label>Description</Label>
+                                <Input
+                                    type="text"
+                                    placeholder="Enter Description"
+                                    value={row.description}
+                                    onChange={(e) => handleRowChange(index, 'description', e.target.value)}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
 
         <button
           type="button"
