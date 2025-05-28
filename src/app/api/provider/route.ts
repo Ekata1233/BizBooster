@@ -126,6 +126,7 @@ export async function POST(req: NextRequest) {
       email,
       password,
       confirmPassword,
+      referredBy,
       storeInfo: {
         storeName,
         storePhone,
