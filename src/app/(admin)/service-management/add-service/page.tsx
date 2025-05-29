@@ -6,10 +6,10 @@ import React from 'react'
 const AddService = () => {
   return (
     <div>
-        <PageBreadcrumb pageTitle="Add Service" />
-        <div className="my-5">
-                <AddNewService />
-            </div>
+      <PageBreadcrumb pageTitle="Add Service" />
+      <div className="my-5">
+        <AddNewService />
+      </div>
     </div>
   )
 }
