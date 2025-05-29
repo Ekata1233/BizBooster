@@ -21,17 +21,18 @@ type RowData = {
   description: string;
 };
 
-type ServiceDetails = {
-  benefits: string;
-  overview: string;
-  highlight: string;
-  document: string;
-  howItWorks: string;
-  terms: string;
-  faqs: FAQ[];
-  rows: RowData[];
-  whyChoose: WhyChoose[];
-};
+// type ServiceDetails = {
+//   benefits: string;
+//   overview: string;
+//     highlight: File[] | FileList | null;
+
+//   document: string;
+//   howItWorks: string;
+//   terms: string;
+//   faqs: FAQ[];
+//   rows: RowData[];
+//   whyChoose: WhyChoose[];
+// };
 
 type FranchiseDetails = {
   commission?: string | number;

@@ -6,6 +6,7 @@ import Input from '../form/input/InputField';
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
+// In ServiceDetailsForm.tsx
 
 
 interface RowData {
