@@ -151,8 +151,8 @@ const ServiceList = () => {
   }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
 
   const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this service?');
-    if (!confirmDelete) return;
+    // const confirmDelete = window.confirm('Are you sure you want to delete this service?');
+    // if (!confirmDelete) return;
 
     try {
       await deleteService(id);
