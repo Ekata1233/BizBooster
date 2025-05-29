@@ -209,8 +209,8 @@ const Module = () => {
     };
 
     const handleDelete = async (id: string) => {
-        // const confirmDelete = window.confirm('Are you sure you want to delete this module?');
-        // if (!confirmDelete) return;
+        const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+        if (!confirmDelete) return;
 
         try {
             await deleteModule(id);

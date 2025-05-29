@@ -148,8 +148,8 @@ const Subcategory = () => {
     };
 
     const handleDelete = async (id: string) => {
-        // const confirmDelete = window.confirm('Are you sure you want to delete this Subcategory?');
-        // if (!confirmDelete) return;
+        const confirmDelete = window.confirm('Are you sure you want to delete this Subcategory?');
+        if (!confirmDelete) return;
 
         try {
             await deleteSubcategory(id);

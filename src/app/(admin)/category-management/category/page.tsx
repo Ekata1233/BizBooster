@@ -248,8 +248,8 @@ const Category = () => {
   };
 
   const handleDelete = async (id: string) => {
-    // const confirmDelete = window.confirm('Are you sure you want to delete this category?');
-    // if (!confirmDelete) return;
+    const confirmDelete = window.confirm('Are you sure you want to delete this category?');
+    if (!confirmDelete) return;
 
     try {
       await deleteCategory(id);
