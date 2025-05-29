@@ -38,7 +38,9 @@ interface ExtraSection {
 }
 
 interface WhyChooseItem {
- _id?: string;
+  title: string;
+  description: string;
+  image: string;
 }
 
 interface FaqItem {
@@ -48,14 +50,14 @@ interface FaqItem {
 
 interface ServiceDetails {
   overview: string;
-  highlight: File[] | FileList | null;
+  highlight: string;
   benefits: string;
   howItWorks: string;
-  terms: string;
+  termsAndConditions: string;
   document: string;
-  row?: ExtraSection[]; // <-- add this
+  extraSections?: ExtraSection[]; // <-- add this
   whyChoose?: WhyChooseItem[];    // <-- and this
-  faqs?: FaqItem[];                // <-- and this
+  faq?: FaqItem[];                // <-- and this
 }
 
 interface FranchiseDetails {
@@ -66,7 +68,7 @@ interface FranchiseDetails {
   extraSections?: ExtraSection[];
 }
 
-export interface ServiceData {
+interface ServiceTableData {
   _id: string;
   id: string;
   name: string;
@@ -94,7 +96,7 @@ const ServiceList = () => {
   const {updateService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  const [filteredServices, setFilteredServices] = useState<ServiceData[]>([]);
+  const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [sort, setSort] = useState<string>('oldest');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -102,7 +104,7 @@ const ServiceList = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceTableData | null>(null);
 
   const fetchFilteredServices = async () => {
     try {
@@ -155,14 +157,14 @@ const ServiceList = () => {
     {
       header: 'Service Name',
       accessor: 'name',
-      render: (row: ServiceData) => (
+      render: (row: ServiceTableData) => (
         <span className="font-semibold text-blue-600">{row.name}</span>
       ),
     },
     {
       header: 'Image',
       accessor: 'thumbnailImage',
-      render: (row: ServiceData) => (
+      render: (row: ServiceTableData) => (
         <div className="w-20 h-20 overflow-hidden rounded">
           <Image
             width={80}
@@ -176,7 +178,6 @@ const ServiceList = () => {
       ),
     },
     {
-<<<<<<< HEAD
     header: 'Category',
     accessor: 'category', // Keep this as string
     render: (row:ServiceTableData) => <span>{row.category?.name || 'N/A'}</span>,
@@ -192,27 +193,10 @@ const ServiceList = () => {
     accessor: 'price',
     render: (row:ServiceTableData) => <span>${row.price}</span>,
   },
-=======
-      header: 'Category',
-      accessor: 'category', // Keep this as string
-      render: (row: ServiceData) => <span>{row.category?.name || 'N/A'}</span>,
-    },
-
-    {
-      header: 'Subcategory',
-      accessor: 'subcategory', // Keep this as string
-      render: (row: ServiceData) => <span>{row.subcategory?.name || 'N/A'}</span>,
-    },
-    {
-      header: 'Price',
-      accessor: 'price',
-      render: (row: ServiceData) => <span>${row.price}</span>,
-    },
->>>>>>> 258d995bc6a407be1248bcd067d6de44a623c383
     {
       header: 'Status',
       accessor: 'status',
-      render: (row: ServiceData) => {
+      render: (row: ServiceTableData) => {
         const colorClass =
           row.status === 'Active'
             ? 'text-green-600 bg-green-100 border border-green-300'
@@ -228,7 +212,7 @@ const ServiceList = () => {
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: ServiceData) => (
+      render: (row: ServiceTableData) => (
         <div className="flex gap-2">
           <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
             onClick={() => openModal(row)}
@@ -271,7 +255,7 @@ const ServiceList = () => {
     setSelectedSubcategory(value); // required to set the selected module
   };
 
-  const openModal = (service: ServiceData) => {
+  const openModal = (service: ServiceTableData) => {
     setSelectedService(service);
     setIsOpen(true);
   };
