@@ -6,24 +6,15 @@ import BasicDetailsForm from './BasicDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 34889011439e4aa3c8ce171bc758963750308ec8
 type RowData = {
   title: string;
   description: string;
 };
-
-// type ServiceDetails = {
-//   benefits: string;
-//   overview: string;
-//   highlight: File[] | FileList | null;
-//   document: string;
-//   howItWorks: string;
-//   terms: string;
-//   faqs: FAQ[];
-//   rows: RowData[];
-//   whyChoose: WhyChoose[];
-// };
 
 type FranchiseDetails = {
   commission?: string | number;

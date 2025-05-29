@@ -7,8 +7,7 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 // In ServiceDetailsForm.tsx
-
-
+import InlineEditor from '@ckeditor/ckeditor5-build-inline';
 interface RowData {
   title: string;
   description: string;
@@ -164,14 +163,14 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor}
-            data={benefits}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setBenefits(data);
-            }}
-          />
+            <CKEditor
+      editor={InlineEditor}
+      data={benefits}
+      onChange={(event, editor) => {
+        const data = editor.getData();
+        setBenefits(data);
+      }}
+    />
         </div>
       </div>
 

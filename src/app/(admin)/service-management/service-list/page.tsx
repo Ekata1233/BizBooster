@@ -93,7 +93,7 @@ const options = [
 
 
 const ServiceList = () => {
-  const { updateService,deleteService } = useService();
+  const {updateService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
@@ -152,19 +152,6 @@ const ServiceList = () => {
     fetchFilteredServices();
   }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
 
-  const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this service?');
-    if (!confirmDelete) return;
-
-    try {
-      await deleteService(id);
-      alert('service deleted successfully');
-      fetchFilteredServices();
-    } catch (error) {
-      const err = error as Error;
-      alert('Error deleting service: ' + err.message);
-    }
-  };
 
   const columns = [
     {
@@ -191,21 +178,21 @@ const ServiceList = () => {
       ),
     },
     {
-      header: 'Category',
-      accessor: 'category', // Keep this as string
-      render: (row: ServiceTableData) => <span>{row.category?.name || 'N/A'}</span>,
-    },
+    header: 'Category',
+    accessor: 'category', // Keep this as string
+    render: (row:ServiceTableData) => <span>{row.category?.name || 'N/A'}</span>,
+  },
 
-    {
-      header: 'Subcategory',
-      accessor: 'subcategory', // Keep this as string
-      render: (row: ServiceTableData) => <span>{row.subcategory?.name || 'N/A'}</span>,
-    },
-    {
-      header: 'Price',
-      accessor: 'price',
-      render: (row: ServiceTableData) => <span>${row.price}</span>,
-    },
+ {
+    header: 'Subcategory',
+    accessor: 'subcategory', // Keep this as string
+    render: (row:ServiceTableData) => <span>{row.subcategory?.name || 'N/A'}</span>,
+  },
+     {
+    header: 'Price',
+    accessor: 'price',
+    render: (row:ServiceTableData) => <span>${row.price}</span>,
+  },
     {
       header: 'Status',
       accessor: 'status',
@@ -232,7 +219,7 @@ const ServiceList = () => {
           >
             <PencilIcon />
           </button>
-          <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
+          <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
             <TrashBinIcon />
           </button>
           <Link href={`/service-management/service-details/${row.id}`} passHref>
@@ -277,6 +264,9 @@ const ServiceList = () => {
     setIsOpen(false);
 
   };
+
+
+
 
   return (
     <div>

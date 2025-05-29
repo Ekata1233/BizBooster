@@ -1,38 +1,17 @@
 'use client';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import axios from "axios";
+import { ServiceDetails } from "@/components/service-component/ServiceDetailsForm";
 
 interface ExtraSection {
   title: string;
   description: string;
 }
 
-interface WhyChooseItem {
-  title: string;
-  description: string;
-  image: string;
-}
-
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-interface ServiceDetails {
-  overview: string;
-  highlight: string;
-  benefits: string;
-  howItWorks: string;
-  termsAndConditions: string;
-  document: string;
-  extraSections?: ExtraSection[]; // <-- add this
-  whyChoose?: WhyChooseItem[];    // <-- and this
-  faq?: FaqItem[];                // <-- and this
-}
 
 interface FranchiseDetails {
   overview: string;
-  commission: string;
+  commission: string | number;
   howItWorks: string;
   termsAndConditions: string;
   extraSections?: ExtraSection[];
