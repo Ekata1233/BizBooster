@@ -11,6 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+
 // ✅ Handle preflight request
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
