@@ -6,8 +6,18 @@ import Input from '../form/input/InputField';
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
+<<<<<<< HEAD
 // In ServiceDetailsForm.tsx
 import InlineEditor from '@ckeditor/ckeditor5-build-inline';
+=======
+
+type EditorType = {
+  create: (...args: any[]) => Promise<any>;
+  EditorWatchdog: any;
+  ContextWatchdog: any;
+};
+
+>>>>>>> 258d995bc6a407be1248bcd067d6de44a623c383
 interface RowData {
   title: string;
   description: string;
@@ -163,6 +173,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
+<<<<<<< HEAD
             <CKEditor
       editor={InlineEditor}
       data={benefits}
@@ -171,6 +182,16 @@ const ServiceDetailsForm = ({ data, setData }: {
         setBenefits(data);
       }}
     />
+=======
+          <CKEditor
+            editor={ClassicEditor as unknown as EditorType}
+            data={benefits}
+            onChange={(event, editor) => {
+              const data = editor.getData();
+              setBenefits(data);
+            }}
+          />
+>>>>>>> 258d995bc6a407be1248bcd067d6de44a623c383
         </div>
       </div>
 
@@ -178,7 +199,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Overview</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+            editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -208,7 +229,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Document</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+            editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -296,7 +317,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+           editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -310,7 +331,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+           editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(event, editor) => {
               const data = editor.getData();
