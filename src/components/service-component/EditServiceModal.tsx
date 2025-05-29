@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal } from '../ui/modal';
 import ComponentCard from '../common/ComponentCard';
 import BasicDetailsForm from './BasicDetailsForm';
-import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
+import ServiceDetailsForm from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 import { ServiceData } from '@/app/(admin)/service-management/service-list/page';
 
@@ -21,14 +21,6 @@ interface FaqItem {
     answer: string;
 }
 
-
-interface FranchiseDetails {
-    overview: string;
-    commission: string | number;
-    howItWorks: string;
-    termsAndConditions: string;
-    extraSections?: ExtraSection[];
-}
 
 
 
