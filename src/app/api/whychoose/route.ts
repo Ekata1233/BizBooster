@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import WhyChoose from "@/models/WhyChoose";
 import imagekit from "@/utils/imagekit";
 import { connectToDatabase } from "@/utils/db";
+import "@/models/WhyChoose"; 
 
 // Move corsHeaders inside the file without exporting it
 const corsHeaders = {
