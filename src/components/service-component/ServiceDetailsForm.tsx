@@ -23,7 +23,7 @@ type WhyChoose = {
 };
 
 
-type ServiceDetails = {
+export type ServiceDetails = {
   benefits: string;
   overview: string;
   highlight: File[] | FileList | null;

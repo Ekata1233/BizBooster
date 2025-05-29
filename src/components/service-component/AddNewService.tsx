@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ComponentCard from '../common/ComponentCard';
-import ServiceDetailsForm from './ServiceDetailsForm';
+import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
 import { useService } from '@/context/ServiceContext';
 import BasicDetailsForm from './BasicDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
@@ -21,17 +21,17 @@ type RowData = {
   description: string;
 };
 
-type ServiceDetails = {
-  benefits: string;
-  overview: string;
-  highlight: string;
-  document: string;
-  howItWorks: string;
-  terms: string;
-  faqs: FAQ[];
-  rows: RowData[];
-  whyChoose: WhyChoose[];
-};
+// type ServiceDetails = {
+//   benefits: string;
+//   overview: string;
+//   highlight: File[] | FileList | null;
+//   document: string;
+//   howItWorks: string;
+//   terms: string;
+//   faqs: FAQ[];
+//   rows: RowData[];
+//   whyChoose: WhyChoose[];
+// };
 
 type FranchiseDetails = {
   commission?: string | number;
@@ -77,7 +77,7 @@ const AddNewService = () => {
     service: {
       benefits: '',
       overview: '',
-      highlight: '',
+      highlight: null,
       document: '',
       howItWorks: '',
       terms: '',
@@ -216,7 +216,7 @@ const AddNewService = () => {
         service: {
           benefits: '',
           overview: '',
-          highlight: '',
+          highlight: null,
           document: '',
           whyChoose: [],
           howItWorks: '',
