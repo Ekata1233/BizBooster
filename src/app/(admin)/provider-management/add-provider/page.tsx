@@ -35,10 +35,7 @@ const zoneOptions = [
   { value: "central", label: "Central" },
 ];
 
-const businessPlanOptions = [
-  { value: 'commission base', label: 'Commission Base' },
-  { value: 'other', label: 'Other' },
-];
+
 
 const AddProvider = () => {
   const { handleSubmit, setValue, formState: { } } = useForm();
@@ -56,7 +53,7 @@ const AddProvider = () => {
   const [logo, setLogo] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
   const [tax, setTax] = useState('');
-  const [locationType, setLocationType] = useState('');
+  const [locationType] = useState('');
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const [address, setAddress] = useState('');
   const [officeNo, setOfficeNo] = useState('');
@@ -68,7 +65,7 @@ const AddProvider = () => {
   const [storeDocumentFiles, setStoreDocumentFiles] = useState<File[]>([]);
   const [gstFiles, setGstFiles] = useState<File[]>([]);
   const [otherFiles, setOtherFiles] = useState<File[]>([]);
-  const [businessPlan, setBusinessPlan] = useState<'commission base' | 'other'>('commission base');
+  const [businessPlan] = useState<'commission base' | 'other'>('commission base');
   const [activeTab, setActiveTab] = useState("Home");
 
   const { modules } = useModule();
