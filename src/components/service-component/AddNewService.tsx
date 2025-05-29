@@ -6,16 +6,6 @@ import BasicDetailsForm from './BasicDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 
 
-type FAQ = {
-  question: string;
-  answer: string;
-};
-
-interface WhyChoose {
-  _id?: string;
-}
-
-
 type RowData = {
   title: string;
   description: string;
