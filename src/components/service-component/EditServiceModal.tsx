@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal } from '../ui/modal';
 import ComponentCard from '../common/ComponentCard';
 import BasicDetailsForm from './BasicDetailsForm';
-import ServiceDetailsForm from './ServiceDetailsForm';
+import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 
 interface ExtraSection {
@@ -12,9 +12,7 @@ interface ExtraSection {
 }
 
 interface WhyChooseItem {
-    title: string;
-    description: string;
-    image: string;
+    _id?: string;
 }
 
 interface FaqItem {
@@ -22,21 +20,10 @@ interface FaqItem {
     answer: string;
 }
 
-interface ServiceDetails {
-    overview: string;
-    highlight: string;
-    benefits: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    document: string;
-    extraSections?: ExtraSection[];
-    whyChoose?: WhyChooseItem[];
-    faq?: FaqItem[];
-}
 
 interface FranchiseDetails {
     overview: string;
-    commission: string;
+    commission: string | number;
     howItWorks: string;
     termsAndConditions: string;
     extraSections?: ExtraSection[];
@@ -62,6 +49,36 @@ interface EditServiceModalProps {
     onUpdate: (id: string, updatedData: FormData) => void;
 }
 
+type FormDataType = {
+    basic: {
+        name: string;
+        category: string;
+        subcategory: string;
+        price: number;
+        thumbnail: File | null;
+        bannerImages: File[];
+    };
+    service: {
+        overview: string;
+        highlight: File[] | FileList | null;  // <-- fix here
+        benefits: string;
+        howItWorks: string;
+        terms: string;
+        document: string;
+        rows: ExtraSection[];
+        whyChoose: WhyChooseItem[];
+        faqs: FaqItem[];
+    };
+    franchise: {
+        overview: string;
+        commission: string | number;
+        howItWorks: string;
+        termsAndConditions: string;
+        rows: ExtraSection[];
+    };
+};
+
+
 const EditModuleModal: React.FC<EditServiceModalProps> = ({
     isOpen, onClose, service, onUpdate
 }) => {
@@ -71,34 +88,35 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
 
     console.log("service in update : ", service);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormDataType>({
         basic: {
             name: '',
             category: '',
             subcategory: '',
             price: 0,
-            thumbnail: null as File | null,
-            bannerImages: [] as File[],
+            thumbnail: null,
+            bannerImages: [],
         },
         service: {
             overview: '',
-            highlight: '',
+            highlight: null,  // OK, since highlight can be null too
             benefits: '',
             howItWorks: '',
-            termsAndConditions: '',
+            terms: '',
             document: '',
-            extraSections: [] as ExtraSection[],
-            whyChoose: [] as WhyChooseItem[],
-            faq: [] as FaqItem[],
+            rows: [],
+            whyChoose: [],
+            faqs: [],
         },
         franchise: {
             overview: '',
             commission: '',
             howItWorks: '',
             termsAndConditions: '',
-            extraSections: [] as ExtraSection[],
+            rows: [],
         },
     });
+
 
     useEffect(() => {
         if (service) {
@@ -113,21 +131,23 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                 },
                 service: {
                     overview: service.serviceDetails.overview,
-                    highlight: service.serviceDetails.highlight,
+                    highlight: service.serviceDetails.highlight || null,
                     benefits: service.serviceDetails.benefits,
                     howItWorks: service.serviceDetails.howItWorks,
-                    termsAndConditions: service.serviceDetails.termsAndConditions,
+                    terms: service.serviceDetails.terms,
                     document: service.serviceDetails.document,
-                    extraSections: service.serviceDetails.extraSections || [],
-                    whyChoose: service.serviceDetails.whyChoose || [],
-                    faq: service.serviceDetails.faq || [],
+                    rows: service.serviceDetails.rows || [],
+                    whyChoose: service.serviceDetails.whyChoose
+                        ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
+                        : [],
+                    faqs: service.serviceDetails.faqs || [],
                 },
                 franchise: {
                     overview: service.franchiseDetails.overview,
                     commission: service.franchiseDetails.commission,
                     howItWorks: service.franchiseDetails.howItWorks,
                     termsAndConditions: service.franchiseDetails.termsAndConditions,
-                    extraSections: service.franchiseDetails.extraSections || [],
+                    rows: service.franchiseDetails.extraSections || [],
                 },
             });
         }
@@ -147,13 +167,13 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     !!formData.service.overview.trim() &&
                     !!formData.service.benefits.trim() &&
                     !!formData.service.howItWorks.trim() &&
-                    !!formData.service.termsAndConditions.trim() &&
+                    !!formData.service.terms.trim() &&
                     !!formData.service.document.trim()
                 );
             case 3:
                 return (
                     !!formData.franchise.overview.trim() &&
-                    !!formData.franchise.commission.trim() &&
+                    !!formData.franchise.commission &&
                     !!formData.franchise.howItWorks.trim() &&
                     !!formData.franchise.termsAndConditions.trim()
                 );
@@ -201,38 +221,51 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
 
             // Append service details
             formDataToSend.append('serviceDetails[overview]', formData.service.overview);
-            formDataToSend.append('serviceDetails[highlight]', formData.service.highlight);
+            if (formData.service.highlight) {
+                // if highlight is FileList or File[]
+                const filesArray = Array.isArray(formData.service.highlight)
+                    ? formData.service.highlight
+                    : Array.from(formData.service.highlight);
+
+                filesArray.forEach((file, index) => {
+                    formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
+                });
+            } else {
+                // if highlight is null, you might want to skip or append empty string
+                // formDataToSend.append('serviceDetails[highlight]', '');
+            }
+
             formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
             formDataToSend.append('serviceDetails[howItWorks]', formData.service.howItWorks);
-            formDataToSend.append('serviceDetails[termsAndConditions]', formData.service.termsAndConditions);
+            formDataToSend.append('serviceDetails[termsAndConditions]', formData.service.terms);
             formDataToSend.append('serviceDetails[document]', formData.service.document);
 
             // Append service arrays
-            formData.service.extraSections.forEach((section, index) => {
+            formData.service.rows.forEach((section, index) => {
                 formDataToSend.append(`serviceDetails[extraSections][${index}][title]`, section.title);
                 formDataToSend.append(`serviceDetails[extraSections][${index}][description]`, section.description);
             });
 
             formData.service.whyChoose.forEach((item, index) => {
-                formDataToSend.append(`serviceDetails[whyChoose][${index}][title]`, item.title);
-                formDataToSend.append(`serviceDetails[whyChoose][${index}][description]`, item.description);
-                if (typeof item.image !== 'string') {
-                    formDataToSend.append(`serviceDetails[whyChoose][${index}][image]`, item.image);
+                if (item._id) {
+                    formDataToSend.append(`serviceDetails[whyChoose][${index}][_id]`, item._id);
                 }
             });
 
-            formData.service.faq.forEach((item, index) => {
+
+            formData.service.faqs.forEach((item, index) => {
                 formDataToSend.append(`serviceDetails[faq][${index}][question]`, item.question);
                 formDataToSend.append(`serviceDetails[faq][${index}][answer]`, item.answer);
             });
 
             // Append franchise details
             formDataToSend.append('franchiseDetails[overview]', formData.franchise.overview);
-            formDataToSend.append('franchiseDetails[commission]', formData.franchise.commission);
+            formDataToSend.append('franchiseDetails[commission]', String(formData.franchise.commission));
+
             formDataToSend.append('franchiseDetails[howItWorks]', formData.franchise.howItWorks);
             formDataToSend.append('franchiseDetails[termsAndConditions]', formData.franchise.termsAndConditions);
 
-            formData.franchise.extraSections.forEach((section, index) => {
+            formData.franchise.rows.forEach((section, index) => {
                 formDataToSend.append(`franchiseDetails[extraSections][${index}][title]`, section.title);
                 formDataToSend.append(`franchiseDetails[extraSections][${index}][description]`, section.description);
             });
@@ -323,7 +356,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                 <ServiceDetailsForm
                                     data={formData.service}
                                     setData={(newData) =>
-                                        setFormData(prev => ({ ...prev, service: { ...prev.service, ...newData } }))
+                                        setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))
                                     }
                                 />
                             )}
@@ -332,7 +365,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                 <FranchiseDetailsForm
                                     data={formData.franchise}
                                     setData={(newData) =>
-                                        setFormData(prev => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
+                                        setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
                                     }
                                 />
                             )}

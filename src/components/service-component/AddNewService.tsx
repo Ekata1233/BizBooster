@@ -11,18 +11,6 @@ type RowData = {
   description: string;
 };
 
-// type ServiceDetails = {
-//   benefits: string;
-//   overview: string;
-//   highlight: File[] | FileList | null;
-//   document: string;
-//   howItWorks: string;
-//   terms: string;
-//   faqs: FAQ[];
-//   rows: RowData[];
-//   whyChoose: WhyChoose[];
-// };
-
 type FranchiseDetails = {
   commission?: string | number;
   overview?: string;
