@@ -38,9 +38,7 @@ interface ExtraSection {
 }
 
 interface WhyChooseItem {
-  title: string;
-  description: string;
-  image: string;
+ _id?: string;
 }
 
 interface FaqItem {
@@ -50,14 +48,14 @@ interface FaqItem {
 
 interface ServiceDetails {
   overview: string;
-  highlight: string;
+  highlight: File[] | FileList | null;
   benefits: string;
   howItWorks: string;
-  termsAndConditions: string;
+  terms: string;
   document: string;
-  extraSections?: ExtraSection[]; // <-- add this
+  row?: ExtraSection[]; // <-- add this
   whyChoose?: WhyChooseItem[];    // <-- and this
-  faq?: FaqItem[];                // <-- and this
+  faqs?: FaqItem[];                // <-- and this
 }
 
 interface FranchiseDetails {
@@ -68,7 +66,7 @@ interface FranchiseDetails {
   extraSections?: ExtraSection[];
 }
 
-interface ServiceTableData {
+export interface ServiceData {
   _id: string;
   id: string;
   name: string;
@@ -93,10 +91,10 @@ const options = [
 
 
 const ServiceList = () => {
-  const {updateService } = useService();
+  const { updateService,deleteService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  const [filteredServices, setFilteredServices] = useState<ServiceTableData[]>([]);
+  const [filteredServices, setFilteredServices] = useState<ServiceData[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   const [sort, setSort] = useState<string>('oldest');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -104,7 +102,7 @@ const ServiceList = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceTableData | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
 
   const fetchFilteredServices = async () => {
     try {
@@ -152,19 +150,32 @@ const ServiceList = () => {
     fetchFilteredServices();
   }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
 
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this service?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteService(id);
+      alert('service deleted successfully');
+      fetchFilteredServices();
+    } catch (error) {
+      const err = error as Error;
+      alert('Error deleting service: ' + err.message);
+    }
+  };
 
   const columns = [
     {
       header: 'Service Name',
       accessor: 'name',
-      render: (row: ServiceTableData) => (
+      render: (row: ServiceData) => (
         <span className="font-semibold text-blue-600">{row.name}</span>
       ),
     },
     {
       header: 'Image',
       accessor: 'thumbnailImage',
-      render: (row: ServiceTableData) => (
+      render: (row: ServiceData) => (
         <div className="w-20 h-20 overflow-hidden rounded">
           <Image
             width={80}
@@ -178,25 +189,25 @@ const ServiceList = () => {
       ),
     },
     {
-    header: 'Category',
-    accessor: 'category', // Keep this as string
-    render: (row:ServiceTableData) => <span>{row.category?.name || 'N/A'}</span>,
-  },
+      header: 'Category',
+      accessor: 'category', // Keep this as string
+      render: (row: ServiceData) => <span>{row.category?.name || 'N/A'}</span>,
+    },
 
- {
-    header: 'Subcategory',
-    accessor: 'subcategory', // Keep this as string
-    render: (row:ServiceTableData) => <span>{row.subcategory?.name || 'N/A'}</span>,
-  },
-     {
-    header: 'Price',
-    accessor: 'price',
-    render: (row:ServiceTableData) => <span>${row.price}</span>,
-  },
+    {
+      header: 'Subcategory',
+      accessor: 'subcategory', // Keep this as string
+      render: (row: ServiceData) => <span>{row.subcategory?.name || 'N/A'}</span>,
+    },
+    {
+      header: 'Price',
+      accessor: 'price',
+      render: (row: ServiceData) => <span>${row.price}</span>,
+    },
     {
       header: 'Status',
       accessor: 'status',
-      render: (row: ServiceTableData) => {
+      render: (row: ServiceData) => {
         const colorClass =
           row.status === 'Active'
             ? 'text-green-600 bg-green-100 border border-green-300'
@@ -212,14 +223,14 @@ const ServiceList = () => {
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: ServiceTableData) => (
+      render: (row: ServiceData) => (
         <div className="flex gap-2">
           <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
             onClick={() => openModal(row)}
           >
             <PencilIcon />
           </button>
-          <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
+          <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
             <TrashBinIcon />
           </button>
           <Link href={`/service-management/service-details/${row.id}`} passHref>
@@ -255,7 +266,7 @@ const ServiceList = () => {
     setSelectedSubcategory(value); // required to set the selected module
   };
 
-  const openModal = (service: ServiceTableData) => {
+  const openModal = (service: ServiceData) => {
     setSelectedService(service);
     setIsOpen(true);
   };
@@ -264,9 +275,6 @@ const ServiceList = () => {
     setIsOpen(false);
 
   };
-
-
-
 
   return (
     <div>
