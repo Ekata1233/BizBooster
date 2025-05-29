@@ -53,7 +53,7 @@ const AddProvider = () => {
   const [logo, setLogo] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
   const [tax, setTax] = useState('');
-  const [locationType] = useState('');
+  const [locationType, setLocationType] = useState('home');
   const [markerPosition, setMarkerPosition] = useState(centerDefault);
   const [address, setAddress] = useState('');
   const [officeNo, setOfficeNo] = useState('');
@@ -102,7 +102,7 @@ const AddProvider = () => {
       if (
         !fullName || !phoneNo || !email || !password || !confirmPassword ||
         !storeName || !storePhone || !storeEmail || !selectedModule || !zone ||
-        !tax  || !address || !officeNo || !city || !state || !country
+        !tax || !address || !officeNo || !city || !state || !country
       ) {
         alert('Please fill all required fields');
         return;
@@ -414,15 +414,19 @@ const AddProvider = () => {
                 <button
                   key={tab}
                   className={`px-4 py-2 rounded ${activeTab === tab
-                    ? "bg-purple-500 text-white font-semibold"
-                    : "bg-purple-100 text-purple-700"
+                      ? "bg-purple-500 text-white font-semibold"
+                      : "bg-purple-100 text-purple-700"
                     }`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setLocationType(tab.toLowerCase()); // convert to lowercase like 'home', 'office', 'others'
+                  }}
                 >
                   {tab}
                 </button>
               ))}
             </div>
+
 
             {/* Map */}
             <GoogleMap
