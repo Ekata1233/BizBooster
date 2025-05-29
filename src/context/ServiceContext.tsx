@@ -53,12 +53,12 @@ interface Service {
 type ServiceContextType = {
   services: Service[];
   createService: (formData: FormData) => Promise<Service | undefined>;
-  updateService: (id: string, data: Partial<Service>) => Promise<Service | undefined>;
+  updateService: (id: string, data: Partial<Service> | FormData) => Promise<Service | undefined>;
   deleteService: (id: string) => Promise<void>;
   fetchSingleService: (id: string) => Promise<void>;
   singleService: Service | null;
   singleServiceLoading: boolean;
-  singleServiceError: string | null;      
+  singleServiceError: string | null;
 };
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
@@ -107,23 +107,23 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
- const updateService = async (id: string, data: Partial<Service> | FormData) => {
-  try {
-    const res = await axios.put<Service>(
-      `/api/service/${id}`,
-      data instanceof FormData ? data : data,
-      {
-        headers: data instanceof FormData
-          ? undefined
-          : { "Content-Type": "application/json" },
-      }
-    );
-    fetchServices();
-    return res.data;
-  } catch (error) {
-    console.error("Failed to update service:", error);
-  }
-};
+  const updateService = async (id: string, data: Partial<Service> | FormData) => {
+    try {
+      const res = await axios.put<Service>(
+        `/api/service/${id}`,
+        data instanceof FormData ? data : data,
+        {
+          headers: data instanceof FormData
+            ? undefined
+            : { "Content-Type": "application/json" },
+        }
+      );
+      fetchServices();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to update service:", error);
+    }
+  };
 
 
   const deleteService = async (id: string) => {
