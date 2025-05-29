@@ -6,6 +6,11 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import { TrashBinIcon } from '@/icons';
 import type { EventInfo } from '@ckeditor/ckeditor5-utils';
 
+type EditorType = {
+  create: (...args: any[]) => Promise<any>;
+  EditorWatchdog: any;
+  ContextWatchdog: any;
+};
 
 interface RowData {
   title: string;
@@ -42,7 +47,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
       setTerms(data.terms || '');
       setRows(data.rows?.length ? data.rows : []);
     }
-  }, [data]); 
+  }, [data]);
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ commission: e.target.value });
@@ -105,35 +110,35 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
         </div>
 
         <div className='my-3'>
-  <Label>Overview</Label>
-  <div className="my-editor">
-    <CKEditor
-      editor={ClassicEditor}
-      data={overview}
-      onChange={handleOverviewChange}
-    />
-  </div>
-</div>
+          <Label>Overview</Label>
+          <div className="my-editor">
+            <CKEditor
+              editor={ClassicEditor as unknown as EditorType}
+              data={overview}
+              onChange={handleOverviewChange}
+            />
+          </div>
+        </div>
 
-<div className='my-3'>
-  <Label>How It&apos;s Works</Label>
-  <div className="my-editor">
-    <CKEditor
-      editor={ClassicEditor}
-      data={howItWorks}
-      onChange={handleHowItWorkChange}
-    />
-  </div>
-</div>
+        <div className='my-3'>
+          <Label>How It&apos;s Works</Label>
+          <div className="my-editor">
+            <CKEditor
+              editor={ClassicEditor as unknown as EditorType}
+              data={howItWorks}
+              onChange={handleHowItWorkChange}
+            />
+          </div>
+        </div>
 
-<div className='my-3'>
-  <Label>Terms &amp; Conditions</Label>
-  <CKEditor
-    editor={ClassicEditor}
-    data={terms}
-    onChange={handleTermsChange}
-  />
-</div>
+        <div className='my-3'>
+          <Label>Terms &amp; Conditions</Label>
+          <CKEditor
+            editor={ClassicEditor as unknown as EditorType}
+            data={terms}
+            onChange={handleTermsChange}
+          />
+        </div>
 
         <div className="my-3">
           {rows.map((row, index) => (

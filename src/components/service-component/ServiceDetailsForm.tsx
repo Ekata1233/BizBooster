@@ -7,6 +7,11 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 
+type EditorType = {
+  create: (...args: any[]) => Promise<any>;
+  EditorWatchdog: any;
+  ContextWatchdog: any;
+};
 
 interface RowData {
   title: string;
@@ -164,7 +169,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Benefits</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+            editor={ClassicEditor as unknown as EditorType}
             data={benefits}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -178,7 +183,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Overview</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+            editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -208,7 +213,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Document</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+            editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -296,7 +301,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+           editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(event, editor) => {
               const data = editor.getData();
@@ -310,7 +315,7 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor}
+           editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(event, editor) => {
               const data = editor.getData();
