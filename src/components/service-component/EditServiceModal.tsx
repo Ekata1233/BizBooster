@@ -5,6 +5,7 @@ import ComponentCard from '../common/ComponentCard';
 import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
+import { ServiceData } from '@/app/(admin)/service-management/service-list/page';
 
 interface ExtraSection {
     title: string;
@@ -29,18 +30,7 @@ interface FranchiseDetails {
     extraSections?: ExtraSection[];
 }
 
-interface ServiceData {
-    id: string;
-    name: string;
-    thumbnailImage: string;
-    bannerImages: string[];
-    category: { _id: string; name: string };
-    subcategory: { _id: string; name: string };
-    price: number;
-    serviceDetails: ServiceDetails;
-    franchiseDetails: FranchiseDetails;
-    status: string;
-}
+
 
 interface EditServiceModalProps {
     isOpen: boolean;
@@ -136,7 +126,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     howItWorks: service.serviceDetails.howItWorks,
                     terms: service.serviceDetails.terms,
                     document: service.serviceDetails.document,
-                    rows: service.serviceDetails.rows || [],
+                    rows: service.serviceDetails.row || [],
                     whyChoose: service.serviceDetails.whyChoose
                         ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
                         : [],
