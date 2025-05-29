@@ -164,7 +164,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Benefits</Label>
                 <div className="my-editor">
                     <CKEditor
-                        editor={ClassicEditor as any}
+                        editor={ClassicEditor}
                         data={benefits}
                         onChange={(event, editor) => {
                             const data = editor.getData();
@@ -178,7 +178,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Overview</Label>
                 <div className="my-editor">
                     <CKEditor
-                        editor={ClassicEditor as any}
+                        editor={ClassicEditor}
                         data={overview}
                         onChange={(event, editor) => {
                             const data = editor.getData();
@@ -208,7 +208,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Document</Label>
                 <div className="my-editor">
                     <CKEditor
-                        editor={ClassicEditor as any}
+                        editor={ClassicEditor}
                         data={document}
                         onChange={(event, editor) => {
                             const data = editor.getData();
@@ -296,7 +296,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>How It's Work</Label>
                 <div className="my-editor">
                     <CKEditor
-                        editor={ClassicEditor as any}
+                        editor={ClassicEditor}
                         data={howItWorks}
                         onChange={(event, editor) => {
                             const data = editor.getData();
@@ -310,7 +310,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Terms & Conditions</Label>
                 <div className="my-editor">
                     <CKEditor
-                        editor={ClassicEditor as any}
+                        editor={ClassicEditor}
                         data={terms}
                         onChange={(event, editor) => {
                             const data = editor.getData();
