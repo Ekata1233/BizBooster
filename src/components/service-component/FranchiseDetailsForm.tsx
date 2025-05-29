@@ -42,7 +42,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
       setTerms(data.terms || '');
       setRows(data.rows?.length ? data.rows : []);
     }
-  }, [data]); // Added data to dependency array
+  }, [data]); 
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ commission: e.target.value });

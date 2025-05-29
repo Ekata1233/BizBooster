@@ -107,15 +107,24 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateService = async (id: string, data: Partial<Service>) => {
-    try {
-      const res = await axios.put<Service>(`/api/service/${id}`, data);
-      fetchServices();
-      return res.data;
-    } catch (error) {
-      console.error("Failed to update service:", error);
-    }
-  };
+ const updateService = async (id: string, data: Partial<Service> | FormData) => {
+  try {
+    const res = await axios.put<Service>(
+      `/api/service/${id}`,
+      data instanceof FormData ? data : data,
+      {
+        headers: data instanceof FormData
+          ? undefined
+          : { "Content-Type": "application/json" },
+      }
+    );
+    fetchServices();
+    return res.data;
+  } catch (error) {
+    console.error("Failed to update service:", error);
+  }
+};
+
 
   const deleteService = async (id: string) => {
     try {

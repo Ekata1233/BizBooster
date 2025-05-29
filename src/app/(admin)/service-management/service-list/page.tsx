@@ -17,6 +17,8 @@ import axios from 'axios';
 import EditServiceModal from '@/components/service-component/EditServiceModal';
 import { useService } from '@/context/ServiceContext';
 
+
+
 interface Service {
   _id: string;
   serviceName: string;
@@ -176,22 +178,21 @@ const ServiceList = () => {
       ),
     },
     {
-      header: 'Category',
-      accessor: (row: ServiceTableData) => {
-        console.log('Row data of category :', row); 
-        return <span>{row.category?.name || 'N/A'}</span>;
-      },
-    },
+    header: 'Category',
+    accessor: 'category', // Keep this as string
+    render: (row:ServiceTableData) => <span>{row.category?.name || 'N/A'}</span>,
+  },
 
-    {
-      header: 'Subcategory',
-      accessor: (row: ServiceTableData) => <span>{row.subcategory?.name}</span>,
-    },
-    {
-      header: 'Price',
-      accessor: 'price',
-      render: (row: ServiceTableData) => <span>${row.price}</span>,
-    },
+ {
+    header: 'Subcategory',
+    accessor: 'subcategory', // Keep this as string
+    render: (row:ServiceTableData) => <span>{row.subcategory?.name || 'N/A'}</span>,
+  },
+     {
+    header: 'Price',
+    accessor: 'price',
+    render: (row:ServiceTableData) => <span>${row.price}</span>,
+  },
     {
       header: 'Status',
       accessor: 'status',
