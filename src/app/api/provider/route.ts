@@ -16,61 +16,201 @@ export async function OPTIONS() {
 }
 
 // Create Provider
+// export async function POST(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const formData = await req.formData();
+//     console.log("formdata of the provider : ", formData);
+//     const data = Object.fromEntries(formData.entries());
+
+//     // Now parse the plain object with Zod
+//     const parsedData = providerValidationSchema.parse(data);
+
+//     // Extract fields
+//     const fullName = formData.get('fullName') as string;
+//     const phoneNo = formData.get('phoneNo') as string;
+//     const email = formData.get('email') as string;
+//     const password = formData.get('password') as string;
+//     const confirmPassword = formData.get('confirmPassword') as string;
+
+//     if (!fullName || !phoneNo || !email || !password || !confirmPassword) {
+//       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400, headers: corsHeaders });
+//     }
+
+//     if (password !== confirmPassword) {
+//       return NextResponse.json({ success: false, message: 'Passwords do not match' }, { status: 400, headers: corsHeaders });
+//     }
+
+//     const storeName = formData.get('storeName') as string;
+//     const storePhone = formData.get('storePhone') as string;
+//     const storeEmail = formData.get('storeEmail') as string;
+//     const moduleValue = formData.get('selectedModule') as string;
+//     const zone = formData.get('zone') as string;
+//     const logo = formData.get('logo') as File | null;
+//     const cover = formData.get('cover') as File | null;
+//     const tax = formData.get('tax') as string;
+//     const locationType = formData.get('locationType') as string;
+//     const longitude = parseFloat(formData.get('longitude') as string);
+//     const latitude = parseFloat(formData.get('latitude') as string);
+//     const coordinates = [longitude, latitude];
+//     const address = formData.get('address') as string;
+//     const officeNo = formData.get('officeNo') as string;
+//     const city = formData.get('city') as string;
+//     const state = formData.get('state') as string;
+//     const country = formData.get('country') as string;
+
+//     const aadhaarCard = formData.getAll('aadhaarCard') as string[];
+//     const panCard = formData.getAll('panCard') as string[];
+//     const storeDocument = formData.getAll('storeDocument') as string[];
+//     const GST = formData.getAll('GST') as string[];
+//     const other = formData.getAll('other') as string[];
+
+
+//     const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
+
+
+//     let logoUrl = '';
+//     if (logo) {
+//       const logoBuffer = Buffer.from(await logo.arrayBuffer());
+//       const logoUpload = await imagekit.upload({
+//         file: logoBuffer,
+//         fileName: `${uuidv4()}-${logo.name}`,
+//         folder: '/provider-logos',
+//       });
+//       logoUrl = logoUpload.url;
+//     }
+
+//     // Upload cover
+//     let coverUrl = '';
+//     if (cover) {
+//       const coverBuffer = Buffer.from(await cover.arrayBuffer());
+//       const coverUpload = await imagekit.upload({
+//         file: coverBuffer,
+//         fileName: `${uuidv4()}-${cover.name}`,
+//         folder: '/provider-covers',
+//       });
+//       coverUrl = coverUpload.url;
+//     }
+
+
+//     function generateReferralCode(length = 6) {
+//       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
+//     }
+
+//     let referralCode: string = '';
+//     let exists = true;
+
+//     while (exists) {
+//       referralCode = generateReferralCode();
+//       const existing = await Provider.findOne({ referralCode });
+//       if (!existing) exists = false;
+//     }
+
+//     let referredBy = null;
+//     if (parsedData.referredBy) {
+//       const referringUser = await Provider.findOne({ referralCode: parsedData.referredBy });
+//       if (!referringUser) {
+//         return NextResponse.json(
+//           { error: 'Referral code is not valid' },
+//           { status: 400, headers: corsHeaders }
+//         );
+//       }
+//       referredBy = referringUser._id;
+//     }
+
+//     // Create provider document
+//     const newProvider = await Provider.create({
+//       fullName,
+//       phoneNo,
+//       email,
+//       password,
+//       confirmPassword,
+//       referredBy,
+//       storeInfo: {
+//         storeName,
+//         storePhone,
+//         storeEmail,
+//         zone,
+//         module: moduleValue,
+//         tax,
+//         location: {
+//           type: locationType,
+//           coordinates,
+//         },
+//         address,
+//         officeNo,
+//         city,
+//         state,
+//         country,
+//         logoUrl,
+//         coverUrl,
+//       },
+//       kyc: {
+//         aadhaarCard,
+//         panCard,
+//         storeDocument,
+//         GST,
+//         other,
+//       },
+//       businessPlan: setBusinessPlan,
+//       isDeleted: false,
+//     });
+
+//     return NextResponse.json({ success: true, data: newProvider }, { status: 201, headers: corsHeaders });
+
+//   } catch (error) {
+//     console.error(error);
+//     const message = error instanceof Error ? error.message : 'Unknown error';
+//     return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+//   }
+// }
+
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const formData = await req.formData();
-    const data = Object.fromEntries(formData.entries());
 
-    // Now parse the plain object with Zod
-    const parsedData = providerValidationSchema.parse(data);
     console.log("formdata of the provider : ", formData);
 
-    // Extract fields
+    // Extract basic fields
     const fullName = formData.get('fullName') as string;
     const phoneNo = formData.get('phoneNo') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
+    const referredBy = formData.get('referredBy') as string | null;
+    const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
 
+    // Validate required fields
     if (!fullName || !phoneNo || !email || !password || !confirmPassword) {
-      return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400, headers: corsHeaders });
+      return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
 
     if (password !== confirmPassword) {
-      return NextResponse.json({ success: false, message: 'Passwords do not match' }, { status: 400, headers: corsHeaders });
+      return NextResponse.json({ success: false, message: 'Passwords do not match' }, { status: 400 });
     }
 
+    // Extract storeInfo fields
     const storeName = formData.get('storeName') as string;
     const storePhone = formData.get('storePhone') as string;
     const storeEmail = formData.get('storeEmail') as string;
     const moduleValue = formData.get('selectedModule') as string;
     const zone = formData.get('zone') as string;
-    const logo = formData.get('logo') as File | null;
-    const cover = formData.get('cover') as File | null;
     const tax = formData.get('tax') as string;
     const locationType = formData.get('locationType') as string;
     const longitude = parseFloat(formData.get('longitude') as string);
     const latitude = parseFloat(formData.get('latitude') as string);
-    const coordinates = [longitude, latitude];
     const address = formData.get('address') as string;
     const officeNo = formData.get('officeNo') as string;
     const city = formData.get('city') as string;
     const state = formData.get('state') as string;
     const country = formData.get('country') as string;
 
-    const aadhaarCard = formData.getAll('aadhaarCard') as string[];
-    const panCard = formData.getAll('panCard') as string[];
-    const storeDocument = formData.getAll('storeDocument') as string[];
-    const GST = formData.getAll('GST') as string[];
-    const other = formData.getAll('other') as string[];
-
-
-    const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
-
-
+    // Upload logo
     let logoUrl = '';
+    const logo = formData.get('logo') as File | null;
     if (logo) {
       const logoBuffer = Buffer.from(await logo.arrayBuffer());
       const logoUpload = await imagekit.upload({
@@ -83,6 +223,7 @@ export async function POST(req: NextRequest) {
 
     // Upload cover
     let coverUrl = '';
+    const cover = formData.get('cover') as File | null;
     if (cover) {
       const coverBuffer = Buffer.from(await cover.arrayBuffer());
       const coverUpload = await imagekit.upload({
@@ -93,7 +234,77 @@ export async function POST(req: NextRequest) {
       coverUrl = coverUpload.url;
     }
 
+    // Upload KYC documents
+    const uploadFiles = async (files: File[] | FileList): Promise<string[]> => {
+      const urls: string[] = [];
+      for (const file of files) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${file.name}`,
+          folder: '/provider-documents',
+        });
+        urls.push(upload.url);
+      }
+      return urls;
+    };
 
+    const aadhaarCardFiles = formData.getAll('aadhaarCard') as File[];
+    const panCardFiles = formData.getAll('panCard') as File[];
+    const storeDocumentFiles = formData.getAll('storeDocument') as File[];
+    const gstFiles = formData.getAll('GST') as File[];
+    const otherFiles = formData.getAll('other') as File[];
+
+    const [aadhaarCard, panCard, storeDocument, GST, other] = await Promise.all([
+      uploadFiles(aadhaarCardFiles),
+      uploadFiles(panCardFiles),
+      uploadFiles(storeDocumentFiles),
+      uploadFiles(gstFiles),
+      uploadFiles(otherFiles),
+    ]);
+
+    // Assemble the data object
+    const data = {
+      fullName,
+      phoneNo,
+      email,
+      password,
+      confirmPassword,
+      referredBy: referredBy || undefined,
+      storeInfo: {
+        storeName,
+        storePhone,
+        storeEmail,
+        module: moduleValue,
+        zone,
+        logo: logoUrl,
+        cover: coverUrl,
+        tax,
+        location: {
+          type: locationType,
+          coordinates: [longitude, latitude],
+        },
+        address,
+        officeNo,
+        city,
+        state,
+        country,
+      },
+      kyc: {
+        aadhaarCard,
+        panCard,
+        storeDocument,
+        GST,
+        other,
+      },
+      setBusinessPlan,
+      isDeleted: false,
+    };
+
+    // Validate the structured data
+    const parsedData = providerValidationSchema.parse(data);
+
+    // Generate unique referral code
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
     }
@@ -107,63 +318,45 @@ export async function POST(req: NextRequest) {
       if (!existing) exists = false;
     }
 
-    let referredBy = null;
+    // Handle referredBy
+    let referredById = null;
     if (parsedData.referredBy) {
       const referringUser = await Provider.findOne({ referralCode: parsedData.referredBy });
       if (!referringUser) {
         return NextResponse.json(
           { error: 'Referral code is not valid' },
-          { status: 400, headers: corsHeaders }
+          { status: 400 }
         );
       }
-      referredBy = referringUser._id;
+      referredById = referringUser._id;
     }
 
     // Create provider document
     const newProvider = await Provider.create({
-      fullName,
-      phoneNo,
-      email,
-      password,
-      confirmPassword,
-      referredBy,
-      storeInfo: {
-        storeName,
-        storePhone,
-        storeEmail,
-        zone,
-        module: moduleValue,
-        tax,
-        locationType,
-        coordinates,
-        address,
-        officeNo,
-        city,
-        state,
-        country,
-        logoUrl,
-        coverUrl,
-      },
-      documents: {
-        aadhaarCard,
-        panCard,
-        storeDocument,
-        GST,
-        other,
-      },
-      businessPlan: setBusinessPlan,
-      isDeleted: false,
+      fullName: parsedData.fullName,
+      phoneNo: parsedData.phoneNo,
+      email: parsedData.email,
+      password: parsedData.password,
+      confirmPassword: parsedData.confirmPassword,
+      referredBy: referredById,
+      storeInfo: parsedData.storeInfo,
+      kyc: parsedData.kyc,
+      businessPlan: parsedData.setBusinessPlan,
+      isDeleted: parsedData.isDeleted,
     });
 
-    return NextResponse.json({ success: true, data: newProvider }, { status: 201, headers: corsHeaders });
+    return NextResponse.json({ success: true, data: newProvider }, { status: 201 });
 
-  } catch (error) {
-    console.error(error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
-  }
+  } catch (error: unknown) {
+      console.error('Error saving user:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+  
+      return NextResponse.json(
+        { error: message },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 }
-
 
 export async function GET(req: NextRequest) {
   await connectToDatabase();
