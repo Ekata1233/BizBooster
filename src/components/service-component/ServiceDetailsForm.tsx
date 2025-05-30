@@ -6,13 +6,14 @@ import Input from '../form/input/InputField';
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import { Editor } from '@ckeditor/ckeditor5-core';
+import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
+import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
 
 type EditorType = {
-  create: (...args: any[]) => Promise<any>;
-  EditorWatchdog: any;
-  ContextWatchdog: any;
+  create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
+  EditorWatchdog: typeof EditorWatchdog;
+  ContextWatchdog: typeof ContextWatchdog;
 };
 
 interface RowData {
@@ -162,13 +163,6 @@ const ServiceDetailsForm = ({ data, setData }: {
     }
   };
 
-  const howItWorksEditor = useEditor({
-    extensions: [StarterKit],
-    content: howItWorks,
-    onUpdate({ editor }) {
-      setHowItWorks(editor.getHTML());
-    },
-  });
 
   return (
     <div>
@@ -309,17 +303,15 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
-          {/* <CKEditor
-           editor={ClassicEditor as unknown as EditorType}
+          <CKEditor
+            editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(event, editor) => {
               const data = editor.getData();
               setHowItWorks(data);
             }}
-          /> */}
-          <div className='my-editor border p-3 rounded min-h-[350px]'>
-            <EditorContent editor={howItWorksEditor} />
-          </div>
+          />
+
         </div>
       </div>
 

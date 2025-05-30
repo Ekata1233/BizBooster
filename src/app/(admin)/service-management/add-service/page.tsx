@@ -9,7 +9,7 @@ const AddServicePage = () => {
     <div>
       <PageBreadcrumb pageTitle="Add Service" />
       <div className="my-5">
-        {/* <AddNewService /> */}
+        <AddNewService />
       </div>
     </div>
   );
