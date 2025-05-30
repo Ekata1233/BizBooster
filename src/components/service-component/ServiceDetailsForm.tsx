@@ -66,13 +66,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   }]);
 
   const [showAll, setShowAll] = useState(false);
-   const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) return null;
+  
 
   const whyChooseContext = useWhyChoose();
 
@@ -184,6 +178,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
+          {typeof window !== 'undefined' && (
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={benefits}
@@ -194,13 +189,14 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setBenefits(data);
             }}
-          />
+          />)}
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Overview</Label>
         <div className="my-editor">
+          {typeof window !== 'undefined' && (
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
@@ -211,7 +207,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setOverview(data);
             }}
-          />
+          />)}
         </div>
       </div>
 
@@ -234,6 +230,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Document</Label>
         <div className="my-editor">
+          {typeof window !== 'undefined' && (
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={document}
@@ -244,7 +241,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setDocument(data);
             }}
-          />
+          />)}
         </div>
       </div>
 
@@ -325,6 +322,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
+          {typeof window !== 'undefined' && (
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
@@ -335,7 +333,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setHowItWorks(data);
             }}
-          />
+          />)}
 
         </div>
       </div>
@@ -343,6 +341,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
+          {typeof window !== 'undefined' && (
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
@@ -353,7 +352,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setTerms(data);
             }}
-          />
+          />)}
         </div>
       </div>
 
