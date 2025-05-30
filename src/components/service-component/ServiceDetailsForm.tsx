@@ -174,7 +174,10 @@ const ServiceDetailsForm = ({ data, setData }: {
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={benefits}
-            onChange={(event, editor) => {
+            onChange={(
+              event: Event,
+              editor: import('@ckeditor/ckeditor5-core').Editor
+            ) => {
               const data = editor.getData();
               setBenefits(data);
             }}
@@ -188,7 +191,10 @@ const ServiceDetailsForm = ({ data, setData }: {
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
-            onChange={(event, editor) => {
+            onChange={(
+              event: Event,
+              editor: import('@ckeditor/ckeditor5-core').Editor
+            ) => {
               const data = editor.getData();
               setOverview(data);
             }}
@@ -218,7 +224,10 @@ const ServiceDetailsForm = ({ data, setData }: {
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={document}
-            onChange={(event, editor) => {
+            onChange={(
+              event: Event,
+              editor: import('@ckeditor/ckeditor5-core').Editor
+            ) => {
               const data = editor.getData();
               setDocument(data);
             }}
@@ -306,7 +315,10 @@ const ServiceDetailsForm = ({ data, setData }: {
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
-            onChange={(event, editor) => {
+            onChange={(
+              event: Event,
+              editor: import('@ckeditor/ckeditor5-core').Editor
+            ) => {
               const data = editor.getData();
               setHowItWorks(data);
             }}
@@ -321,7 +333,10 @@ const ServiceDetailsForm = ({ data, setData }: {
           <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
-            onChange={(event, editor) => {
+            onChange={(
+              event: Event,
+              editor: import('@ckeditor/ckeditor5-core').Editor
+            ) => {
               const data = editor.getData();
               setTerms(data);
             }}
