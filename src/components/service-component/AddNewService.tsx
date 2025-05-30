@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import ComponentCard from '../common/ComponentCard';
 import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
