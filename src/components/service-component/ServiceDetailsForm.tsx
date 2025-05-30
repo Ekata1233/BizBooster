@@ -66,7 +66,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   }]);
 
   const [showAll, setShowAll] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
+   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
