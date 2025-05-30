@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import WhyChoose from "@/models/WhyChoose";
+import "@/models/WhyChoose"; 
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
