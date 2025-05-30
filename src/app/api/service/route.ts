@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import "@/models/Category";      // registers the Category model
 import "@/models/Subcategory";
+// import "@/models/WhyChoose";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",

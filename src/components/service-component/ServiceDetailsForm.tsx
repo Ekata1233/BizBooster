@@ -7,10 +7,10 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 
-type EditorType = {
-  create: (...args: any[]) => Promise<any>;
-  EditorWatchdog: any;
-  ContextWatchdog: any;
+type EditorType<T = unknown> = {
+  create: (...args: unknown[]) => Promise<T>;
+  EditorWatchdog: new (options?: unknown) => unknown;
+  ContextWatchdog: new (options?: unknown) => unknown;
 };
 
 interface RowData {
