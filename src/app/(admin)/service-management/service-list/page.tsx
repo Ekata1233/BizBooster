@@ -383,7 +383,7 @@ const ServiceList = () => {
         </ComponentCard>
       </div>
 
-      <EditServiceModal
+      {/* <EditServiceModal
         isOpen={isOpen}
         onClose={closeModal}
         service={selectedService}
@@ -391,7 +391,7 @@ const ServiceList = () => {
           await updateService(id, formData);
           fetchFilteredServices();
         }}
-      />
+      /> */}
     </div>
   );
 };
