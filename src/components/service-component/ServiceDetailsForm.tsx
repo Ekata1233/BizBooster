@@ -176,7 +176,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={benefits}
             onChange={(
-              event: Event,
+              
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -193,7 +193,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(
-              event: Event,
+              
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -226,7 +226,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(
-              event: Event,
+              
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -317,7 +317,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(
-              event: Event,
+              
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -335,7 +335,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(
-              event: Event,
+              
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
