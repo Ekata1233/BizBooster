@@ -13,12 +13,25 @@ type Props = {
 const CKEditorClient = ({ data, onChange }: Props) => {
   return (
     <CKEditor
+    cla
       editor={ClassicEditor}
       data={data}
       onChange={(editor: Editor) => {
         const value = editor.getData();
         onChange(value);
       }}
+      config={{
+          toolbar: [
+            'heading',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'bulletedList',
+            'numberedList',
+            'blockQuote',
+          ],
+        }}
     />
   );
 };

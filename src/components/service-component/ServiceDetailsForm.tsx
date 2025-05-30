@@ -10,6 +10,11 @@ import { useWhyChoose } from '@/context/WhyChooseContext';
 import { Editor } from '@ckeditor/ckeditor5-core';
 import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
 import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
+import dynamic from 'next/dynamic';
+
+const CKEditorClient = dynamic(() => import('../ckEditorClient/CKEditorClient'), {
+  ssr: false,
+});
 
 type EditorType = {
   create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
@@ -61,6 +66,13 @@ const ServiceDetailsForm = ({ data, setData }: {
   }]);
 
   const [showAll, setShowAll] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
 
   const whyChooseContext = useWhyChoose();
 

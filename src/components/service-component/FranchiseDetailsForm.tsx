@@ -42,6 +42,13 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
+   const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
 
   useEffect(() => {
     if (data) {
