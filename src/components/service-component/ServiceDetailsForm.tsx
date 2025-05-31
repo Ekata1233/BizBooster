@@ -146,8 +146,6 @@ const ServiceDetailsForm = ({ data, setData }: {
     });
   };
 
-
-
   const handleAddRow = () => {
     setRows([...rows, { title: '', description: '' }]);
   };
@@ -210,7 +208,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               setBenefits(data);
             }}
           /> */}
-          <ClientSideCustomEditor />
+          <ClientSideCustomEditor value={benefits} onChange={setBenefits} />
         </div>
       </div>
 
@@ -228,7 +226,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               setOverview(data);
             }}
           /> */}
-          <ClientSideCustomEditor />
+          <ClientSideCustomEditor value={overview} onChange={setOverview} />
         </div>
       </div>
 
@@ -262,7 +260,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               setDocument(data);
             }}
           /> */}
-          <ClientSideCustomEditor />
+          <ClientSideCustomEditor value={document} onChange={setDocument} />
         </div>
       </div>
 
@@ -354,7 +352,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               setHowItWorks(data);
             }}
           /> */}
-          <ClientSideCustomEditor />
+          <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
         </div>
       </div>
 
@@ -372,7 +370,7 @@ const ServiceDetailsForm = ({ data, setData }: {
               setTerms(data);
             }}
           /> */}
-          <ClientSideCustomEditor />
+          <ClientSideCustomEditor value={terms} onChange={setTerms} />
         </div>
       </div>
 

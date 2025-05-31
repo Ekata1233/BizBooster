@@ -80,7 +80,7 @@ const AddNewService = () => {
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-
+console.log("form data of service : ", formData)
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
