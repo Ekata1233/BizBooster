@@ -42,9 +42,14 @@ const AddSubcategory = () => {
             setSubcategoryName('');
             setSelectedFile(null);
             console.log("page reset")
-        } catch (error) {
-            alert('Error adding category.');
-            console.error(error);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message);
+                console.error(error);
+            } else {
+                alert("An unknown error occurred.");
+                console.error("Unknown error:", error);
+            }
         }
     };
 

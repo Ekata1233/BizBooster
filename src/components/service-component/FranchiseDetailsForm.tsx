@@ -6,12 +6,18 @@ import { CKEditor } from '@ckeditor/ckeditor5-react'
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import { TrashBinIcon } from '@/icons';
 import type { EventInfo } from '@ckeditor/ckeditor5-utils';
+import dynamic from 'next/dynamic';
 
 type EditorType = {
   create: (...args: any[]) => Promise<any>;
   EditorWatchdog: any;
   ContextWatchdog: any;
 };
+
+const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
+  ssr: false,
+  loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
+});
 
 interface RowData {
   title: string;
@@ -43,6 +49,10 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
 
+  console.log("overview : ",overview)
+  console.log("howItWorks : ",howItWorks)
+  console.log("terms : ",terms)
+
   useEffect(() => {
     if (data) {
       setOverview(data.overview || '');
@@ -50,7 +60,21 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
       setTerms(data.terms || '');
       setRows(data.rows?.length ? data.rows : []);
     }
-  }, [data]);
+  }, []);
+
+    useEffect(() => {
+      const newData: FranchiseData = {
+       overview,
+       howItWorks,
+       terms,
+       rows
+      };
+  
+      // Optional: Only setData if there's a change
+      if (JSON.stringify(data) !== JSON.stringify(newData)) {
+        setData(newData); // ✅ pass object, not function
+      }
+    }, [overview,howItWorks,terms,rows]);
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ commission: e.target.value });
@@ -115,32 +139,35 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
         <div className='my-3'>
           <Label>Overview</Label>
           <div className="my-editor">
-            <CKEditor
+            {/* <CKEditor
               editor={ClassicEditor as unknown as EditorType}
               data={overview}
               onChange={handleOverviewChange}
-            />
+            /> */}
+            <ClientSideCustomEditor value={overview} onChange={setOverview} />
           </div>
         </div>
 
         <div className='my-3'>
           <Label>How It&apos;s Works</Label>
           <div className="my-editor">
-            <CKEditor
+            {/* <CKEditor
               editor={ClassicEditor as unknown as EditorType}
               data={howItWorks}
               onChange={handleHowItWorkChange}
-            />
+            /> */}
+            <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
           </div>
         </div>
 
         <div className='my-3'>
           <Label>Terms &amp; Conditions</Label>
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={handleTermsChange}
-          />
+          /> */}
+          <ClientSideCustomEditor value={terms} onChange={setTerms} />
         </div>
 
         <div className="my-3">

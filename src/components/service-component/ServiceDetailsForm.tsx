@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-// import { CKEditor } from '@ckeditor/ckeditor5-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
@@ -12,12 +12,10 @@ import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
 import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
 import dynamic from 'next/dynamic';
 
-const CKEditor = dynamic<any>(
-  () => import('@ckeditor/ckeditor5-react').then(mod => mod.CKEditor),
-  { ssr: false }
-);
-
-
+const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
+  ssr: false,
+  loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
+});
 
 type EditorType = {
   create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
@@ -95,9 +93,28 @@ const ServiceDetailsForm = ({ data, setData }: {
   }, []);
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const newData = {
+  //   const newData = {
+  //     benefits,
+  //     overview,
+  //     highlight,
+  //     document,
+  //     whyChoose,
+  //     howItWorks,
+  //     terms,
+  //     faqs,
+  //     rows,
+  //   };
+
+  //   if (JSON.stringify(newData) !== JSON.stringify(data)) {
+  //     setData(newData);
+  //   }
+  // }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+
+
+  useEffect(() => {
+    const newData: ServiceDetails = {
       benefits,
       overview,
       highlight,
@@ -109,10 +126,12 @@ const ServiceDetailsForm = ({ data, setData }: {
       rows,
     };
 
-    if (JSON.stringify(newData) !== JSON.stringify(data)) {
-      setData(newData);
+    // Optional: Only setData if there's a change
+    if (JSON.stringify(data) !== JSON.stringify(newData)) {
+      setData(newData); // ✅ pass object, not function
     }
-  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
+
 
   // Corrected handleCheckboxChange to work with array of WhyChoose objects:
   const handleCheckboxChange = (itemId: string) => {
@@ -126,8 +145,6 @@ const ServiceDetailsForm = ({ data, setData }: {
       }
     });
   };
-
-
 
   const handleAddRow = () => {
     setRows([...rows, { title: '', description: '' }]);
@@ -180,8 +197,8 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
-          <CKEditor
-            editor={ClassicEditor}
+          {/* <CKEditor
+            editor={ClassicEditor as unknown as EditorType}
             data={benefits}
             onChange={(
               event: Event,
@@ -190,14 +207,15 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setBenefits(data);
             }}
-          />
+          /> */}
+          <ClientSideCustomEditor value={benefits} onChange={setBenefits} />
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Overview</Label>
         <div className="my-editor">
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(
@@ -207,7 +225,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setOverview(data);
             }}
-          />
+          /> */}
+          <ClientSideCustomEditor value={overview} onChange={setOverview} />
         </div>
       </div>
 
@@ -230,7 +249,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Document</Label>
         <div className="my-editor">
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(
@@ -240,7 +259,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setDocument(data);
             }}
-          />
+          /> */}
+          <ClientSideCustomEditor value={document} onChange={setDocument} />
         </div>
       </div>
 
@@ -321,7 +341,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(
@@ -331,15 +351,15 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setHowItWorks(data);
             }}
-          />
-
+          /> */}
+          <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(
@@ -349,7 +369,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setTerms(data);
             }}
-          />
+          /> */}
+          <ClientSideCustomEditor value={terms} onChange={setTerms} />
         </div>
       </div>
 
@@ -422,7 +443,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Title</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Document Name"
+                  placeholder="Enter Extra Title"
                   value={row.title}
                   onChange={(e) => handleRowChange(index, 'title', e.target.value)}
                   className="w-full"
@@ -432,7 +453,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Description</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Description"
+                  placeholder="Enter Extra Description"
                   value={row.description}
                   onChange={(e) => handleRowChange(index, 'description', e.target.value)}
                   className="w-full"

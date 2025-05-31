@@ -9,8 +9,8 @@ import { ChevronDownIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useModule } from '@/context/ModuleContext'
 interface ModuleType {
-  _id: string;
-  name: string;
+    _id: string;
+    name: string;
 }
 
 const AddCategory = () => {
@@ -46,16 +46,21 @@ const AddCategory = () => {
             setCategoryName('');
             setSelectedFile(null);
             console.log("page reset")
-        } catch (error) {
-            alert('Error adding category.');
-            console.error(error);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                alert(error.message);
+                console.error(error);
+            } else {
+                alert("An unknown error occurred.");
+                console.error("Unknown error:", error);
+            }
         }
     };
 
-  const options = modules.map((mod: ModuleType) => ({
-  value: mod._id,
-  label: mod.name,
-}));
+    const options = modules.map((mod: ModuleType) => ({
+        value: mod._id,
+        label: mod.name,
+    }));
 
 
     const handleSelectChange = (value: string) => {

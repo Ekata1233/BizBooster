@@ -6,6 +6,7 @@ import {
   UserIcon,
   CalenderIcon,
   DollarLineIcon,
+  BoxCubeIcon,
 } from "../../icons/index";
 import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
@@ -60,14 +61,14 @@ const ModuleStatCard = () => {
           badgeValue="0.00%"
           badgeIcon={ArrowUpIcon}
         />
-        {/* <StatCard
+        <StatCard
           title="Total Services"
           value={services?.length || 0}
           icon={BoxCubeIcon}
           badgeColor="success"
           badgeValue="0.00%"
           badgeIcon={ArrowUpIcon}
-        /> */}
+        />
       </div>
     </div>
   )

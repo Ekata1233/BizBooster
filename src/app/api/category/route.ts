@@ -21,11 +21,20 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const name = formData.get("name") as string;
-    const moduleId = formData.get("module") as string; // renamed variable
+    const moduleId = formData.get("module") as string; 
+    
 
     if (!name) {
       return NextResponse.json(
         { success: false, message: "Name is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const existing = await Category.findOne({ name: { $regex: new RegExp("^" + name + "$", "i") }, isDeleted: false });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, message: "Category already exists" },
         { status: 400, headers: corsHeaders }
       );
     }

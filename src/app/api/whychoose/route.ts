@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   const formData = await req.formData();
+
+  console.log("formdata : ", formData);
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const extraSections = JSON.parse(formData.get("extraSections") as string); // array of { description }

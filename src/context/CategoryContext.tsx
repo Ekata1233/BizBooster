@@ -5,9 +5,9 @@ import axios from "axios";
 
 export interface Category {
   _id?: string;
-  id:string;
+  id: string;
   name: string;
-  module: {_id:string, name: string };
+  module: { _id: string, name: string };
   image?: string;
   isDeleted?: boolean;
 }
@@ -47,11 +47,26 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
   const addCategory = async (formData: FormData) => {
     setLoading(true);
     try {
-       await axios.post("/api/category", formData);
-       fetchCategories();
-    } catch (error) {
+      await axios.post("/api/category", formData);
+      fetchCategories();
+    }
+    catch (error: unknown) {
       console.error("Add category error:", error);
-    } finally {
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === "string"
+      ) {
+        throw new Error(
+          (error as { response: { data: { message: string } } }).response.data.message
+        );
+      }
+
+      throw new Error("Something went wrong while adding category.");
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -59,7 +74,7 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
   const updateCategory = async (id: string, formData: FormData) => {
     setLoading(true);
     try {
-       await axios.put(`/api/category/${id}`, formData);
+      await axios.put(`/api/category/${id}`, formData);
       fetchCategories();
     } catch (error) {
       console.error("Update category error:", error);

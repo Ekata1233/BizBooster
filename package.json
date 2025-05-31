@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^41.4.2",
-    "@ckeditor/ckeditor5-react": "^5.0.1",
+    "@ckeditor/ckeditor5-react": "^9.5.0",
     "@ckeditor/ckeditor5-utils": "^44.3.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -41,6 +41,7 @@
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
+    "ckeditor5-build-classic-nextjs": "^29.5.26",
     "cors": "^2.8.5",
     "express-validator": "^7.2.1",
     "flatpickr": "^4.6.13",
