@@ -122,7 +122,9 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                             css: 'body { color: #000000; }'
                         }
                     ]
+                    
                 }
+                
             }}
         />
     );
