@@ -86,10 +86,12 @@ console.log("form data of service : ", formData)
     switch (stepNumber) {
       case 1:
         return (
-          !!formData?.basic?.name?.trim()
-          //  &&
-          // !!formData?.basic?.category &&
-          // !!formData?.basic?.subcategory
+          !!formData?.basic?.name?.trim() &&
+          !!formData?.basic?.category &&
+          !!formData?.basic?.subcategory &&
+          !!formData?.basic?.price &&
+          !!formData?.basic?.thumbnail &&
+          !!formData?.basic?.covers 
         );
       case 2:
         return (

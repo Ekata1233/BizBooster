@@ -443,7 +443,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Title</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Document Name"
+                  placeholder="Enter Extra Title"
                   value={row.title}
                   onChange={(e) => handleRowChange(index, 'title', e.target.value)}
                   className="w-full"
@@ -453,7 +453,7 @@ const ServiceDetailsForm = ({ data, setData }: {
                 <Label>Description</Label>
                 <Input
                   type="text"
-                  placeholder="Enter Description"
+                  placeholder="Enter Extra Description"
                   value={row.description}
                   onChange={(e) => handleRowChange(index, 'description', e.target.value)}
                   className="w-full"
