@@ -219,7 +219,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     </div>
 
                     <div className="my-3">
-                        <Label>Select Subcategory</Label>
+                        <Label>Enter Key Value</Label>
                         {rows.map((row, index) => (
                             <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg shadow-sm space-y-3">
                                 {/* Header Row */}
