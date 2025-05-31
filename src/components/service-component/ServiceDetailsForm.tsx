@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
+// import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
@@ -10,6 +10,14 @@ import { useWhyChoose } from '@/context/WhyChooseContext';
 import { Editor } from '@ckeditor/ckeditor5-core';
 import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
 import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
+import dynamic from 'next/dynamic';
+
+const CKEditor = dynamic<any>(
+  () => import('@ckeditor/ckeditor5-react').then(mod => mod.CKEditor),
+  { ssr: false }
+);
+
+
 
 type EditorType = {
   create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
@@ -173,10 +181,10 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Benefits</Label>
         <div className="my-editor">
           <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
+            editor={ClassicEditor}
             data={benefits}
             onChange={(
-              
+              event: Event,
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -193,7 +201,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(
-              
+              event: Event,
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -226,7 +234,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(
-              
+              event: Event,
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -317,7 +325,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(
-              
+              event: Event,
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();
@@ -335,7 +343,7 @@ const ServiceDetailsForm = ({ data, setData }: {
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(
-              
+              event: Event,
               editor: import('@ckeditor/ckeditor5-core').Editor
             ) => {
               const data = editor.getData();

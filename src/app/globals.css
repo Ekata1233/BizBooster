@@ -738,6 +738,19 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
-.my-editor .ck-editor__editable_inline {
-  min-height: 100px;
+/* Add this to your global CSS or module CSS */
+.ckeditor-container {
+  min-height: 200px;
+}
+
+.ckeditor-container .ck-editor__editable_inline {
+  min-height: 200px;
+  border: 1px solid #ddd !important;
+  padding: 1rem !important;
+}
+
+/* Make sure toolbar is visible */
+.ck.ck-toolbar {
+  border: 1px solid #ddd !important;
+  border-bottom: none !important;
 }

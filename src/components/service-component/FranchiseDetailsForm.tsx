@@ -5,7 +5,7 @@ import Input from '../form/input/InputField'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import { TrashBinIcon } from '@/icons';
-
+import type { EventInfo } from '@ckeditor/ckeditor5-utils';
 
 type EditorType = {
   create: (...args: any[]) => Promise<any>;
@@ -56,19 +56,19 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     setData({ commission: e.target.value });
   };
 
-  const handleOverviewChange = (editor: Editor) => {
+  const handleOverviewChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataOverview = editor.getData();
     setOverview(dataOverview);
     setData({ overview: dataOverview });
   };
 
-  const handleHowItWorkChange = ( editor: Editor) => {
+  const handleHowItWorkChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataHowItWork = editor.getData();
     setHowItWorks(dataHowItWork);
     setData({ howItWorks: dataHowItWork });
   };
 
-  const handleTermsChange = ( editor: Editor) => {
+  const handleTermsChange = (event: EventInfo<string, unknown>, editor: Editor) => {
     const dataTerms = editor.getData();
     setTerms(dataTerms);
     setData({ terms: dataTerms });
