@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
-const selectedCategory = searchParams.get("selectedCategory") || "";
+  const selectedCategory = searchParams.get("selectedCategory") || "";
 
   try {
     // Fetch all subcategories with populated 'category'
@@ -54,20 +54,20 @@ const selectedCategory = searchParams.get("selectedCategory") || "";
     // }
 
     if (search || selectedCategory) {
-  const regex = search ? new RegExp(search, "i") : null;
+      const regex = search ? new RegExp(search, "i") : null;
 
-  filteredSubcategories = subcategories.filter((sub) => {
-    const matchesSearch = regex
-      ? regex.test(sub.name) || regex.test(sub.category?.name)
-      : true;
+      filteredSubcategories = subcategories.filter((sub) => {
+        const matchesSearch = regex
+          ? regex.test(sub.name) || regex.test(sub.category?.name)
+          : true;
 
-    const matchesCategory = selectedCategory
-      ? sub.category?._id?.toString() === selectedCategory
-      : true;
+        const matchesCategory = selectedCategory
+          ? sub.category?._id?.toString() === selectedCategory
+          : true;
 
-    return matchesSearch && matchesCategory;
-  });
-}
+        return matchesSearch && matchesCategory;
+      });
+    }
 
 
     return NextResponse.json(
@@ -93,6 +93,14 @@ export async function POST(req: Request) {
     if (!name || !category) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const existing = await Subcategory.findOne({ name: { $regex: new RegExp("^" + name + "$", "i") }, isDeleted: false });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, message: "Subcategory already exists" },
         { status: 400, headers: corsHeaders }
       );
     }

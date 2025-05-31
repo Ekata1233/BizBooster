@@ -10,7 +10,7 @@ interface Subcategory {
   _id: string;
   id: string;
   name: string;
-  category: {  _id: string,name: string };
+  category: { _id: string, name: string };
   image?: string;
   isDeleted?: boolean;
   // Add any other fields that are part of your subcategory
@@ -46,9 +46,24 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
     try {
       await axios.post("/api/subcategory", formData);
       fetchSubcategories();
-    } catch (error) {
-      console.error("Add subcategory error:", error);
     }
+    catch (error: unknown) {
+      console.error("Add subcategory error:", error);
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === "string"
+      ) {
+        throw new Error(
+          (error as { response: { data: { message: string } } }).response.data.message
+        );
+      }
+
+      throw new Error("Something went wrong while adding subcategory.");
+    }
+
   };
 
   const updateSubcategory = async (id: string, formData: FormData) => {
