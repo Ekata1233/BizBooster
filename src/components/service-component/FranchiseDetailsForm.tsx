@@ -42,7 +42,6 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
-  
 
   useEffect(() => {
     if (data) {
@@ -116,35 +115,32 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
         <div className='my-3'>
           <Label>Overview</Label>
           <div className="my-editor">
-            {typeof window !== 'undefined' && (
-            <CKEditor
+            {/* <CKEditor
               editor={ClassicEditor as unknown as EditorType}
               data={overview}
               onChange={handleOverviewChange}
-            />)}
+            /> */}
           </div>
         </div>
 
         <div className='my-3'>
           <Label>How It&apos;s Works</Label>
           <div className="my-editor">
-            {typeof window !== 'undefined' && (
-            <CKEditor
+            {/* <CKEditor
               editor={ClassicEditor as unknown as EditorType}
               data={howItWorks}
               onChange={handleHowItWorkChange}
-            />)}
+            /> */}
           </div>
         </div>
 
         <div className='my-3'>
           <Label>Terms &amp; Conditions</Label>
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={handleTermsChange}
-          />)}
+          /> */}
         </div>
 
         <div className="my-3">

@@ -219,8 +219,9 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     </div>
 
                     <div className="my-3">
+                        <Label>Select Subcategory</Label>
                         {rows.map((row, index) => (
-                            <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
+                            <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg shadow-sm space-y-3">
                                 {/* Header Row */}
                                 <div className="flex justify-between items-center mb-2">
                                     <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>

@@ -12,8 +12,9 @@ import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
 import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
 import dynamic from 'next/dynamic';
 
-const CKEditorClient = dynamic(() => import('../ckEditorClient/CKEditorClient'), {
+const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
   ssr: false,
+  loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
 });
 
 type EditorType = {
@@ -66,7 +67,6 @@ const ServiceDetailsForm = ({ data, setData }: {
   }]);
 
   const [showAll, setShowAll] = useState(false);
-  
 
   const whyChooseContext = useWhyChoose();
 
@@ -93,9 +93,28 @@ const ServiceDetailsForm = ({ data, setData }: {
   }, []);
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const newData = {
+  //   const newData = {
+  //     benefits,
+  //     overview,
+  //     highlight,
+  //     document,
+  //     whyChoose,
+  //     howItWorks,
+  //     terms,
+  //     faqs,
+  //     rows,
+  //   };
+
+  //   if (JSON.stringify(newData) !== JSON.stringify(data)) {
+  //     setData(newData);
+  //   }
+  // }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+
+
+  useEffect(() => {
+    const newData: ServiceDetails = {
       benefits,
       overview,
       highlight,
@@ -107,10 +126,12 @@ const ServiceDetailsForm = ({ data, setData }: {
       rows,
     };
 
-    if (JSON.stringify(newData) !== JSON.stringify(data)) {
-      setData(newData);
+    // Optional: Only setData if there's a change
+    if (JSON.stringify(data) !== JSON.stringify(newData)) {
+      setData(newData); // ✅ pass object, not function
     }
-  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
+
 
   // Corrected handleCheckboxChange to work with array of WhyChoose objects:
   const handleCheckboxChange = (itemId: string) => {
@@ -178,8 +199,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={benefits}
             onChange={(
@@ -189,15 +209,15 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setBenefits(data);
             }}
-          />)}
+          /> */}
+          <ClientSideCustomEditor />
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Overview</Label>
         <div className="my-editor">
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={overview}
             onChange={(
@@ -207,7 +227,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setOverview(data);
             }}
-          />)}
+          /> */}
+          <ClientSideCustomEditor />
         </div>
       </div>
 
@@ -230,8 +251,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Document</Label>
         <div className="my-editor">
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={document}
             onChange={(
@@ -241,7 +261,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setDocument(data);
             }}
-          />)}
+          /> */}
+          <ClientSideCustomEditor />
         </div>
       </div>
 
@@ -322,8 +343,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={howItWorks}
             onChange={(
@@ -333,16 +353,15 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setHowItWorks(data);
             }}
-          />)}
-
+          /> */}
+          <ClientSideCustomEditor />
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
-          {typeof window !== 'undefined' && (
-          <CKEditor
+          {/* <CKEditor
             editor={ClassicEditor as unknown as EditorType}
             data={terms}
             onChange={(
@@ -352,7 +371,8 @@ const ServiceDetailsForm = ({ data, setData }: {
               const data = editor.getData();
               setTerms(data);
             }}
-          />)}
+          /> */}
+          <ClientSideCustomEditor />
         </div>
       </div>
 

@@ -741,3 +741,9 @@ span.flatpickr-weekday,
 .my-editor .ck-editor__editable_inline {
   min-height: 100px;
 }
+
+
+/* Add this if you're using ClassicEditor */
+.ck-editor__editable {
+  min-height: 200px;
+}
