@@ -4,7 +4,7 @@ import { connectToDatabase } from "@/utils/db";
 
 import Subcategory from "@/models/Subcategory";
 import imagekit from "@/utils/imagekit";
-
+import "@/models/Category"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",

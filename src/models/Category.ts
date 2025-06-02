@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import '@/models/Module'
 
 const categorySchema = new mongoose.Schema(
   {

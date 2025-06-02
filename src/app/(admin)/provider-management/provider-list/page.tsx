@@ -22,7 +22,7 @@ const options = [
 
 interface Provider {
   _id: string;
-  name: string;
+  fullName: string;
   email: string;
   phoneNo: string;
   address: string;
@@ -35,7 +35,7 @@ interface Provider {
 
 interface ProviderTableData {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   phone: string;
   address: string;
@@ -79,7 +79,7 @@ const ProviderList = () => {
       } else {
         const updatedProviders = data.map((provider: Provider): ProviderTableData => ({
           id: provider._id,
-          name: provider.name,
+          fullName: provider.fullName,
           email: provider.email,
           phone: provider.phoneNo,
           address: provider.address,
@@ -109,7 +109,7 @@ const ProviderList = () => {
   }));
 
   const columns = [
-    { header: 'Name', accessor: 'name' },
+    { header: 'Name', accessor: 'fullName' },
     { header: 'Email', accessor: 'email' },
     { header: 'Phone', accessor: 'phone' },
     { header: 'Address', accessor: 'address' },
