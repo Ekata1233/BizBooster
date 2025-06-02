@@ -15,10 +15,12 @@ interface ModuleType {
 
 const AddCategory = () => {
     const { addCategory } = useCategory();
+    const { fetchCategories } = useCategory();
     const { modules } = useModule();
     const [categoryName, setCategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedModule, setSelectedModule] = useState('');
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -45,7 +47,9 @@ const AddCategory = () => {
             setSelectedModule('');
             setCategoryName('');
             setSelectedFile(null);
+             setFileInputKey(Date.now());
             console.log("page reset")
+            fetchCategories();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 alert(error.message);
@@ -98,7 +102,8 @@ const AddCategory = () => {
                 <div>
                     <Label>Select Image</Label>
                     <FileInput 
-                    key={selectedFile ? selectedFile.name : 'empty'}
+                    // key={selectedFile ? selectedFile.name : 'empty'}
+                    key={fileInputKey} 
                     onChange={handleFileChange} className="custom-class" />
 
                 </div>
