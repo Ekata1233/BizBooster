@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import { useWhyChoose, WhyChooseItem } from '@/context/WhyChooseContext';
 import React, { useMemo, useState } from 'react';
@@ -30,13 +29,16 @@ const Page = () => {
     image: '',
     extraSections: ''
   });
-  console.log(selectedFile);
-  
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      console.log('Selected file:', file.name);
+      // Update the formState.image with the file name or create a preview URL
+      setFormState(prev => ({
+        ...prev,
+        image: URL.createObjectURL(file) // For preview purposes
+      }));
     }
   };
 
@@ -60,41 +62,50 @@ const Page = () => {
   const handleAddNew = () => {
     setEditItem(null);
     setFormState({ title: '', description: '', image: '', extraSections: '' });
+    setSelectedFile(null);
     setShowModal(true);
   };
 
   const handleSubmit = async () => {
     const formData = new FormData();
 
-    // Ensure all values are not undefined
-    formData.append("title", formState.title ?? "");
-    formData.append("description", formState.description ?? "");
-    // Ensure all values are not undefined
-    formData.append("title", formState.title ?? "");
-    formData.append("description", formState.description ?? "");
+    // Append text fields
+    formData.append("title", formState.title || "");
+    formData.append("description", formState.description || "");
 
-    // Check for image file before appending
-    if (formState.image) {
+    // Append the file if it exists
+    if (selectedFile) {
+      formData.append("image", selectedFile);
+    } else if (formState.image && !formState.image.startsWith('blob:')) {
+      // If editing and image wasn't changed, keep the existing image
       formData.append("image", formState.image);
     }
 
-    // Ensure extraSections is defined
-    const extraSections = formState.extraSections
-      ? JSON.stringify(formState.extraSections.split(',').map(desc => ({ description: desc.trim() })))
-      : "[]";
-    formData.append("extraSections", extraSections);
+    // Handle extra sections
+const extraSections = formState.extraSections
+  ? JSON.stringify(
+      formState.extraSections
+        .split(',')
+        .map(desc => ({ description: desc.trim() }))
+    )
+  : "[]";
 
-    if (editItem) {
-      await updateItem(editItem._id!, formData);
-    } else {
-      await addItem(formData);
+formData.append("extraSections", extraSections);
+
+
+    try {
+      if (editItem) {
+        await updateItem(editItem._id!, formData);
+      } else {
+        await addItem(formData);
+      }
+      setShowModal(false);
+      setEditItem(null);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-
-
-    setShowModal(false);
-    setEditItem(null);
   };
-
 
   const columns = useMemo(() => [
     {
@@ -103,7 +114,7 @@ const Page = () => {
       render: (row: WhyChooseItem) => (
         row.image ? (
           <div className="w-70 h-30 overflow-hidden">
-            {row.image.startsWith("http") ? (
+            {row.image.startsWith("http") || row.image.startsWith("blob:") ? (
               <img
                 src={row.image}
                 alt={row.title ?? "Item image"}
@@ -173,10 +184,9 @@ const Page = () => {
           </button>
           <button
             title="Delete"
-            onClick={() => handleDelete(row._id!)} // The `!` tells TypeScript that it's definitely a string
+            onClick={() => handleDelete(row._id!)}
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
           >
-
             <TrashBinIcon />
           </button>
           <Link href={`/why-choose-us/${row._id}`} passHref>
@@ -228,8 +238,20 @@ const Page = () => {
             </div>
             <div>
               <Label>Select Image</Label>
-              <FileInput onChange={handleFileChange} className="custom-class" />
+              <FileInput
+                onChange={handleFileChange}
+                className="custom-class"
 
+              />
+              {formState.image && (
+                <div className="mt-2">
+                  <img
+                    src={formState.image}
+                    alt="Preview"
+                    className="w-[100px] h-[100px] object-cover rounded"
+                  />
+                </div>
+              )}
             </div>
             <div>
               <Label>Extra Sections (comma separated)</Label>
@@ -280,60 +302,62 @@ const Page = () => {
             <BasicTableOne columns={columns} data={getFilteredByStatus()} />
           </div>
         )}
-
       </div>
 
-      {editItem && showModal && (
+      {showModal && (
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} className="max-w-[700px] m-4">
           <div className="bg-white rounded-lg p-6 w-full">
-            <h2 className="text-xl font-semibold mb-4">Edit Item</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {editItem ? "Edit Item" : "Add New Item"}
+            </h2>
             <div className="space-y-3">
               <Label>Title</Label>
               <Input
-
                 value={formState.title}
                 onChange={e => setFormState({ ...formState, title: e.target.value })}
               />
 
               <Label>Description</Label>
               <Input
-
                 value={formState.description}
                 onChange={e => setFormState({ ...formState, description: e.target.value })}
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Image</label>
-                <FileInput onChange={handleFileChange} className="custom-class" />
 
-                {/* Show image preview if editing */}
-                {formState.image && typeof formState.image === 'string' && (
+              <div>
+                <Label>Image</Label>
+                <FileInput
+                  onChange={handleFileChange}
+                  className="custom-class"
+
+                />
+                {/* Show image preview */}
+                {formState.image && (
                   <div className="mt-2">
-                    <Image
+                    <img
                       src={formState.image}
-                      alt="Current"
-                      width={100}
-                      height={50}
-                      className="object-cover rounded"
+                      alt="Preview"
+                      className="w-[100px] h-[100px] object-cover rounded"
                     />
                   </div>
                 )}
               </div>
-              <Label>Extra Sections (comma separated)</Label>
 
+              <Label>Extra Sections (comma separated)</Label>
               <Input
                 value={formState.extraSections}
                 onChange={e => setFormState({ ...formState, extraSections: e.target.value })}
               />
+
               <div className="flex justify-end gap-2">
                 <Button onClick={() => setShowModal(false)} variant="outline">Cancel</Button>
-                <Button onClick={handleSubmit}>Update</Button>
+                <Button onClick={handleSubmit}>
+                  {editItem ? "Update" : "Add"}
+                </Button>
               </div>
             </div>
           </div>
         </Modal>
       )}
-
-
     </div>
   );
 };
