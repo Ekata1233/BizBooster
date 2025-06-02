@@ -1,4 +1,5 @@
 "use client"
+import { z } from "zod";
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
@@ -10,6 +11,7 @@ import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
 import { ChevronDownIcon } from '@/icons';
 import FileInput from '@/components/form/input/FileInput';
+import { providerValidationSchema } from '@/validation/providerValidationSchema';
 
 type ModuleType = {
   _id: string;
@@ -68,6 +70,8 @@ const AddProvider = () => {
   const [otherFiles, setOtherFiles] = useState<File[]>([]);
   const [businessPlan] = useState<'commission base' | 'other'>('commission base');
   const [activeTab, setActiveTab] = useState("Home");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
 
   const { modules } = useModule();
   const { createProvider } = useProvider();
@@ -98,22 +102,70 @@ const AddProvider = () => {
 
   // Submit handler
   const onSubmit = async () => {
+    const formDataToValidate = {
+      fullName,
+      phoneNo,
+      email,
+      password,
+      confirmPassword,    // optional
+      referredBy,       // optional
+      setBusinessPlan: businessPlan, // optional
+      isVerified: false, // optional (you can skip this if you want)
+      isDeleted: false,  // optional
+
+      storeInfo: {
+        storeName,
+        storePhone,
+        storeEmail,
+        module: selectedModule, // must be a 24-character string
+        zone,                   // must be one of: "east", "west", "south", "north", "central"
+        logo: '',               // optional, must be a URL string (e.g. uploaded file URL or keep undefined)
+        cover: '',              // optional, must be a URL string
+        tax,
+        location: {
+          type: locationType,               // must be one of "home", "office", "other"
+          coordinates: [
+            markerPosition.lng,  // already a number
+            markerPosition.lat,  // already a number
+          ],
+
+        },
+        address,
+        officeNo,
+        city,
+        state,
+        country,
+      },
+
+      kyc: {
+        aadhaarCard: aadhaarCardFiles,       // must be array of URL strings
+        panCard: panCardFiles,
+        storeDocument: storeDocumentFiles,
+        GST: gstFiles,
+        other: otherFiles,
+      },
+    };
+
+    console.log("before submititing ")
     try {
+      console.log("old submititing ")
+      try {
+        providerValidationSchema.parse(formDataToValidate);
+        console.log("Validation passed");
+      } catch (err) {
+        console.log("Zod validation error:", err);
+      }
+
+      console.log("new submititing ")
+      setErrors({});
+      console.log("mid submititing ")
       // Basic validations
-      if (
-        !fullName || !phoneNo || !email || !password || !confirmPassword ||
-        !storeName || !storePhone || !storeEmail || !selectedModule || !zone ||
-        !tax || !address || !officeNo || !city || !state || !country
+      if (!selectedModule
       ) {
         alert('Please fill all required fields');
         return;
       }
-
-      if (password !== confirmPassword) {
-        alert('Passwords do not match');
-        return;
-      }
-
+      console.log("mid submititing ")
       const formData = new FormData();
 
       formData.append('fullName', fullName);
@@ -149,14 +201,26 @@ const AddProvider = () => {
       otherFiles.forEach((file) => formData.append('other', file));
 
       const success = await createProvider(formData);
+      console.log("end submititing ")
       if (success) {
         alert('Provider registered successfully!');
       } else {
         alert('Failed to register provider. Please try again.');
       }
     } catch (error) {
-      console.error('Error while registering provider:', error);
-      alert('An error occurred while registering the provider. Please try again.');
+      if (error instanceof z.ZodError) {
+        const fieldErrors: { [key: string]: string } = {};
+        error.errors.forEach((e) => {
+          if (e.path && e.path.length > 0) {
+            const key = e.path.join('.'); // For nested fields like storeInfo.address
+            fieldErrors[key] = e.message;
+          }
+        });
+        setErrors(fieldErrors);
+      } else {
+        console.error('Error while registering provider:', error);
+        alert('An error occurred while registering the provider. Please try again.');
+      }
     }
   };
 
@@ -207,6 +271,7 @@ const AddProvider = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
+                {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
               </div>
 
               <div>
@@ -217,6 +282,7 @@ const AddProvider = () => {
                   value={phoneNo}
                   onChange={(e) => setPhoneNo(e.target.value)}
                 />
+                {errors.phoneNo && <p className="text-red-500 text-sm mt-1">{errors.phoneNo}</p>}
               </div>
 
               <div>
@@ -227,6 +293,7 @@ const AddProvider = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
               <div>
@@ -237,6 +304,7 @@ const AddProvider = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
               </div>
 
               <div>
@@ -247,6 +315,7 @@ const AddProvider = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
 
               <div>
@@ -257,6 +326,7 @@ const AddProvider = () => {
                   value={referredBy}
                   onChange={(e) => setReferredBy(e.target.value)}
                 />
+                {errors.referredBy && <p className="text-red-500 text-sm mt-1">{errors.referredBy}</p>}
               </div>
             </div>
           </section>
@@ -278,6 +348,10 @@ const AddProvider = () => {
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
                 />
+                {errors['storeInfo.storeName'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storeName']}</p>
+                )}
+
               </div>
 
               <div>
@@ -288,6 +362,10 @@ const AddProvider = () => {
                   value={storePhone}
                   onChange={(e) => setStorePhone(e.target.value)}
                 />
+                {errors['storeInfo.storePhone'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storePhone']}</p>
+                )}
+
               </div>
 
               <div>
@@ -298,6 +376,10 @@ const AddProvider = () => {
                   value={storeEmail}
                   onChange={(e) => setStoreEmail(e.target.value)}
                 />
+                {errors['storeInfo.storeEmail'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storeEmail']}</p>
+                )}
+
               </div>
 
               <div>
@@ -313,6 +395,10 @@ const AddProvider = () => {
                     <ChevronDownIcon />
                   </span>
                 </div>
+                {errors['storeInfo.options'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.options']}</p>
+                )}
+
               </div>
 
               <div>
@@ -328,6 +414,10 @@ const AddProvider = () => {
                     <ChevronDownIcon />
                   </span>
                 </div>
+                {errors['storeInfo.zoneOptions'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.zoneOptions']}</p>
+                )}
+
               </div>
 
               <div>
@@ -348,6 +438,10 @@ const AddProvider = () => {
                   value={tax}
                   onChange={(e) => setTax(e.target.value)}
                 />
+                {errors['storeInfo.tax'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.tax']}</p>
+                )}
+
               </div>
 
               <div>
@@ -358,6 +452,10 @@ const AddProvider = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                 />
+                {errors['storeInfo.address'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.address']}</p>
+                )}
+
               </div>
 
               <div>
@@ -368,6 +466,10 @@ const AddProvider = () => {
                   value={officeNo}
                   onChange={(e) => setOfficeNo(e.target.value)}
                 />
+                {errors['storeInfo.officeNo'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.officeNo']}</p>
+                )}
+
               </div>
 
               <div>
@@ -378,6 +480,10 @@ const AddProvider = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                 />
+                {errors['storeInfo.city'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.city']}</p>
+                )}
+
               </div>
 
               <div>
@@ -388,6 +494,10 @@ const AddProvider = () => {
                   value={state}
                   onChange={(e) => setState(e.target.value)}
                 />
+                {errors['storeInfo.state'] && (
+                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.state']}</p>
+                )}
+
               </div>
 
             </div>
@@ -401,6 +511,10 @@ const AddProvider = () => {
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
               />
+              {errors['storeInfo.country'] && (
+                <p className="text-red-500 text-sm mt-1">{errors['storeInfo.country']}</p>
+              )}
+
             </div>
           </section>
 

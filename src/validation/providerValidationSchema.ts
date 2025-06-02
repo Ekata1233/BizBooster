@@ -15,8 +15,6 @@ const storeInfoSchema = z.object({
   storeEmail: z.string().email('Invalid email format'),
   module: z.string().length(24, 'Invalid module ID'),
   zone: z.enum(['east', 'west', 'south', 'north', 'central']),
-  logo: z.string().url().optional(),
-  cover: z.string().url().optional(),
   tax: z.string().min(1),
   location: locationSchema,
   address: z.string().min(5),
@@ -27,11 +25,7 @@ const storeInfoSchema = z.object({
 });
 
 const kycSchema = z.object({
-  aadhaarCard: z.array(z.string().url()).default([]),
-  panCard: z.array(z.string().url()).default([]),
-  storeDocument: z.array(z.string().url()).default([]),
-  GST: z.array(z.string().url()).default([]),
-  other: z.array(z.string().url()).default([]),
+ 
 });
 
 // Main schema
