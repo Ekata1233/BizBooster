@@ -99,6 +99,12 @@ formData.append("extraSections", extraSections);
       } else {
         await addItem(formData);
       }
+      setFormState({
+        title: '',
+        description: '',
+        image: '',
+        extraSections: ''
+      })
       setShowModal(false);
       setEditItem(null);
       setSelectedFile(null);
