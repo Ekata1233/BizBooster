@@ -7,47 +7,74 @@ import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 
-// Define interface matching your provider object
-interface ContactPerson {
-    name?: string;
-    email?: string;
-    phoneNo?: string;
+interface KycDocs {
+    GST?: string[];
+    aadhaarCard?: string[];
+    other?: string[];
+    panCard?: string[];
+    storeDocument?: string[];
 }
 
-interface AccountInformation {
-    email?: string;
-    phoneNo?: string;
+interface Location {
+    coordinates: [number, number];
+    type: string;
+}
+
+interface StoreInfo {
+    address?: string;
+    city?: string;
+    country?: string;
+    cover?: string;
+    location?: Location;
+    logo?: string;
+    officeNo?: string;
+    state?: string;
+    storeEmail?: string;
+    storeName?: string;
+    storePhone?: string;
+    tax?: string;
+    zone?: string;
+}
+
+interface Module {
+    _id: string;
+    name: string;
+    image?: string;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt?: string;
+    __v?: number;
 }
 
 interface Provider {
     _id: string;
-    name: string;
+    fullName: string;  // from your data "fullName"
     email: string;
     phoneNo?: string;
-    address?: string;
-    addressLongitude?: string | number;
-    addressLatitude?: string | number;
-    setBusinessPlan?: string;
-    identityType?: string;
-    identityNumber?: string;
-    identificationImage?: string;
-    companyLogo?: string;
-    contactPerson?: ContactPerson;
-    accountInformation?: AccountInformation;
+    kyc?: KycDocs;
+    password?: string; // hashed
+    referredBy?: string | null;
+    storeInfo?: StoreInfo;
+    logo?: string;
+    module?: Module;
+    createdAt: string;
+    updatedAt: string;
+    isDeleted?: boolean;
+    isVerified?: boolean;
 }
 
 const ProviderDetailsPage = () => {
     const { id } = useParams();
     const { providers } = useProvider();
 
-    // Use Provider | null instead of any
     const [provider, setProvider] = useState<Provider | null>(null);
     const [activeTab, setActiveTab] = useState('info');
 
     useEffect(() => {
         if (providers.length > 0) {
             const selected = providers.find((p) => p._id === id) || null;
-            setProvider(selected);
+            setProvider(selected as Provider | null);
+
         }
     }, [providers, id]);
 
@@ -59,6 +86,25 @@ const ProviderDetailsPage = () => {
         );
     }
 
+    // Helper to render image arrays nicely
+    const renderImageArray = (images?: string[]) => {
+        if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
+        return (
+            <div className="flex flex-wrap gap-4 mt-2">
+                {images.map((src, i) => (
+                    <Image
+                        key={i}
+                        src={src}
+                        alt={`Document ${i + 1}`}
+                        width={120}
+                        height={80}
+                        className="rounded border border-gray-200 object-cover"
+                    />
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="container mx-auto p-4">
             <PageBreadcrumb pageTitle="Provider Details" />
@@ -66,12 +112,11 @@ const ProviderDetailsPage = () => {
             <div className="space-y-6">
                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
                     <UserMetaCard
-                        imageSrc={provider.companyLogo || "/images/logo/default-provider.webp"}
-                        name={provider.name}
+                        imageSrc={provider.storeInfo?.logo || "/images/logo/default-provider.webp"}
+                        name={provider.fullName || provider.storeInfo?.storeName || "No Name"}
                         role={provider.email}
-                        location={provider.address || "No address provided"}  // fallback string here
+                        location={provider.storeInfo?.address || "No address provided"}
                     />
-
                 </div>
 
                 {/* Tabs Navigation */}
@@ -95,144 +140,162 @@ const ProviderDetailsPage = () => {
                 {/* Tab Content */}
                 <div className="space-y-6 pt-4">
                     {activeTab === 'info' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Basic Information */}
+                        <>
+                            {/* Basic Info - single row */}
                             <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-purple-50 to-white">
                                 <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-purple-100 text-purple-700">
                                     Basic Information
                                 </h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Name</p>
-                                        <p className="font-medium">{provider.name}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-gray-500 whitespace-nowrap">Full Name:</p>
+                                        <p className="font-medium">{provider.fullName}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Email</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-gray-500 whitespace-nowrap">Email:</p>
                                         <p className="font-medium">{provider.email}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Phone</p>
-                                        <p className="font-medium">{provider.phoneNo}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-gray-500 whitespace-nowrap">Phone:</p>
+                                        <p className="font-medium">{provider.phoneNo || provider.storeInfo?.storePhone || '-'}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Address</p>
-                                        <p className="font-medium">{provider.address}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Longitude</p>
-                                        <p className="font-medium">{provider.addressLongitude}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Latitude</p>
-                                        <p className="font-medium">{provider.addressLatitude}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-gray-500 whitespace-nowrap">Referral Code:</p>
+                                        <p className="font-medium">{provider.referredBy || '-'}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Business Information */}
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
-                                <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
-                                    Business Information
-                                </h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Business Plan</p>
-                                        <p className="font-medium">{provider.setBusinessPlan}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Identity Type</p>
-                                        <p className="font-medium">{provider.identityType}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Identity Number</p>
-                                        <p className="font-medium">{provider.identityNumber}</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div>
-                                            <p className="text-sm text-gray-500">ID Image</p>
-                                            {provider.identificationImage && (
-                                                <Image
-                                                    src={provider.identificationImage}
-                                                    alt="ID"
-                                                    width={120}
-                                                    height={80}
-                                                    className="mt-2 rounded border border-gray-200"
-                                                />
-                                            )}
+
+                            {/* Store Info + KYC in two columns side by side */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                {/* Store Info */}
+                                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
+                                    <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
+                                        Store Information
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Store Name:</p>
+                                            <p className="font-medium">{provider.storeInfo?.storeName || '-'}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">Company Logo</p>
-                                            {provider.companyLogo && (
-                                                <Image
-                                                    src={provider.companyLogo}
-                                                    alt="Logo"
-                                                    width={120}
-                                                    height={80}
-                                                    className="mt-2 rounded border border-gray-200"
-                                                />
-                                            )}
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Address:</p>
+                                            <p className="font-medium">{provider.storeInfo?.address || '-'}</p>
                                         </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">City:</p>
+                                            <p className="font-medium">{provider.storeInfo?.city || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">State:</p>
+                                            <p className="font-medium">{provider.storeInfo?.state || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Country:</p>
+                                            <p className="font-medium">{provider.storeInfo?.country || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Office Number:</p>
+                                            <p className="font-medium">{provider.storeInfo?.officeNo || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Store Email:</p>
+                                            <p className="font-medium">{provider.storeInfo?.storeEmail || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Store Phone:</p>
+                                            <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Tax:</p>
+                                            <p className="font-medium">{provider.storeInfo?.tax || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
+                                            <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Location Coordinates:</p>
+                                            <p className="font-medium">
+                                                {provider.storeInfo?.location
+                                                    ? `[${provider.storeInfo.location.coordinates[0].toFixed(4)}, ${provider.storeInfo.location.coordinates[1].toFixed(4)}]`
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                        {provider.storeInfo?.cover && (
+                                            <div>
+                                                <p className="text-sm text-gray-500">Store Cover Image</p>
+                                                <Image
+                                                    src={provider.storeInfo.cover}
+                                                    alt="Store Cover"
+                                                    width={250}
+                                                    height={140}
+                                                    className="rounded border border-gray-200"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Contact Person */}
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
-                                <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
-                                    Contact Person
-                                </h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Name</p>
-                                        <p className="font-medium">{provider.contactPerson?.name || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Email</p>
-                                        <p className="font-medium">{provider.contactPerson?.email || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Phone</p>
-                                        <p className="font-medium">{provider.contactPerson?.phoneNo || '-'}</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Account Information */}
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-red-50 to-white">
-                                <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-red-100 text-red-700">
-                                    Account Information
-                                </h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Email</p>
-                                        <p className="font-medium">{provider.accountInformation?.email || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Phone</p>
-                                        <p className="font-medium">{provider.accountInformation?.phoneNo || '-'}</p>
+                                {/* KYC Details */}
+                                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
+                                    <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
+                                        KYC Documents
+                                    </h2>
+                                    <div className="space-y-4">
+                                        {[
+                                            { label: "GST Documents", data: provider.kyc?.GST },
+                                            { label: "Aadhaar Card", data: provider.kyc?.aadhaarCard },
+                                            { label: "PAN Card", data: provider.kyc?.panCard },
+                                            { label: "Other Documents", data: provider.kyc?.other },
+                                            { label: "Store Documents", data: provider.kyc?.storeDocument },
+                                        ].map((item, index) => (
+                                            <div key={index} className="flex items-center space-x-4">
+                                                <p className="text-sm text-gray-500 font-semibold w-40">{item.label}</p>
+                                                <div className="flex-1 flex flex-wrap items-center gap-2">
+                                                    {renderImageArray(item.data)}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+
+
                             </div>
-                        </div>
+                        </>
                     )}
 
                     {activeTab === 'stats' && (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white text-center">
-                                <p className="text-sm text-gray-500">Total Bookings</p>
-                                <p className="text-2xl font-bold">24</p>
-                            </div>
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-purple-50 to-white text-center">
-                                <p className="text-sm text-gray-500">Total Revenue</p>
-                                <p className="text-2xl font-bold">$12,450</p>
-                            </div>
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white text-center">
-                                <p className="text-sm text-gray-500">Active Tours</p>
-                                <p className="text-2xl font-bold">8</p>
-                            </div>
-                            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white text-center">
-                                <p className="text-sm text-gray-500">Rating</p>
-                                <p className="text-2xl font-bold">4.8/5</p>
+                        <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
+                            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
+                                Stats
+                            </h2>
+                            <div className="space-y-3">
+                                <p><strong>Provider ID:</strong> {provider._id}</p>
+                                <p><strong>Is Deleted:</strong> {provider.isDeleted ? 'Yes' : 'No'}</p>
+                                <p><strong>Is Verified:</strong> {provider.isVerified ? 'Yes' : 'No'}</p>
+                                <p><strong>Referred By:</strong> {provider.referredBy || 'N/A'}</p>
+                                <p><strong>Created At:</strong> {new Date(provider.createdAt).toLocaleString()}</p>
+                                <p><strong>Updated At:</strong> {new Date(provider.updatedAt).toLocaleString()}</p>
+                                {provider.module && (
+                                    <>
+                                        <p><strong>Module Name:</strong> {provider.module.name}</p>
+                                        <p><strong>Module Created:</strong> {new Date(provider.module.createdAt).toLocaleDateString()}</p>
+                                        <p><strong>Module Is Deleted:</strong> {provider.module.isDeleted ? 'Yes' : 'No'}</p>
+                                        {provider.module.image && (
+                                            <Image
+                                                src={provider.module.image}
+                                                alt="Module Image"
+                                                width={100}
+                                                height={60}
+                                                className="rounded border border-gray-300"
+                                            />
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}
