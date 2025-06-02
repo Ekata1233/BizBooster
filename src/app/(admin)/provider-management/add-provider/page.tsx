@@ -45,6 +45,7 @@ const AddProvider = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referredBy, setReferredBy] = useState('');
   const [storeName, setStoreName] = useState('');
   const [storePhone, setStorePhone] = useState('');
   const [storeEmail, setStoreEmail] = useState('');
@@ -120,6 +121,7 @@ const AddProvider = () => {
       formData.append('email', email);
       formData.append('password', password);
       formData.append('confirmPassword', confirmPassword);
+      formData.append('referredBy', referredBy);
       formData.append('storeName', storeName);
       formData.append('storePhone', storePhone);
       formData.append('storeEmail', storeEmail);
@@ -146,9 +148,12 @@ const AddProvider = () => {
       gstFiles.forEach((file) => formData.append('GST', file));
       otherFiles.forEach((file) => formData.append('other', file));
 
-      await createProvider(formData);
-      alert('Provider registered successfully!');
-      // Optionally, reset form here
+      const success = await createProvider(formData);
+      if (success) {
+        alert('Provider registered successfully!');
+      } else {
+        alert('Failed to register provider. Please try again.');
+      }
     } catch (error) {
       console.error('Error while registering provider:', error);
       alert('An error occurred while registering the provider. Please try again.');
@@ -249,6 +254,8 @@ const AddProvider = () => {
                 <Input
                   type="text"
                   placeholder="Enter Referral Code"
+                  value={referredBy}
+                  onChange={(e) => setReferredBy(e.target.value)}
                 />
               </div>
             </div>
@@ -414,8 +421,8 @@ const AddProvider = () => {
                 <button
                   key={tab}
                   className={`px-4 py-2 rounded ${activeTab === tab
-                      ? "bg-purple-500 text-white font-semibold"
-                      : "bg-purple-100 text-purple-700"
+                    ? "bg-purple-500 text-white font-semibold"
+                    : "bg-purple-100 text-purple-700"
                     }`}
                   onClick={() => {
                     setActiveTab(tab);

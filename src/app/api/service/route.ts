@@ -5,7 +5,7 @@ import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import "@/models/Category";      // registers the Category model
 import "@/models/Subcategory";
-import "@/models/WhyChoose"; 
+import "@/models/WhyChoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const category = formData.get("basic[category]") as string;
     const subcategory = formData.get("basic[subcategory]") as string;
     const priceStr = formData.get("basic[price]");
+    const discount = formData.get("basic[discount]");
 
 
     if (!serviceName || !category || !subcategory || !priceStr) {
@@ -166,11 +167,18 @@ export async function POST(req: NextRequest) {
       extraSections: extractArray("franchise[rows]", ["title", "description"], formData),
     };
 
+    // Convert price and discount to numbers
+const discountedPrice = discount
+  ? price - (price * parseFloat(discount as string) / 100)
+  : price;
+
     const newService = await Service.create({
       serviceName,
       category,
       subcategory,
       price,
+      discount,
+      discountedPrice,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
       keyValues,

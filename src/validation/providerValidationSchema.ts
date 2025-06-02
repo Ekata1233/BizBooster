@@ -64,8 +64,7 @@ export const providerValidationSchema = z
     confirmPassword: z.string().min(6).max(20),
 
     referralCode: z.string().optional(),
-
-    referredBy: z.string().length(24).optional(),
+    referredBy: z.string().optional(),
 
     storeInfo: storeInfoSchema,
 

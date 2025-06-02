@@ -20,6 +20,13 @@ const serviceSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  discount: {
+    type: Number,
+    default: 0
+  },
+  discountedPrice: {
+    type: Number,
+  },
   thumbnailImage: {
     type: String, // URL or path to image
     required: true
@@ -38,9 +45,9 @@ const serviceSchema = new mongoose.Schema({
     overview: {
       type: String
     },
-    highlight:  [{
-    type: String // Array of URLs or image paths
-  }],
+    highlight: [{
+      type: String // Array of URLs or image paths
+    }],
     document: {
       type: String
     },
@@ -80,6 +87,35 @@ const serviceSchema = new mongoose.Schema({
       title: { type: String, required: true },
       description: { type: String }
     }]
+  },
+  reviews: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+    comment: {
+      type: String,
+      trim: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  averageRating: {
+    type: Number,
+    default: 0
+  },
+  totalReviews: {
+    type: Number,
+    default: 0
   },
   isDeleted: {
     type: Boolean,
