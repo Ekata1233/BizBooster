@@ -39,7 +39,7 @@ interface ProviderContextType {
   loading: boolean;
   error: string | null;
   fetchProviders: () => void;
-  createProvider: (data: FormData) => Promise<void>;
+  createProvider: (data: FormData) => Promise<boolean | undefined>;
   updateProvider: (id: string, data: FormData) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
 
@@ -83,8 +83,16 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       const res = await axios.post('/api/provider', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setProviders((prev) => [...prev, res.data.data]);
-      setError(null);
+      // setProviders((prev) => [...prev, res.data.data]);
+      // setError(null);
+      if (res.status === 201 && res.data?.data) {
+        setProviders((prev) => [...prev, res.data.data]);
+        setError(null);
+        return true;
+      } else {
+        setError('Provider not saved');
+        return false;
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || 'Failed to delete provider');

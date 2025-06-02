@@ -105,6 +105,8 @@ const ProviderDetailsPage = () => {
         );
     };
 
+    console.log("privider detials logo : ", provider.storeInfo?.logo)
+
     return (
         <div className="container mx-auto p-4">
             <PageBreadcrumb pageTitle="Provider Details" />

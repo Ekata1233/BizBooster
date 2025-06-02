@@ -182,6 +182,9 @@ export async function POST(req: NextRequest) {
       referredById = referringUser._id;
     }
 
+
+    console.log("referredById : ", referredById)
+
     // Create provider document
     const newProvider = await Provider.create({
       fullName: parsedData.fullName,
