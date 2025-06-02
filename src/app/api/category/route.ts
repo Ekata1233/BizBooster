@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Always fetch all with populate
-    const categories = await Category.find({}).populate("module");
+    const categories = await Category.find({isDeleted: false }).populate("module");
 
     // Filter in-memory for `name` and `module.name`
     let filteredCategories = categories;
