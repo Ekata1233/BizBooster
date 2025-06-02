@@ -16,6 +16,7 @@ export async function OPTIONS() {
 }
 
 
+
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
@@ -193,6 +194,7 @@ export async function POST(req: NextRequest) {
       kyc: parsedData.kyc,
       businessPlan: parsedData.setBusinessPlan,
       isDeleted: parsedData.isDeleted,
+      referralCode, 
     });
 
     return NextResponse.json({ success: true, data: newProvider }, { status: 201 });
@@ -263,7 +265,9 @@ export async function GET(req: NextRequest) {
 
     // Apply filter and sort
     const providers = await Provider.find(filter)
+   
       .sort(sortOption)
+      .populate('storeInfo.module')
       .lean();
 
     return NextResponse.json(

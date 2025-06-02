@@ -12,6 +12,7 @@ import { useProvider } from '@/context/ProviderContext';
 import Link from 'next/link';
 import { useModule } from '@/context/ModuleContext';
 import axios from 'axios';
+import mongoose from 'mongoose';
 
 const options = [
   { value: "latest", label: "Latest" },
@@ -19,23 +20,43 @@ const options = [
   { value: "ascending", label: "Ascending" },
   { value: "descending", label: "Descending" },
 ];
-
+interface StoreInfo {
+  storeName: string;
+  storePhone: string;
+  storeEmail: string;
+  module: mongoose.Types.ObjectId;
+  zone: 'east' | 'west' | 'south' | 'north' | 'central';
+  logo?: string;
+  cover?: string;
+  tax: string;
+  location: Location;
+  address: string;
+  officeNo: string;
+  city: string;
+  state: string;
+  country: string;
+}
+interface KYC {
+  aadhaarCard: string[];
+  panCard: string[];
+  storeDocument: string[];
+  GST: string[];
+  other: string[];
+}
 interface Provider {
   _id: string;
-  name: string;
+  fullName: string;
   email: string;
   phoneNo: string;
-  address: string;
-  module?: {
-    name: string;
-  };
+  storeInfo: StoreInfo;
+  kyc: KYC;
   setBusinessPlan: string;
   isDeleted?: boolean;
 }
 
 interface ProviderTableData {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   phone: string;
   address: string;
@@ -60,9 +81,9 @@ const ProviderList = () => {
 
   const fetchFilteredProviders = async () => {
     try {
-      
+
       const params = {
-        ...(selectedModule && {selectedModule: selectedModule}),
+        ...(selectedModule && { selectedModule: selectedModule }),
         ...(sort && { sort }),
         ...(searchQuery && { search: searchQuery }),
       };
@@ -79,11 +100,11 @@ const ProviderList = () => {
       } else {
         const updatedProviders = data.map((provider: Provider): ProviderTableData => ({
           id: provider._id,
-          name: provider.name,
+          fullName: provider.fullName,
           email: provider.email,
           phone: provider.phoneNo,
-          address: provider.address,
-          module: provider.module?.name || "N/A",
+          address: provider.storeInfo?.address,
+          module: (provider.storeInfo?.module as { name?: string })?.name || "N/A",
           status: provider.isDeleted ? 'Inactive' : 'Active',
         }));
 
@@ -99,7 +120,7 @@ const ProviderList = () => {
 
   useEffect(() => {
     fetchFilteredProviders();
-  }, [sort, searchQuery,selectedModule]);
+  }, [sort, searchQuery, selectedModule]);
 
 
   const moduleOptions = modules.map((module) => ({
@@ -109,7 +130,7 @@ const ProviderList = () => {
   }));
 
   const columns = [
-    { header: 'Name', accessor: 'name' },
+    { header: 'Name', accessor: 'fullName' },
     { header: 'Email', accessor: 'email' },
     { header: 'Phone', accessor: 'phone' },
     { header: 'Address', accessor: 'address' },
