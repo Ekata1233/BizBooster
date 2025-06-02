@@ -27,7 +27,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const service = await Service.findById(id).populate("category")
+    const service = await Service.findById(id).populate("category").populate('serviceDetails.whyChoose')
       .populate("subcategory");
 
     if (!service || service.isDeleted) {

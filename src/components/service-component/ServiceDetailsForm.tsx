@@ -48,6 +48,7 @@ export type ServiceDetails = {
   faqs: FAQ[];
   rows: RowData[];
   whyChoose: WhyChoose[];
+  termsAndConditions? : string;
 };
 
 const ServiceDetailsForm = ({ data, setData }: {
