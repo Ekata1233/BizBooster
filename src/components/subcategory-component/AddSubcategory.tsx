@@ -15,6 +15,8 @@ const AddSubcategory = () => {
     const [subcategoryName, setSubcategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
+    
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -40,6 +42,7 @@ const AddSubcategory = () => {
             alert('Subcategory added successfully!');
             setSelectedCategory('');
             setSubcategoryName('');
+            setFileInputKey(Date.now());
             setSelectedFile(null);
             console.log("page reset")
         } catch (error: unknown) {
@@ -73,6 +76,7 @@ const AddSubcategory = () => {
                             placeholder="Select an option"
                             onChange={handleSelectChange}
                             className="dark:bg-dark-900"
+                            value={selectedCategory}
                         />
                         <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
                             <ChevronDownIcon />
@@ -91,7 +95,9 @@ const AddSubcategory = () => {
                 </div>
                 <div>
                     <Label>Select Image</Label>
-                    <FileInput onChange={handleFileChange} className="custom-class" />
+                    <FileInput 
+                     key={fileInputKey} 
+                     onChange={handleFileChange} className="custom-class" />
 
                 </div>
                 <div className='mt-6 '>

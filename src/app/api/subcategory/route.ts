@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Fetch all subcategories with populated 'category'
-    const subcategories = await Subcategory.find().populate("category");
+    const subcategories = await Subcategory.find({isDeleted: false }).populate("category");
 
     // Filter in-memory for `name` and `category.name`
     let filteredSubcategories = subcategories;
