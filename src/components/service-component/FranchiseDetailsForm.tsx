@@ -130,7 +130,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
           <Label>Commission</Label>
           <Input
             type="number"
-            placeholder="Commission"
+            placeholder="Commission in %"
             value={data.commission || ''}
             onChange={handleCommissionChange}
           />
