@@ -31,6 +31,7 @@ type BasicDetailsData = {
   category?: string;
   subcategory?: string;
   price?: number;
+  discount?: number;
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
   keyValues?: KeyValue[];
@@ -50,6 +51,7 @@ const AddNewService = () => {
       category: '',
       subcategory: '',
       price: 0,
+      discount: 0,
       thumbnail: null,
       covers: [],
       keyValues: [{ key: '', value: '' }],
@@ -90,6 +92,7 @@ console.log("form data of service : ", formData)
           !!formData?.basic?.category &&
           !!formData?.basic?.subcategory &&
           !!formData?.basic?.price &&
+          !!formData?.basic?.discount &&
           !!formData?.basic?.thumbnail &&
           !!formData?.basic?.covers 
         );
@@ -192,6 +195,7 @@ console.log("form data of service : ", formData)
           category: '',
           subcategory: '',
           price: 0,
+          discount: 0,
           thumbnail: null,
           covers: [],
         },

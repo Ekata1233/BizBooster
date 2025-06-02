@@ -12,6 +12,7 @@ interface BasicDetailsData {
     category?: string;
     subcategory?: string;
     price?: number;
+    discount?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
     keyValues?: KeyValue[];
@@ -183,9 +184,34 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             type="number"
                             placeholder="Price"
                             value={data.price}
-                            onChange={(e) => setData({ price: Number(e.target.value) })}
+                            onChange={(e) => setData({ ...data, price: Number(e.target.value) })}
                         />
                     </div>
+
+                    <div>
+                        <Label>Discount (%)</Label>
+                        <Input
+                            type="number"
+                            placeholder="Discount (%)"
+                            value={data.discount || ""}
+                            onChange={(e) => setData({ ...data, discount: Number(e.target.value) })}
+                        />
+                    </div>
+
+                    <div>
+                        <Label>After Discount Price</Label>
+                        <Input
+                            type="number"
+                            placeholder="After Discount Price"
+                            value={
+                                data.price && data.discount
+                                    ? data.price - (data.price * data.discount) / 100
+                                    : ""
+                            }
+                            {...{ readOnly: true }}
+                        />
+                    </div>
+
                 </div>
 
                 {/* Right Side */}
