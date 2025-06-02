@@ -15,10 +15,12 @@ interface ModuleType {
 
 const AddCategory = () => {
     const { addCategory } = useCategory();
+    const { fetchCategories } = useCategory();
     const { modules } = useModule();
     const [categoryName, setCategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedModule, setSelectedModule] = useState('');
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -45,7 +47,9 @@ const AddCategory = () => {
             setSelectedModule('');
             setCategoryName('');
             setSelectedFile(null);
+             setFileInputKey(Date.now());
             console.log("page reset")
+            fetchCategories();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 alert(error.message);
@@ -78,6 +82,7 @@ const AddCategory = () => {
                             placeholder="Select an option"
                             onChange={handleSelectChange}
                             className="dark:bg-dark-900"
+                            value={selectedModule}
                         />
                         <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
                             <ChevronDownIcon />
@@ -96,7 +101,10 @@ const AddCategory = () => {
                 </div>
                 <div>
                     <Label>Select Image</Label>
-                    <FileInput onChange={handleFileChange} className="custom-class" />
+                    <FileInput 
+                    // key={selectedFile ? selectedFile.name : 'empty'}
+                    key={fileInputKey} 
+                    onChange={handleFileChange} className="custom-class" />
 
                 </div>
                 <div className='mt-6 '>

@@ -53,7 +53,7 @@ interface Provider {
     phoneNo?: string;
     kyc?: KycDocs;
     password?: string; // hashed
-    referredBy?: string | null;
+    referralCode?: string | null;
     storeInfo?: StoreInfo;
     logo?: string;
     module?: Module;
@@ -163,7 +163,7 @@ const ProviderDetailsPage = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm text-gray-500 whitespace-nowrap">Referral Code:</p>
-                                        <p className="font-medium">{provider.referredBy || '-'}</p>
+                                        <p className="font-medium">{provider.referralCode || '-'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -279,7 +279,7 @@ const ProviderDetailsPage = () => {
                                 <p><strong>Provider ID:</strong> {provider._id}</p>
                                 <p><strong>Is Deleted:</strong> {provider.isDeleted ? 'Yes' : 'No'}</p>
                                 <p><strong>Is Verified:</strong> {provider.isVerified ? 'Yes' : 'No'}</p>
-                                <p><strong>Referred By:</strong> {provider.referredBy || 'N/A'}</p>
+                                <p><strong>Referred Code:</strong> {provider.referralCode || 'N/A'}</p>
                                 <p><strong>Created At:</strong> {new Date(provider.createdAt).toLocaleString()}</p>
                                 <p><strong>Updated At:</strong> {new Date(provider.updatedAt).toLocaleString()}</p>
                                 {provider.module && (
