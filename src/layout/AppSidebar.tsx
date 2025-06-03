@@ -120,6 +120,14 @@ const providerItems: NavItem[] = [
       { name: "Provider List", path: "/provider-management/provider-list", pro: false },
     ],
   },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Zone Setup",
+    subItems: [
+      { name: "Add Zone", path: "/zone-management/add-zone", pro: false },
+      { name: "Zone List", path: "/zone-management/zone-list", pro: false },
+    ],
+  },
 ];
 
 const serviceItems: NavItem[] = [

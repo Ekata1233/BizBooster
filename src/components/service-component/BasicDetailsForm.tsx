@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, KeyboardEvent } from 'react'
 import Label from '../form/Label'
 import Input from '../form/input/InputField'
 import Select from '../form/Select'
@@ -15,6 +15,7 @@ interface BasicDetailsData {
     discount?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
+    tags?: string[];
     keyValues?: KeyValue[];
 }
 
@@ -129,6 +130,28 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setRows(updatedRows);
     };
 
+    const [tagInput, setTagInput] = useState("");
+
+    // Use empty array if undefined
+    const tags = data.tags || [];
+
+    const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && tagInput.trim() !== "") {
+            e.preventDefault();
+            const newTag = tagInput.trim();
+
+            if (!tags.includes(newTag)) {
+                setData({ tags: [...tags, newTag] }); // Update the tags array correctly
+            }
+
+            setTagInput(""); // Clear input
+        }
+    };
+
+    const handleRemoveTag = (indexToRemove: number) => {
+        const newTags = tags.filter((_, i) => i !== indexToRemove);
+        setData({ tags: newTags }); // Update tags array after removal
+    };
     return (
         <div>
             <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
@@ -243,6 +266,38 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                 ))}
                         </div>
                     </div>
+
+                    {/* Tags Input Section */}
+                    <div>
+                        <Label>Tags</Label>
+                        <div className="border rounded rounded-lg px-3 py-1 flex flex-wrap items-center gap-2">
+                            {tags.map((tag, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center text-sm"
+                                >
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveTag(index)}
+                                        className="ml-1 text-red-500 hover:text-red-700"
+                                        aria-label={`Remove tag ${tag}`}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                            <input
+                                type="text"
+                                className="flex-grow outline-none py-1"
+                                placeholder="Type a tag and press Enter"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)} // update tagInput string here
+                                onKeyDown={handleTagKeyDown}
+                            />
+                        </div>
+                    </div>
+
 
                     <div className="my-3">
                         <Label>Enter Key Value</Label>

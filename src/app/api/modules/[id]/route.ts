@@ -1,9 +1,9 @@
+
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
-import Banner from "@/models/Banner";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

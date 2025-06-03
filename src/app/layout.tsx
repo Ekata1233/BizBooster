@@ -12,6 +12,7 @@ import { BannerProvider } from '@/context/BannerContext';
 import { ServiceProvider } from '@/context/ServiceContext';
 import { ProviderProvider } from '@/context/ProviderContext';
 import { WhyChooseProvider } from '@/context/WhyChooseContext';
+import { ZoneProvider } from '@/context/ZoneContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -36,7 +37,9 @@ export default function RootLayout({
                         <ServiceProvider>
                           <ProviderProvider>
                             <WhyChooseProvider>
-                              {children}
+                              <ZoneProvider>
+                                {children}
+                              </ZoneProvider>
                             </WhyChooseProvider>
                           </ProviderProvider>
                         </ServiceProvider>
