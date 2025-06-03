@@ -4,8 +4,7 @@ import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '@/utils/db';
 import '@/models/Category'; // ✅ Register model
-import '@/models/Subcategory'; // ✅ Register model
-// Removed: import '@/models/Service';
+import '@/models/Subcategory'; 
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
