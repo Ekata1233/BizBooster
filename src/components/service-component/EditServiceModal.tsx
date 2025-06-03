@@ -53,7 +53,7 @@ type FormDataType = {
     };
     franchise: {
         overview: string;
-        commission: string | number;
+        commission: string;
         howItWorks: string;
         termsAndConditions: string;
         rows: ExtraSection[];
@@ -68,7 +68,6 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
     const [completedSteps, setCompletedSteps] = useState<number[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    console.log("service in update : ", service);
 
     const [formData, setFormData] = useState<FormDataType>({
         basic: {
@@ -100,48 +99,67 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
     });
 
 
-    useEffect(() => {
-        if (service) {
-            setFormData({
-                basic: {
-                    name: service.name,
-                    category: service.category._id,
-                    subcategory: service.subcategory._id,
-                    price: service.price,
-                    thumbnail: null,
-                    bannerImages: [],
-                },
-                service: {
-                    overview: service.serviceDetails.overview,
-                    highlight: service.serviceDetails.highlight || null,
-                    benefits: service.serviceDetails.benefits,
-                    howItWorks: service.serviceDetails.howItWorks,
-                    terms: service.serviceDetails.terms,
-                    document: service.serviceDetails.document,
-                    rows: service.serviceDetails.row || [],
-                    whyChoose: service.serviceDetails.whyChoose
-                        ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
-                        : [],
-                    faqs: service.serviceDetails.faqs || [],
-                },
-                franchise: {
-                    overview: service.franchiseDetails.overview,
-                    commission: service.franchiseDetails.commission,
-                    howItWorks: service.franchiseDetails.howItWorks,
-                    termsAndConditions: service.franchiseDetails.termsAndConditions,
-                    rows: service.franchiseDetails.extraSections || [],
-                },
-            });
+   const [hasInitialized, setHasInitialized] = useState(false);
+
+useEffect(() => {
+    if (isOpen && service && !hasInitialized) {
+        console.log("service in update : ", service);
+
+        setFormData({
+            basic: {
+                name: service.name || '',
+                category: service.category._id || '',
+                subcategory: service.subcategory._id || '',
+                price: service.price,
+                thumbnail: null,
+                bannerImages: [],
+            },
+            service: {
+                overview: service.serviceDetails.overview,
+                highlight: service.serviceDetails.highlight || null,
+                benefits: service.serviceDetails.benefits,
+                howItWorks: service.serviceDetails.howItWorks,
+                terms: service.serviceDetails.terms,
+                document: service.serviceDetails.document,
+                rows: service.serviceDetails.row || [],
+                whyChoose: service.serviceDetails.whyChoose
+                    ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
+                    : [],
+                faqs: service.serviceDetails.faqs || [],
+            },
+            franchise: {
+                overview: service.franchiseDetails.overview,
+                commission: service.franchiseDetails.commission,
+                howItWorks: service.franchiseDetails.howItWorks,
+                termsAndConditions: service.franchiseDetails.termsAndConditions,
+                rows: service.franchiseDetails.extraSections || [],
+            },
+        });
+
+        if (service.name && service.category?._id && service.subcategory?._id && service.price) {
+            setCompletedSteps([1]);
         }
-    }, [service]);
+
+        setHasInitialized(true); // Ensure it runs only once per modal open
+    }
+}, [isOpen, service, hasInitialized]);
+
+// Reset when modal closes
+useEffect(() => {
+    if (!isOpen) {
+        setHasInitialized(false);
+    }
+}, [isOpen]);
+
+
 
     const isStepComplete = (stepNumber: number): boolean => {
         switch (stepNumber) {
             case 1:
                 return (
                     !!formData.basic.name.trim() &&
-                    !!formData.basic.category &&
-                    !!formData.basic.subcategory &&
+                    formData.basic.category !== '' &&  // Changed from !!formData.basic.category
+                    formData.basic.subcategory !== '' &&
                     formData.basic.price >= 0
                 );
             case 2:
@@ -369,10 +387,10 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                     <button
                                         type="button"
                                         onClick={nextStep}
-                                        disabled={!isStepComplete(step)}
-                                        className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(step)
-                                            ? 'bg-blue-600 hover:bg-blue-700'
-                                            : 'bg-gray-400 cursor-not-allowed'
+                                        disabled={!isStepComplete(step) && !completedSteps.includes(step)}
+                                        className={`ml-auto px-4 py-2 text-white rounded ${(isStepComplete(step) || completedSteps.includes(step))
+                                                ? 'bg-blue-600 hover:bg-blue-700'
+                                                : 'bg-gray-400 cursor-not-allowed'
                                             }`}
                                     >
                                         Next
@@ -382,11 +400,11 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                         type="submit"
                                         disabled={!isStepComplete(3) || isSubmitting}
                                         className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(3)
-                                            ? 'bg-green-600 hover:bg-green-700'
-                                            : 'bg-gray-400 cursor-not-allowed'
+                                                ? 'bg-green-600 hover:bg-green-700'
+                                                : 'bg-gray-400 cursor-not-allowed'
                                             }`}
                                     >
-                                        {isSubmitting ? 'Updatting...' : 'Update'}
+                                        {isSubmitting ? 'Updating...' : 'Update'}
                                     </button>
                                 )}
                             </div>
