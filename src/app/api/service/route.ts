@@ -26,7 +26,17 @@ export async function POST(req: NextRequest) {
     const subcategory = formData.get("basic[subcategory]") as string;
     const priceStr = formData.get("basic[price]");
     const discount = formData.get("basic[discount]");
+    const tags: string[] = [];
 
+    // Iterate all entries in formData to find all tags
+    for (const key of formData.keys()) {
+      if (key.startsWith("basic[tags]")) {
+        const tagValue = formData.get(key);
+        if (typeof tagValue === "string") {
+          tags.push(tagValue);
+        }
+      }
+    }
 
     if (!serviceName || !category || !subcategory || !priceStr) {
       return NextResponse.json(
@@ -168,9 +178,9 @@ export async function POST(req: NextRequest) {
     };
 
     // Convert price and discount to numbers
-const discountedPrice = discount
-  ? price - (price * parseFloat(discount as string) / 100)
-  : price;
+    const discountedPrice = discount
+      ? price - (price * parseFloat(discount as string) / 100)
+      : price;
 
     const newService = await Service.create({
       serviceName,
@@ -181,6 +191,7 @@ const discountedPrice = discount
       discountedPrice,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
+      tags,
       keyValues,
       serviceDetails,
       franchiseDetails,

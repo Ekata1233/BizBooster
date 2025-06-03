@@ -8,6 +8,7 @@ import { TrashBinIcon } from '@/icons';
 import type { EventInfo } from '@ckeditor/ckeditor5-utils';
 import dynamic from 'next/dynamic';
 
+
 type EditorType = {
   create: (...args: any[]) => Promise<any>;
   EditorWatchdog: any;
@@ -32,6 +33,7 @@ interface Editor {
 
 interface FranchiseData {
   commission?: string | number;
+  commissionType?: string | number;
   overview?: string;
   howItWorks?: string;
   terms?: string;
@@ -48,10 +50,10 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
+  const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>('percentage');
+  // const [commission, setCommission] = useState<string>('');
+  const [commissionValue, setCommissionValue] = useState("");
 
-  console.log("overview : ",overview)
-  console.log("howItWorks : ",howItWorks)
-  console.log("terms : ",terms)
 
   useEffect(() => {
     if (data) {
@@ -62,41 +64,41 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     }
   }, []);
 
-    useEffect(() => {
-      const newData: FranchiseData = {
-       overview,
-       howItWorks,
-       terms,
-       rows
-      };
-  
-      // Optional: Only setData if there's a change
-      if (JSON.stringify(data) !== JSON.stringify(newData)) {
-        setData(newData); // ✅ pass object, not function
-      }
-    }, [overview,howItWorks,terms,rows]);
+  useEffect(() => {
+    const newData: FranchiseData = {
+      overview,
+      howItWorks,
+      terms,
+      rows
+    };
+
+    // Optional: Only setData if there's a change
+    if (JSON.stringify(data) !== JSON.stringify(newData)) {
+      setData(newData); // ✅ pass object, not function
+    }
+  }, [overview, howItWorks, terms, rows]);
+
+  // const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setData({ commission: e.target.value });
+  // };
+  const handleTypeChange = (newType: 'percentage' | 'amount') => {
+  setCommissionType(newType);
+  const formatted =
+    newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
+  setData({ commissionType: newType, commission: formatted });
+};
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setData({ commission: e.target.value });
+    const value = e.target.value;
+    // Allow only numbers
+    if (/^\d*$/.test(value)) {
+      setCommissionValue(value);
+      const formatted =
+        commissionType === "percentage" ? `${value}%` : `₹${value}`;
+      setData({ commission: formatted });
+    }
   };
 
-  const handleOverviewChange = (event: EventInfo<string, unknown>, editor: Editor) => {
-    const dataOverview = editor.getData();
-    setOverview(dataOverview);
-    setData({ overview: dataOverview });
-  };
-
-  const handleHowItWorkChange = (event: EventInfo<string, unknown>, editor: Editor) => {
-    const dataHowItWork = editor.getData();
-    setHowItWorks(dataHowItWork);
-    setData({ howItWorks: dataHowItWork });
-  };
-
-  const handleTermsChange = (event: EventInfo<string, unknown>, editor: Editor) => {
-    const dataTerms = editor.getData();
-    setTerms(dataTerms);
-    setData({ terms: dataTerms });
-  };
 
   const handleAddRow = () => {
     const newRows = [...rows, { title: '', description: '' }];
@@ -126,7 +128,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     <div>
       <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Franchise Details</h4>
       <div className="space-y-4">
-        <div>
+        {/* <div>
           <Label>Commission</Label>
           <Input
             type="number"
@@ -134,6 +136,57 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             value={data.commission || ''}
             onChange={handleCommissionChange}
           />
+        </div> */}
+
+        <div className="space-y-2">
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">
+              {commissionType === "percentage" ? "Commission (%)" : "Commission (₹)"}
+            </Label>
+            <div className="flex items-center gap-2">
+              <div className="relative w-32">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
+                  {commissionType === "percentage" ? "%" : "₹"}
+                </span>
+                <Input
+                  type="text"
+                  value={commissionValue}
+                  onChange={handleCommissionChange}
+                  placeholder="Commission"
+                  className="pl-8"
+                />
+              </div>
+
+              <button
+                type="button"
+                // onClick={() => {
+                //   setCommissionType("percentage");
+                //   setData({ commissionType: "percentage" }); // <-- This updates formData
+                // }}
+                onClick={() => handleTypeChange("percentage")}
+                className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "percentage"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+              >
+                %
+              </button>
+              <button
+                type="button"
+                // onClick={() => {
+                //   setCommissionType("amount");
+                //   setData({ commissionType: "amount" }); // <-- This updates formData
+                // }} 
+                onClick={() => handleTypeChange("amount")}
+                className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "amount"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+              >
+                ₹
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className='my-3'>

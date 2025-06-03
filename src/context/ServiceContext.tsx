@@ -25,6 +25,7 @@ interface Service {
   category: { name: string };
   subcategory: { name: string };
   price: number;
+  tags?: string[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
 }

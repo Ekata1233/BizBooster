@@ -34,6 +34,10 @@ const serviceSchema = new mongoose.Schema({
   bannerImages: [{
     type: String // Array of URLs or image paths
   }],
+  tags: {
+    type: [String], // Array of tag strings
+    default: []
+  },
   keyValues: [{
     key: { type: String, },
     value: { type: String }
@@ -88,35 +92,36 @@ const serviceSchema = new mongoose.Schema({
       description: { type: String }
     }]
   },
-  reviews: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    rating: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5
-    },
-    comment: {
-      type: String,
-      trim: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  averageRating: {
-    type: Number,
-    default: 0
-  },
-  totalReviews: {
-    type: Number,
-    default: 0
-  },
+
+  // reviews: [{
+  //   user: {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: 'User',
+  //     required: true
+  //   },
+  //   rating: {
+  //     type: Number,
+  //     required: true,
+  //     min: 1,
+  //     max: 5
+  //   },
+  //   comment: {
+  //     type: String,
+  //     trim: true
+  //   },
+  //   createdAt: {
+  //     type: Date,
+  //     default: Date.now
+  //   }
+  // }],
+  // averageRating: {
+  //   type: Number,
+  //   default: 0
+  // },
+  // totalReviews: {
+  //   type: Number,
+  //   default: 0
+  // },
   isDeleted: {
     type: Boolean,
     default: false

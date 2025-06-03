@@ -15,6 +15,7 @@ type RowData = {
 
 type FranchiseDetails = {
   commission?: string | number;
+  commissionType?: string;
   overview?: string;
   howItWorks?: string;
   terms?: string;
@@ -34,6 +35,7 @@ type BasicDetailsData = {
   discount?: number;
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
+  tags?: string[];
   keyValues?: KeyValue[];
 };
 
@@ -54,6 +56,7 @@ const AddNewService = () => {
       discount: 0,
       thumbnail: null,
       covers: [],
+      tags: [],
       keyValues: [{ key: '', value: '' }],
     },
     service: {
@@ -70,6 +73,7 @@ const AddNewService = () => {
     },
     franchise: {
       commission: '',
+      commissionType: 'percentage',
       overview: '',
       howItWorks: '',
       terms: '',
@@ -82,7 +86,7 @@ const AddNewService = () => {
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-console.log("form data of service : ", formData)
+  console.log("form data of service : ", formData)
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -94,7 +98,8 @@ console.log("form data of service : ", formData)
           !!formData?.basic?.price &&
           !!formData?.basic?.discount &&
           !!formData?.basic?.thumbnail &&
-          !!formData?.basic?.covers 
+          !!formData?.basic?.covers &&
+          !!formData?.basic?.tags
         );
       case 2:
         return (
@@ -198,6 +203,7 @@ console.log("form data of service : ", formData)
           discount: 0,
           thumbnail: null,
           covers: [],
+          tags: [],
         },
         service: {
           benefits: '',
