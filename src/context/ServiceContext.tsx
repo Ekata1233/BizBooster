@@ -11,7 +11,7 @@ interface ExtraSection {
 
 interface FranchiseDetails {
   overview: string;
-  commission: string | number;
+  commission: string ;
   howItWorks: string;
   termsAndConditions: string;
   extraSections?: ExtraSection[];

@@ -14,7 +14,7 @@ type RowData = {
 };
 
 type FranchiseDetails = {
-  commission?: string | number;
+  commission?: string ;
   commissionType?: string;
   overview?: string;
   howItWorks?: string;
@@ -73,7 +73,6 @@ const AddNewService = () => {
     },
     franchise: {
       commission: '',
-      commissionType: 'percentage',
       overview: '',
       howItWorks: '',
       terms: '',

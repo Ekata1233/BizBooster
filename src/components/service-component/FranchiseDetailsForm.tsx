@@ -2,18 +2,10 @@
 import React, { useEffect, useState } from 'react'
 import Label from '../form/Label'
 import Input from '../form/input/InputField'
-import { CKEditor } from '@ckeditor/ckeditor5-react'
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 import { TrashBinIcon } from '@/icons';
-import type { EventInfo } from '@ckeditor/ckeditor5-utils';
 import dynamic from 'next/dynamic';
 
 
-type EditorType = {
-  create: (...args: any[]) => Promise<any>;
-  EditorWatchdog: any;
-  ContextWatchdog: any;
-};
 
 const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
   ssr: false,
@@ -27,13 +19,9 @@ interface RowData {
 
 
 
-interface Editor {
-  getData: () => string;
-}
-
 interface FranchiseData {
-  commission?: string | number;
-  commissionType?: string | number;
+  commission?: string ;
+  commissionType?: string ;
   overview?: string;
   howItWorks?: string;
   terms?: string;

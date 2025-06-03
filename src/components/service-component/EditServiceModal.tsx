@@ -53,7 +53,7 @@ type FormDataType = {
     };
     franchise: {
         overview: string;
-        commission: string | number;
+        commission: string ;
         howItWorks: string;
         termsAndConditions: string;
         rows: ExtraSection[];
