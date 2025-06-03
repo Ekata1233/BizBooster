@@ -54,7 +54,7 @@ const Page: React.FC = () => {
                 )
 
                 // Allow closure if clicked near the starting point (approx ~100m)
-                if (distance < 0.055) {
+                if (distance < 0.005) {
                     setPolygonComplete(true)
                     console.log("Zone created:", points)
                     return
@@ -91,7 +91,8 @@ const Page: React.FC = () => {
         try {
             await addZone({ name: zoneName.trim(), coordinates: points })
             alert("Zone submitted successfully!")
-            handleReset()
+            handleReset();
+            setZoneName("");
         } catch (error) {
             console.error("Failed to submit zone:", error)
             alert("Something went wrong while submitting.")
@@ -198,14 +199,14 @@ const Page: React.FC = () => {
                             </button>
                         </div>
 
-                        {polygonComplete && (
+                        {/* {polygonComplete && (
                             <div className="mt-4 bg-gray-100 p-4 rounded">
                                 <h3 className="text-lg font-medium mb-2">Zone Coordinates:</h3>
                                 <pre className="text-sm text-gray-700 overflow-auto">
                                     {JSON.stringify(points, null, 2)}
                                 </pre>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </ComponentCard>

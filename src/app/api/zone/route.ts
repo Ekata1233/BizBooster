@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     await connectToDatabase()
-    const zones = await Zone.find()
+    const zones = await Zone.find({isDeleted: false})
     return NextResponse.json({ data: zones }, { status: 200, headers: corsHeaders })
   } catch (error) {
     console.error("Error fetching zones:", error)

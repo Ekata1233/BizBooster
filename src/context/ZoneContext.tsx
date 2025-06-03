@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 // Coordinate type
-interface ICoordinate {
+export interface ICoordinate {
   lat: number;
   lng: number;
 }
@@ -16,6 +16,7 @@ interface IZone {
   coordinates: ICoordinate[];
   createdAt?: string;
   updatedAt?: string;
+  isDeleted?: boolean;
 }
 
 // Context type

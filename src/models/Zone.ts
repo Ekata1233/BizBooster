@@ -10,6 +10,7 @@ export interface IZone extends Document {
   coordinates: ICoordinate[]
   createdAt?: Date
   updatedAt?: Date
+  isDeleted?: boolean
 }
 
 const coordinateSchema = new Schema<ICoordinate>({
@@ -28,6 +29,7 @@ const zoneSchema = new Schema<IZone>(
         message: "A zone must have at least 3 coordinates.",
       },
     },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 )
