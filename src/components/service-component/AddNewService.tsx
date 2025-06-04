@@ -80,7 +80,7 @@ const AddNewService = () => {
     },
   });
 
-  console.log("formdata : ", formData);
+
   
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,19 +88,9 @@ const AddNewService = () => {
 
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
-  // console.log("form data of service : ", formData)
-
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
       case 1:
-        // console.log("Name:", formData?.basic?.name?.trim());
-        // console.log("Category:", formData?.basic?.category);
-        // console.log("Subcategory:", formData?.basic?.subcategory);
-        // console.log("Price:", formData?.basic?.price);
-        // console.log("Discount:", formData?.basic?.discount);
-        // console.log("Thumbnail:", formData?.basic?.thumbnail);
-        // console.log("Covers:", formData?.basic?.covers);
-        // console.log("Tags:", formData?.basic?.tags);
         return (
           !!formData?.basic?.name?.trim() &&
           !!formData?.basic?.category &&

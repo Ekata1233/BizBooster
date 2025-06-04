@@ -21,8 +21,10 @@ interface FaqItem {
     answer: string;
 }
 
-
-
+interface KeyValue {
+    key: string;
+    value: string;
+}
 
 interface EditServiceModalProps {
     isOpen: boolean;
@@ -37,8 +39,11 @@ type FormDataType = {
         category: string;
         subcategory: string;
         price: number;
+        discount?: number;
         thumbnail: File | null;
         bannerImages: File[];
+        tags?: string[];
+        keyValues?: KeyValue[];
     };
     service: {
         overview: string;
@@ -69,14 +74,18 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
 
+
     const [formData, setFormData] = useState<FormDataType>({
         basic: {
             name: '',
             category: '',
             subcategory: '',
             price: 0,
+            discount: 0,
             thumbnail: null,
             bannerImages: [],
+            tags: [],
+            keyValues: [{ key: '', value: '' }],
         },
         service: {
             overview: '',
@@ -98,58 +107,65 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
         },
     });
 
+    console.log("formdata of edit ; ", formData)
 
-   const [hasInitialized, setHasInitialized] = useState(false);
+    const [hasInitialized, setHasInitialized] = useState(false);
 
-useEffect(() => {
-    if (isOpen && service && !hasInitialized) {
-        console.log("service in update : ", service);
+    useEffect(() => {
+        if (isOpen && service && !hasInitialized) {
+            console.log("service in update : ", service);
+            console.log("📦 service.keyValues:", service.keyValues);
+            setFormData({
+                basic: {
+                    name: service.name || '',
+                    category: service.category._id || '',
+                    subcategory: service.subcategory._id || '',
+                    price: service.price,
+                    discount: service.discount || 0,
+                    thumbnail: null,
+                    bannerImages: [],
+                    tags: service.tags || [],
+                    keyValues:
+                        Array.isArray(service.keyValues) && service.keyValues.length > 0
+                            ? service.keyValues.map(({ key, value }) => ({ key, value }))
+                            : [{ key: '', value: '' }],
+                },
+                service: {
+                    overview: service.serviceDetails.overview,
+                    highlight: service.serviceDetails.highlight || null,
+                    benefits: service.serviceDetails.benefits,
+                    howItWorks: service.serviceDetails.howItWorks,
+                    terms: service.serviceDetails.terms,
+                    document: service.serviceDetails.document,
+                    rows: service.serviceDetails.row || [],
+                    whyChoose: service.serviceDetails.whyChoose
+                        ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
+                        : [],
+                    faqs: service.serviceDetails.faqs || [],
+                },
+                franchise: {
+                    overview: service.franchiseDetails.overview,
+                    commission: service.franchiseDetails.commission,
+                    howItWorks: service.franchiseDetails.howItWorks,
+                    termsAndConditions: service.franchiseDetails.termsAndConditions,
+                    rows: service.franchiseDetails.extraSections || [],
+                },
+            });
 
-        setFormData({
-            basic: {
-                name: service.name || '',
-                category: service.category._id || '',
-                subcategory: service.subcategory._id || '',
-                price: service.price,
-                thumbnail: null,
-                bannerImages: [],
-            },
-            service: {
-                overview: service.serviceDetails.overview,
-                highlight: service.serviceDetails.highlight || null,
-                benefits: service.serviceDetails.benefits,
-                howItWorks: service.serviceDetails.howItWorks,
-                terms: service.serviceDetails.terms,
-                document: service.serviceDetails.document,
-                rows: service.serviceDetails.row || [],
-                whyChoose: service.serviceDetails.whyChoose
-                    ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
-                    : [],
-                faqs: service.serviceDetails.faqs || [],
-            },
-            franchise: {
-                overview: service.franchiseDetails.overview,
-                commission: service.franchiseDetails.commission,
-                howItWorks: service.franchiseDetails.howItWorks,
-                termsAndConditions: service.franchiseDetails.termsAndConditions,
-                rows: service.franchiseDetails.extraSections || [],
-            },
-        });
+            if (service.name && service.category?._id && service.subcategory?._id && service.price) {
+                setCompletedSteps([1]);
+            }
 
-        if (service.name && service.category?._id && service.subcategory?._id && service.price) {
-            setCompletedSteps([1]);
+            setHasInitialized(true); // Ensure it runs only once per modal open
         }
+    }, [isOpen, service, hasInitialized]);
 
-        setHasInitialized(true); // Ensure it runs only once per modal open
-    }
-}, [isOpen, service, hasInitialized]);
-
-// Reset when modal closes
-useEffect(() => {
-    if (!isOpen) {
-        setHasInitialized(false);
-    }
-}, [isOpen]);
+    // Reset when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setHasInitialized(false);
+        }
+    }, [isOpen]);
 
 
 
@@ -167,7 +183,7 @@ useEffect(() => {
                     !!formData.service.overview.trim() &&
                     !!formData.service.benefits.trim() &&
                     !!formData.service.howItWorks.trim() &&
-                    !!formData.service.terms.trim() &&
+                    // !!formData.service.terms.trim() &&
                     !!formData.service.document.trim()
                 );
             case 3:
@@ -389,8 +405,8 @@ useEffect(() => {
                                         onClick={nextStep}
                                         disabled={!isStepComplete(step) && !completedSteps.includes(step)}
                                         className={`ml-auto px-4 py-2 text-white rounded ${(isStepComplete(step) || completedSteps.includes(step))
-                                                ? 'bg-blue-600 hover:bg-blue-700'
-                                                : 'bg-gray-400 cursor-not-allowed'
+                                            ? 'bg-blue-600 hover:bg-blue-700'
+                                            : 'bg-gray-400 cursor-not-allowed'
                                             }`}
                                     >
                                         Next
@@ -400,8 +416,8 @@ useEffect(() => {
                                         type="submit"
                                         disabled={!isStepComplete(3) || isSubmitting}
                                         className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(3)
-                                                ? 'bg-green-600 hover:bg-green-700'
-                                                : 'bg-gray-400 cursor-not-allowed'
+                                            ? 'bg-green-600 hover:bg-green-700'
+                                            : 'bg-gray-400 cursor-not-allowed'
                                             }`}
                                     >
                                         {isSubmitting ? 'Updating...' : 'Update'}

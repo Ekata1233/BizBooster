@@ -48,7 +48,7 @@ export type ServiceDetails = {
   faqs: FAQ[];
   rows: RowData[];
   whyChoose: WhyChoose[];
-  termsAndConditions? : string;
+  termsAndConditions?: string;
 };
 
 const ServiceDetailsForm = ({ data, setData }: {
@@ -93,7 +93,7 @@ const ServiceDetailsForm = ({ data, setData }: {
     }
   }, []);
 
-
+  console.log("hightlight  ", highlight)
   // useEffect(() => {
 
   //   const newData = {
@@ -235,15 +235,16 @@ const ServiceDetailsForm = ({ data, setData }: {
         <Label>Highlight Images (Select Multiple Images)</Label>
         <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
         <div className="mt-2 flex gap-2 flex-wrap">
-          {highlight &&
-            Array.from(highlight).map((file, index) => (
+          {/* {highlight &&
+            Array.from(highlight as FileList | File[]).map((file, index) => (
               <img
                 key={index}
                 src={URL.createObjectURL(file)}
                 alt={`Highlight Preview ${index}`}
                 className="w-42 h-24 object-cover rounded border"
               />
-            ))}
+            ))} */}
+
         </div>
       </div>
 

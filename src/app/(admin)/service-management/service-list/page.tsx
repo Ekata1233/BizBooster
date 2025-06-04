@@ -27,9 +27,17 @@ interface Service {
   category: { _id: string; name: string };
   subcategory: { _id: string; name: string };
   price: number;
+  discount: number;
+  tags?: string[];
+  keyValues?: KeyValue[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
   isDeleted: boolean;
+}
+
+interface KeyValue {
+  key: string;
+  value: string;
 }
 
 interface ExtraSection {
@@ -38,7 +46,7 @@ interface ExtraSection {
 }
 
 interface WhyChooseItem {
- _id?: string;
+  _id?: string;
 }
 
 interface FaqItem {
@@ -75,6 +83,9 @@ export interface ServiceData {
   category: { _id: string, name: string };
   subcategory: { _id: string, name: string };
   price: number;
+  discount: number;
+  tags?: string[];
+  keyValues?: KeyValue[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
   status: string;
@@ -91,7 +102,7 @@ const options = [
 
 
 const ServiceList = () => {
-  const { updateService,deleteService } = useService();
+  const { updateService, deleteService } = useService();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [filteredServices, setFilteredServices] = useState<ServiceData[]>([]);
@@ -103,6 +114,8 @@ const ServiceList = () => {
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
+
+  console.log("selected service : ", selectedService)
 
   const fetchFilteredServices = async () => {
     try {
@@ -131,6 +144,11 @@ const ServiceList = () => {
           category: service.category || { _id: '', name: 'N/A' },
           subcategory: service.subcategory || { _id: '', name: 'N/A' },
           price: service.price,
+          discount: service.discount,
+          tags: service.tags?.length ? service.tags : ['N/A'],
+          keyValues: service.keyValues?.length
+            ? service.keyValues
+            : [{ key: 'N/A', value: 'N/A' }],
           serviceDetails: service.serviceDetails,
           franchiseDetails: service.franchiseDetails,
           status: service.isDeleted ? 'Inactive' : 'Active',
@@ -267,6 +285,7 @@ const ServiceList = () => {
   };
 
   const openModal = (service: ServiceData) => {
+    console.log("service in modal : ", service)
     setSelectedService(service);
     setIsOpen(true);
   };

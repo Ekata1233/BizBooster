@@ -38,6 +38,8 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
 
+    console.log("data for .....: ",data)
+
     useEffect(() => {
         if (data) {
             if (data.category) setSelectedCategory(data.category);
