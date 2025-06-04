@@ -92,14 +92,15 @@ const AddNewService = () => {
     switch (stepNumber) {
       case 1:
         return (
-          !!formData?.basic?.name?.trim() &&
-          !!formData?.basic?.category &&
-          !!formData?.basic?.subcategory &&
-          !!formData?.basic?.price &&
-          !!formData?.basic?.discount &&
-          !!formData?.basic?.thumbnail &&
-          !!formData?.basic?.covers &&
-          !!formData?.basic?.tags
+          !!formData?.basic?.name?.trim() 
+          // &&
+          // !!formData?.basic?.category &&
+          // !!formData?.basic?.subcategory &&
+          // !!formData?.basic?.price &&
+          // !!formData?.basic?.discount &&
+          // !!formData?.basic?.thumbnail &&
+          // !!formData?.basic?.covers &&
+          // !!formData?.basic?.tags
         );
       case 2:
         return (

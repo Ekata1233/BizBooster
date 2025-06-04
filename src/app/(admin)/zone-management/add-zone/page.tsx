@@ -35,6 +35,11 @@ const Page: React.FC = () => {
     const [zoneName, setZoneName] = useState<string>("")
     const { addZone } = useZone();
 
+    const mapOptions = {
+  clickableIcons: false, // disables POI clicks so your map click handler triggers on any click
+}
+
+
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
         libraries: ["places"],
@@ -147,6 +152,7 @@ const Page: React.FC = () => {
                                     zoom={13}
                                     onClick={handleMapClick}
                                     onMouseMove={handleMouseMove}
+                                    options={mapOptions}
                                 >
                                     {points.map((point, idx) => (
                                         <Marker key={idx} position={point} />
