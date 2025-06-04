@@ -271,6 +271,7 @@ export async function GET(req: NextRequest) {
    
       .sort(sortOption)
       .populate('storeInfo.module')
+      .populate('storeInfo.zone')
       .lean();
 
     return NextResponse.json(

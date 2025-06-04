@@ -25,7 +25,7 @@ interface StoreInfo {
   storePhone: string;
   storeEmail: string;
   module: mongoose.Types.ObjectId;
-  zone: 'east' | 'west' | 'south' | 'north' | 'central';
+  zone: mongoose.Types.ObjectId;
   logo?: string;
   cover?: string;
   tax: string;

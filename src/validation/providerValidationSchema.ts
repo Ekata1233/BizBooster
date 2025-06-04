@@ -14,7 +14,7 @@ const storeInfoSchema = z.object({
   storePhone: z.string().regex(/^\+?\d{10,15}$/, 'Invalid phone number'),
   storeEmail: z.string().email('Invalid email format'),
   module: z.string().length(24, 'Invalid module ID'),
-  zone: z.enum(['east', 'west', 'south', 'north', 'central']),
+  zone: z.string().length(24, 'Invalid zone ID'),
   tax: z.string().min(1),
   location: locationSchema,
   address: z.string().min(5),

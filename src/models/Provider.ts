@@ -13,7 +13,7 @@ interface StoreInfo {
   storePhone: string;
   storeEmail: string;
   module: mongoose.Types.ObjectId;
-  zone: 'east' | 'west' | 'south' | 'north' | 'central';
+  zone: mongoose.Types.ObjectId;
   logo?: string;
   cover?: string;
   tax: string;
@@ -92,9 +92,9 @@ const storeInfoSchema = new Schema<StoreInfo>({
     ref: 'Module',
   },
   zone: {
-    type: String,
-    enum: ['east', 'west', 'south', 'north', 'central'],
+    type: Schema.Types.ObjectId,
     required: true,
+    ref: 'Zone',
   },
   logo: {
     type: String,
