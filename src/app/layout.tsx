@@ -13,6 +13,7 @@ import { ServiceProvider } from '@/context/ServiceContext';
 import { ProviderProvider } from '@/context/ProviderContext';
 import { WhyChooseProvider } from '@/context/WhyChooseContext';
 import { ZoneProvider } from '@/context/ZoneContext';
+import RouteLoader from '@/components/RouteLoader';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
+        <RouteLoader/>
         <ThemeProvider>
           <SidebarProvider>
             <AuthProvider>
