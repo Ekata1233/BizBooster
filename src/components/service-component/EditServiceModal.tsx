@@ -107,14 +107,12 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
         },
     });
 
-    console.log("formdata of edit ; ", formData)
 
     const [hasInitialized, setHasInitialized] = useState(false);
 
     useEffect(() => {
         if (isOpen && service && !hasInitialized) {
-            console.log("service in update : ", service);
-            console.log("📦 service.keyValues:", service.keyValues);
+            console.log("service : ", service)
             setFormData({
                 basic: {
                     name: service.name || '',
@@ -135,20 +133,20 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     highlight: service.serviceDetails.highlight || null,
                     benefits: service.serviceDetails.benefits,
                     howItWorks: service.serviceDetails.howItWorks,
-                    terms: service.serviceDetails.terms,
+                    terms: service.serviceDetails.termsAndConditions,
                     document: service.serviceDetails.document,
                     rows: service.serviceDetails.row || [],
                     whyChoose: service.serviceDetails.whyChoose
                         ? service.serviceDetails.whyChoose.map(item => ({ _id: item._id }))
                         : [],
-                    faqs: service.serviceDetails.faqs || [],
+                    faqs: service.serviceDetails.faq || [],
                 },
                 franchise: {
-                    overview: service.franchiseDetails.overview,
-                    commission: service.franchiseDetails.commission,
-                    howItWorks: service.franchiseDetails.howItWorks,
-                    termsAndConditions: service.franchiseDetails.termsAndConditions,
-                    rows: service.franchiseDetails.extraSections || [],
+                    overview: service.franchiseDetails?.overview || '',
+                    commission: service.franchiseDetails?.commission || '',
+                    howItWorks: service.franchiseDetails?.howItWorks || '',
+                    termsAndConditions: service.franchiseDetails?.termsAndConditions || '',
+                    rows: service.franchiseDetails?.extraSections || [],
                 },
             });
 

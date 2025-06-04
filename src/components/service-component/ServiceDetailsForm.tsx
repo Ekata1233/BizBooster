@@ -71,9 +71,6 @@ const ServiceDetailsForm = ({ data, setData }: {
 
   const whyChooseContext = useWhyChoose();
 
-  useEffect(() => {
-    console.log("whyChoose : ", whyChoose)
-  }, [whyChoose])
 
   useEffect(() => {
     if (data) {
@@ -93,7 +90,6 @@ const ServiceDetailsForm = ({ data, setData }: {
     }
   }, []);
 
-  console.log("hightlight  ", highlight)
   // useEffect(() => {
 
   //   const newData = {

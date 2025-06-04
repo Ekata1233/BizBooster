@@ -24,7 +24,7 @@ interface FranchiseData {
   commissionType?: string ;
   overview?: string;
   howItWorks?: string;
-  terms?: string;
+  termsAndConditions?: string;
   rows?: RowData[];
 }
 
@@ -36,7 +36,7 @@ interface FranchiseDetailsFormProps {
 const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
-  const [terms, setTerms] = useState('');
+  const [termsAndConditions, setTerms] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>('percentage');
   // const [commission, setCommission] = useState<string>('');
@@ -47,7 +47,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     if (data) {
       setOverview(data.overview || '');
       setHowItWorks(data.howItWorks || '');
-      setTerms(data.terms || '');
+      setTerms(data.termsAndConditions || '');
       setRows(data.rows?.length ? data.rows : []);
     }
   }, []);
@@ -56,7 +56,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     const newData: FranchiseData = {
       overview,
       howItWorks,
-      terms,
+      termsAndConditions,
       rows
     };
 
@@ -64,7 +64,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     if (JSON.stringify(data) !== JSON.stringify(newData)) {
       setData(newData); // ✅ pass object, not function
     }
-  }, [overview, howItWorks, terms, rows]);
+  }, [overview, howItWorks, termsAndConditions, rows]);
 
   // const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   setData({ commission: e.target.value });
@@ -208,7 +208,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             data={terms}
             onChange={handleTermsChange}
           /> */}
-          <ClientSideCustomEditor value={terms} onChange={setTerms} />
+          <ClientSideCustomEditor value={termsAndConditions} onChange={setTerms} />
         </div>
 
         <div className="my-3">

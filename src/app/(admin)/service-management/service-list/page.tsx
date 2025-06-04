@@ -60,10 +60,12 @@ interface ServiceDetails {
   benefits: string;
   howItWorks: string;
   terms: string;
+  termsAndConditions: string;
   document: string;
   row?: ExtraSection[]; // <-- add this
   whyChoose?: WhyChooseItem[];    // <-- and this
-  faqs?: FaqItem[];                // <-- and this
+  faqs?: FaqItem[];   
+  faq?: FaqItem[];               // <-- and this
 }
 
 interface FranchiseDetails {
@@ -115,7 +117,6 @@ const ServiceList = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
 
-  console.log("selected service : ", selectedService)
 
   const fetchFilteredServices = async () => {
     try {
