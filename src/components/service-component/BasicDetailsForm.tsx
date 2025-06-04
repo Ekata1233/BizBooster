@@ -77,11 +77,16 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     }, [data.category]);
 
     useEffect(() => {
+        setSelectedSubcategory(data.subcategory || '');
+    }, [data.subcategory]);
+
+    useEffect(() => {
         if (data.category !== selectedCategory) {
-            setData({ subcategory: '' });
+            // setData({ subcategory: '' });
             setSelectedCategory(data.category || '');
         }
     }, [data.category]);
+
 
     useEffect(() => {
         setData({ thumbnail: selectedFile });
