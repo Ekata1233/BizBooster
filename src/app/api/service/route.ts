@@ -171,16 +171,16 @@ export async function POST(req: NextRequest) {
     // 🛠 Manually construct franchiseDetails
     const franchiseDetails = {
       commission: formData.get("franchise[commission]") as string,
-      overview: formData.get("franchise[overview]") as string,
+      overview: formData.get("franchise[overview]") as string,  
       howItWorks: formData.get("franchise[howItWorks]") as string,
-      termsAndConditions: formData.get("franchise[terms]") as string,
+      termsAndConditions: formData.get("franchise[termsAndConditions]") as string,
       extraSections: extractArray("franchise[rows]", ["title", "description"], formData),
     };
 
     // Convert price and discount to numbers
     const discountedPrice = discount
-      ? price - (price * parseFloat(discount as string) / 100)
-      : price;
+  ? Math.floor(price - (price * parseFloat(discount as string) / 100))
+  : price;
 
     const newService = await Service.create({
       serviceName,

@@ -36,7 +36,7 @@ interface FranchiseDetailsFormProps {
 const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
-  const [termsAndConditions, setTerms] = useState('');
+  const [termsAndConditions, setTermsAndConditions] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>('percentage');
   // const [commission, setCommission] = useState<string>('');
@@ -47,7 +47,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
     if (data) {
       setOverview(data.overview || '');
       setHowItWorks(data.howItWorks || '');
-      setTerms(data.termsAndConditions || '');
+      setTermsAndConditions(data.termsAndConditions || '');
       setRows(data.rows?.length ? data.rows : []);
     }
   }, []);
@@ -208,7 +208,7 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
             data={terms}
             onChange={handleTermsChange}
           /> */}
-          <ClientSideCustomEditor value={termsAndConditions} onChange={setTerms} />
+          <ClientSideCustomEditor value={termsAndConditions} onChange={setTermsAndConditions} />
         </div>
 
         <div className="my-3">

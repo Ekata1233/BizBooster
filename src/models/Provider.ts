@@ -44,6 +44,7 @@ export interface ProviderDocument extends Document {
   storeInfo: StoreInfo;
   kyc: KYC;
   setBusinessPlan?: 'commission base' | 'other';
+  subscribedServices: mongoose.Types.ObjectId;
   isVerified: boolean;
   isDeleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -202,6 +203,10 @@ const providerSchema = new Schema<ProviderDocument>({
     type: String,
     enum: ['commission base', 'other'],
   },
+  subscribedServices: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Service'
+}],
   isVerified: {
     type: Boolean,
     default: false
