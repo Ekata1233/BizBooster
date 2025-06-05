@@ -20,7 +20,7 @@ export interface Provider {
   phoneNo: string;
   email: string;
   address: string;
-  zone: 'east' | 'west' | 'south' | 'north' | 'central'; // ✅ added zone
+  zone: string;
   module?: { name: string }
   companyLogo?: string;
   identityType: 'passport' | 'driving license' | 'other';

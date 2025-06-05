@@ -13,7 +13,7 @@ interface StoreInfo {
   storePhone: string;
   storeEmail: string;
   module: mongoose.Types.ObjectId;
-  zone: 'east' | 'west' | 'south' | 'north' | 'central';
+  zone: mongoose.Types.ObjectId;
   logo?: string;
   cover?: string;
   tax: string;
@@ -44,6 +44,7 @@ export interface ProviderDocument extends Document {
   storeInfo: StoreInfo;
   kyc: KYC;
   setBusinessPlan?: 'commission base' | 'other';
+  subscribedServices: mongoose.Types.ObjectId;
   isVerified: boolean;
   isDeleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -92,9 +93,9 @@ const storeInfoSchema = new Schema<StoreInfo>({
     ref: 'Module',
   },
   zone: {
-    type: String,
-    enum: ['east', 'west', 'south', 'north', 'central'],
+    type: Schema.Types.ObjectId,
     required: true,
+    ref: 'Zone',
   },
   logo: {
     type: String,
@@ -202,6 +203,10 @@ const providerSchema = new Schema<ProviderDocument>({
     type: String,
     enum: ['commission base', 'other'],
   },
+  subscribedServices: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Service'
+}],
   isVerified: {
     type: Boolean,
     default: false

@@ -85,7 +85,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                     List,
                     Indent,
                     IndentBlock,
-                    FormatPainter
+                    FormatPainter,
                 ],
                 toolbar: [
                     'undo', 'redo', '|',
@@ -114,6 +114,9 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 },
                 mediaEmbed: {
                     previewsInData: true
+                },
+                simpleUpload: {
+                    uploadUrl: '/api/upload', // 👈 your Next.js route to handle ImageKit upload
                 },
                 content: {
                     styles: [

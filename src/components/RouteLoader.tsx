@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const RouteLoader = () => {
-const pathname = usePathname();
+  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,12 +21,12 @@ const pathname = usePathname();
   if (!loading) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/100 dark:bg-gray-900/80">
       <div className="dot-loader">
-  <span></span>
-  <span></span>
-  <span></span>
-</div>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   );
 };

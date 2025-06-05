@@ -233,7 +233,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             placeholder="After Discount Price"
                             value={
                                 data.price && data.discount
-                                    ? data.price - (data.price * data.discount) / 100
+                                    ? Math.floor(data.price - (data.price * data.discount) / 100)
                                     : ""
                             }
                             {...{ readOnly: true }}

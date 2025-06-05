@@ -12,6 +12,7 @@ import Select from '@/components/form/Select';
 import { ChevronDownIcon } from '@/icons';
 import FileInput from '@/components/form/input/FileInput';
 import { providerValidationSchema } from '@/validation/providerValidationSchema';
+import { useZone } from "@/context/ZoneContext";
 
 type ModuleType = {
   _id: string;
@@ -26,18 +27,6 @@ const centerDefault = {
   lat: 18.501426841362647,
   lng: 73.88318878735599,
 };
-
-
-
-const zoneOptions = [
-  { value: "east", label: "East" },
-  { value: "west", label: "West" },
-  { value: "south", label: "South" },
-  { value: "north", label: "North" },
-  { value: "central", label: "Central" },
-];
-
-
 
 const AddProvider = () => {
   const { handleSubmit, setValue, formState: { } } = useForm();
@@ -72,10 +61,16 @@ const AddProvider = () => {
   const [activeTab, setActiveTab] = useState("Home");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-
+  const { zones } = useZone();
   const { modules } = useModule();
   const { createProvider } = useProvider();
 
+  const zoneOptions = zones.map(zone => ({
+    value: zone._id,   // unique id for the zone
+    label: zone.name,  // display name for the zone
+  }));
+
+  console.log("zone selected : ", zone)
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -99,6 +94,44 @@ const AddProvider = () => {
       setFiles(Array.from(event.target.files));
     }
   };
+
+  const resetForm = () => {
+    setFullName('');
+    setPhoneNo('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setReferredBy('');
+    setStoreName('');
+    setStorePhone('');
+    setStoreEmail('');
+    setSelectedModule(null);
+    setZone('');
+    setLogo(null);
+    setCover(null);
+    setTax('');
+    setLocationType('home');
+    setMarkerPosition(centerDefault);
+    setAddress('');
+    setOfficeNo('');
+    setCity('');
+    setState('');
+    setCountry('');
+    setAadhaarCardFiles([]);
+    setPanCardFiles([]);
+    setStoreDocumentFiles([]);
+    setGstFiles([]);
+    setOtherFiles([]);
+    setActiveTab("Home");
+    setErrors({});
+
+    // Also reset react-hook-form fields if needed
+    // You have setValue available, so reset those fields too
+    setValue('latitude', undefined);
+    setValue('longitude', undefined);
+    // Add other fields managed by react-hook-form if any
+  };
+
 
   // Submit handler
   const onSubmit = async () => {
@@ -204,6 +237,7 @@ const AddProvider = () => {
       console.log("end submititing ")
       if (success) {
         alert('Provider registered successfully!');
+        resetForm();
       } else {
         alert('Failed to register provider. Please try again.');
       }

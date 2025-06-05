@@ -8,6 +8,7 @@ import Label from '@/components/form/Label';
 
 import AddModule from '@/components/module-component/AddModule';
 import ModuleStatCard from '@/components/module-component/ModuleStatCard';
+import RouteLoader from '@/components/RouteLoader';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
@@ -231,7 +232,9 @@ const Module = () => {
     };
 
     if (!modules || !Array.isArray(modules)) {
-        return <div>Loading...</div>;
+        return <div>
+            <RouteLoader ></RouteLoader>
+        </div>;
     }
 
     return (

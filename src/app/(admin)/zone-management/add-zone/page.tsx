@@ -34,6 +34,7 @@ const Page: React.FC = () => {
     const [hoverPoint, setHoverPoint] = useState<LatLng | null>(null)
     const [zoneName, setZoneName] = useState<string>("")
     const { addZone } = useZone();
+    
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -43,6 +44,7 @@ const Page: React.FC = () => {
     const handleMapClick = useCallback(
         (event: google.maps.MapMouseEvent) => {
             if (polygonComplete || !event.latLng) return
+            
 
             const lat = event.latLng.lat()
             const lng = event.latLng.lng()
@@ -54,7 +56,7 @@ const Page: React.FC = () => {
                 )
 
                 // Allow closure if clicked near the starting point (approx ~100m)
-                if (distance < 0.005) {
+                if (distance < 0.01) {
                     setPolygonComplete(true)
                     console.log("Zone created:", points)
                     return
