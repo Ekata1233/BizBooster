@@ -2,40 +2,12 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import axios from 'axios';
+import { ProviderDocument } from '@/models/Provider';
 
-export interface ContactPerson {
-  name: string;
-  phoneNo: string;
-  email: string;
-}
 
-export interface AccountInformation {
-  email: string;
-  phoneNo: string;
-}
-
-export interface Provider {
-  _id: string;
-  name: string;
-  phoneNo: string;
-  email: string;
-  address: string;
-  zone: string;
-  module?: { name: string }
-  companyLogo?: string;
-  identityType: 'passport' | 'driving license' | 'other';
-  identityNumber: string;
-  identificationImage: string;
-  contactPerson: ContactPerson;
-  accountInformation: AccountInformation;
-  addressLatitude: number;
-  addressLongitude: number;
-  setBusinessPlan: 'commission base' | 'other';
-  isDeleted: boolean;
-}
 
 interface ProviderContextType {
-  providers: Provider[];
+  providers: ProviderDocument[];
   loading: boolean;
   error: string | null;
   fetchProviders: () => void;
@@ -46,19 +18,19 @@ interface ProviderContextType {
   // *** ADDED login related types ***
   loginProvider: (email: string, password: string) => Promise<void>;
   token: string | null;
-  loggedInProvider: Provider | null;
+  loggedInProvider: ProviderDocument | null;
 }
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
 
 export function ProviderProvider({ children }: { children: ReactNode }) {
-  const [providers, setProviders] = useState<Provider[]>([]);
+  const [providers, setProviders] = useState<ProviderDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // *** ADDED login related states ***
   const [token, setToken] = useState<string | null>(null);
-  const [loggedInProvider, setLoggedInProvider] = useState<Provider | null>(null);
+  const [loggedInProvider, setLoggedInProvider] = useState<ProviderDocument | null>(null);
 
   const fetchProviders = async () => {
     setLoading(true);

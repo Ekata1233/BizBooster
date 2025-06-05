@@ -115,6 +115,14 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Assemble the data object
+    console.log("logoUrl:", logoUrl);
+    console.log("coverUrl:", coverUrl);
+    console.log("aadhaarCard:", aadhaarCard);
+    console.log("panCard:", panCard);
+    console.log("storeDocument:", storeDocument);
+    console.log("GST:", GST);
+    console.log("other:", other);
+
     const data = {
       fullName,
       phoneNo,
@@ -185,6 +193,9 @@ export async function POST(req: NextRequest) {
 
     console.log("referredById : ", referredById)
 
+    console.log("Final Parsed Data to Save: ", parsedData);
+
+
     // Create provider document
     const newProvider = await Provider.create({
       fullName: parsedData.fullName,
@@ -197,20 +208,20 @@ export async function POST(req: NextRequest) {
       kyc: parsedData.kyc,
       businessPlan: parsedData.setBusinessPlan,
       isDeleted: parsedData.isDeleted,
-      referralCode, 
+      referralCode,
     });
 
     return NextResponse.json({ success: true, data: newProvider }, { status: 201 });
 
   } catch (error: unknown) {
-      console.error('Error saving user:', error);
-      const message = error instanceof Error ? error.message : 'Unknown error';
-  
-      return NextResponse.json(
-        { error: message },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    console.error('Error saving user:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+
+    return NextResponse.json(
+      { error: message },
+      { status: 400, headers: corsHeaders }
+    );
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -268,7 +279,7 @@ export async function GET(req: NextRequest) {
 
     // Apply filter and sort
     const providers = await Provider.find(filter)
-   
+
       .sort(sortOption)
       .populate('storeInfo.module')
       .populate('storeInfo.zone')
