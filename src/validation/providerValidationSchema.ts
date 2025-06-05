@@ -16,6 +16,8 @@ const storeInfoSchema = z.object({
   module: z.string().length(24, 'Invalid module ID'),
   zone: z.string().length(24, 'Invalid zone ID'),
   tax: z.string().min(1),
+  logo: z.string().url().optional(), // ✅ must include
+    cover: z.string().url().optional(),
   location: locationSchema,
   address: z.string().min(5),
   officeNo: z.string().min(1),
@@ -25,7 +27,11 @@ const storeInfoSchema = z.object({
 });
 
 const kycSchema = z.object({
- 
+ aadhaarCard: z.array(z.string().url()).optional(),
+    panCard: z.array(z.string().url()).optional(),
+    storeDocument: z.array(z.string().url()).optional(),
+    GST: z.array(z.string().url()).optional(),
+    other: z.array(z.string().url()).optional(),
 });
 
 // Main schema

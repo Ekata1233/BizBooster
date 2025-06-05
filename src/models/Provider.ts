@@ -3,12 +3,12 @@ import bcrypt from 'bcrypt';
 
 // Interfaces
 
-interface Location {
+export interface Location {
   type: 'home' | 'office' | 'other';
   coordinates: [number, number]; // [longitude, latitude]
 }
 
-interface StoreInfo {
+export interface StoreInfo {
   storeName: string;
   storePhone: string;
   storeEmail: string;
@@ -25,7 +25,7 @@ interface StoreInfo {
   country: string;
 }
 
-interface KYC {
+export interface KYC {
   aadhaarCard: string[];
   panCard: string[];
   storeDocument: string[];
@@ -204,9 +204,9 @@ const providerSchema = new Schema<ProviderDocument>({
     enum: ['commission base', 'other'],
   },
   subscribedServices: [{
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'Service'
-}],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service'
+  }],
   isVerified: {
     type: Boolean,
     default: false
