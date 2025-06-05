@@ -74,39 +74,6 @@ export async function POST(req: Request) {
   }
 }
 
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
-
-//   const { searchParams } = new URL(req.url);
-//   console.log("search params in module : ", searchParams);
-//   const search = searchParams.get('search');
-
-//   const filter: {
-//     $or?: { [key: string]: { $regex: string; $options: string } }[];
-//   } = {};
-
-//   if (search) {
-//     const searchRegex = { $regex: search, $options: 'i' };
-//     filter.$or = [
-//       { name: searchRegex },
-//       { module: searchRegex },
-//     ];
-//   }
-
-//   try {
-//     const categories = await Category.find(filter).populate("module");
-//     return NextResponse.json(
-//       { success: true, data: categories },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     const err = error as Error;
-//     return NextResponse.json(
-//       { success: false, message: err.message },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
 
 export async function GET(req: NextRequest) {
   await connectToDatabase();
@@ -122,12 +89,7 @@ export async function GET(req: NextRequest) {
     // Filter in-memory for `name` and `module.name`
     let filteredCategories = categories;
 
-    // if (search) {
-    //   const regex = new RegExp(search, "i");
-    //   filteredCategories = categories.filter((cat) => 
-    //     regex.test(cat.name) || regex.test(cat.module?.name) 
-    //   );
-    // }
+  
 
     if (search || selectedModule) {
       const regex = search ? new RegExp(search, "i") : null;
