@@ -1,6 +1,7 @@
-'use client';
+// components/custom-editor.js
+'use client'; // Required only in App Router.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CKEditor, useCKEditorCloud } from '@ckeditor/ckeditor5-react';
 
 interface CustomEditorProps {
@@ -10,26 +11,21 @@ interface CustomEditorProps {
 
 const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
     const [mounted, setMounted] = useState(false);
-  const isMounted = useRef(false);
     const cloud = useCKEditorCloud({
         version: '45.1.0',
         premium: true
     });
 
     useEffect(() => {
-    isMounted.current = true;
-
-    // ✅ only update state if component is still mounted
-    if (isMounted.current) {
-      setMounted(true);
-    }
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+        // Ensures we're in the browser and component is mounted
+        setMounted(true);
+    }, []);
 
     if (!mounted || cloud.status === 'loading') {
+        return <div>Loading...</div>;
+    }
+
+    if (cloud.status === 'loading') {
         return <div>Loading...</div>;
     }
 
@@ -119,9 +115,6 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 mediaEmbed: {
                     previewsInData: true
                 },
-                simpleUpload: {
-                    uploadUrl: 'https://ik.imagekit.io/hzyuadmua', // 👈 your Next.js route to handle ImageKit upload
-                },
                 content: {
                     styles: [
                         {
@@ -129,7 +122,9 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                             css: 'body { color: #000000; }'
                         }
                     ]
+                    
                 }
+                
             }}
         />
     );
