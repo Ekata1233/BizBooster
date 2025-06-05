@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import "@/models/Category"
+import "@/models/Subcategory"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
