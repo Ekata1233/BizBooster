@@ -750,13 +750,13 @@ span.flatpickr-weekday,
  /* Add to globals.css */
 .dot-loader {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .dot-loader span {
-  width: 10px;
-  height: 10px;
-  background-color: #6BB7BE;
+  width: 15px;
+  height: 15px;
+  background-color: #2f4fc5;
   border-radius: 50%;
   animation: dot-flash 1s infinite ease-in-out;
 }

@@ -12,6 +12,7 @@ import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import { useService } from '@/context/ServiceContext';
+import RouteLoader from '../RouteLoader';
 
 const ModuleStatCard = () => {
   const { modules } = useModule();
@@ -19,20 +20,11 @@ const ModuleStatCard = () => {
   const { subcategories } = useSubcategory();
   const { services } = useService();
 
-  // console.log("services in module stat card : ", services)
+ const isLoading =
+    !modules || !categories || !subcategories || !services;
 
-
-  if (!services) {
-    return <div>Loading...</div>;
-  }
-  if (!modules) {
-    return <div>Modules Loading...</div>;
-  }
-  if (!categories) {
-    return <div>Categories Loading...</div>;
-  }
-  if (!subcategories) {
-    return <div>Subcategories Loading...</div>;
+  if (isLoading) {
+    return <RouteLoader />;
   }
   return (
     <div>
