@@ -158,21 +158,6 @@ const ServiceDetailsPage = () => {
               </SectionCard>
             ))}
 
-
-
-            {/* Why Choose */}
-            {/* {service.serviceDetails.whyChoose && service.serviceDetails.whyChoose.length > 0 && (
-              <ComponentCard title="Why Choose Us">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {service.serviceDetails.whyChoose.map(
-
-                  )}
-                </div>
-
-              </ComponentCard>
-            )} */}
-
-            {/* FAQs */}
             {service.serviceDetails.faqs && service.serviceDetails.faqs.length > 0 && (
               <ComponentCard title="FAQs">
                 <div className="space-y-2">
@@ -268,24 +253,13 @@ const SectionCard = ({
   isHtml?: boolean;
   children?: React.ReactNode;
 }) => (
-  // <div className="bg-white shadow-sm border rounded p-4">
-  //   <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-  //     {icon}
-  //     {title}
-  //   </h4>
-  //   {isHtml ? (
-  //     <div className="text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: content }} />
-  //   ) : (
-  //     <p className="text-sm text-gray-700">{content}</p>
-  //   )}
-  // </div>
+
   <div className="bg-white shadow-sm border rounded p-4">
     <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
       {icon}
       {title}
     </h4>
 
-    {/* Render children if present, else render content */}
     {children ? (
       <div className="text-sm text-gray-700">{children}</div>
     ) : isHtml ? (
