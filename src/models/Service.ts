@@ -27,6 +27,17 @@ const serviceSchema = new mongoose.Schema({
   discountedPrice: {
     type: Number,
   },
+  providerPrices: [{
+    provider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Provider',
+      required: true
+    },
+    providerPrice: {
+      type: Number,
+      required: true
+    }
+  }],
   thumbnailImage: {
     type: String, // URL or path to image
     required: true
