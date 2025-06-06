@@ -29,17 +29,16 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/",
   },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-
+  // {
+  //   icon: <CalenderIcon />,
+  //   name: "Calendar",
+  //   path: "/calendar",
+  // },
+  // {
+  //   icon: <UserCircleIcon />,
+  //   name: "User Profile",
+  //   path: "/profile",
+  // },
   // {
   //   name: "Forms",
   //   icon: <ListIcon />,
@@ -86,7 +85,7 @@ const moduleItems: NavItem[] = [
     icon: <FolderIcon />,
     name: "Banner",
     subItems: [
-       { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
+      { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
       { name: "Banner-list", path: "/banner-management/banners", pro: false },
     ],
   },
@@ -142,13 +141,25 @@ const serviceItems: NavItem[] = [
   },
 ];
 
+const subscribeItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Subscribe",
+    subItems: [
+      { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
+      // { name: "Service List", path: "/service-management/service-list", pro: false },
+      // { name: "Add Why Choose BizBooster", path: "/service-management/add-why-choose", pro: false },
+    ],
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer" | "provider" | "service"
+    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -264,7 +275,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service";
+    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -278,21 +289,22 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "subscribe"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
           : menuType === "module"
             ? moduleItems : menuType === "provider"
               ? providerItems : menuType === "service"
-                ? serviceItems
-                : customerItems;
+                ? subscribeItems : menuType === "subscribe"
+                  ? serviceItems
+                  : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "customer" | "module" | "provider" | "service",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "subscribe",
                 index,
               });
               submenuMatched = true;
@@ -321,7 +333,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "subscribe") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -461,6 +473,22 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(serviceItems, "service")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "SUBSCRIBE MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(subscribeItems, "subscribe")}
             </div>
 
           </div>

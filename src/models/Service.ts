@@ -36,7 +36,12 @@ const serviceSchema = new mongoose.Schema({
     providerPrice: {
       type: Number,
       required: true
-    }
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
+    },
   }],
   thumbnailImage: {
     type: String, // URL or path to image
