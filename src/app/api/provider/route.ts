@@ -4,6 +4,8 @@ import { connectToDatabase } from '@/utils/db';
 import imagekit from '@/utils/imagekit';
 import Provider from '@/models/Provider';
 import '@/models/Module';
+import '@/models/Zone'
+import '@/models/Service'
 import { providerValidationSchema } from '@/validation/providerValidationSchema';
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
