@@ -39,7 +39,6 @@ const serviceSchema = new mongoose.Schema({
     },
     providerCommission: {
       type: Number,
-      required: true
     },
     status: {
       type: String,

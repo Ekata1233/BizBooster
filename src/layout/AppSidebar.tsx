@@ -147,7 +147,7 @@ const subscribeItems: NavItem[] = [
     name: "Subscribe",
     subItems: [
       { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
-      // { name: "Service List", path: "/service-management/service-list", pro: false },
+      { name: "Subscribe List", path: "/subscribe-management/subscribe-list", pro: false },
       // { name: "Add Why Choose BizBooster", path: "/service-management/add-why-choose", pro: false },
     ],
   },
