@@ -38,8 +38,8 @@ const SubscribeRequestPage = () => {
                 name: service.serviceName,
                 providerId: service.providerPrices?.[0]?.provider?._id || 'N/A',
                 providerName: service.providerPrices?.[0]?.provider?.fullName || 'N/A',
-                price : service.price || "N/A",
-                providerPrice : service.providerPrices?.[0]?.providerPrice ||"N/A",
+                price: service.price || "N/A",
+                providerPrice: service.providerPrices?.[0]?.providerPrice || "N/A",
                 categoryName: service.category?.name || 'N/A',
                 subCategoryName: service.subcategory?.name || 'N/A',
                 status: service.status ?? service.providerPrices?.[0]?.status ?? 'Accept',
@@ -55,6 +55,7 @@ const SubscribeRequestPage = () => {
             await approveService(serviceId, providerId);
             /* remove the row right away */
             setTableData(prev => prev.filter(row => row.id !== serviceId));
+            alert('Service approved successfully!');
         } catch (err) {
             console.error(err);
         }
