@@ -78,7 +78,7 @@ const SubscribeRequestPage = () => {
         { header: 'Provider Name', accessor: 'providerName' },
         { header: 'Service Name', accessor: 'name' },
         { header: 'Price', accessor: 'price' },
-         { header: 'Discounted Price', accessor: 'discountedPrice' },
+        { header: 'Discounted Price', accessor: 'discountedPrice' },
         { header: 'Provider price', accessor: 'providerPrice' },
         {
             header: 'Status',
@@ -127,7 +127,14 @@ const SubscribeRequestPage = () => {
             <PageBreadcrumb pageTitle="Subscribe Request" />
             <div className="my-5">
                 <ComponentCard title="Subscribe Request">
-                    <BasicTableOne columns={columns} data={tableData} />
+                    {tableData.length > 0 ? (
+                        <BasicTableOne columns={columns} data={tableData} />
+                    ) : (
+                        /* fallback when nothing to review */
+                        <p className="text-center py-8 text-gray-500">
+                            No pending subscribe requests.
+                        </p>
+                    )}
                 </ComponentCard>
             </div>
         </div>
