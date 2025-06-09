@@ -14,6 +14,7 @@ import { ProviderProvider } from '@/context/ProviderContext';
 import { WhyChooseProvider } from '@/context/WhyChooseContext';
 import { ZoneProvider } from '@/context/ZoneContext';
 import RouteLoader from '@/components/RouteLoader';
+import { SubscribeProvider } from '@/context/SubscribeContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
-        <RouteLoader/>
+        <RouteLoader />
         <ThemeProvider>
           <SidebarProvider>
             <AuthProvider>
@@ -40,7 +41,9 @@ export default function RootLayout({
                           <ProviderProvider>
                             <WhyChooseProvider>
                               <ZoneProvider>
-                                {children}
+                                <SubscribeProvider>
+                                  {children}
+                                </SubscribeProvider>
                               </ZoneProvider>
                             </WhyChooseProvider>
                           </ProviderProvider>

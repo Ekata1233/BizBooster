@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/WhyChoose"
@@ -46,12 +44,15 @@ export async function PUT(req: Request) {
     }
 
     // Optionally, validate each providerPrice object structure here
-
+    const pricesWithPending = body.providerPrices.map((p: any) => ({
+      ...p,
+      status: 'pending',          // <-- always overwrite to pending
+    }));
     // Update only the providerPrices field
     const updatedService = await Service.findByIdAndUpdate(
       id,
-      { providerPrices: body.providerPrices },
-      { new: true, runValidators: true } // return the updated doc & run schema validation
+      { $set: { providerPrices: pricesWithPending } },
+      { new: true, runValidators: true },
     );
 
     if (!updatedService) {
