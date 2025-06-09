@@ -84,3 +84,60 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+
+export async function DELETE(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const segments = url.pathname.split('/');
+    const id = segments.at(-2) ?? segments.at(-1);
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: 'serviceId missing.' },
+        { status: 400, headers: corsHeaders },
+      );
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // Reject all provider statuses in this service
+      const serviceRes = await Service.updateOne(
+        { _id: id },
+        {
+          $set: {
+            'providerPrices.$[].status': 'rejected', // 👈 this updates all items in the array
+          },
+        },
+        { session },
+      );
+
+      if (serviceRes.matchedCount === 0) {
+        throw new Error('Service not found.');
+      }
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return NextResponse.json(
+        { success: true, message: 'All provider statuses set to rejected.' },
+        { status: 200, headers: corsHeaders },
+      );
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+      throw err;
+    }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders },
+    );
+  }
+}

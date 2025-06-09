@@ -39,6 +39,7 @@ const SubscribeRequestPage = () => {
                 providerId: service.providerPrices?.[0]?.provider?._id || 'N/A',
                 providerName: service.providerPrices?.[0]?.provider?.fullName || 'N/A',
                 price: service.price || "N/A",
+                discountedPrice: service.discountedPrice || "N/A",
                 providerPrice: service.providerPrices?.[0]?.providerPrice || "N/A",
                 categoryName: service.category?.name || 'N/A',
                 subCategoryName: service.subcategory?.name || 'N/A',
@@ -66,6 +67,7 @@ const SubscribeRequestPage = () => {
             await deleteService(serviceId);
             /* remove the row right away */
             setTableData(prev => prev.filter(row => row.id !== serviceId));
+            alert('Service rejected successfully!');
         } catch (err) {
             console.error(err);
         }
@@ -76,6 +78,7 @@ const SubscribeRequestPage = () => {
         { header: 'Provider Name', accessor: 'providerName' },
         { header: 'Service Name', accessor: 'name' },
         { header: 'Price', accessor: 'price' },
+         { header: 'Discounted Price', accessor: 'discountedPrice' },
         { header: 'Provider price', accessor: 'providerPrice' },
         {
             header: 'Status',

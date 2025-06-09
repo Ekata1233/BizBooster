@@ -48,12 +48,13 @@ export const SubscribeProvider = ({ children }: { children: React.ReactNode }) =
 
     const deleteService = async (id: string) => {
         try {
-            await axios.delete(`/api/service/${id}`);
+            await axios.delete(`/api/service/${id}/approve`);
             await fetchServices();
         } catch (err) {
-            console.error('Error deleting service:', err);
+            console.error('Error rejecting service:', err);
         }
     };
+
 
     return (
         <SubscribeContext.Provider
