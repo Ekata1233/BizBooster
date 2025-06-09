@@ -37,6 +37,10 @@ const serviceSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
+    providerCommission: {
+      type: Number,
+      required: true
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

@@ -10,6 +10,7 @@ export type Service = {
     providerPrices: Array<{
         provider: { _id: string; fullName: string };
         providerPrice: number;
+        providerCommission?: number;
         status: string;
     }>;
 };
@@ -17,7 +18,7 @@ export type Service = {
 interface SubscribeContextType {
     services: Service[];
     fetchServices: () => Promise<void>;
-    approveService: (serviceId: string, providerId: string) => Promise<void>;
+    approveService: (serviceId: string, providerId: string, providerCommission?: number) => Promise<void>;
     deleteService: (serviceId: string) => Promise<void>;
 }
 
@@ -37,10 +38,16 @@ export const SubscribeProvider = ({ children }: { children: React.ReactNode }) =
 
     useEffect(() => { fetchServices(); }, []);
 
-    const approveService = async (id: string, providerId: string) => {
+    const approveService = async (id: string, providerId: string, providerCommission?: number) => {
         try {
-            await axios.put(`/api/service/${id}/approve`, { providerId });
-            await fetchServices(); // keep UI fresh
+            // Build request body dynamically to only send providerCommission if defined
+            const body: { providerId: string; providerCommission?: number } = { providerId };
+            if (providerCommission !== undefined) {
+                body.providerCommission = providerCommission;
+            }
+
+            await axios.put(`/api/service/${id}/approve`, body);
+            await fetchServices();
         } catch (err) {
             console.error('Error approving service:', err);
         }
