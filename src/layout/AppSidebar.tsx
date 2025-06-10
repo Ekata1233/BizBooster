@@ -148,7 +148,6 @@ const subscribeItems: NavItem[] = [
     subItems: [
       { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
       { name: "Subscribe List", path: "/subscribe-management/subscribe-list", pro: false },
-      // { name: "Add Why Choose BizBooster", path: "/service-management/add-why-choose", pro: false },
     ],
   },
 ];
@@ -296,8 +295,8 @@ const AppSidebar: React.FC = () => {
           : menuType === "module"
             ? moduleItems : menuType === "provider"
               ? providerItems : menuType === "service"
-                ? subscribeItems : menuType === "subscribe"
-                  ? serviceItems
+                ? serviceItems : menuType === "subscribe"
+                  ? subscribeItems
                   : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {

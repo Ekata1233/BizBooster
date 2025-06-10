@@ -28,41 +28,49 @@ export async function POST(req: NextRequest) {
 
     console.log("formdata of the provider : ", formData);
 
-    // Extract basic fields
+    // Extract required fields
     const fullName = formData.get('fullName') as string;
     const phoneNo = formData.get('phoneNo') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
-    const referredBy = formData.get('referredBy') as string | null;
-    const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other';
 
     // Validate required fields
     if (!fullName || !phoneNo || !email || !password || !confirmPassword) {
-      return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Missing required fields (fullName, phoneNo, email, password, confirmPassword)' }, 
+        { status: 400 }
+      );
     }
 
     if (password !== confirmPassword) {
-      return NextResponse.json({ success: false, message: 'Passwords do not match' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Passwords do not match' }, 
+        { status: 400 }
+      );
     }
 
-    // Extract storeInfo fields
-    const storeName = formData.get('storeName') as string ;
-    const storePhone = formData.get('storePhone') as string;
-    const storeEmail = formData.get('storeEmail') as string;
-    const moduleValue = formData.get('selectedModule') as string;
-    const zone = formData.get('zone') as string;
-    const tax = formData.get('tax') as string;
-    const locationType = formData.get('locationType') as string;
-    const longitude = parseFloat(formData.get('longitude') as string);
-    const latitude = parseFloat(formData.get('latitude') as string);
-    const address = formData.get('address') as string;
-    const officeNo = formData.get('officeNo') as string;
-    const city = formData.get('city') as string;
-    const state = formData.get('state') as string;
-    const country = formData.get('country') as string;
+    // All other fields are optional
+    const referredBy = formData.get('referredBy') as string | null;
+    const setBusinessPlan = formData.get('setBusinessPlan') as 'commission base' | 'other' | null;
+    
+    // Optional storeInfo fields
+    const storeName = formData.get('storeName') as string | null;
+    const storePhone = formData.get('storePhone') as string | null;
+    const storeEmail = formData.get('storeEmail') as string | null;
+    const moduleValue = formData.get('selectedModule') as string | null;
+    const zone = formData.get('zone') as string | null;
+    const tax = formData.get('tax') as string | null;
+    const locationType = formData.get('locationType') as string | null;
+    const longitude = formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null;
+    const latitude = formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : null;
+    const address = formData.get('address') as string | null;
+    const officeNo = formData.get('officeNo') as string | null;
+    const city = formData.get('city') as string | null;
+    const state = formData.get('state') as string | null;
+    const country = formData.get('country') as string | null;
 
-    // Upload logo
+    // Handle optional file uploads
     let logoUrl = '';
     const logo = formData.get('logo') as File | null;
     if (logo) {
@@ -75,7 +83,6 @@ export async function POST(req: NextRequest) {
       logoUrl = logoUpload.url;
     }
 
-    // Upload cover
     let coverUrl = '';
     const cover = formData.get('cover') as File | null;
     if (cover) {
@@ -88,7 +95,7 @@ export async function POST(req: NextRequest) {
       coverUrl = coverUpload.url;
     }
 
-    // Upload KYC documents
+    // Upload KYC documents if they exist
     const uploadFiles = async (files: File[] | FileList): Promise<string[]> => {
       const urls: string[] = [];
       for (const file of files) {
@@ -110,56 +117,54 @@ export async function POST(req: NextRequest) {
     const otherFiles = formData.getAll('other') as File[];
 
     const [aadhaarCard, panCard, storeDocument, GST, other] = await Promise.all([
-      uploadFiles(aadhaarCardFiles),
-      uploadFiles(panCardFiles),
-      uploadFiles(storeDocumentFiles),
-      uploadFiles(gstFiles),
-      uploadFiles(otherFiles),
+      aadhaarCardFiles.length > 0 ? uploadFiles(aadhaarCardFiles) : [],
+      panCardFiles.length > 0 ? uploadFiles(panCardFiles) : [],
+      storeDocumentFiles.length > 0 ? uploadFiles(storeDocumentFiles) : [],
+      gstFiles.length > 0 ? uploadFiles(gstFiles) : [],
+      otherFiles.length > 0 ? uploadFiles(otherFiles) : [],
     ]);
 
-    // Assemble the data object
-    console.log("logoUrl:", logoUrl);
-    console.log("coverUrl:", coverUrl);
-    console.log("aadhaarCard:", aadhaarCard);
-    console.log("panCard:", panCard);
-    console.log("storeDocument:", storeDocument);
-    console.log("GST:", GST);
-    console.log("other:", other);
-
+    // Assemble the data object with required fields and optional fields
     const data = {
       fullName,
       phoneNo,
       email,
       password,
       confirmPassword,
-      referredBy: referredBy || undefined,
-      storeInfo: {
-        storeName,
-        storePhone,
-        storeEmail,
-        module: moduleValue,
-        zone,
-        logo: logoUrl,
-        cover: coverUrl,
-        tax,
-        location: {
-          type: locationType,
-          coordinates: [longitude, latitude],
+      ...(referredBy && { referredBy }),
+      ...(setBusinessPlan && { setBusinessPlan }),
+      ...(storeName && {
+        storeInfo: {
+          ...(storeName && { storeName }),
+          ...(storePhone && { storePhone }),
+          ...(storeEmail && { storeEmail }),
+          ...(moduleValue && { module: moduleValue }),
+          ...(zone && { zone }),
+          ...(logoUrl && { logo: logoUrl }),
+          ...(coverUrl && { cover: coverUrl }),
+          ...(tax && { tax }),
+          ...(locationType && longitude && latitude && {
+            location: {
+              type: locationType,
+              coordinates: [longitude, latitude],
+            },
+          }),
+          ...(address && { address }),
+          ...(officeNo && { officeNo }),
+          ...(city && { city }),
+          ...(state && { state }),
+          ...(country && { country }),
         },
-        address,
-        officeNo,
-        city,
-        state,
-        country,
-      },
-      kyc: {
-        aadhaarCard,
-        panCard,
-        storeDocument,
-        GST,
-        other,
-      },
-      setBusinessPlan,
+      }),
+      ...((aadhaarCard.length > 0 || panCard.length > 0 || storeDocument.length > 0 || GST.length > 0 || other.length > 0) && {
+        kyc: {
+          ...(aadhaarCard.length > 0 && { aadhaarCard }),
+          ...(panCard.length > 0 && { panCard }),
+          ...(storeDocument.length > 0 && { storeDocument }),
+          ...(GST.length > 0 && { GST }),
+          ...(other.length > 0 && { other }),
+        },
+      }),
       isDeleted: false,
     };
 
@@ -180,7 +185,7 @@ export async function POST(req: NextRequest) {
       if (!existing) exists = false;
     }
 
-    // Handle referredBy
+    // Handle referredBy if provided
     let referredById = null;
     if (parsedData.referredBy) {
       const referringUser = await Provider.findOne({ referralCode: parsedData.referredBy });
@@ -193,28 +198,27 @@ export async function POST(req: NextRequest) {
       referredById = referringUser._id;
     }
 
-
-    console.log("referredById : ", referredById)
-
     console.log("Final Parsed Data to Save: ", parsedData);
 
-
-    // Create provider document
+    // Create provider document with only the required fields and any optional fields that were provided
     const newProvider = await Provider.create({
       fullName: parsedData.fullName,
       phoneNo: parsedData.phoneNo,
       email: parsedData.email,
       password: parsedData.password,
       confirmPassword: parsedData.confirmPassword,
-      referredBy: referredById,
-      storeInfo: parsedData.storeInfo,
-      kyc: parsedData.kyc,
-      businessPlan: parsedData.setBusinessPlan,
-      isDeleted: parsedData.isDeleted,
+      ...(referredById && { referredBy: referredById }),
+      ...(parsedData.storeInfo && { storeInfo: parsedData.storeInfo }),
+      ...(parsedData.kyc && { kyc: parsedData.kyc }),
+      ...(parsedData.setBusinessPlan && { businessPlan: parsedData.setBusinessPlan }),
+      isDeleted: false,
       referralCode,
     });
 
-    return NextResponse.json({ success: true, data: newProvider }, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: newProvider }, 
+      { status: 201 }
+    );
 
   } catch (error: unknown) {
     console.error('Error saving user:', error);
