@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ServiceCustomer from "@/models/ServiceCustomer";
-import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
+import User from "@/models/User";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,9 +25,9 @@ export async function POST(req: Request) {
     const city = formData.get("city") as string;
     const state = formData.get("state") as string;
     const country = formData.get("country") as string;
-     const providerId = formData.get("providerId") as string;
+     const userId = formData.get("userId") as string;
 
-    if (!fullName || !phone || !email || !address || !city || !state || !country|| !providerId) {
+    if (!fullName || !phone || !email || !address || !city || !state || !country|| !userId) {
       return NextResponse.json(
         { success: false, message: "All required fields must be filled." },
         { status: 400, headers: corsHeaders }
@@ -42,10 +42,10 @@ export async function POST(req: Request) {
       city,
       state,
       country,
-      provider: providerId 
+      user: userId 
     });
 
-    await Provider.findByIdAndUpdate(providerId, {
+    await User.findByIdAndUpdate(userId, {
       $push: { serviceCustomers : newCustomer._id },
     });
 

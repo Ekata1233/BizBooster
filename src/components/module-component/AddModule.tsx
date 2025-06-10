@@ -65,7 +65,8 @@ const AddModule = () => {
                         </Button>
                     </div>
                 </div>
-            </ComponentCard></div>
+            </ComponentCard>
+        </div>
     )
 }
 

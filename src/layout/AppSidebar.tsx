@@ -63,23 +63,26 @@ const moduleItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Module",
-    subItems: [
-      { name: "Modules", path: "/module-management/module", pro: false },
-    ],
+    path: "/module-management/module"
+    // subItems: [
+    //   { name: "Modules", path: "/module-management/module", pro: false },
+    // ],
   },
   {
     icon: <FolderIcon />,
     name: "Category",
-    subItems: [
-      { name: "Category", path: "/category-management/category", pro: false },
-    ],
+    path: "/category-management/category"
+    // subItems: [
+    //   { name: "Category", path: "/category-management/category", pro: false },
+    // ],
   },
   {
     icon: <BoxIcon />,
     name: "SubCategory",
-    subItems: [
-      { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
-    ],
+    path: "/subCategory-management/subCategory"
+    // subItems: [
+    //   { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
+    // ],
   },
   {
     icon: <FolderIcon />,
@@ -96,16 +99,18 @@ const customerItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Users",
-    subItems: [
-      { name: "User List", path: "/customer-management/user/user-list", pro: false },
-    ],
+    path: "/customer-management/user/user-list",
+    // subItems: [
+    //   { name: "User List", path: "/customer-management/user/user-list", pro: false },
+    // ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Franchise",
-    subItems: [
-      { name: "Franchise List", path: "/customer-management/franchise/franchise-list", pro: false },
-    ],
+    path: "/customer-management/franchise/franchise-list",
+    // subItems: [
+    //   { name: "Franchise List", path: "/customer-management/franchise/franchise-list", pro: false },
+    // ],
   },
 
 ];
@@ -152,13 +157,24 @@ const subscribeItems: NavItem[] = [
   },
 ];
 
+const promotionItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Coupons",
+    subItems: [
+      { name: "Add Coupons", path: "/coupons-management/add-coupon", pro: false },
+      { name: "Coupons List", path: "/coupons-management/coupons-list", pro: false },
+    ],
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe"
+    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -274,7 +290,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe";
+    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -288,7 +304,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "subscribe"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "subscribe", "coupon"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
@@ -296,14 +312,15 @@ const AppSidebar: React.FC = () => {
             ? moduleItems : menuType === "provider"
               ? providerItems : menuType === "service"
                 ? serviceItems : menuType === "subscribe"
-                  ? subscribeItems
-                  : customerItems;
+                  ? subscribeItems : menuType === "coupon"
+                    ? promotionItems
+                    : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "subscribe",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "subscribe"| "coupon",
                 index,
               });
               submenuMatched = true;
@@ -332,7 +349,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "subscribe") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -450,22 +467,6 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "PROVIDER MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(providerItems, "provider")}
-            </div>
-
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
                   "SERVICE MANAGEMENT"
                 ) : (
                   <HorizontaLDots />
@@ -488,6 +489,38 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(subscribeItems, "subscribe")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "PROVIDER MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(providerItems, "provider")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "PROMOTION MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(promotionItems, "coupon")}
             </div>
 
           </div>

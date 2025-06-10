@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+serviceCustomers: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "ServiceCustomer" 
+  }],
   isDeleted: {
     type: Boolean,
     default: false
