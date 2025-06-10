@@ -45,6 +45,7 @@ export interface ProviderDocument extends Document {
   kyc: KYC;
   setBusinessPlan?: 'commission base' | 'other';
   subscribedServices: mongoose.Types.ObjectId;
+  serviceCustomers: mongoose.Types.ObjectId;
   isVerified: boolean;
   isDeleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -56,7 +57,7 @@ const locationSchema = new Schema<Location>({
   type: {
     type: String,
     enum: ['home', 'office', 'other'],
-    required: true,
+    // required: true,
   },
   coordinates: {
     type: [Number],
@@ -73,28 +74,28 @@ const locationSchema = new Schema<Location>({
 const storeInfoSchema = new Schema<StoreInfo>({
   storeName: {
     type: String,
-    required: true,
+    // required: true,
     trim: true,
   },
   storePhone: {
     type: String,
-    required: true,
+    // required: true,
     trim: true,
   },
   storeEmail: {
     type: String,
-    required: true,
+    // required: true,
     lowercase: true,
     trim: true,
   },
   module: {
     type: Schema.Types.ObjectId,
-    required: true,
+    // required: true,
     ref: 'Module',
   },
   zone: {
     type: Schema.Types.ObjectId,
-    required: true,
+    // required: true,
     ref: 'Zone',
   },
   logo: {
@@ -105,31 +106,31 @@ const storeInfoSchema = new Schema<StoreInfo>({
   },
   tax: {
     type: String,
-    required: true,
+    // required: true,
   },
   location: {
     type: locationSchema,
-    required: true,
+    // required: true,
   },
   address: {
     type: String,
-    required: true,
+    // required: true,
   },
   officeNo: {
     type: String,
-    required: true,
+    // required: true,
   },
   city: {
     type: String,
-    required: true,
+    // required: true,
   },
   state: {
     type: String,
-    required: true,
+    // required: true,
   },
   country: {
     type: String,
-    required: true,
+    // required: true,
   },
 }, { _id: false });
 
@@ -193,11 +194,11 @@ const providerSchema = new Schema<ProviderDocument>({
   },
   storeInfo: {
     type: storeInfoSchema,
-    required: true,
+    // required: true,
   },
   kyc: {
     type: kycSchema,
-    required: true,
+    // required: true,
   },
   setBusinessPlan: {
     type: String,
@@ -206,6 +207,10 @@ const providerSchema = new Schema<ProviderDocument>({
   subscribedServices: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service'
+  }],
+  serviceCustomers: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "ServiceCustomer" 
   }],
   isVerified: {
     type: Boolean,
