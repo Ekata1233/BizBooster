@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Extract storeInfo fields
-    const storeName = formData.get('storeName') as string;
+    const storeName = formData.get('storeName') as string ;
     const storePhone = formData.get('storePhone') as string;
     const storeEmail = formData.get('storeEmail') as string;
     const moduleValue = formData.get('selectedModule') as string;

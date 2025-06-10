@@ -16,8 +16,14 @@ interface KycDocs {
 }
 
 interface Location {
+    _id?: string;
+    name?: string;
     coordinates: [number, number];
-    type: string;
+    isDeleted?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    __v?: number;
+    type?: string;
 }
 
 interface StoreInfo {
@@ -48,11 +54,11 @@ interface Module {
 
 interface Provider {
     _id: string;
-    fullName: string;  // from your data "fullName"
+    fullName: string;
     email: string;
     phoneNo?: string;
     kyc?: KycDocs;
-    password?: string; // hashed
+    password?: string;
     referralCode?: string | null;
     storeInfo?: StoreInfo;
     logo?: string;
@@ -74,7 +80,6 @@ const ProviderDetailsPage = () => {
         if (providers.length > 0) {
             const selected = providers.find((p) => p._id === id) || null;
             setProvider(selected as Provider | null);
-
         }
     }, [providers, id]);
 
@@ -86,7 +91,6 @@ const ProviderDetailsPage = () => {
         );
     }
 
-    // Helper to render image arrays nicely
     const renderImageArray = (images?: string[]) => {
         if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
         return (
@@ -105,7 +109,17 @@ const ProviderDetailsPage = () => {
         );
     };
 
-    console.log("privider detials logo : ", provider.storeInfo?.logo)
+    const renderLocation = (location?: Location) => {
+        if (!location) return '-';
+        
+        return (
+            <div className="space-y-1">
+                {location.name && <p>Name: {location.name}</p>}
+                <p>Coordinates: [{location.coordinates[0]?.toFixed(4)}, {location.coordinates[1]?.toFixed(4)}]</p>
+                {location.type && <p>Type: {location.type}</p>}
+            </div>
+        );
+    };
 
     return (
         <div className="container mx-auto p-4">
@@ -121,7 +135,6 @@ const ProviderDetailsPage = () => {
                     />
                 </div>
 
-                {/* Tabs Navigation */}
                 <div className="border-b border-gray-200">
                     <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
                         <li
@@ -139,11 +152,9 @@ const ProviderDetailsPage = () => {
                     </ul>
                 </div>
 
-                {/* Tab Content */}
                 <div className="space-y-6 pt-4">
                     {activeTab === 'info' && (
                         <>
-                            {/* Basic Info - single row */}
                             <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-purple-50 to-white">
                                 <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-purple-100 text-purple-700">
                                     Basic Information
@@ -168,11 +179,7 @@ const ProviderDetailsPage = () => {
                                 </div>
                             </div>
 
-
-                            {/* Store Info + KYC in two columns side by side */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                                {/* Store Info */}
                                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
                                     <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
                                         Store Information
@@ -218,13 +225,11 @@ const ProviderDetailsPage = () => {
                                             <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
                                             <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm text-gray-500 whitespace-nowrap">Location Coordinates:</p>
-                                            <p className="font-medium">
-                                                {provider.storeInfo?.location
-                                                    ? `[${provider.storeInfo.location.coordinates[0].toFixed(4)}, ${provider.storeInfo.location.coordinates[1].toFixed(4)}]`
-                                                    : '-'}
-                                            </p>
+                                        <div className="flex items-start gap-2">
+                                            <p className="text-sm text-gray-500 whitespace-nowrap">Location:</p>
+                                            <div className="font-medium">
+                                                {renderLocation(provider.storeInfo?.location)}
+                                            </div>
                                         </div>
                                         {provider.storeInfo?.cover && (
                                             <div>
@@ -241,8 +246,6 @@ const ProviderDetailsPage = () => {
                                     </div>
                                 </div>
 
-
-                                {/* KYC Details */}
                                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
                                     <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
                                         KYC Documents
@@ -264,8 +267,6 @@ const ProviderDetailsPage = () => {
                                         ))}
                                     </div>
                                 </div>
-
-
                             </div>
                         </>
                     )}
