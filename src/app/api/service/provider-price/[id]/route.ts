@@ -4,6 +4,13 @@ import { connectToDatabase } from "@/utils/db";
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/WhyChoose"
+import mongoose from "mongoose";
+
+type ProviderPriceInput = {
+  provider: string;          // ObjectId as string
+  providerPrice: number;
+  providerCommission?: number;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,47 +39,66 @@ export async function PUT(req: Request) {
 
     // Parse JSON body (make sure client sends JSON)
     const body = await req.json();
+        const incoming: ProviderPriceInput[] = body.providerPrices;
 
-    console.log("provider price data : ",body)
+    console.log("provider prices data : ",body)
 
     // Validate providerPrices field existence and type
-    if (!body.providerPrices || !Array.isArray(body.providerPrices)) {
+    if (!Array.isArray(incoming)) {
       return NextResponse.json(
-        { success: false, message: "providerPrices must be an array." },
-        { status: 400, headers: corsHeaders }
+        { success: false, message: 'providerPrices must be an array.' },
+        { status: 400, headers: corsHeaders },
       );
     }
 
-    // Optionally, validate each providerPrice object structure here
-    const pricesWithPending = body.providerPrices.map((p: any) => ({
-      ...p,
-      status: 'pending',          // <-- always overwrite to pending
-    }));
-    // Update only the providerPrices field
-    const updatedService = await Service.findByIdAndUpdate(
-      id,
-      { $set: { providerPrices: pricesWithPending } },
-      { new: true, runValidators: true },
-    );
-
-    if (!updatedService) {
+    const service = await Service.findById(id);
+    if (!service) {
       return NextResponse.json(
-        { success: false, message: "Service not found." },
-        { status: 404, headers: corsHeaders }
+        { success: false, message: 'Service not found.' },
+        { status: 404, headers: corsHeaders },
       );
     }
+
+    /* ------------------------------------------------------------------ */
+    /* 2. Merge or add each incoming row -------------------------------- */
+    /* ------------------------------------------------------------------ */
+    incoming.forEach((p) => {
+      const existing = service.providerPrices.find(
+        (row: any) => row.provider.toString() === p.provider,
+      );
+
+      if (existing) {
+        //  update in-place
+        existing.providerPrice = p.providerPrice;
+        if (p.providerCommission !== undefined)
+          existing.providerCommission = p.providerCommission;
+        existing.status = 'pending';
+      } else {
+        //  push brand-new provider row
+        service.providerPrices.push({
+          provider: new mongoose.Types.ObjectId(p.provider),
+          providerPrice: p.providerPrice,
+          providerCommission: p.providerCommission ?? 0,
+          status: 'pending',
+        });
+      }
+    });
+
+    /* ------------------------------------------------------------------ */
+    /* 3. Save with validation ------------------------------------------ */
+    /* ------------------------------------------------------------------ */
+    const updated = await service.save();
 
     return NextResponse.json(
-      { success: true, data: updatedService },
-      { status: 200, headers: corsHeaders }
+      { success: true, data: updated },
+      { status: 200, headers: corsHeaders },
     );
   } catch (error: unknown) {
     const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+      error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
       { success: false, message },
-      { status: 400, headers: corsHeaders }
+      { status: 400, headers: corsHeaders },
     );
   }
 }
-
