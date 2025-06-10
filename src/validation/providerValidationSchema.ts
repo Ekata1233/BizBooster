@@ -66,9 +66,9 @@ export const providerValidationSchema = z
     referralCode: z.string().optional(),
     referredBy: z.string().optional(),
 
-    // storeInfo: storeInfoSchema,
+    storeInfo: storeInfoSchema.optional(),
 
-    // kyc: kycSchema,
+    kyc: kycSchema.optional(),
 
     setBusinessPlan: z.enum(['commission base', 'other']).optional(),
 
