@@ -21,11 +21,19 @@ export async function POST(req: NextRequest) {
   const email = formData.get("email") as string;
   const phoneNo = formData.get("phoneNo") as string;
   const password = formData.get("password") as string;
+      const confirmPassword = formData.get('confirmPassword') as string;
 
   const parsed = schema.safeParse({ fullName, email, phoneNo, password });
   if (!parsed.success) {
     return NextResponse.json({ errors: parsed.error.errors }, { status: 400 });
   }
+
+if (password !== confirmPassword) {
+      return NextResponse.json(
+        { success: false, message: 'Passwords do not match' }, 
+        { status: 400 }
+      );
+    }
 
   const existing = await Provider.findOne({ email });
   if (existing) {
