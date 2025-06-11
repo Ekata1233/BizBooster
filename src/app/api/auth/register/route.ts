@@ -32,7 +32,7 @@ export const POST = async (req: Request) => {
     const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
 
     // if (existingUser) {
-    //   return NextResponse.json(
+    //   return NextResponse.json(cors
     //     { error: 'Email or Mobile already exists' },
     //     { status: 400, headers: corsHeaders }
     //   );
