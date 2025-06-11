@@ -15,6 +15,8 @@ import { WhyChooseProvider } from '@/context/WhyChooseContext';
 import { ZoneProvider } from '@/context/ZoneContext';
 import RouteLoader from '@/components/RouteLoader';
 import { SubscribeProvider } from '@/context/SubscribeContext';
+import { CouponProvider } from '@/context/CouponContext';
+import { ServiceCustomerProvider } from '@/context/ServiceCustomerContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -42,7 +44,11 @@ export default function RootLayout({
                             <WhyChooseProvider>
                               <ZoneProvider>
                                 <SubscribeProvider>
-                                  {children}
+                                  <CouponProvider>
+                                    <ServiceCustomerProvider>
+                                    {children}
+                                    </ServiceCustomerProvider>
+                                  </CouponProvider>
                                 </SubscribeProvider>
                               </ZoneProvider>
                             </WhyChooseProvider>

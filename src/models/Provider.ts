@@ -46,6 +46,7 @@ export interface ProviderDocument extends Document {
   setBusinessPlan?: 'commission base' | 'other';
   subscribedServices: mongoose.Types.ObjectId;
   // serviceCustomers: mongoose.Types.ObjectId;
+  isApproved: boolean;
   isVerified: boolean;
   isDeleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -208,7 +209,10 @@ const providerSchema = new Schema<ProviderDocument>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service'
   }],
-  
+  isApproved: {
+    type: Boolean,
+    default: false
+  },
   isVerified: {
     type: Boolean,
     default: false
