@@ -1,97 +1,136 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import axios from 'axios';
-import { ProviderDocument } from '@/models/Provider';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+export interface Provider {
+  _id: string;
+  fullName: string;
+  email: string;
+  phoneNo: string;
+  password?: string;
+  storeInfo?: Record<string, any>;
+  kyc?: Record<string, any>;
+  step1Completed?: boolean;
+  storeInfoCompleted?: boolean;
+  kycCompleted?: boolean;
+  registrationStatus?: 'basic' | 'store' | 'done';
+}
 
-
-
-interface ProviderContextType {
-  providers: ProviderDocument[];
+type ProviderContextType = {
+  provider: Provider | null;
   loading: boolean;
   error: string | null;
-  fetchProviders: () => void;
-  createProvider: (data: FormData) => Promise<boolean | undefined>;
-  updateProvider: (id: string, data: FormData) => Promise<void>;
+  registerProvider: (data: FormData) => Promise<void>;
+  updateStoreInfo: (data: FormData) => Promise<void>;
+  updateKycInfo: (data: FormData) => Promise<void>;
+  getProviderById: (id: string) => Promise<void>;
+  updateProvider: (id: string, updates: any) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
-
-  // *** ADDED login related types ***
-  loginProvider: (email: string, password: string) => Promise<void>;
-  token: string | null;
-  loggedInProvider: ProviderDocument | null;
-}
+};
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
 
-export function ProviderProvider({ children }: { children: ReactNode }) {
-  const [providers, setProviders] = useState<ProviderDocument[]>([]);
+export const useProvider = () => {
+  const context = useContext(ProviderContext);
+  if (!context) throw new Error('useProvider must be used within ProviderContextProvider');
+  return context;
+};
+
+export const ProviderContextProvider = ({ children }: { children: ReactNode }) => {
+  const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // *** ADDED login related states ***
-  const [token, setToken] = useState<string | null>(null);
-  const [loggedInProvider, setLoggedInProvider] = useState<ProviderDocument | null>(null);
-
-  const fetchProviders = async () => {
+  const registerProvider = async (formData: FormData) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/provider');
-      setProviders(res.data.data);
+      const res = await fetch('/api/provider/register', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
+
+      setProvider(data.provider);
+      
       setError(null);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to delete provider');
-      } else {
-        setError('Failed to delete provider');
-      }
+      // return true; 
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const createProvider = async (formData: FormData) => {
+  const updateStoreInfo = async (formData: FormData) => {
     setLoading(true);
     try {
-      const res = await axios.post('/api/provider', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await fetch('/api/provider/store-info', {
+        method: 'PUT',
+        body: formData,
       });
-      // setProviders((prev) => [...prev, res.data.data]);
-      // setError(null);
-      if (res.status === 201 && res.data?.data) {
-        setProviders((prev) => [...prev, res.data.data]);
-        setError(null);
-        return true;
-      } else {
-        setError('Provider not saved');
-        return false;
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to delete provider');
-      } else {
-        setError('Failed to delete provider');
-      }
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Store info update failed');
+
+      setProvider(data.provider);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateProvider = async (id: string, formData: FormData) => {
+  const updateKycInfo = async (formData: FormData) => {
     setLoading(true);
     try {
-      const res = await axios.put(`/api/provider/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await fetch('/api/provider/kyc', {
+        method: 'PUT',
+        body: formData,
       });
-      setProviders((prev) =>
-        prev.map((p) => (p._id === id ? res.data.data : p))
-      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'KYC update failed');
+
+      setProvider(data.provider);
       setError(null);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to delete provider');
-      } else {
-        setError('Failed to delete provider');
-      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProviderById = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/provider/${id}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch provider');
+      setProvider(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProvider = async (id: string, updates: any) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/provider/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update provider');
+      setProvider(data);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -100,85 +139,36 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
   const deleteProvider = async (id: string) => {
     setLoading(true);
     try {
-      await axios.delete(`/api/provider/${id}`);
-      setProviders((prev) => prev.filter((p) => p._id !== id));
-      setError(null);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to delete provider');
-      } else {
-        setError('Failed to delete provider');
-      }
+      const res = await fetch(`/api/provider/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to delete provider');
+
+      setProvider(null);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
-  // *** ADDED loginProvider function ***
-  const loginProvider = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const res = await axios.post('/api/provider/login', { email, password });
-      if (res.data.success) {
-        setToken(res.data.data.token);
-        setLoggedInProvider(res.data.data.provider);
-        setError(null);
-
-        // Save token and provider info to localStorage for persistence
-        localStorage.setItem('providerToken', res.data.data.token);
-        localStorage.setItem('loggedInProvider', JSON.stringify(res.data.data.provider));
-      } else {
-        setError(res.data.message || 'Login failed');
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Failed to delete provider');
-      } else {
-        setError('Failed to delete provider');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // *** Auto-login on mount from localStorage ***
-  useEffect(() => {
-    const savedToken = localStorage.getItem('providerToken');
-    const savedProvider = localStorage.getItem('loggedInProvider');
-    if (savedToken && savedProvider) {
-      setToken(savedToken);
-      setLoggedInProvider(JSON.parse(savedProvider));
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProviders();
-  }, []);
 
   return (
     <ProviderContext.Provider
       value={{
-        providers,
+        provider,
         loading,
         error,
-        fetchProviders,
-        createProvider,
+        registerProvider,
+        updateStoreInfo,
+        updateKycInfo,
+        getProviderById,
         updateProvider,
         deleteProvider,
-        loginProvider,
-        token,
-        loggedInProvider,
       }}
     >
       {children}
     </ProviderContext.Provider>
   );
-}
-
-export function useProvider() {
-  const context = useContext(ProviderContext);
-  if (!context) {
-    throw new Error('useProvider must be used within a ProviderProvider');
-  }
-  return context;
-}
+};

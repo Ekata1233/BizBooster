@@ -1,697 +1,513 @@
-"use client"
-import { z } from "zod";
-import React, { useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
-import ComponentCard from '@/components/common/ComponentCard';
-import Label from '@/components/form/Label';
-import { useModule } from '@/context/ModuleContext';
-import { useProvider } from '@/context/ProviderContext';
-import Input from '@/components/form/input/InputField';
-import Select from '@/components/form/Select';
-import { ChevronDownIcon } from '@/icons';
-import FileInput from '@/components/form/input/FileInput';
-import { providerValidationSchema } from '@/validation/providerValidationSchema';
-import { useZone } from "@/context/ZoneContext";
+// /* ------------------------------------------------------------------
+//  * src/app/(admin)/providers/add/page.tsx
+//  * ------------------------------------------------------------------ */
 
-type ModuleType = {
-  _id: string;
-  name: string;
-};
-const containerStyle = {
-  width: '100%',
-  height: '300px',
-};
+// 'use client';
 
-const centerDefault = {
-  lat: 18.501426841362647,
-  lng: 73.88318878735599,
-};
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { useForm } from 'react-hook-form';
+// import { z } from 'zod';
+// import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 
-const AddProvider = () => {
-  const { handleSubmit, setValue, formState: { } } = useForm();
-  // State for all fields
-  const [fullName, setFullName] = useState('');
-  const [phoneNo, setPhoneNo] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [referredBy, setReferredBy] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [storePhone, setStorePhone] = useState('');
-  const [storeEmail, setStoreEmail] = useState('');
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  const [zone, setZone] = useState('');
-  const [logo, setLogo] = useState<File | null>(null);
-  const [cover, setCover] = useState<File | null>(null);
-  const [tax, setTax] = useState('');
-  const [locationType, setLocationType] = useState('home');
-  const [markerPosition, setMarkerPosition] = useState(centerDefault);
-  const [address, setAddress] = useState('');
-  const [officeNo, setOfficeNo] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [country, setCountry] = useState('');
-  const [aadhaarCardFiles, setAadhaarCardFiles] = useState<File[]>([]);
-  const [panCardFiles, setPanCardFiles] = useState<File[]>([]);
-  const [storeDocumentFiles, setStoreDocumentFiles] = useState<File[]>([]);
-  const [gstFiles, setGstFiles] = useState<File[]>([]);
-  const [otherFiles, setOtherFiles] = useState<File[]>([]);
-  const [businessPlan] = useState<'commission base' | 'other'>('commission base');
-  const [activeTab, setActiveTab] = useState("Home");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+// import ComponentCard from '@/components/common/ComponentCard';
+// import Label from '@/components/form/Label';
+// import Input from '@/components/form/input/InputField';
+// import Select from '@/components/form/Select';
+// import FileInput from '@/components/form/input/FileInput';
+// import { ChevronDownIcon, ArrowRightIcon } from '@/icons';
+// import { Check, Clock } from 'lucide-react';
+// import { useProvider } from '@/context/ProviderContext';
+// import { useModule } from '@/context/ModuleContext';
+// import { useZone } from '@/context/ZoneContext';
+// import { providerValidationSchema } from '@/validation/providerValidationSchema';
 
-  const { zones } = useZone();
-  const { modules } = useModule();
-  const { createProvider } = useProvider();
+// /* ------------------------------------------------------------------ */
+// /*  types & constants                                                 */
+// /* ------------------------------------------------------------------ */
 
-  const zoneOptions = zones.map(zone => ({
-    value: zone._id,   // unique id for the zone
-    label: zone.name,  // display name for the zone
-  }));
+// const MAP_STYLE = { width: '100%', height: '300px' } as const;
+// const MAP_CENTER = { lat: 18.501426841362647, lng: 73.88318878735599 };
 
-  console.log("zone selected : ", zone)
+// type WizardStep = 1 | 2 | 3 | 'done';
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+// /* ------------------------------------------------------------------ */
+// /*  main component                                                    */
+// /* ------------------------------------------------------------------ */
 
-  const onMapClick = useCallback((event: google.maps.MapMouseEvent) => {
-    if (event.latLng) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      setValue('latitude', lat);
-      setValue('longitude', lng);
-    }
-  }, [setValue]);
+// export default function AddProvider() {
+//   /* ───── context data ───────────────────────────────────────────── */
+//   const { provider, registerProvider, updateStoreInfo, updateKycInfo, loading } =
+//     useProvider();
+//   const { modules } = useModule();
+//   const { zones } = useZone();
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setFiles: React.Dispatch<React.SetStateAction<File[]>>
-  ) => {
-    if (event.target.files) {
-      setFiles(Array.from(event.target.files));
-    }
-  };
+//   /* ───── RHF (needed only for lat/lng hidden fields) ────────────── */
+//   const { handleSubmit, setValue } = useForm();
 
-  const resetForm = () => {
-    setFullName('');
-    setPhoneNo('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setReferredBy('');
-    setStoreName('');
-    setStorePhone('');
-    setStoreEmail('');
-    setSelectedModule(null);
-    setZone('');
-    setLogo(null);
-    setCover(null);
-    setTax('');
-    setLocationType('home');
-    setMarkerPosition(centerDefault);
-    setAddress('');
-    setOfficeNo('');
-    setCity('');
-    setState('');
-    setCountry('');
-    setAadhaarCardFiles([]);
-    setPanCardFiles([]);
-    setStoreDocumentFiles([]);
-    setGstFiles([]);
-    setOtherFiles([]);
-    setActiveTab("Home");
-    setErrors({});
+//   /* ───── component-level state ──────────────────────────────────── */
+//   const [step, setStep] = useState<WizardStep>(1);
 
-    // Also reset react-hook-form fields if needed
-    // You have setValue available, so reset those fields too
-    setValue('latitude', undefined);
-    setValue('longitude', undefined);
-    // Add other fields managed by react-hook-form if any
-  };
+//   /* basic */
+//   const [fullName, setFullName] = useState('');
+//   const [phoneNo, setPhoneNo] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [password, setPassword] = useState('');
+//   const [confirmPassword, setConfirmPassword] = useState('');
+//   const [referredBy, setReferredBy] = useState('');
 
+//   /* store-info */
+//   const [storeName, setStoreName] = useState('');
+//   const [storePhone, setStorePhone] = useState('');
+//   const [storeEmail, setStoreEmail] = useState('');
+//   const [moduleId, setModuleId] = useState<string | null>(null);
+//   const [zoneId, setZoneId] = useState<string | null>(null);
+//   const [tax, setTax] = useState('');
+//   const [logo, setLogo] = useState<File | null>(null);
+//   const [cover, setCover] = useState<File | null>(null);
+//   const [marker, setMarker] = useState(MAP_CENTER);
+//   const [address, setAddress] = useState('');
+//   const [officeNo, setOfficeNo] = useState('');
+//   const [city, setCity] = useState('');
+//   const [state, setState] = useState('');
+//   const [country, setCountry] = useState('');
+//   const [locationType, setLocationType] =
+//     useState<'home' | 'office' | 'other'>('home');
 
-  // Submit handler
-  const onSubmit = async () => {
-    const formDataToValidate = {
-      fullName,
-      phoneNo,
-      email,
-      password,
-      confirmPassword,    // optional
-      referredBy,       // optional
-      setBusinessPlan: businessPlan, // optional
-      isVerified: false, // optional (you can skip this if you want)
-      isDeleted: false,  // optional
+//   /* kyc */
+//   const [aadhaar, setAadhaar] = useState<File[]>([]);
+//   const [pan, setPan] = useState<File[]>([]);
+//   const [docs, setDocs] = useState<File[]>([]);
+//   const [gst, setGst] = useState<File[]>([]);
+//   const [other, setOther] = useState<File[]>([]);
 
-      storeInfo: {
-        storeName,
-        storePhone,
-        storeEmail,
-        module: selectedModule, // must be a 24-character string
-        zone,                   // must be one of: "east", "west", "south", "north", "central"
-        logo: '',               // optional, must be a URL string (e.g. uploaded file URL or keep undefined)
-        cover: '',              // optional, must be a URL string
-        tax,
-        location: {
-          type: locationType,               // must be one of "home", "office", "other"
-          coordinates: [
-            markerPosition.lng,  // already a number
-            markerPosition.lat,  // already a number
-          ],
+//   /* validation errors (zod) */
+//   const [errors, setErrors] = useState<Record<string, string>>({});
 
-        },
-        address,
-        officeNo,
-        city,
-        state,
-        country,
-      },
+//   /* maps */
+//   const { isLoaded, loadError } = useLoadScript({
+//     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+//   });
+//   const onMapClick = useCallback(
+//     (e: google.maps.MapMouseEvent) => {
+//       if (!e.latLng) return;
+//       const lat = e.latLng.lat();
+//       const lng = e.latLng.lng();
+//       setMarker({ lat, lng });
+//       setValue('latitude', lat);
+//       setValue('longitude', lng);
+//     },
+//     [setValue],
+//   );
 
-      kyc: {
-        aadhaarCard: aadhaarCardFiles,       // must be array of URL strings
-        panCard: panCardFiles,
-        storeDocument: storeDocumentFiles,
-        GST: gstFiles,
-        other: otherFiles,
-      },
-    };
+//   /* ───── determine starting step from server status ─────────────── */
+//   useEffect(() => {
+//     if (!provider) return;
+//     switch (provider.registrationStatus) {
+//       case 'basic':
+//         setStep(2);
+//         break;
+//       case 'store':
+//         setStep(3);
+//         break;
+//       case 'kyc':
+//       case 'done':
+//         setStep('done');
+//         break;
+//       default:
+//         setStep(1);
+//     }
+//   }, [provider]);
 
-    console.log("before submititing ")
-    try {
-      console.log("old submititing ")
-      try {
-        providerValidationSchema.parse(formDataToValidate);
-        console.log("Validation passed");
-      } catch (err) {
-        console.log("Zod validation error:", err);
-      }
+//   /* ---------------------------------------------------------------- */
+//   /*  helpers                                                         */
+//   /* ---------------------------------------------------------------- */
 
-      console.log("new submititing ")
-      setErrors({});
-      console.log("mid submititing ")
-      // Basic validations
-      if (!selectedModule
-      ) {
-        alert('Please fill all required fields');
-        return;
-      }
-      console.log("mid submititing ")
-      const formData = new FormData();
+//   /** Validate only the fields belonging to the _current_ step */
+//   const validateCurrentStep = () => {
+//     try {
+//       if (step === 1) {
+//         providerValidationSchema
+//           .pick({
+//             fullName: true,
+//             phoneNo: true,
+//             email: true,
+//             password: true,
+//             confirmPassword: true,
+//           })
+//           .parse({ fullName, phoneNo, email, password, confirmPassword });
+//       } else if (step === 2) {
+//         providerValidationSchema.shape.storeInfo.parse({
+//           storeName,
+//           storePhone,
+//           storeEmail,
+//           module: moduleId,
+//           zone: zoneId,
+//           tax,
+//           location: {
+//             type: locationType,
+//             coordinates: [marker.lng, marker.lat],
+//           },
+//           address,
+//           officeNo,
+//           city,
+//           state,
+//           country,
+//         });
+//       }
+//       setErrors({});
+//       return true;
+//     } catch (err) {
+//       if (err instanceof z.ZodError) {
+//         const obj: Record<string, string> = {};
+//         err.errors.forEach((e) => (obj[e.path.join('.')] = e.message));
+//         setErrors(obj);
+//       }
+//       return false;
+//     }
+//   };
 
-      formData.append('fullName', fullName);
-      formData.append('phoneNo', phoneNo);
-      formData.append('email', email);
-      formData.append('password', password);
-      formData.append('confirmPassword', confirmPassword);
-      formData.append('referredBy', referredBy);
-      formData.append('storeName', storeName);
-      formData.append('storePhone', storePhone);
-      formData.append('storeEmail', storeEmail);
-      formData.append('selectedModule', selectedModule);
-      formData.append('zone', zone);
-      formData.append('tax', tax);
-      formData.append('locationType', locationType);
-      formData.append('longitude', markerPosition.lng.toString());
-      formData.append('latitude', markerPosition.lat.toString());
-      formData.append('address', address);
-      formData.append('officeNo', officeNo);
-      formData.append('city', city);
-      formData.append('state', state);
-      formData.append('country', country);
-      formData.append('setBusinessPlan', businessPlan);
+//   /** Save step-1 → advance to step 2 */
+//   const handleBasicSubmit = async () => {
+//     if (!validateCurrentStep()) return;
+//     const fd = new FormData();
+//     fd.append('fullName', fullName);
+//     fd.append('phoneNo', phoneNo);
+//     fd.append('email', email);
+//     fd.append('password', password);
+//     if (confirmPassword) fd.append('confirmPassword', confirmPassword);
+//     if (referredBy) fd.append('referredBy', referredBy);
 
-      if (logo) formData.append('logo', logo);
-      if (cover) formData.append('cover', cover);
+//     const ok = await registerProvider(fd);
+//     if (ok) setStep(2);
+//   };
 
-      // Append multiple files
-      aadhaarCardFiles.forEach((file) => formData.append('aadhaarCard', file));
-      panCardFiles.forEach((file) => formData.append('panCard', file));
-      storeDocumentFiles.forEach((file) => formData.append('storeDocument', file));
-      gstFiles.forEach((file) => formData.append('GST', file));
-      otherFiles.forEach((file) => formData.append('other', file));
+//   /** Save step-2 → advance to step 3 */
+//   const handleStoreSubmit = async () => {
+//     if (!validateCurrentStep()) return;
+//     const fd = new FormData();
+//     fd.append('storeName', storeName);
+//     fd.append('storePhone', storePhone);
+//     fd.append('storeEmail', storeEmail);
+//     fd.append('module', moduleId!);
+//     fd.append('zone', zoneId!);
+//     fd.append('tax', tax);
+//     fd.append('locationType', locationType);
+//     fd.append('longitude', String(marker.lng));
+//     fd.append('latitude', String(marker.lat));
+//     fd.append('address', address);
+//     fd.append('officeNo', officeNo);
+//     fd.append('city', city);
+//     fd.append('state', state);
+//     fd.append('country', country);
+//     if (logo) fd.append('logo', logo);
+//     if (cover) fd.append('cover', cover);
 
-      const success = await createProvider(formData);
-      console.log("end submititing ")
-      if (success) {
-        alert('Provider registered successfully!');
-        resetForm();
-      } else {
-        alert('Failed to register provider. Please try again.');
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: { [key: string]: string } = {};
-        error.errors.forEach((e) => {
-          if (e.path && e.path.length > 0) {
-            const key = e.path.join('.'); // For nested fields like storeInfo.address
-            fieldErrors[key] = e.message;
-          }
-        });
-        setErrors(fieldErrors);
-      } else {
-        console.error('Error while registering provider:', error);
-        alert('An error occurred while registering the provider. Please try again.');
-      }
-    }
-  };
+//     const ok = await updateStoreInfo(fd);
+//     if (ok) setStep(3);
+//   };
 
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Maps...</div>;
+//   /** Save step-3 → show DONE */
+//   const handleKycSubmit = async () => {
+//     const fd = new FormData();
+//     aadhaar.forEach((f) => fd.append('aadhaarCard', f));
+//     pan.forEach((f) => fd.append('panCard', f));
+//     docs.forEach((f) => fd.append('storeDocument', f));
+//     gst.forEach((f) => fd.append('GST', f));
+//     other.forEach((f) => fd.append('other', f));
 
-  const handleSelectModule = (selected: string) => {
-    setSelectedModule(selected);
-  };
+//     const ok = await updateKycInfo(fd);
+//     if (ok) setStep('done');
+//   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; // Fix: safe access
-    if (file) {
-      setLogo(file);
-    }
-  };
+//   /* ---------------------------------------------------------------- */
+//   /*  UI                                                              */
+//   /* ---------------------------------------------------------------- */
 
-  const handleIdImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setCover(e.target.files[0]);
-    }
-  };
+//   const moduleOpts = modules.map((m) => ({ value: m._id, label: m.name }));
+//   const zoneOpts = zones.map((z) => ({ value: z._id, label: z.name }));
 
+//   if (loadError) return <p>Error loading map</p>;
+//   if (!isLoaded) return <p>Loading map…</p>;
 
-  const options = modules.map((mod: ModuleType) => ({
-    value: mod._id,
-    label: mod.name,
-  }));
+//   return (
+//     <div className="container mx-auto p-4">
+//       <ComponentCard title="Provider On-Boarding">
 
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Maps...</div>;
+//         {/* ────────── ROAD-MAP ───────────────────────────────────── */}
+//         <RoadMap current={step} />
 
+//         {/* ────────── STEP-1: BASIC ─────────────────────────────── */}
+//         {step === 1 && (
+//           <form onSubmit={handleSubmit(handleBasicSubmit)}>
+//             <Section title="Basic Information">
+//               <GridTwo>
+//                 <TextField label="Full Name" val={fullName} set={setFullName} err={errors.fullName} />
+//                 <TextField label="Phone"     val={phoneNo} set={setPhoneNo}  err={errors.phoneNo}  />
+//                 <TextField label="Email"     val={email}   set={setEmail}    err={errors.email}    />
+//                 <TextField label="Password"  val={password} set={setPassword} type="password" err={errors.password}/>
+//                 <TextField label="Confirm Password" val={confirmPassword} set={setConfirmPassword} type="password" err={errors.confirmPassword}/>
+//                 <TextField label="Referral Code (optional)" val={referredBy} set={setReferredBy}/>
+//               </GridTwo>
+
+//               <SubmitBar loading={loading} label="Register" />
+//             </Section>
+//           </form>
+//         )}
+
+//         {/* ────────── STEP-2: STORE‐INFO ────────────────────────── */}
+//         {step === 2 && (
+//           <form onSubmit={handleSubmit(handleStoreSubmit)}>
+//             <Section title="Store Information">
+//               <GridTwo>
+//                 <TextField label="Store Name" val={storeName} set={setStoreName} err={errors['storeInfo.storeName']}/>
+//                 <TextField label="Store Phone" val={storePhone} set={setStorePhone}/>
+//                 <TextField label="Store Email" val={storeEmail} set={setStoreEmail}/>
+//                 <SelectField label="Module" opts={moduleOpts} val={moduleId} set={setModuleId}/>
+//                 <SelectField label="Zone"   opts={zoneOpts}   val={zoneId}   set={setZoneId}/>
+//                 <TextField label="VAT / Tax" val={tax} set={setTax}/>
+//                 <FileField label="Logo"  setFile={setLogo}/>
+//                 <FileField label="Cover" setFile={setCover}/>
+//               </GridTwo>
+
+//               <Section title="Location">
+//                 <GoogleMap
+//                   mapContainerStyle={MAP_STYLE}
+//                   center={marker}
+//                   zoom={12}
+//                   onClick={onMapClick}
+//                 >
+//                   <Marker position={marker} />
+//                 </GoogleMap>
+
+//                 <GridTwo className="mt-4">
+//                   <TextField label="Address" val={address} set={setAddress}/>
+//                   <TextField label="Office No" val={officeNo} set={setOfficeNo}/>
+//                   <TextField label="City" val={city} set={setCity}/>
+//                   <TextField label="State" val={state} set={setState}/>
+//                   <TextField label="Country" val={country} set={setCountry}/>
+//                 </GridTwo>
+//               </Section>
+
+//               <SubmitBar loading={loading} label="Save & Continue" />
+//             </Section>
+//           </form>
+//         )}
+
+//         {/* ────────── STEP-3: KYC ───────────────────────────────── */}
+//         {step === 3 && (
+//           <form onSubmit={handleSubmit(handleKycSubmit)}>
+//             <Section title="KYC Documents">
+//               <GridTwo>
+//                 <FileField label="Aadhaar" multiple setFiles={setAadhaar}/>
+//                 <FileField label="PAN Card" multiple setFiles={setPan}/>
+//                 <FileField label="Business Docs" multiple setFiles={setDocs}/>
+//                 <FileField label="GST" multiple setFiles={setGst}/>
+//                 <FileField label="Other" multiple setFiles={setOther}/>
+//               </GridTwo>
+
+//               <SubmitBar loading={loading} label="Submit KYC" />
+//             </Section>
+//           </form>
+//         )}
+
+//         {/* ────────── DONE ─────────────────────────────────────── */}
+//         {step === 'done' && (
+//           <div className="text-center py-20">
+//             <Check className="mx-auto h-16 w-16 text-green-600 mb-4" />
+//             <h2 className="text-2xl font-semibold text-green-700">
+//               All steps completed!
+//             </h2>
+//             <p className="text-gray-600 mt-2">
+//               Thank you. Your account and documents are now fully verified.
+//             </p>
+//           </div>
+//         )}
+//       </ComponentCard>
+//     </div>
+//   );
+// }
+
+// /* ------------------------------------------------------------------ */
+// /*  Road-map component (fixed)                                        */
+// /* ------------------------------------------------------------------ */
+
+// function RoadMap({ current }: { current: WizardStep }) {
+//   type StepNumber = 1 | 2 | 3;
+
+//   const items: { step: StepNumber; label: string }[] = [
+//     { step: 1, label: 'Basic' },
+//     { step: 2, label: 'Store Info' },
+//     { step: 3, label: 'KYC' },
+//   ];
+
+//   /* Convert "done" to a numeric sentinel so we can compare safely */
+//   const numericCurrent: number =
+//     current === 'done' ? 4 : (current as StepNumber);
+
+//   const icon = (s: StepNumber) => {
+//     if (s < numericCurrent) return <Check className="h-4 w-4" />;       // ✅ completed
+//     if (current !== 'done' && s === current)                            // ✅ active
+//       return <ArrowRightIcon className="h-4 w-4" />;
+//     return <Clock className="h-4 w-4" />;                               // ✅ pending
+//   };
+
+//   return (
+//     <div className="flex justify-between mb-6">
+//       {items.map(({ step, label }) => {
+//         const completed = step < numericCurrent;
+//         const active = current !== 'done' && step === current;
+//         return (
+//           <div key={step} className="flex-1 text-center">
+//             <div
+//               className={`mx-auto h-8 w-8 rounded-full flex items-center justify-center
+//                 ${completed ? 'bg-green-600 text-white' :
+//                   active ? 'bg-blue-600 text-white' :
+//                   'bg-gray-300 text-gray-700'}`}>
+//               {icon(step)}
+//             </div>
+//             <p className={`mt-1 text-sm ${completed ? 'text-green-700' :
+//               active ? 'text-blue-700' : 'text-gray-500'}`}>
+//               {label}
+//             </p>
+//           </div>
+//         );
+//       })}
+//     </div>
+//   );
+// }
+
+// /* ------------------------------------------------------------------ */
+// /*  Tiny UI helpers                                                   */
+// /* ------------------------------------------------------------------ */
+
+// function Section({
+//   title,
+//   children,
+// }: {
+//   title: string;
+//   children: React.ReactNode;
+// }) {
+//   return (
+//     <section className="border rounded-lg p-6 shadow-sm mb-8 bg-white">
+//       <h2 className="text-lg font-semibold mb-4 text-blue-700">{title}</h2>
+//       {children}
+//     </section>
+//   );
+// }
+
+// function GridTwo({
+//   children,
+//   className = '',
+// }: {
+//   children: React.ReactNode;
+//   className?: string;
+// }) {
+//   return (
+//     <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${className}`}>
+//       {children}
+//     </div>
+//   );
+// }
+
+// function TextField({
+//   label,
+//   val,
+//   set,
+//   err,
+//   type = 'text',
+// }: {
+//   label: string;
+//   val: string;
+//   set: (v: string) => void;
+//   err?: string;
+//   type?: string;
+// }) {
+//   return (
+//     <div>
+//       <Label className="block mb-1 font-medium text-gray-700">{label}</Label>
+//       <Input type={type} value={val} onChange={(e) => set(e.target.value)} />
+//       {err && <p className="text-red-500 text-xs mt-1">{err}</p>}
+//     </div>
+//   );
+// }
+
+// function SelectField<T>({
+//   label,
+//   opts,
+//   val,
+//   set,
+// }: {
+//   label: string;
+//   opts: { value: T; label: string }[];
+//   val: T | null;
+//   set: (v: T) => void;
+// }) {
+//   return (
+//     <div className="relative">
+//       <Label className="block mb-1 font-medium text-gray-700">{label}</Label>
+//       <Select
+//         options={opts}
+//         value={val}
+//         placeholder={`Select ${label}`}
+//         onChange={(v) => set(v as T)}
+//         className="dark:bg-dark-900"
+//       />
+//       <span className="absolute right-3 top-9 pointer-events-none text-gray-500">
+//         <ChevronDownIcon />
+//       </span>
+//     </div>
+//   );
+// }
+
+// function FileField({
+//   label,
+//   setFile,
+//   setFiles,
+//   multiple = false,
+// }: {
+//   label: string;
+//   setFile?: (f: File | null) => void;
+//   setFiles?: (f: File[]) => void;
+//   multiple?: boolean;
+// }) {
+//   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (!e.target.files) return;
+//     if (multiple) setFiles?.(Array.from(e.target.files));
+//     else setFile?.(e.target.files[0] ?? null);
+//   };
+//   return (
+//     <div>
+//       <Label className="block mb-1 font-medium text-gray-700">{label}</Label>
+//       <FileInput
+//         multiple={multiple}
+//         onChange={onChange}
+//         className="custom-class"
+//       />
+//     </div>
+//   );
+// }
+
+// function SubmitBar({ loading, label }: { loading: boolean; label: string }) {
+//   return (
+//     <div className="flex justify-end mt-8">
+//       <button
+//         type="submit"
+//         disabled={loading}
+//         className="px-8 py-3 rounded text-white font-semibold
+//                    bg-gradient-to-r from-blue-600 to-blue-800
+//                    disabled:opacity-60"
+//       >
+//         {label}
+//       </button>
+//     </div>
+//   );
+// }
+import React from 'react'
+
+function page() {
   return (
-    <div className="container mx-auto p-4">
-      <ComponentCard title="Add New Provider">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* General Information - Full width row */}
-          <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-blue-100 text-blue-700">
-              General Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Full Name</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Full Name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-                {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
-              </div>
+    <div>page</div>
+  )
+}
 
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Phone</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter Phone No"
-                  value={phoneNo}
-                  onChange={(e) => setPhoneNo(e.target.value)}
-                />
-                {errors.phoneNo && <p className="text-red-500 text-sm mt-1">{errors.phoneNo}</p>}
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Email</Label>
-                <Input
-                  type="email"
-                  placeholder="Enter Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Password</Label>
-                <Input
-                  type="password"
-                  placeholder="Enter Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Confirm Password</Label>
-                <Input
-                  type="password"
-                  placeholder="Enter Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Referral Code (Optional)</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Referral Code"
-                  value={referredBy}
-                  onChange={(e) => setReferredBy(e.target.value)}
-                />
-                {errors.referredBy && <p className="text-red-500 text-sm mt-1">{errors.referredBy}</p>}
-              </div>
-            </div>
-          </section>
-
-
-          <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
-              Store Info
-            </h2>
-
-            {/* Main grid for 2-cols layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Store Name</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Store Name"
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                />
-                {errors['storeInfo.storeName'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storeName']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Store Phone</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Store Phone No"
-                  value={storePhone}
-                  onChange={(e) => setStorePhone(e.target.value)}
-                />
-                {errors['storeInfo.storePhone'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storePhone']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Store Email</Label>
-                <Input
-                  type="email"
-                  placeholder="Enter Store Email"
-                  value={storeEmail}
-                  onChange={(e) => setStoreEmail(e.target.value)}
-                />
-                {errors['storeInfo.storeEmail'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.storeEmail']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Select Module</Label>
-                <div className="relative">
-                  <Select
-                    options={options}
-                    placeholder="Select Module"
-                    onChange={handleSelectModule}
-                    className="dark:bg-dark-900"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
-                </div>
-                {errors['storeInfo.options'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.options']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Zone</Label>
-                <div className="relative">
-                  <Select
-                    options={zoneOptions}
-                    placeholder="Select Zone"
-                    onChange={(value) => setZone(value)}
-                    className="dark:bg-dark-900"
-                  />
-                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
-                </div>
-                {errors['storeInfo.zoneOptions'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.zoneOptions']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Store Logo</Label>
-                <FileInput onChange={handleLogoChange} className="custom-class" />
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Store Cover Image</Label>
-                <FileInput className="custom-class" onChange={handleIdImageChange} />
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Vat/Tax</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Vat/Tax"
-                  value={tax}
-                  onChange={(e) => setTax(e.target.value)}
-                />
-                {errors['storeInfo.tax'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.tax']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Address</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-                {errors['storeInfo.address'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.address']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Office No</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Office No"
-                  value={officeNo}
-                  onChange={(e) => setOfficeNo(e.target.value)}
-                />
-                {errors['storeInfo.officeNo'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.officeNo']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">City</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter City"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-                {errors['storeInfo.city'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.city']}</p>
-                )}
-
-              </div>
-
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">State</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter State"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                />
-                {errors['storeInfo.state'] && (
-                  <p className="text-red-500 text-sm mt-1">{errors['storeInfo.state']}</p>
-                )}
-
-              </div>
-
-            </div>
-
-            {/* Last row, single column full-width */}
-            <div className="mt-4">
-              <Label className="block mb-1 font-medium text-gray-700">Country</Label>
-              <Input
-                type="text"
-                placeholder="Enter Country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-              />
-              {errors['storeInfo.country'] && (
-                <p className="text-red-500 text-sm mt-1">{errors['storeInfo.country']}</p>
-              )}
-
-            </div>
-          </section>
-
-
-
-          {/* Map Section - Full width */}
-          <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-purple-50 to-white">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-purple-100 text-purple-700">
-              Select Address from Map
-            </h2>
-            <p className="mb-2 text-gray-600">
-              Click on the map to select the location. The latitude and longitude will be captured.
-            </p>
-
-            {/* Tabs */}
-            <div className="flex mb-4 space-x-4">
-              {["Home", "Office", "Others"].map((tab) => (
-                <button
-                  key={tab}
-                  className={`px-4 py-2 rounded ${activeTab === tab
-                    ? "bg-purple-500 text-white font-semibold"
-                    : "bg-purple-100 text-purple-700"
-                    }`}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setLocationType(tab.toLowerCase()); // convert to lowercase like 'home', 'office', 'others'
-                  }}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-
-            {/* Map */}
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={markerPosition}
-              zoom={12}
-              onClick={onMapClick}
-            >
-              <Marker position={markerPosition} />
-            </GoogleMap>
-
-            {/* Inputs */}
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Latitude</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter Latitude"
-                  value={markerPosition.lat}
-                // onChange={handleLatitudeChange}
-                />
-              </div>
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Longitude</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter Longitude"
-                  value={markerPosition.lng}
-                // onChange={handleLongitudeChange}
-                />
-              </div>
-            </div>
-          </section>
-          <section className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
-              KYC Information
-            </h2>
-
-            {/* Grid layout with 2 columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Aadhaar Card */}
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Aadhaar Card</Label>
-                <FileInput className="custom-class" multiple
-                  onChange={(e) => handleFileChange(e, setAadhaarCardFiles)} />
-              </div>
-
-              {/* PAN Card */}
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">PAN Card</Label>
-                <FileInput className="custom-class" multiple
-                  onChange={(e) => handleFileChange(e, setPanCardFiles)} />
-              </div>
-
-              {/* Business Legal Document */}
-              <div>
-                <Label className="block mb-1 font-medium text-gray-700">Business Legal Document</Label>
-                <FileInput className="custom-class" multiple
-                  onChange={(e) => handleFileChange(e, setStoreDocumentFiles)} />
-              </div>
-
-              {/* GSTIN Number (optional) */}
-              <div className="">
-                <Label className="block mb-1 font-medium text-gray-700">Other Document (Optional)</Label>
-                <FileInput className="custom-class" multiple
-                  onChange={(e) => handleFileChange(e, setOtherFiles)} />
-              </div>
-
-            </div>
-
-            {/* Other Document (optional) - single full-width row */}
-            <div className='mt-4'>
-              <Label className="block mb-1 font-medium text-gray-700">GSTIN Number (Optional)</Label>
-              <FileInput className="custom-class" multiple
-                onChange={(e) => handleFileChange(e, setGstFiles)} />
-            </div>
-          </section>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold py-3 px-8 rounded-lg hover:opacity-90 transition shadow-md"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </ComponentCard>
-
-      <style jsx>{`
-        .input-field {
-          width: 100%;
-          border: 1px solid #e2e8f0;
-          padding: 10px 14px;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          transition: all 0.2s;
-          background-color: white;
-        }
-        .input-field:hover {
-          border-color: #a0aec0;
-        }
-        .input-field:focus {
-          outline: none;
-          border-color: #4299e1;
-          box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default AddProvider;
+export default page

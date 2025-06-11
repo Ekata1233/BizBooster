@@ -66,7 +66,7 @@ interface ProviderTableData {
 
 
 const ProviderList = () => {
-  const { providers } = useProvider();
+  const { provider } = useProvider();
   const { modules } = useModule();
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [filteredProviders, setFilteredProviders] = useState<ProviderTableData[]>([]);
@@ -75,9 +75,9 @@ const ProviderList = () => {
   const [message, setMessage] = useState<string>('');
   // const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
   // const [selectedPlan, setSelectedPlan] = useState('');
-  console.log(providers);
+  console.log(provider);
 
-  console.log("provider list : ", providers);
+  console.log("provider list : ", provider);
 
   const fetchFilteredProviders = async () => {
     try {
