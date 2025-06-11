@@ -13,6 +13,8 @@ import { getUserIdFromRequest } from "@/utils/auth";
 import Provider from "@/models/Provider";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuid } from "uuid";
+import '@/models/Zone'
+import '@/models/Module'
 
 /** Ensure this route uses the Node runtime, not the Edge runtime */
 export const runtime = "nodejs";
