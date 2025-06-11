@@ -14,7 +14,7 @@ export interface IServiceCustomer extends Document {
         expiresAt?: Date;
         verified?: boolean;
     };
-    provider: mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId;
     isDeleted: boolean;
     createdAt?: Date;
     updatedAt?: Date;
@@ -72,9 +72,9 @@ const serviceCustomerSchema: Schema = new mongoose.Schema(
             expiresAt: { type: Date },
             verified: { type: Boolean, default: false },
         },
-        provider: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Provider"
+            ref: "User"
         },
         isDeleted: {
             type: Boolean,
