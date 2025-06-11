@@ -1,62 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db';
-import Provider from '@/models/Provider';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+// src/app/api/provider/login/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import Provider from "@/models/Provider";
+import { z } from "zod";
+import { signToken } from "@/utils/auth";
+import { connectToDatabase } from "@/utils/db";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
+  const body = await req.json();
+  const parsed = schema.safeParse(body);
+  if (!parsed.success)
+    return NextResponse.json({ errors: parsed.error.errors }, { status: 400 });
 
-  try {
-    const { email, password } = await req.json();
+  const { email, password } = parsed.data;
+  const provider = await Provider.findOne({ email });
+  if (!provider || !(await provider.comparePassword(password)))
+    return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
 
-    if (!email || !password) {
-      return NextResponse.json({ success: false, message: 'Email and password required' }, { status: 400, headers: corsHeaders });
-    }
-
-    const provider = await Provider.findOne({ email });
-
-    if (!provider) {
-      return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401, headers: corsHeaders });
-    }
-
-    // Verify password
-    const isMatch = await bcrypt.compare(password, provider.password);
-    if (!isMatch) {
-      return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401, headers: corsHeaders });
-    }
-
-    // Generate JWT
-   const token = jwt.sign(
-      { id: provider._id, email: provider.email, name: provider.name },
-     process.env.JWT_SECRET!,
-      { expiresIn: '1h' }
-    );
-    return NextResponse.json({
-      success: true,
-      data: {
-        token,
-        provider: {
-          _id: provider._id,
-          name: provider.name,
-          email: provider.email,
-          // any other fields you want to expose
-        },
-      }
-    }, { status: 200, headers: corsHeaders });
-
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
-  }
+  const token = signToken(provider._id.toString());
+  const res = NextResponse.json({ message: "Logged in", provider });
+  res.cookies.set("token", token, { httpOnly: true, secure: true, path: "/" });
+  return res;
 }
