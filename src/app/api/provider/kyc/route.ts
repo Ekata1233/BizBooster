@@ -19,6 +19,16 @@ export const runtime = "nodejs";
 /* ------------------------------------------------------------------------ */
 /* Helpers                                                                  */
 /* ------------------------------------------------------------------------ */
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// ✅ Handle preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 /** Upload a File to ImageKit, return its public URL */
 async function uploadFile(
@@ -101,26 +111,14 @@ export async function PUT(req: NextRequest) {
       { new: true },
     );
 
-    return NextResponse.json({ message: "KYC saved", provider });
+    return NextResponse.json({ message: "KYC saved", provider }, { headers: corsHeaders });
   } catch (err: any) {
     console.error("KYC PUT error:", err);
     return NextResponse.json(
       { message: "Failed to save KYC", error: err.message },
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     );
   }
 }
 
-/** Allow CORS pre-flight when called from frontend */
-export function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    },
-  );
-}
+
