@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const city = formData.get("city") as string;
     const state = formData.get("state") as string;
     const country = formData.get("country") as string;
-     const userId = formData.get("userId") as string;
+     const user = formData.get("user") as string;
 
 if (!fullName) {
       return NextResponse.json(
@@ -76,7 +76,7 @@ if (!fullName) {
       );
     }
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { success: false, message: "User ID is required." },
         { status: 400, headers: corsHeaders }
@@ -91,10 +91,10 @@ if (!fullName) {
       city,
       state,
       country,
-      user: userId 
+      user: user 
     });
 
-    await User.findByIdAndUpdate(userId, {
+    await User.findByIdAndUpdate(user, {
       $push: { serviceCustomers : newCustomer._id },
     });
 
