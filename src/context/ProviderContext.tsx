@@ -17,6 +17,7 @@ export interface Provider {
 
 type ProviderContextType = {
   provider: Provider | null;
+  providerDetails: Provider | null;
   loading: boolean;
   error: string | null;
   registerProvider: (data: FormData) => Promise<void>;
@@ -25,6 +26,7 @@ type ProviderContextType = {
   getProviderById: (id: string) => Promise<void>;
   updateProvider: (id: string, updates: any) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
+  getAllProviders: () => Promise<Provider[]>;
 };
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const useProvider = () => {
 
 export const ProviderContextProvider = ({ children }: { children: ReactNode }) => {
   const [provider, setProvider] = useState<Provider | null>(null);
+  const [providerDetails, setProviderDetails] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +55,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       if (!res.ok) throw new Error(data.message || 'Registration failed');
 
       setProvider(data.provider);
-      
+
       setError(null);
       // return true; 
     } catch (err: any) {
@@ -153,11 +156,37 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     }
   };
+  const getAllProviders = async (): Promise<Provider[]> => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/provider');
+      const data = await res.json();
 
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch providers');
+      setProviderDetails(data);
+      setError(null);
+
+      return data;
+    } catch (err: any) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    const fetchProviders = async () => {
+      const allProviders = await getAllProviders();
+      console.log("All Providers:", allProviders);
+    };
+
+    fetchProviders();
+  }, []);
   return (
     <ProviderContext.Provider
       value={{
         provider,
+        providerDetails,
         loading,
         error,
         registerProvider,
@@ -166,6 +195,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
         getProviderById,
         updateProvider,
         deleteProvider,
+        getAllProviders,
       }}
     >
       {children}
