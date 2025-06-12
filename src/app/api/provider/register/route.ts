@@ -9,6 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 // ✅ Handle preflight
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
     const token = signToken(provider._id.toString());
 
     const res = NextResponse.json({ message: "Registered", provider },{ headers: corsHeaders });
-    res.cookies.set("token", token, { httpOnly: true, secure: true, path: "/" });
+    res.cookies.set("token", token, { httpOnly: true, secure: true, sameSite: "none", path: "/" });
 
     return res;
   } catch (error) {

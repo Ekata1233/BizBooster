@@ -90,7 +90,7 @@ export async function PUT(req: NextRequest) {
 
   const providerId = await getUserIdFromRequest(req);
   if (!providerId)
-    return NextResponse.json({ message: "Unauthenticated" }, { status: 401, headers: corsHeaders });
+    return NextResponse.json({ message: "Provider Id Not Found." }, { status: 401, headers: corsHeaders });
 
   try {
     const storeInfo = await parseFormAndUpload(req, providerId);
