@@ -10,7 +10,14 @@ export function signToken(id: string) {
 }
 
 export async function getUserIdFromRequest(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  let token = req.cookies.get("token")?.value;
+ if (!token) {
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+  }
+
   if (!token) return null;
 
   try {
