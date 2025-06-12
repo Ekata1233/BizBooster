@@ -24,6 +24,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true'
 };
 
 // ✅ Handle preflight
@@ -89,7 +90,7 @@ export async function PUT(req: NextRequest) {
 
   const providerId = await getUserIdFromRequest(req);
   if (!providerId)
-    return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    return NextResponse.json({ message: "Unauthenticated" }, { status: 401, headers: corsHeaders });
 
   try {
     const storeInfo = await parseFormAndUpload(req, providerId);
