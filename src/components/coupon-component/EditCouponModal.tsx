@@ -411,7 +411,7 @@
 
 import React from 'react'
 
-function EditCouponModal() {
+const EditCouponModal = () => {
   return (
     <div>EditCouponModal</div>
   )

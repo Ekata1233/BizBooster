@@ -131,7 +131,7 @@ export async function DELETE(req: Request) {
 
     const deletedCoupon = await Coupon.findByIdAndUpdate(
       id,
-      { isActive: false },
+      { isDeleted: true },
       { new: true }
     );
 

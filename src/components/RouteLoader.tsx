@@ -21,13 +21,16 @@ const RouteLoader = () => {
   if (!loading) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/100 dark:bg-gray-900/80">
-      <div className="dot-loader">
-        <span></span>
-        <span></span>
-        <span></span>
+    <div className="fixed inset-0 z-50 bg-black/100 dark:bg-gray-900/80">
+      <div className="absolute top-[60%] left-[62%] transform -translate-x-1/2 -translate-y-1/2">
+        <div className="dot-loader">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
+
   );
 };
 
