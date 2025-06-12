@@ -37,6 +37,7 @@ export interface ICoupon extends Document {
 
   /* misc */
   isActive: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,7 +99,10 @@ const CouponSchema = new Schema<ICoupon>(
       enum: ['Growth Partner', 'Customer'],
       required: true,
     },
-
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     /* flags */
     isActive: { type: Boolean, default: true },
   },

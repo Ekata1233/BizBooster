@@ -27,9 +27,58 @@ export async function POST(req: Request) {
     const country = formData.get("country") as string;
      const userId = formData.get("userId") as string;
 
-    if (!fullName || !phone || !email || !address || !city || !state || !country|| !userId) {
+if (!fullName) {
       return NextResponse.json(
-        { success: false, message: "All required fields must be filled." },
+        { success: false, message: "Full name is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!phone) {
+      return NextResponse.json(
+        { success: false, message: "Phone number is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: "Email is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!address) {
+      return NextResponse.json(
+        { success: false, message: "Address is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!city) {
+      return NextResponse.json(
+        { success: false, message: "City is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!state) {
+      return NextResponse.json(
+        { success: false, message: "State is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!country) {
+      return NextResponse.json(
+        { success: false, message: "Country is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "User ID is required." },
         { status: 400, headers: corsHeaders }
       );
     }

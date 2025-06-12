@@ -81,7 +81,7 @@ const couponTypeOptions = [
 
 const CouponList: React.FC = () => {
   /* ─── contexts ─────────────────────────────────────────────────────────── */
-  const { coupons, deleteCoupon } = useCoupon();
+  const { coupons, deleteCoupon, updateCoupon } = useCoupon();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<CouponType | null>(null);
 
@@ -185,8 +185,31 @@ const CouponList: React.FC = () => {
 
   /* ─── save (PUT) ────────────────────────────────────────────────────────── */
   const handleUpdateCoupon = async (payload: Partial<CouponType>) => {
-    if (!editingCoupon) return;
-    await axios.put(`/api/coupon/${editingCoupon._id}`, payload);
+    if (!editingCoupon || !editingCoupon._id) return;
+
+ const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    // Manually handle known Select fields
+    if (['service', 'zone', 'category', 'customer'].includes(key)) {
+      if (typeof value === 'object' && value !== null && 'value' in value) {
+        formData.append(key, value.value); // ✅ Append only the ObjectId
+      } else {
+        console.warn(`⚠️ Expected an object for key: ${key}, got:`, value);
+      }
+    } else {
+      formData.append(key, String(value)); // fallback: treat as string
+    }
+  });
+
+  console.log('✅ Final FormData before sending:');
+  for (let [key, val] of formData.entries()) {
+    console.log(key, val);
+  }
+
+  await updateCoupon(editingCoupon._id, formData);
     setIsModalOpen(false);
     await fetchFilteredCoupons();          // refresh list
   };
@@ -250,8 +273,8 @@ const CouponList: React.FC = () => {
         <div className="w-full lg:w-3/4 my-5 flex flex-col">
           <ComponentCard title="Search & Filter" className=" h-full">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 py-3">
-              {/* Coupon Type Filter */}
-              <div>
+            
+              {/* <div>
                 <Label>Coupon Type</Label>
                 <div className="relative">
                   <Select
@@ -266,7 +289,7 @@ const CouponList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Sort */}
+             
               <div>
                 <Label>Sort</Label>
                 <div className="relative">
@@ -282,7 +305,7 @@ const CouponList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Search */}
+             
               <div>
                 <Label>Search by Code</Label>
                 <Input
@@ -290,7 +313,7 @@ const CouponList: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-              </div>
+              </div> */}
             </div>
           </ComponentCard>
         </div>

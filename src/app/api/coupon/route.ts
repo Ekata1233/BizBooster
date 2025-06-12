@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
     const active  = searchParams.get("active"); // "true" | "false" | null
 
     /* ── build filter object ────────────────────────── */
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
       const regex = { $regex: search, $options: "i" };
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
       .populate("category", "name")
       .populate("service", "serviceName")
       .populate("zone", "name")
-      .sort({ createdAt: -1 });
+      .sort();
 
     return NextResponse.json(
       { success: true, data: coupons },

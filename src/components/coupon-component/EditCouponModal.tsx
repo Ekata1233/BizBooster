@@ -15,6 +15,7 @@ import { useZone } from '@/context/ZoneContext';                // ⬅️ if you
 
 import type { CouponType } from '@/app/(admin)/coupons-management/coupons-list/page';
 import { useServiceCustomer } from '@/context/ServiceCustomerContext';
+import { useService } from '@/context/ServiceContext';
 
 /* -------------------------------------------------------------------------- */
 /* 🔖 constants                                                               */
@@ -33,9 +34,9 @@ const discountTypes: CouponType['discountType'][] = [
 ];
 
 const amountTypes: CouponType['discountAmountType'][] = [
-   
+
     'Percentage',
-     'Fixed Amount',
+    'Fixed Amount',
 ];
 
 const costBearers: CouponType['discountCostBearer'][] = [
@@ -61,10 +62,10 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
     /* ─── external lists ──────────────────────────────────────────────────── */
     const { customers } = useServiceCustomer();
     const { categories } = useCategory();
-    const { subcategories } = useSubcategory();
+    const {services} = useService();
     const { zones = [] } = useZone?.() ?? { zones: [] };       // optional
 
-    console.log("formdata of the edit : ", form)
+
 
     /* ▶︎ map to Select-friendly [{value,label}] once, memoised */
     const categoryOptions = useMemo(
@@ -78,13 +79,10 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
     );
 
     const serviceOptions = useMemo(
-        () =>
-            subcategories
-                .filter(sc => sc.category?._id === (form.category as any)?.value)
-                .map(sc => ({ value: sc._id, label: sc.name })),
-        [subcategories, form.category]                // ⬅️ depend on form.category
+        () => services.map(s => ({ value: s._id, label: s.serviceName })),
+        [services]             // ⬅️ depend on form.category
     );
-
+    console.log("serviceOptions : ", serviceOptions)
     const zoneOptions = useMemo(
         () => zones.map(z => ({ value: z._id, label: z.name })),
         [zones]
@@ -121,7 +119,16 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!coupon) return;
-        await onSave(form);
+
+        const transformedData = {
+            ...form,
+            category: (form.category as any)?.value ?? form.category,
+            service: (form.service as any)?.value ?? form.service,
+            zone: (form.zone as any)?.value ?? form.zone,
+            customer: (form.customer as any)?.value ?? form.customer,
+        };
+
+        await onSave(transformedData);
         onClose();
     };
 
@@ -291,20 +298,20 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
                         </div>
 
                         <div className="md:col-span-2 flex flex-wrap items-center gap-8">
-                        {form.couponType === "customerWise" && (
-                            <div className="w-full">            {/* or: basis-full */}
-                                <Label>Select Customer</Label>
-                                <Select
-                                    options={customersOptions}
-                                    placeholder="Select customer"
-                                    value={form.customer}
-                                    onChange={val => handleChange("customer", val)}
-                                    className="w-full dark:bg-dark-900"
-                                />
+                            {form.couponType === "customerWise" && (
+                                <div className="w-full">            {/* or: basis-full */}
+                                    <Label>Select Customer</Label>
+                                    <Select
+                                        options={customersOptions}
+                                        placeholder="Select customer"
+                                        value={form.customer}
+                                        onChange={val => handleChange("customer", val)}
+                                        className="w-full dark:bg-dark-900"
+                                    />
 
-                            </div>
-                        )}
-                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Discount Type (radio) */}
                         <div className="md:col-span-2 flex flex-wrap items-center gap-8">
@@ -399,7 +406,7 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
                                 Close
                             </Button>
                             <Button size="sm" >
-                                Save Changes
+                                Update Changes
                             </Button>
                         </div>
                     </div>
