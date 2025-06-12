@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     const token = signToken(provider._id.toString());
 
-    const res = NextResponse.json({ message: "Registered", provider });
+    const res = NextResponse.json({ message: "Registered", provider },{ headers: corsHeaders });
     res.cookies.set("token", token, { httpOnly: true, secure: true, path: "/" });
 
     return res;
