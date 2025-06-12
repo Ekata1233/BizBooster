@@ -20,7 +20,7 @@ interface ProviderTableData {
   phone: string;
   storeName: string;
   storePhone: string;
-  address: string;
+  city: string;
   status: 'Completed' | 'Pending';
   step1Completed: boolean;
   storeInfoCompleted: boolean;
@@ -74,7 +74,7 @@ const ProviderList = () => {
           phone: provider.phoneNo,
           storeName: storeInfo.storeName || '-',
           storePhone: storeInfo.storePhone || '-',
-          address: storeInfo.address || '-',
+          city: storeInfo.city || '-',
           status: isComplete ? 'Completed' : 'Pending',
           step1Completed: provider.step1Completed || false,
           storeInfoCompleted: provider.storeInfoCompleted || false,
@@ -117,7 +117,7 @@ const ProviderList = () => {
     { header: 'Phone', accessor: 'phone' },
     { header: 'Store Name', accessor: 'storeName' },
     { header: 'Store Phone', accessor: 'storePhone' },
-    { header: 'Address', accessor: 'address' },
+    { header: 'City', accessor: 'city' },
     {
       header: 'Status',
       accessor: 'status',
@@ -219,7 +219,7 @@ const ProviderList = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab as 'all' | 'completed' | 'pending')}
-              className={`px-4 py-2 rounded-full border ${
+              className={`px-4 py-2 rounded-lg border ${
                 activeTab === tab
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
