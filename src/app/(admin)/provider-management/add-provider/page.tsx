@@ -50,6 +50,7 @@ export default function ProviderOnboardingPage() {
     updateStoreInfo,
     updateKycInfo,
   } = useProvider();
+console.log("Register Provider :",provider);
 
   /* --- React-Hook-Form instances --- */
   const regForm   = useForm();
