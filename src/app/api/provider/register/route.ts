@@ -5,6 +5,17 @@ import { z } from "zod";
 import { connectToDatabase } from "@/utils/db";
 import { signToken } from "@/utils/auth";
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// ✅ Handle preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 const schema = z.object({
   fullName: z.string().min(2),
   email: z.string().email(),
@@ -25,13 +36,13 @@ export async function POST(req: NextRequest) {
 
   const parsed = schema.safeParse({ fullName, email, phoneNo, password });
   if (!parsed.success) {
-    return NextResponse.json({ errors: parsed.error.errors }, { status: 400 });
+    return NextResponse.json({ errors: parsed.error.errors }, { status: 400,  headers: corsHeaders });
   }
 
 if (password !== confirmPassword) {
       return NextResponse.json(
         { success: false, message: 'Passwords do not match' }, 
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -39,7 +50,7 @@ if (password !== confirmPassword) {
   if (existing) {
     return NextResponse.json(
       { message: "Email already registered" },
-      { status: 409 }
+      { status: 409,  headers: corsHeaders }
     );
   }
 
