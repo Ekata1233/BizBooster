@@ -111,6 +111,7 @@ export default function ProviderOnboardingPage() {
     Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
     await registerProvider(fd);
     regForm.reset();
+    setActiveStep(2); // Move to next step after registration
   };
 
   const onStoreSave = async (data: any) => {
@@ -118,6 +119,7 @@ export default function ProviderOnboardingPage() {
     Object.entries(data).forEach(([k, v]) => fd.append(k, v as any));
     await updateStoreInfo(fd);
     storeForm.reset();
+    setActiveStep(3); // Move to next step after store info
   };
 
   const onKycSave = async (data: any) => {
@@ -128,6 +130,7 @@ export default function ProviderOnboardingPage() {
     });
     await updateKycInfo(fd);
     kycForm.reset();
+    // No need to setActiveStep here as we show completion message
   };
 
   const storeDone = !!provider?.storeInfoCompleted;

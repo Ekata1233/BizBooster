@@ -20,7 +20,17 @@ import '@/models/Module'
 export const runtime = "nodejs";
 
 /** ---- helpers ----------------------------------------------------------- */
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true'
+};
 
+// ✅ Handle preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 /** Convert a File (from formData) to an ImageKit URL */
 async function uploadToImageKit(
   providerId: string,
@@ -80,7 +90,7 @@ export async function PUT(req: NextRequest) {
 
   const providerId = await getUserIdFromRequest(req);
   if (!providerId)
-    return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    return NextResponse.json({ message: "Provider Id Not Found." }, { status: 401, headers: corsHeaders });
 
   try {
     const storeInfo = await parseFormAndUpload(req, providerId);
@@ -95,26 +105,13 @@ export async function PUT(req: NextRequest) {
       { new: true },
     );
 
-    return NextResponse.json({ message: "Store info saved", provider });
+    return NextResponse.json({ message: "Store info saved", provider },{ headers: corsHeaders });
   } catch (err: any) {
     console.error("store-info PUT error:", err);
     return NextResponse.json(
       { message: "Failed to save store info", error: err.message },
-      { status: 500 },
+      { status: 500,headers: corsHeaders },
     );
   }
 }
 
-/** Allow CORS pre-flight for frontend fetches */
-export function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    },
-  );
-}

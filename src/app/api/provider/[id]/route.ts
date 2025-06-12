@@ -1,28 +1,44 @@
 // src/app/api/provider/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+const allowedOrigins = [
+  "http://localhost:3001",
+  "https://biz-booster.vercel.app"
+];
 
-/** CORS pre-flight */
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+function getCorsHeaders(origin: string | null) {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true",
+  };
+
+  if (origin && allowedOrigins.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
 }
 
-/** ───── GET /api/provider/:id ───────────────────────────────────────── */
-export async function GET(req: Request) {
+// ─── CORS Pre-flight ───────────────────────────────────────────────
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  return NextResponse.json({}, { headers: getCorsHeaders(origin) });
+}
+
+// ─── GET /api/provider/:id ─────────────────────────────────────────
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
-  const id = new URL(req.url).pathname.split("/").pop();
+  const origin = req.headers.get("origin");
+  const id = req.nextUrl.pathname.split("/").pop();
+
   if (!id) {
     return NextResponse.json(
       { success: false, message: "Missing ID parameter." },
-      { status: 400, headers: corsHeaders }
+      { status: 400, headers: getCorsHeaders(origin) }
     );
   }
 
@@ -30,51 +46,51 @@ export async function GET(req: Request) {
   if (!provider) {
     return NextResponse.json(
       { success: false, message: "Provider not found." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: getCorsHeaders(origin) }
     );
   }
 
-  return NextResponse.json(provider, { status: 200, headers: corsHeaders });
+  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
 }
 
-/** ───── PUT /api/provider/:id ───────────────────────────────────────── */
-export async function PUT(req: Request) {
+// ─── PUT /api/provider/:id ─────────────────────────────────────────
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
-  const id = new URL(req.url).pathname.split("/").pop();
+  const origin = req.headers.get("origin");
+  const id = req.nextUrl.pathname.split("/").pop();
+
   if (!id) {
     return NextResponse.json(
       { success: false, message: "Missing ID parameter." },
-      { status: 400, headers: corsHeaders }
+      { status: 400, headers: getCorsHeaders(origin) }
     );
   }
 
-  // Expecting JSON in the request body
   const updates = await req.json();
-
-  const provider = await Provider.findByIdAndUpdate(id, updates, {
-    new: true,
-  });
+  const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
 
   if (!provider) {
     return NextResponse.json(
       { success: false, message: "Provider not found." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: getCorsHeaders(origin) }
     );
   }
 
-  return NextResponse.json(provider, { status: 200, headers: corsHeaders });
+  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
 }
 
-/** ───── DELETE /api/provider/:id ─────────────────────────────────────── */
-export async function DELETE(req: Request) {
+// ─── DELETE /api/provider/:id ──────────────────────────────────────
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
 
-  const id = new URL(req.url).pathname.split("/").pop();
+  const origin = req.headers.get("origin");
+  const id = req.nextUrl.pathname.split("/").pop();
+
   if (!id) {
     return NextResponse.json(
       { success: false, message: "Missing ID parameter." },
-      { status: 400, headers: corsHeaders }
+      { status: 400, headers: getCorsHeaders(origin) }
     );
   }
 
@@ -82,12 +98,12 @@ export async function DELETE(req: Request) {
   if (!deleted) {
     return NextResponse.json(
       { success: false, message: "Provider not found." },
-      { status: 404, headers: corsHeaders }
+      { status: 404, headers: getCorsHeaders(origin) }
     );
   }
 
   return NextResponse.json(
     { success: true, message: "Deleted successfully." },
-    { status: 200, headers: corsHeaders }
+    { status: 200, headers: getCorsHeaders(origin) }
   );
 }
