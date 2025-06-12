@@ -26,47 +26,59 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
-  const formData = await req.formData();
+  try {
+    const formData = await req.formData();
 
-  const fullName = formData.get("fullName") as string;
-  const email = formData.get("email") as string;
-  const phoneNo = formData.get("phoneNo") as string;
-  const password = formData.get("password") as string;
-      const confirmPassword = formData.get('confirmPassword') as string;
+    const fullName = formData.get("fullName") as string;
+    const email = formData.get("email") as string;
+    const phoneNo = formData.get("phoneNo") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-  const parsed = schema.safeParse({ fullName, email, phoneNo, password });
-  if (!parsed.success) {
-    return NextResponse.json({ errors: parsed.error.errors }, { status: 400,  headers: corsHeaders });
-  }
-
-if (password !== confirmPassword) {
+    const parsed = schema.safeParse({ fullName, email, phoneNo, password });
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, message: 'Passwords do not match' }, 
+        { errors: parsed.error.errors },
         { status: 400, headers: corsHeaders }
       );
     }
 
-  const existing = await Provider.findOne({ email });
-  if (existing) {
+    if (password !== confirmPassword) {
+      return NextResponse.json(
+        { success: false, message: 'Passwords do not match' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const existing = await Provider.findOne({ email });
+    if (existing) {
+      return NextResponse.json(
+        { message: "Email already registered" },
+        { status: 409, headers: corsHeaders }
+      );
+    }
+
+    const provider = await Provider.create({
+      fullName,
+      email,
+      phoneNo,
+      password,
+      step1Completed: true,
+      registrationStatus: "basic",
+    });
+
+    const token = signToken(provider._id.toString());
+
+    const res = NextResponse.json({ message: "Registered", provider });
+    res.cookies.set("token", token, { httpOnly: true, secure: true, path: "/" });
+
+    return res;
+  } catch (error) {
+    console.error("Registration error:", error);
     return NextResponse.json(
-      { message: "Email already registered" },
-      { status: 409,  headers: corsHeaders }
+      { success: false, message: "Something went wrong. Please try again later." },
+      { status: 500, headers: corsHeaders }
     );
   }
-
-  const provider = await Provider.create({
-    fullName,
-    email,
-    phoneNo,
-    password,
-    step1Completed: true,
-    registrationStatus: "basic",
-  });
-
-  const token = signToken(provider._id.toString());
-
-  const res = NextResponse.json({ message: "Registered", provider });
-  res.cookies.set("token", token, { httpOnly: true, secure: true, path: "/" });
-
-  return res;
 }
+
