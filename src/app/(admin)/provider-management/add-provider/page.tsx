@@ -441,3 +441,4 @@ export default function ProviderOnboardingPage() {
     </div>
   );
 }
+export const dynamic = 'force-dynamic';
