@@ -6,7 +6,7 @@ import { z } from "zod";
 import { signToken } from "@/utils/auth";
 import { connectToDatabase } from "@/utils/db";
 
-const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app','http://localhost:3000'];
+const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000'];
 
 function getCORSHeaders(origin: string) {
   const headers = new Headers();
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { errors: parsed.error.errors },
+        { success: false, errors: parsed.error.errors },
         { status: 400, headers }
       );
     }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     if (!provider || !(await provider.comparePassword(password))) {
       return NextResponse.json(
-        { message: "Invalid credentials" },
+        { success: false, message: "Invalid credentials" },
         { status: 401, headers }
       );
     }
@@ -64,13 +64,20 @@ export async function POST(req: NextRequest) {
     const token = signToken(provider._id.toString());
 
     const response = NextResponse.json(
-      { message: "Logged in", provider },
+      {
+        success: true,
+        message: "Login successful",
+        data: {
+          provider,
+          token,
+        },
+      },
       { status: 200, headers }
     );
 
     response.cookies.set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // secure only in prod
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
     });
@@ -79,7 +86,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { message: "Server error" },
+      { success: false, message: "Server error" },
       { status: 500, headers }
     );
   }

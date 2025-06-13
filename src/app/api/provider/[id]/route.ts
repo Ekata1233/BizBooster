@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 
-const allowedOrigins = [
-  "http://localhost:3001",
-  "https://biz-booster.vercel.app"
-];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://biz-booster.vercel.app'];
 
 function getCorsHeaders(origin: string | null) {
   const headers: Record<string, string> = {
