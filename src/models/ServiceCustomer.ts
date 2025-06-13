@@ -2,9 +2,11 @@ import mongoose, { Document, Schema } from "mongoose";
 
 // TypeScript Interface
 export interface IServiceCustomer extends Document {
+    customerId : string;
     fullName: string;
     phone: string;
     email: string;
+    description: string;
     address: string;
     city: string;
     state: string;
@@ -23,6 +25,10 @@ export interface IServiceCustomer extends Document {
 // Mongoose Schema
 const serviceCustomerSchema: Schema = new mongoose.Schema(
     {
+        customerId: {
+            type: String,
+            unique: true,
+        },
         fullName: {
             type: String,
             required: [true, "Full name is required"],
@@ -44,6 +50,10 @@ const serviceCustomerSchema: Schema = new mongoose.Schema(
             lowercase: true,
             trim: true,
             match: [/.+@.+\..+/, "Please provide a valid email address"],
+        },
+        description : {
+            type : String,
+            trim: true,
         },
         address: {
             type: String,
@@ -83,6 +93,28 @@ const serviceCustomerSchema: Schema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+serviceCustomerSchema.pre<IServiceCustomer>("save", async function (next) {
+    if (this.isNew && !this.customerId) {
+        const lastCustomer = await mongoose
+            .model<IServiceCustomer>("ServiceCustomer")
+            .findOne({})
+            .sort({ createdAt: -1 })
+            .lean();
+
+        let lastId = 0;
+        if (lastCustomer && lastCustomer.customerId) {
+            const match = lastCustomer.customerId.match(/FT(\d+)/);
+            if (match && match[1]) {
+                lastId = parseInt(match[1], 10);
+            }
+        }
+
+        const newId = lastId + 1;
+        this.customerId = `FT${newId.toString().padStart(5, "0")}`;
+    }
+    next();
+});
 
 // Export the model
 export default mongoose.models.ServiceCustomer ||

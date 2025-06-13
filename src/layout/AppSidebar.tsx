@@ -121,6 +121,7 @@ const providerItems: NavItem[] = [
     name: "Provider",
     subItems: [
       { name: "Add Provider", path: "/provider-management/add-provider", pro: false },
+      { name: "Provider Request", path: "/provider-management/provider-request", pro: false },
       { name: "Provider List", path: "/provider-management/provider-list", pro: false },
     ],
   },

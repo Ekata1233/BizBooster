@@ -52,6 +52,7 @@ export interface ProviderDocument extends Document {
   /* misc */
   setBusinessPlan?: "commission base" | "other";
   subscribedServices?: mongoose.Types.ObjectId[];
+  isRejected: boolean;
   isApproved: boolean;
   isVerified: boolean;
   isDeleted: boolean;
@@ -143,6 +144,7 @@ const providerSchema = new Schema<ProviderDocument>(
     setBusinessPlan: { type: String, enum: ["commission base", "other"] },
     subscribedServices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
 
+    isRejected : {type: Boolean , default: false},
     isApproved: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },

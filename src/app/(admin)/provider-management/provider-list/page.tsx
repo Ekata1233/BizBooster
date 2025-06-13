@@ -21,7 +21,9 @@ interface ProviderTableData {
   storeName: string;
   storePhone: string;
   city: string;
-  status: 'Completed' | 'Pending';
+  status: 'Completed' | 'Pending' | 'Approved' | 'Rejected';
+  isApproved: boolean;
+  isRejected: boolean;
   step1Completed: boolean;
   storeInfoCompleted: boolean;
   kycCompleted: boolean;
@@ -75,6 +77,8 @@ const ProviderList = () => {
           storeName: storeInfo.storeName || '-',
           storePhone: storeInfo.storePhone || '-',
           city: storeInfo.city || '-',
+          isRejected: provider.isRejected || false,
+          isApproved: provider.isApproved || false,
           status: isComplete ? 'Completed' : 'Pending',
           step1Completed: provider.step1Completed || false,
           storeInfoCompleted: provider.storeInfoCompleted || false,
@@ -117,13 +121,41 @@ const ProviderList = () => {
     { header: 'Phone', accessor: 'phone' },
     { header: 'Store Name', accessor: 'storeName' },
     { header: 'Store Phone', accessor: 'storePhone' },
-    { header: 'City', accessor: 'city' },
+    { header: 'Address', accessor: 'address' },
     {
       header: 'Status',
       accessor: 'status',
       render: (row: ProviderTableData) => {
+        const isApproved =
+          row.step1Completed &&
+          row.storeInfoCompleted &&
+          row.kycCompleted &&
+          row.isApproved;
+
+        const isRejected =
+          row.step1Completed &&
+          row.storeInfoCompleted &&
+          row.kycCompleted &&
+          row.isRejected;
+
         const isComplete =
           row.step1Completed && row.storeInfoCompleted && row.kycCompleted;
+
+        if (isApproved) {
+          return (
+            <span className="px-3 py-1 rounded-full text-sm font-semibold text-blue-600 bg-blue-100 border border-blue-300">
+              Approved
+            </span>
+          );
+        }
+
+        if (isRejected) {
+          return (
+            <span className="px-3 py-1 rounded-full text-sm font-semibold text-red-600 bg-red-100 border border-red-300">
+              Rejected
+            </span>
+          );
+        }
 
         if (isComplete) {
           return (
@@ -141,12 +173,13 @@ const ProviderList = () => {
             }}
             passHref
           >
-            <button className="px-3 py-1 rounded-full text-sm font-semibold text-red-500 bg-red-100 border border-red-300 hover:bg-red-500 hover:text-white">
+            <button className="px-3 py-1 rounded-full text-sm font-semibold text-yellow-500 bg-yellow-100 border border-yellow-300 hover:bg-yellow-500 hover:text-white">
               Pending
             </button>
           </Link>
         );
-      },
+      }
+
     },
     {
       header: 'Action',
@@ -219,11 +252,10 @@ const ProviderList = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab as 'all' | 'completed' | 'pending')}
-              className={`px-4 py-2 rounded-lg border ${
-                activeTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
-              }`}
+              className={`px-4 py-2 rounded-lg border ${activeTab === tab
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
+                }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
