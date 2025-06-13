@@ -28,6 +28,7 @@ export async function PUT(req: Request) {
     const fullName = formData.get("fullName") as string;
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
+    const description = formData.get("description") as string;
     const address = formData.get("address") as string;
     const city = formData.get("city") as string;
     const state = formData.get("state") as string;
@@ -44,6 +45,7 @@ export async function PUT(req: Request) {
       fullName,
       phone,
       email,
+      description,
       address,
       city,
       state,
