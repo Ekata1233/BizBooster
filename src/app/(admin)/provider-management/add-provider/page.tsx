@@ -66,8 +66,14 @@ export default function ProviderOnboardingPage() {
     updateKycInfo,
   } = useProvider();
   console.log("Register Provider :", provider);
-  const searchParams = useSearchParams();
-  const providerId = searchParams.get('id');
+  const [providerId, setProviderId] = useState<string | null>(null);
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  setProviderId(params.get('id'));
+}, []);
+  // const searchParams = useSearchParams();
+  // const providerId = searchParams.get('id');
   
   const regForm = useForm();
   const storeForm = useForm();
@@ -441,4 +447,3 @@ export default function ProviderOnboardingPage() {
     </div>
   );
 }
-export const dynamic = 'force-dynamic';
