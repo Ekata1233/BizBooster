@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Checkout from '@/models/Checkout';
 import { connectToDatabase } from '@/utils/db';
-
+import "@/models/Coupon"
+import "@/models/Service"
+import "@/models/ServiceCustomer"
+import "@/models/User"
+import "@/models/Provider"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

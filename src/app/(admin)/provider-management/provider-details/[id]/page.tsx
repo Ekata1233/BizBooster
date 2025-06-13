@@ -77,12 +77,12 @@ const ProviderDetailsPage = () => {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [activeTab, setActiveTab] = useState('info');
 
-  // useEffect(() => {
-  //   if (providerDetails && providerDetails.length > 0) {
-  //     const selected = providerDetails.find((p: Provider) => p._id === id) || null;
-  //     setProvider(selected);
-  //   }
-  // }, [providerDetails, id]);
+  useEffect(() => {
+    if (providerDetails && providerDetails.length > 0) {
+      const selected = providerDetails.find((p: Provider) => p._id === id) || null;
+      setProvider(selected);
+    }
+  }, [providerDetails, id]);
 
   if (!provider) {
     return (
