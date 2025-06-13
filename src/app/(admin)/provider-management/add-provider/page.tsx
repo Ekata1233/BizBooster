@@ -17,7 +17,7 @@ function Stepper({
   activeStep: number;
 }) {
   const items = [
-    { step: 1, label: 'Registration', done: true }, // Registration is always done if we're on step 2 or 3
+    { step: 1, label: 'Registration', done: activeStep > 1 }, // Changed from 'true' to 'activeStep > 1'
     { step: 2, label: 'Store Info', done: storeDone },
     { step: 3, label: 'KYC Uploads', done: kycDone },
   ];
@@ -32,7 +32,7 @@ function Stepper({
     <div className="flex justify-between mb-6">
       {items.map(({ step, label, done }) => {
         const isActive = step === activeStep;
-        const isCompleted = done || (step < activeStep);
+        const isCompleted = done;
         
         return (
           <div key={step} className="flex-1 text-center">
@@ -441,3 +441,4 @@ export default function ProviderOnboardingPage() {
     </div>
   );
 }
+export const dynamic = 'force-dynamic';

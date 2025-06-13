@@ -37,4 +37,3 @@ export class MyUploadAdapter {
     // Optional: implement abort logic if needed
   }
 }
-                // licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDk5NDU1OTksImp0aSI6ImYxMGRiNTAwLWMwMWYtNDQyNS1iYTYyLWNhZjA0NzQ4MDhjYiIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjdhYTU5ODFkIn0.jfrrljzRoIcmEpjTg9ed5FYsg5ipYgo1RBymj4eMsEniUagapuZ3A76FyQpdPuW1qo4aEFZJEqsMQjGN9F7NEQ',
