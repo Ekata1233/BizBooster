@@ -16,7 +16,8 @@ interface ProviderTableData {
     storeName: string;
     storePhone: string;
     city: string;
-    isAdminApproved: boolean;
+    isRejected: boolean;
+    isApproved: boolean;
     step1Completed: boolean;
     storeInfoCompleted: boolean;
     kycCompleted: boolean;
@@ -27,6 +28,7 @@ const ProviderRequest = () => {
     const [providers, setProviders] = useState<ProviderTableData[]>([]);
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'all' | 'approved' | 'not-approved'>('all');
+    const { getAllProviders, updateProvider } = useProvider();
 
     const fetchProviders = async () => {
         try {
@@ -41,7 +43,8 @@ const ProviderRequest = () => {
 
             const completed = data
                 .filter(
-                    (p: any) => p.step1Completed && p.storeInfoCompleted && p.kycCompleted
+                    (p: any) =>
+                        p.step1Completed && p.storeInfoCompleted && p.kycCompleted
                 )
                 .map((p: any) => ({
                     id: p._id,
@@ -50,7 +53,8 @@ const ProviderRequest = () => {
                     storeName: p.storeInfo?.storeName || '-',
                     storePhone: p.storeInfo?.storePhone || '-',
                     city: p.storeInfo?.city || '-',
-                    isAdminApproved: p.isAdminApproved || false,
+                    isRejected: p.isRejected || false,
+                    isApproved: p.isApproved || false,
                     step1Completed: p.step1Completed,
                     storeInfoCompleted: p.storeInfoCompleted,
                     kycCompleted: p.kycCompleted,
@@ -67,14 +71,26 @@ const ProviderRequest = () => {
 
     const handleApproval = async (id: string, approve: boolean) => {
         try {
-            await axios.put(`/api/provider/approve/${id}`, {
-                isAdminApproved: approve,
-            });
-            fetchProviders(); // refresh data
-        } catch (err) {
-            console.error('Approval error:', err);
+            await updateProvider(id, { isApproved: approve });
+            // await getAllProviders();
+            alert('Provider approved successfully');
+            fetchProviders();
+        } catch (error) {
+            console.log('Failed to approve provider');
         }
     };
+
+    const handleReject = async (id: string) => {
+        try {
+            await updateProvider(id, { isRejected: true, isApproved: false });
+            // await getAllProviders();
+            alert('Provider rejected successfully');
+            fetchProviders();
+        } catch (error) {
+            console.log('Failed to reject provider');
+        }
+    };
+
 
     useEffect(() => {
         fetchProviders();
@@ -82,12 +98,13 @@ const ProviderRequest = () => {
 
     const getFilteredProviders = () => {
         if (activeTab === 'approved') {
-            return providers.filter((p) => p.isAdminApproved);
+            return providers.filter((p) => p.isApproved);
         }
         if (activeTab === 'not-approved') {
-            return providers.filter((p) => !p.isAdminApproved);
+            return providers.filter((p) => !p.isApproved);
         }
-        return providers;
+        // For "all" tab – show only unapproved ones (pending)
+        return providers.filter((p) => !p.isApproved && !p.isRejected);
     };
 
     const columns = [
@@ -97,32 +114,54 @@ const ProviderRequest = () => {
         { header: 'Store Phone', accessor: 'storePhone' },
         { header: 'City', accessor: 'city' },
         {
-            header: 'Approve / Reject',
-            accessor: 'approval',
-            render: (row: ProviderTableData) => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => handleApproval(row.id, true)}
-                        disabled={row.isAdminApproved}
-                        className={`px-3 py-1 rounded text-sm font-medium border ${row.isAdminApproved
-                                ? 'bg-green-200 text-green-800 cursor-not-allowed'
-                                : 'bg-green-500 text-white hover:bg-green-600'
-                            }`}
-                    >
-                        Approve
-                    </button>
-                    <button
-                        onClick={() => handleApproval(row.id, false)}
-                        disabled={!row.isAdminApproved}
-                        className={`px-3 py-1 rounded text-sm font-medium border ${!row.isAdminApproved
-                                ? 'bg-red-200 text-red-800 cursor-not-allowed'
-                                : 'bg-red-500 text-white hover:bg-red-600'
-                            }`}
-                    >
-                        Reject
-                    </button>
-                </div>
-            ),
+            header: 'Status',
+            accessor: 'status',
+            render: (row: ProviderTableData) => {
+                if (activeTab === 'all') {
+                    return (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleApproval(row.id, true)}
+                                disabled={row.isApproved}
+                                className={`px-3 py-1 rounded text-sm font-medium border ${row.isApproved
+                                    ? 'bg-green-200 text-green-800'
+                                    : 'bg-green-500 text-white hover:bg-green-600'
+                                    }`}
+                            >
+                                Approve
+                            </button>
+                            <button
+                                onClick={() => handleReject(row.id)}
+                                // disabled={!row.isApproved}
+                                className={`px-3 py-1 rounded text-sm font-medium border ${!row.isApproved
+                                    ? 'bg-red-200 text-red-800'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
+                                    }`}
+                            >
+                                Reject
+                            </button>
+                        </div>
+                    );
+                }
+
+                if (activeTab === 'approved') {
+                    return (
+                        <span className="px-3 py-1 text-sm rounded bg-green-200 text-green-800 font-semibold">
+                            Approved
+                        </span>
+                    );
+                }
+
+                if (activeTab === 'not-approved') {
+                    return (
+                        <span className="px-3 py-1 text-sm rounded bg-red-200 text-red-800 font-semibold">
+                            Rejected
+                        </span>
+                    );
+                }
+
+                return null;
+            },
         },
         {
             header: 'Action',
@@ -147,20 +186,23 @@ const ProviderRequest = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
                             className={`px-4 py-2 rounded-lg border ${activeTab === tab
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
                                 }`}
                         >
-                            {tab.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                            {tab === 'all' ? 'Pending' : tab.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                         </button>
                     ))}
                 </div>
 
                 {message ? (
-                    <p className="text-red-500 text-center my-4">{message}</p>
+                    <p className="text-red-500 text-center my-4 p-5">{message}</p>
+                ) : getFilteredProviders().length === 0 ? (
+                    <p className="text-gray-500 text-center my-4 p-5 border rounded-lg">No providers available</p>
                 ) : (
                     <BasicTableOne columns={columns} data={getFilteredProviders()} />
                 )}
+
             </ComponentCard>
         </div>
     );

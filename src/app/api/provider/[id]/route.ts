@@ -68,6 +68,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const updates = await req.json();
+  console.log("provider data for the update : ", updates)
   const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
 
   if (!provider) {

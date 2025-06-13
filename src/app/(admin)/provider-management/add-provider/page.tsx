@@ -17,14 +17,14 @@ function Stepper({
   activeStep: number;
 }) {
   const items = [
-    { step: 1, label: 'Registration', done: true },
+    { step: 1, label: 'Registration', done: true }, // Registration is always done if we're on step 2 or 3
     { step: 2, label: 'Store Info', done: storeDone },
     { step: 3, label: 'KYC Uploads', done: kycDone },
   ];
 
-  const icon = (step: number, done: boolean) => {
+  const icon = (step: number, done: boolean, isActive: boolean) => {
     if (done) return <Check className="h-4 w-4" />;
-    if (step === activeStep) return <ArrowRightIcon className="h-4 w-4" />;
+    if (isActive) return <ArrowRightIcon className="h-4 w-4" />;
     return <Clock className="h-4 w-4" />;
   };
 
@@ -32,17 +32,19 @@ function Stepper({
     <div className="flex justify-between mb-6">
       {items.map(({ step, label, done }) => {
         const isActive = step === activeStep;
+        const isCompleted = done || (step < activeStep);
+        
         return (
           <div key={step} className="flex-1 text-center">
             <div
               className={`mx-auto h-8 w-8 rounded-full flex items-center justify-center
-                ${done ? 'bg-green-600 text-white' :
+                ${isCompleted ? 'bg-green-600 text-white' :
                   isActive ? 'bg-blue-600 text-white' :
                     'bg-gray-300 text-gray-700'}`}
             >
-              {icon(step, done)}
+              {icon(step, isCompleted, isActive)}
             </div>
-            <p className={`mt-1 text-sm ${done ? 'text-green-700' :
+            <p className={`mt-1 text-sm ${isCompleted ? 'text-green-700' :
               isActive ? 'text-blue-700' : 'text-gray-500'}`}
             >
               {label}
@@ -111,7 +113,7 @@ export default function ProviderOnboardingPage() {
     Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
     await registerProvider(fd);
     regForm.reset();
-    setActiveStep(2); // Move to next step after registration
+    setActiveStep(2);
   };
 
   const onStoreSave = async (data: any) => {
@@ -119,7 +121,7 @@ export default function ProviderOnboardingPage() {
     Object.entries(data).forEach(([k, v]) => fd.append(k, v as any));
     await updateStoreInfo(fd);
     storeForm.reset();
-    setActiveStep(3); // Move to next step after store info
+    setActiveStep(3);
   };
 
   const onKycSave = async (data: any) => {
@@ -130,7 +132,6 @@ export default function ProviderOnboardingPage() {
     });
     await updateKycInfo(fd);
     kycForm.reset();
-    // No need to setActiveStep here as we show completion message
   };
 
   const storeDone = !!provider?.storeInfoCompleted;
