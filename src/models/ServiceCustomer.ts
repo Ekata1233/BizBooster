@@ -111,7 +111,7 @@ serviceCustomerSchema.pre<IServiceCustomer>("save", async function (next) {
         }
 
         const newId = lastId + 1;
-        this.customerId = `FT${newId.toString().padStart(5, "0")}`;
+        this.customerId = `FTC${newId.toString().padStart(5, "0")}`;
     }
     next();
 });
