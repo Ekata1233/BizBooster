@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const newCheckout = await Checkout.create({
+    const checkout = new Checkout({
       user,
       service,
       serviceCustomer,
@@ -63,8 +63,10 @@ export async function POST(req: Request) {
       notes,
     });
 
+    await checkout.save(); // ✅ This triggers pre('save')
+
     return NextResponse.json(
-      { success: true, data: newCheckout },
+      { success: true, data: checkout },
       { status: 201, headers: corsHeaders }
     );
   } catch (error: unknown) {
