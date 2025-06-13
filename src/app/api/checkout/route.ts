@@ -35,12 +35,30 @@ export async function POST(req: Request) {
       notes = '',
     } = body;
 
-    if (!user || !service || !serviceCustomer || !totalAmount || !paymentMethod) {
-      return NextResponse.json(
-        { success: false, message: 'Missing required fields.' },
-        { status: 400, headers: corsHeaders }
-      );
+    // if (!user || !service || !serviceCustomer || !totalAmount || !paymentMethod) {
+    //   return NextResponse.json(
+    //     { success: false, message: 'Missing required fields.' },
+    //     { status: 400, headers: corsHeaders }
+    //   );
+    // }
+
+    const requiredFields = {
+      user,
+      service,
+      serviceCustomer,
+      totalAmount,
+      paymentMethod,
+    };
+
+    for (const [field, value] of Object.entries(requiredFields)) {
+      if (!value) {
+        return NextResponse.json(
+          { success: false, message: `Missing ${field} field.` },
+          { status: 400, headers: corsHeaders }
+        );
+      }
     }
+
 
     const checkout = new Checkout({
       user,
