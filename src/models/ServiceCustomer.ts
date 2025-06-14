@@ -104,7 +104,7 @@ serviceCustomerSchema.pre<IServiceCustomer>("save", async function (next) {
 
         let lastId = 0;
         if (lastCustomer && lastCustomer.customerId) {
-            const match = lastCustomer.customerId.match(/FT(\d+)/);
+            const match = lastCustomer.customerId.match(/FTC(\d+)/);
             if (match && match[1]) {
                 lastId = parseInt(match[1], 10);
             }
