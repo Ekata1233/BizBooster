@@ -67,15 +67,24 @@
 //     console.log("formdata of the edit : ", form)
 
 //     /* ▶︎ map to Select-friendly [{value,label}] once, memoised */
-//     const categoryOptions = useMemo(
-//         () => categories.map(c => ({ value: c._id, label: c.name })),
-//         [categories]
-//     );
+//    const categoryOptions = useMemo(
+//   () =>
+//     categories.map(c => ({
+//       value: c._id ?? "", // fallback to empty string if _id is undefined
+//       label: c.name,
+//     })),
+//   [categories]
+// );
 
-//     const customersOptions = useMemo(
-//         () => customers.map(cus => ({ value: cus._id, label: cus.fullName })),
-//         [customers]
-//     );
+//    const customersOptions = useMemo(
+//   () =>
+//     customers.map(cus => ({
+//       value: String(cus._id), // 👈 Cast _id to string
+//       label: cus.fullName,
+//     })),
+//   [customers]
+// );
+
 
 //     const serviceOptions = useMemo(
 //         () =>
@@ -127,7 +136,7 @@
 
 //     /* ─── dynamic inputs (Category / Service / Zone) ──────────────────────── */
 //     const renderDynamicSelects = () => {
-//         const selects: JSX.Element[] = [];
+//          const selects = [] as React.ReactElement[];
 
 //         if (form.discountType === 'Category Wise' || form.discountType === 'Mixed') {
 //             selects.push(
@@ -136,7 +145,7 @@
 //                     <Select
 //                         options={categoryOptions}
 //                         placeholder="Select category"
-//                         value={form.category}
+//                        value={form.category?._id}
 //                         onChange={val => handleChange('category', val)}
 //                         className="w-full dark:bg-dark-900"
 //                     />
@@ -154,7 +163,8 @@
 //                     <Select
 //                         options={serviceOptions}
 //                         placeholder="Select service"
-//                         value={form.service}
+//                        value={(form.service as any)?.value ?? form.service?._id}
+
 //                         onChange={val => handleChange('service', val)}
 //                         className="w-full dark:bg-dark-900"
 //                     />
@@ -171,7 +181,8 @@
 //                 <Select
 //                     options={zoneOptions}
 //                     placeholder="Select zone"
-//                     value={form.zone}
+//                     value={zoneOptions.find(z => z.value === form.zone?._id)}
+
 //                     onChange={val => handleChange('zone', val)}
 //                     className="w-full dark:bg-dark-900"
 //                 />
@@ -297,7 +308,8 @@
 //                                 <Select
 //                                     options={customersOptions}
 //                                     placeholder="Select customer"
-//                                     value={form.customer}
+//                                     value={form.customer?._id}
+
 //                                     onChange={val => handleChange("customer", val)}
 //                                     className="w-full dark:bg-dark-900"
 //                                 />
@@ -409,9 +421,12 @@
 //     );
 // };
 
+
+
+// export default EditCouponModal
 import React from 'react'
 
-const EditCouponModal = () => {
+function EditCouponModal() {
   return (
     <div>EditCouponModal</div>
   )

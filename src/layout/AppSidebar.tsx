@@ -142,7 +142,7 @@ const serviceItems: NavItem[] = [
     subItems: [
       { name: "Add New Service", path: "/service-management/add-service", pro: false },
       { name: "Service List", path: "/service-management/service-list", pro: false },
-      { name: "Add Why Choose BizBooster", path: "/service-management/add-why-choose", pro: false },
+      { name: "Add Why Choose FetchTrue", path: "/service-management/add-why-choose", pro: false },
     ],
   },
 ];

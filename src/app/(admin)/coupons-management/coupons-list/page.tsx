@@ -129,12 +129,14 @@
 //         ...(sort && { sort }),
 //       };
 
-//       const res = await axios.get<CouponType[]>('/api/coupon', { params });
-//       console.log("Coupons API response:", res.data); // ← debug log
+//       // const res = await axios.get<CouponType[]>('/api/coupon', { params });
+//       // console.log("Coupons API response:", res.data); // ← debug log
 
-//       const data: CouponType[] = Array.isArray(res.data)
-//         ? res.data
-//         : res.data.data ?? [];
+//       // const data: CouponType[] = Array.isArray(res.data)
+//       //   ? res.data
+//       //   : res.data.data ?? [];
+//       const res = await axios.get<{ data: CouponType[] }>('/api/coupon', { params });
+//       const data: CouponType[] = res.data.data ?? [];
 
 //       if (data.length === 0) {
 //         setRows([]);
@@ -178,10 +180,14 @@
 //   const handleEdit = (id: string) => {
 //     const found = coupons.find(c => c._id === id);
 //     if (found) {
-//       setEditingCoupon(found);
+//       const isActive = (found as any).isActive ?? false;
+//       setEditingCoupon({ ...found, isActive } as CouponType);
 //       setIsModalOpen(true);
 //     }
 //   };
+
+
+
 
 //   /* ─── save (PUT) ────────────────────────────────────────────────────────── */
 //   const handleUpdateCoupon = async (payload: Partial<CouponType>) => {
@@ -273,9 +279,10 @@
 //                   <Select
 //                     options={sortOptions}
 //                     placeholder="Sort by"
-//                     onChange={setSort}
+//                     onChange={(val) => setSort(val as "latest" | "oldest" | "ascending" | "descending")}
 //                     className="dark:bg-dark-900"
 //                   />
+
 //                   <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400">
 //                     <ChevronDownIcon />
 //                   </span>
@@ -333,12 +340,3 @@
 // };
 
 // export default CouponList;
-import React from 'react'
-
-const page = () => {
-  return (
-    <div>page</div>
-  )
-}
-
-export default page
