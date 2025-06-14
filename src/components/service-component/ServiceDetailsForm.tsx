@@ -263,7 +263,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       </div>
 
       <div className="my-3">
-        <Label>Why Choose BizBooster</Label>
+        <Label>Why Choose FetchTrue</Label>
 
         {whyChooseContext.items && whyChooseContext.items.length > 0 && (
           <div className="space-y-4 mb-6">
