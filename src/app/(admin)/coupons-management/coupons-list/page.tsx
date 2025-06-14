@@ -45,6 +45,7 @@ export interface CouponType {
   customer?: { _id: string; fullName: string };
   createdAt?: string;
   updatedAt?: string;
+  couponAppliesTo?: string;
 }
 
 export interface TableData {
@@ -81,7 +82,7 @@ const couponTypeOptions = [
 
 const CouponList: React.FC = () => {
   /* ─── contexts ─────────────────────────────────────────────────────────── */
-  const { coupons, deleteCoupon } = useCoupon();
+  const { coupons, deleteCoupon, updateCoupon } = useCoupon();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<CouponType | null>(null);
 
@@ -192,10 +193,36 @@ const CouponList: React.FC = () => {
   /* ─── save (PUT) ────────────────────────────────────────────────────────── */
   const handleUpdateCoupon = async (payload: Partial<CouponType>) => {
     if (!editingCoupon) return;
-    await axios.put(`/api/coupon/${editingCoupon._id}`, payload);
+
+    const formData = new FormData();
+
+    if (payload.couponType) formData.append("couponType", payload.couponType);
+    if (payload.couponCode) formData.append("couponCode", payload.couponCode);
+    if (payload.discountType) formData.append("discountType", payload.discountType);
+    if (payload.discountAmountType) formData.append("discountAmountType", payload.discountAmountType);
+    if (payload.discountCostBearer) formData.append("discountCostBearer", payload.discountCostBearer);
+    if (payload.discountTitle) formData.append("discountTitle", payload.discountTitle);
+
+    if (payload.amount !== undefined) formData.append("amount", String(payload.amount));
+    if (payload.maxDiscount !== undefined) formData.append("maxDiscount", String(payload.maxDiscount));
+    if (payload.minPurchase !== undefined) formData.append("minPurchase", String(payload.minPurchase));
+    if (payload.limitPerUser !== undefined) formData.append("limitPerUser", String(payload.limitPerUser));
+
+    if (payload.startDate) formData.append("startDate", payload.startDate);
+    if (payload.endDate) formData.append("endDate", payload.endDate);
+    if (payload.isActive !== undefined) formData.append("isActive", String(payload.isActive));
+
+    if (payload.zone?._id) formData.append("zone", payload.zone._id);
+    if (payload.category?._id) formData.append("category", payload.category._id);
+    if (payload.service?._id) formData.append("service", payload.service._id);
+    if (payload.customer?._id) formData.append("customer", payload.customer._id);
+    if (payload.couponAppliesTo) formData.append("couponAppliesTo", payload.couponAppliesTo);
+
+    await updateCoupon(editingCoupon._id, formData);
     setIsModalOpen(false);
-    await fetchFilteredCoupons();          // refresh list
+    await fetchFilteredCoupons();
   };
+
 
   /* ─── table columns ────────────────────────────────────────────────────── */
   const columns = [

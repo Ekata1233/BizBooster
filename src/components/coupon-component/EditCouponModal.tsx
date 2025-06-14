@@ -181,7 +181,8 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
         <Select
           options={zoneOptions}
           placeholder="Select zone"
-          value={zoneOptions.find(z => z.value === form.zone?._id)}
+         value={form.zone?._id}
+      
 
           onChange={val => handleChange('zone', val)}
           className="w-full dark:bg-dark-900"
