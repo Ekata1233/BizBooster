@@ -39,13 +39,6 @@ export async function POST(req: Request) {
       notes = '',
     } = body;
 
-    // if (!user || !service || !serviceCustomer || !totalAmount || !paymentMethod) {
-    //   return NextResponse.json(
-    //     { success: false, message: 'Missing required fields.' },
-    //     { status: 400, headers: corsHeaders }
-    //   );
-    // }
-
     const requiredFields = {
       user,
       service,

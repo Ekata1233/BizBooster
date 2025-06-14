@@ -66,6 +66,10 @@ export default function ProviderOnboardingPage() {
     updateKycInfo,
   } = useProvider();
   console.log("Register Provider :", provider);
+<<<<<<< HEAD
+  const searchParams = useSearchParams();
+  const providerId = searchParams.get('id');
+=======
 
    const [providerId, setProviderId] = useState<string | null>(null);
 
@@ -75,6 +79,7 @@ export default function ProviderOnboardingPage() {
   }, []);
   // const searchParams = useSearchParams();
   // const providerId = searchParams.get('id');
+>>>>>>> 21e53ecd512a89f3c176b2c9a390397b18aa5232
   
   const regForm = useForm();
   const storeForm = useForm();
