@@ -4,7 +4,7 @@ export interface IPayment extends Document {
   order_id: string;
   payment_session_id: string;
   amount: number;
-  customer_id: string;
+  user?: mongoose.Types.ObjectId;
   name: string;
   email: string;
   phone: string;
@@ -16,7 +16,7 @@ const PaymentSchema = new Schema<IPayment>(
     order_id: { type: String, required: true, unique: true },
     payment_session_id: { type: String, required: true },
     amount: { type: Number, required: true },
-    customer_id: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
     name: String,
     email: String,
     phone: String,
