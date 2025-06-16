@@ -6,7 +6,7 @@ import "@/models/Service"
 import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
-import "@/models/Customer"
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',

@@ -36,7 +36,7 @@ const checkoutSchema = new Schema<ICheckout>({
     bookingId: { type: String, unique: true }, // Auto-generated Booking ID
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     service: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
-    serviceCustomer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
+    serviceCustomer: { type: Schema.Types.ObjectId, ref: 'ServiceCustomer', required: true },
     provider: { type: Schema.Types.ObjectId, ref: 'Provider', default: null },
     coupon: { type: Schema.Types.ObjectId, ref: 'Coupon', default: null },
     subtotal: { type: Number, required: true, min: 0 },
