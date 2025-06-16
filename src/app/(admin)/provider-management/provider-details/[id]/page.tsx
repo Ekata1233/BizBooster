@@ -198,65 +198,71 @@ const ProviderDetailsPage = () => {
                   <h2 className="text-xl font-semibold mb-4 pb-2 border-b ">
                     Store Information
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Store Name:</p>
-                      <p className="font-medium">{provider.storeInfo?.storeName || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Address:</p>
-                      <p className="font-medium">{provider.storeInfo?.address || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">City:</p>
-                      <p className="font-medium">{provider.storeInfo?.city || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">State:</p>
-                      <p className="font-medium">{provider.storeInfo?.state || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Country:</p>
-                      <p className="font-medium">{provider.storeInfo?.country || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Office Number:</p>
-                      <p className="font-medium">{provider.storeInfo?.officeNo || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Store Email:</p>
-                      <p className="font-medium">{provider.storeInfo?.storeEmail || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Store Phone:</p>
-                      <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Tax:</p>
-                      <p className="font-medium">{provider.storeInfo?.tax || '-'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
-                      <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <p className="text-sm text-gray-500 whitespace-nowrap">Location:</p>
-                      <div className="font-medium">
-                        {renderLocation(provider.storeInfo?.location)}
+                  {!provider.storeInfo ? (
+                    <p className="text-red-400 italic">Store information is pending</p>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Store Name:</p>
+                          <p className="font-medium">{provider.storeInfo?.storeName || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Address:</p>
+                          <p className="font-medium">{provider.storeInfo?.address || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">City:</p>
+                          <p className="font-medium">{provider.storeInfo?.city || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">State:</p>
+                          <p className="font-medium">{provider.storeInfo?.state || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Country:</p>
+                          <p className="font-medium">{provider.storeInfo?.country || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Office Number:</p>
+                          <p className="font-medium">{provider.storeInfo?.officeNo || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Store Email:</p>
+                          <p className="font-medium">{provider.storeInfo?.storeEmail || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Store Phone:</p>
+                          <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Tax:</p>
+                          <p className="font-medium">{provider.storeInfo?.tax || '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
+                          <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">Location:</p>
+                          <div className="font-medium">
+                            {renderLocation(provider.storeInfo?.location)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  {provider.storeInfo?.cover && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-500">Store Cover Image</p>
-                      <Image
-                        src={provider.storeInfo.cover}
-                        alt="Store Cover"
-                        width={250}
-                        height={140}
-                        className="rounded border border-gray-200"
-                      />
-                    </div>
+                      {provider.storeInfo?.cover && (
+                        <div className="mt-4">
+                          <p className="text-sm text-gray-500">Store Cover Image</p>
+                          <Image
+                            src={provider.storeInfo.cover}
+                            alt="Store Cover"
+                            width={250}
+                            height={140}
+                            className="rounded border border-gray-200"
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -265,22 +271,26 @@ const ProviderDetailsPage = () => {
                   <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
                     KYC Documents
                   </h2>
-                  <div className="space-y-4">
-                    {[
-                      { label: "GST Documents", data: provider.kyc?.GST },
-                      { label: "Aadhaar Card", data: provider.kyc?.aadhaarCard },
-                      { label: "PAN Card", data: provider.kyc?.panCard },
-                      { label: "Other Documents", data: provider.kyc?.other },
-                      { label: "Store Documents", data: provider.kyc?.storeDocument },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <p className="text-sm text-gray-500 font-semibold w-40">{item.label}</p>
-                        <div className="flex-1 flex flex-wrap items-center gap-2">
-                          {renderImageArray(item.data)}
+                  {!provider.kyc ? (
+                    <p className="text-red-400 italic">KYC information is pending</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {[
+                        { label: "GST Documents", data: provider.kyc?.GST },
+                        { label: "Aadhaar Card", data: provider.kyc?.aadhaarCard },
+                        { label: "PAN Card", data: provider.kyc?.panCard },
+                        { label: "Other Documents", data: provider.kyc?.other },
+                        { label: "Store Documents", data: provider.kyc?.storeDocument },
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-center space-x-4">
+                          <p className="text-sm text-gray-500 font-semibold w-40">{item.label}</p>
+                          <div className="flex-1 flex flex-wrap items-center gap-2">
+                            {renderImageArray(item.data)}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -354,4 +364,3 @@ const ProviderDetailsPage = () => {
 };
 
 export default ProviderDetailsPage;
-

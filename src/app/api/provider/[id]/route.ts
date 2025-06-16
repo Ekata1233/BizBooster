@@ -1,10 +1,16 @@
 // src/app/api/provider/[id]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
-import '@/models/Service';
+import '@/models/Service'; // ensure this model is registered
 
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://biz-booster.vercel.app'];
+// ─── Allowed Origins for CORS ─────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://biz-booster.vercel.app'
+];
 
 function getCorsHeaders(origin: string | null) {
   const headers: Record<string, string> = {
@@ -28,9 +34,9 @@ export async function OPTIONS(req: NextRequest) {
 
 // ─── GET /api/provider/:id ─────────────────────────────────────────
 export async function GET(req: NextRequest) {
+  const origin = req.headers.get("origin");
   await connectToDatabase();
 
-  const origin = req.headers.get("origin");
   const id = req.nextUrl.pathname.split("/").pop();
 
   if (!id) {
@@ -40,17 +46,31 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const provider = await Provider.findById(id).populate('subscribedServices')
-  // .populate('subscribedServices', 'serviceName price discountedPrice');
-  if (!provider) {
+  try {
+    const provider = await Provider.findById(id).populate('subscribedServices');
+    // OR: to include specific fields only:
+    // .populate('subscribedServices', 'serviceName price discountedPrice');
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found." },
+        { status: 404, headers: getCorsHeaders(origin) }
+      );
+    }
+
+    return NextResponse.json(provider, {
+      status: 200,
+      headers: getCorsHeaders(origin),
+    });
+  } catch (error) {
+    console.error("Error fetching provider:", error);
     return NextResponse.json(
-      { success: false, message: "Provider not found." },
-      { status: 404, headers: getCorsHeaders(origin) }
+      { success: false, message: "Server error." },
+      { status: 500, headers: getCorsHeaders(origin) }
     );
   }
-
-  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
 }
+
 
 // ─── PUT /api/provider/:id ─────────────────────────────────────────
 export async function PUT(req: NextRequest) {
