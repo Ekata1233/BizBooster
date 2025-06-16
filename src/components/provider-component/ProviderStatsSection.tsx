@@ -1,10 +1,14 @@
 
 import { UserIcon, CalenderIcon, DollarLineIcon, BoxCubeIcon, ArrowUpIcon } from '@/icons'; // adjust imports as needed
 import StatCard from '../common/StatCard';
-import PageBreadcrumb from '../common/PageBreadCrumb';
 import ComponentCard from '../common/ComponentCard';
-
-const ProviderStatsSection = () => {
+import { Provider } from '@/context/ProviderContext';
+type Props = {
+  provider: Provider;
+};
+const ProviderStatsSection = ({ provider }: Props) => {
+  console.log(provider);
+  
   return (
     <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
       <ComponentCard title="Statestics">
