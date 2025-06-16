@@ -35,7 +35,6 @@ const serviceSchema = new mongoose.Schema({
     },
     providerPrice: {
       type: Number,
-      required: true
     },
     providerCommission: {
       type: Number,
