@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
+import StatCard from '@/components/common/StatCard';
+import { ArrowUpIcon, BoxCubeIcon, CalenderIcon, DollarLineIcon, UserIcon } from '@/icons';
 
 interface KycDocs {
   GST?: string[];
@@ -63,6 +65,7 @@ interface Provider {
   storeInfo?: StoreInfo;
   logo?: string;
   module?: Module;
+  subscribedServices?: string[];
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
@@ -78,10 +81,10 @@ const ProviderDetailsPage = () => {
   const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
-    if (providerDetails && ((providerDetails as unknown) as Provider[]).length > 0){
+    if (providerDetails && ((providerDetails as unknown) as Provider[]).length > 0) {
       const selected = ((providerDetails as unknown) as Provider[]).find(
-  (p: Provider) => p._id === id
-) || null;
+        (p: Provider) => p._id === id
+      ) || null;
 
       setProvider(selected);
     }
@@ -151,7 +154,13 @@ const ProviderDetailsPage = () => {
               className={`cursor-pointer px-4 py-2 ${activeTab === 'stats' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
               onClick={() => setActiveTab('stats')}
             >
-              Stats
+              Statestics
+            </li>
+            <li
+              className={`cursor-pointer px-4 py-2 ${activeTab === 'subscribe' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+              onClick={() => setActiveTab('subscribe')}
+            >
+              Subscribe Services
             </li>
           </ul>
         </div>
@@ -159,8 +168,8 @@ const ProviderDetailsPage = () => {
         <div className="space-y-6 pt-4">
           {activeTab === 'info' && (
             <>
-              <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-purple-50 to-white">
-                <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-purple-100 text-purple-700">
+              <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br  to-white">
+                <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
                   Basic Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -185,8 +194,8 @@ const ProviderDetailsPage = () => {
 
               <div className="grid grid-cols-1 gap-6">
                 {/* Store Information Section - Full Width with 3 columns */}
-                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
-                  <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-yellow-100 text-yellow-700">
+                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
+                  <h2 className="text-xl font-semibold mb-4 pb-2 border-b ">
                     Store Information
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -252,8 +261,8 @@ const ProviderDetailsPage = () => {
                 </div>
 
                 {/* KYC Documents Section - Full Width */}
-                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
-                  <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
+                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-brto-white">
+                  <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
                     KYC Documents
                   </h2>
                   <div className="space-y-4">
@@ -278,11 +287,64 @@ const ProviderDetailsPage = () => {
           )}
 
           {activeTab === 'stats' && (
-            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-green-50 to-white">
-              <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-green-100 text-green-700">
-                Stats
+            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br  to-white">
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
+                Statestics
               </h2>
-             
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
+                <StatCard
+                  title="Total Customer"
+                  value="150"
+                  icon={UserIcon}
+                  badgeColor="success"
+                  badgeValue="0.00%"
+                  badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                  title="Total Subscribe Services"
+                  value="150"
+                  icon={CalenderIcon}
+                  badgeColor="success"
+                  badgeValue="0.00%"
+                  badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                  title="Total Subcategories"
+                  value="150"
+                  icon={DollarLineIcon}
+                  badgeColor="success"
+                  badgeValue="0.00%"
+                  badgeIcon={ArrowUpIcon}
+                />
+                <StatCard
+                  title="Total Services"
+                  value="150"
+                  icon={BoxCubeIcon}
+                  badgeColor="success"
+                  badgeValue="0.00%"
+                  badgeIcon={ArrowUpIcon}
+                />
+              </div>
+
+            </div>
+          )}
+
+          {activeTab === 'subscribe' && (
+            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br  to-white">
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
+                Subscribe Services
+              </h2>
+              {provider.subscribedServices && provider.subscribedServices.length > 0 ? (
+                <ul className="list-disc pl-5 space-y-1">
+                  {provider.subscribedServices.map((serviceId, index) => (
+                    <li key={index} className="text-gray-700">
+                      {serviceId}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-400 italic">No subscribed services.</p>
+              )}
             </div>
           )}
         </div>

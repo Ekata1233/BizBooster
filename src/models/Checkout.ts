@@ -16,7 +16,9 @@ interface ICheckout extends Document {
     garrentyFee: number;
     tax: number;
     totalAmount: number;
-    paymentMethod: 'credit_card' | 'upi' | 'cod' | 'net_banking' | 'wallet';
+    paymentMethod: ('credit_card' | 'upi' | 'cod' | 'net_banking' | 'wallet')[];
+    walletAmount: number;
+    paidByOtherMethodAmount: number;
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
@@ -46,10 +48,12 @@ const checkoutSchema = new Schema<ICheckout>({
     tax: { type: Number, required: true, min: 0, default: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     paymentMethod: {
-        type: String,
+        type: [String],
         required: true,
         enum: ['credit_card', 'upi', 'cod', 'net_banking', 'wallet'],
     },
+    walletAmount: { type: Number, default: 0, min: 0 },
+    paidByOtherMethodAmount: { type: Number, default: 0, min: 0 },
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],

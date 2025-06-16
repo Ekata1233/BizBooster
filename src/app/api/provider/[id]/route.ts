@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
+import '@/models/Service';
 
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://biz-booster.vercel.app'];
 
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const provider = await Provider.findById(id);
+  const provider = await Provider.findById(id).populate('subscribedServices')
+  // .populate('subscribedServices', 'serviceName price discountedPrice');
   if (!provider) {
     return NextResponse.json(
       { success: false, message: "Provider not found." },
