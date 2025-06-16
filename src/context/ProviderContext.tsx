@@ -5,9 +5,10 @@ export interface Provider {
   _id: string;
   fullName: string;
   email: string;
-  phoneNo: string;
+  phoneNo?: string;
   password?: string;
-  referralCode? : string;
+referralCode?: string | null;
+
   storeInfo?: Record<string, any>;
   kyc?: Record<string, any>;
   step1Completed?: boolean;
