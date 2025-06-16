@@ -37,7 +37,7 @@ const checkoutSchema = new Schema<ICheckout>({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     service: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
     serviceCustomer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
-    provider: { type: Schema.Types.ObjectId, ref: 'Provider' },
+    provider: { type: Schema.Types.ObjectId, ref: 'Provider', default: null },
     coupon: { type: Schema.Types.ObjectId, ref: 'Coupon', default: null },
     subtotal: { type: Number, required: true, min: 0 },
     serviceDiscount: { type: Number, required: true, min: 0, default: 0 },

@@ -24,21 +24,14 @@ export const POST = async (req: Request) => {
     const body = await req.json();
     const parsedData = userValidationSchema.parse(body);
 
-    // const existingUser = await User.findOne({
-    //   $or: [{ email: parsedData.email }, { mobileNumber: parsedData.mobileNumber }],
-    // });
-
-     const existingUserByEmail = await User.findOne({ email: parsedData.email });
+    const existingUserByEmail = await User.findOne({ email: parsedData.email });
     const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
 
-    // if (existingUser) {
-    //   return NextResponse.json(cors
-    //     { error: 'Email or Mobile already exists' },
-    //     { status: 400, headers: corsHeaders }
-    //   );
-    // }
+    const isMobileBlocked = existingUserByMobile &&
+      existingUserByMobile.otp?.verified === true &&
+      existingUserByMobile.isMobileVerified === true;
 
-    if (existingUserByEmail && existingUserByMobile) {
+    if (existingUserByEmail && isMobileBlocked) {
       return NextResponse.json(
         { error: 'Email and Mobile already exists' },
         { status: 400, headers: corsHeaders }
@@ -52,10 +45,18 @@ export const POST = async (req: Request) => {
       );
     }
 
-    if (existingUserByMobile) {
+    if (isMobileBlocked) {
       return NextResponse.json(
         { error: 'Mobile already exists' },
         { status: 400, headers: corsHeaders }
+      );
+    } else {
+      // Mobile exists but not verified
+      return NextResponse.json(
+        {
+          error: 'User with this mobile already exists but is not verified. Please complete verification.',
+        },
+        { status: 409, headers: corsHeaders } // 409 Conflict
       );
     }
 
