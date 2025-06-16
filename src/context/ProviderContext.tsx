@@ -7,6 +7,7 @@ export interface Provider {
   email: string;
   phoneNo: string;
   password?: string;
+  referralCode? : string;
   storeInfo?: Record<string, any>;
   kyc?: Record<string, any>;
   step1Completed?: boolean;

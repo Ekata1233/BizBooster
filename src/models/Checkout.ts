@@ -16,6 +16,7 @@ interface ICheckout extends Document {
     garrentyFee: number;
     tax: number;
     totalAmount: number;
+    termsCondition : boolean;
     paymentMethod: ('credit_card' | 'upi' | 'cod' | 'net_banking' | 'wallet')[];
     walletAmount: number;
     paidByOtherMethodAmount: number;
@@ -46,6 +47,7 @@ const checkoutSchema = new Schema<ICheckout>({
     platformFee: { type: Number, required: true, min: 0, default: 0 },
     garrentyFee: { type: Number, required: true, min: 0, default: 0 },
     tax: { type: Number, required: true, min: 0, default: 0 },
+    termsCondition : {type: Boolean, default: false},
     totalAmount: { type: Number, required: true, min: 0 },
     paymentMethod: {
         type: [String],

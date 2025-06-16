@@ -6,6 +6,6 @@ import '@/models/Service';
 
 export async function GET() {
   await connectToDatabase();
-  const providers = await Provider.find().sort({ createdAt: -1 }).populate('subscribedServices', 'serviceName price discountedPrice isDeleted');
+  const providers = await Provider.find({isApproved: true}).sort({ createdAt: -1 }).populate('subscribedServices', 'serviceName price discountedPrice isDeleted');
   return NextResponse.json(providers);
 }
