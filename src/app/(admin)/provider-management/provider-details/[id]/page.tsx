@@ -222,11 +222,11 @@ const ProviderDetailsPage = () => {
           </ul>
         </div>
 
-        <div className='space-y-6 pt-4'>
+        {/* <div className='space-y-6 pt-4'>
           {activeTab === 'info' && <ProviderInfoSection provider={provider} />}
           {activeTab === 'stats' && <ProviderStatsSection provider={provider} />}
           {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}
-        </div>
+        </div> */}
 
         {/* <div className="space-y-6 pt-4">
           {activeTab === 'info' && (
