@@ -7,7 +7,12 @@ import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import StatCard from '@/components/common/StatCard';
-import { ArrowUpIcon, BoxCubeIcon, CalenderIcon, DollarLineIcon, UserIcon } from '@/icons';
+import { ArrowUpIcon, BoxCubeIcon, CalenderIcon, DollarLineIcon, EyeIcon, UserIcon } from '@/icons';
+import BasicTableOne from '@/components/tables/BasicTableOne';
+import Link from 'next/link';
+import ProviderInfoSection from '@/components/provider-component/ProviderInfoSection';
+import ProviderStatsSection from '@/components/provider-component/ProviderStatsSection';
+import ProviderSubscribedServices from '@/components/provider-component/ProviderSubscribedServices';
 
 interface KycDocs {
   GST?: string[];
@@ -17,7 +22,7 @@ interface KycDocs {
   storeDocument?: string[];
 }
 
-interface Location {
+export interface Location {
   _id?: string;
   name?: string;
   coordinates: [number, number];
@@ -54,6 +59,14 @@ interface Module {
   __v?: number;
 }
 
+interface SubscribedService {
+  _id: string;
+  serviceName: string;
+  price: number;
+  discountedPrice: number;
+  isDeleted: boolean;
+}
+
 interface Provider {
   _id: string;
   fullName: string;
@@ -65,11 +78,19 @@ interface Provider {
   storeInfo?: StoreInfo;
   logo?: string;
   module?: Module;
-  subscribedServices?: string[];
+  subscribedServices?: SubscribedService[];
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
   isVerified?: boolean;
+}
+
+export interface TableData {
+  id: string;
+  serviceName: string;
+  price: number;
+  discountedPrice: number;
+  isDeleted: boolean;
 }
 
 const ProviderDetailsPage = () => {
@@ -98,35 +119,71 @@ const ProviderDetailsPage = () => {
     );
   }
 
-  const renderImageArray = (images?: string[]) => {
-    if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
-    return (
-      <div className="flex flex-wrap gap-4 mt-2">
-        {images.map((src, i) => (
-          <Image
-            key={i}
-            src={src}
-            alt={`Document ${i + 1}`}
-            width={120}
-            height={80}
-            className="rounded border border-gray-200 object-cover"
-          />
-        ))}
-      </div>
-    );
-  };
 
-  const renderLocation = (location?: Location) => {
-    if (!location) return '-';
 
-    return (
-      <div className="space-y-1">
-        {location.name && <p>Name: {location.name}</p>}
-        <p>Coordinates: [{location.coordinates[0]?.toFixed(4)}, {location.coordinates[1]?.toFixed(4)}]</p>
-        {location.type && <p>Type: {location.type}</p>}
-      </div>
-    );
-  };
+  const data = provider?.subscribedServices?.map((service) => ({
+    id: service._id,
+    serviceName: service.serviceName,
+    price: service.price,
+    discountedPrice: service.discountedPrice,
+    isDeleted: service.isDeleted,
+  }));
+
+
+  const columns = [
+    {
+      header: 'Service Name',
+      accessor: 'serviceName',
+    },
+    {
+      header: 'Price',
+      accessor: 'price',
+    },
+    {
+      header: 'Discount Price',
+      accessor: 'discountedPrice',
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row: TableData) => {
+        const status = row.isDeleted;
+        let colorClass = '';
+
+        switch (status) {
+          case true:
+            colorClass = 'text-red-500 bg-red-100 border border-red-300';
+            break;
+          case false:
+            colorClass = 'text-green-600 bg-green-100 border border-green-300';
+            break;
+          default:
+            colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
+        }
+
+        return (
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+            {status ? 'Inactive' : 'Active'}
+          </span>
+        );
+      },
+    },
+
+    {
+      header: 'Action',
+      accessor: 'action',
+      render: (row: TableData) => (
+        <div className="flex gap-2">
+          <Link href={`/service-management/service-details/${row.id}`} passHref>
+            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+              <EyeIcon />
+            </button>
+          </Link>
+        </div>
+      ),
+    }
+
+  ];
 
   return (
     <div className="container mx-auto p-4">
@@ -165,7 +222,11 @@ const ProviderDetailsPage = () => {
           </ul>
         </div>
 
-        <div className="space-y-6 pt-4">
+        <div className='space-y-6 pt-4'> {activeTab === 'info' && <ProviderInfoSection provider={provider} />}
+          {activeTab === 'stats' && <ProviderStatsSection provider={provider} />}
+          {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}</div>
+
+        {/* <div className="space-y-6 pt-4">
           {activeTab === 'info' && (
             <>
               <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br  to-white">
@@ -193,7 +254,6 @@ const ProviderDetailsPage = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-6">
-                {/* Store Information Section - Full Width with 3 columns */}
                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
                   <h2 className="text-xl font-semibold mb-4 pb-2 border-b ">
                     Store Information
@@ -260,7 +320,6 @@ const ProviderDetailsPage = () => {
                   )}
                 </div>
 
-                {/* KYC Documents Section - Full Width */}
                 <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-brto-white">
                   <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
                     KYC Documents
@@ -334,20 +393,12 @@ const ProviderDetailsPage = () => {
               <h2 className="text-xl font-semibold mb-4 pb-2 border-b">
                 Subscribe Services
               </h2>
-              {provider.subscribedServices && provider.subscribedServices.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1">
-                  {provider.subscribedServices.map((serviceId, index) => (
-                    <li key={index} className="text-gray-700">
-                      {serviceId}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-400 italic">No subscribed services.</p>
-              )}
+              <div>
+                <BasicTableOne columns={columns} data={data || []} />
+              </div>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );

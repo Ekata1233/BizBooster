@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const provider = await Provider.findById(id).populate('subscribedServices')
+  const provider = await Provider.findById(id).populate('subscribedServices', 'serviceName price discountedPrice');
   // .populate('subscribedServices', 'serviceName price discountedPrice');
   if (!provider) {
     return NextResponse.json(

@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       garrentyFee,
       tax = 0,
       totalAmount,
+      termsCondition = false,
       paymentMethod,
       walletAmount = 0,
       paidByOtherMethodAmount = 0,
@@ -48,6 +49,14 @@ export async function POST(req: Request) {
       totalAmount,
       paymentMethod,
     };
+
+    if (!termsCondition) {
+      return NextResponse.json(
+        { success: false, message: 'You must agree to the terms and conditions to proceed.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
 
     for (const [field, value] of Object.entries(requiredFields)) {
       if (!value) {
@@ -74,6 +83,7 @@ export async function POST(req: Request) {
       garrentyFee,
       tax,
       totalAmount,
+      termsCondition,
       paymentMethod,
       walletAmount,
       paidByOtherMethodAmount,
