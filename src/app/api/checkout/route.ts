@@ -19,6 +19,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+    console.log("Body of the checkout : ",body);
     const {
       user,
       service,
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       serviceCustomer,
       totalAmount,
       paymentMethod,
+      provider
     };
 
     if (!termsCondition) {
@@ -98,6 +100,8 @@ export async function POST(req: Request) {
       orderStatus,
       notes,
     });
+
+    console.log("checkout before save: ",checkout)
 
     await checkout.save();
 
