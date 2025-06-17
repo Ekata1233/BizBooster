@@ -6,6 +6,7 @@ import "@/models/Service"
 import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -37,6 +38,9 @@ export async function POST(req: Request) {
       paymentMethod,
       walletAmount = 0,
       paidByOtherMethodAmount = 0,
+       partialPaymentNow = 0,
+      partialPaymentLater = 0,
+      remainingPaymentStatus = 'pending',
       paymentStatus = 'pending',
       orderStatus = 'processing',
       notes = '',
@@ -87,12 +91,15 @@ export async function POST(req: Request) {
       paymentMethod,
       walletAmount,
       paidByOtherMethodAmount,
+      partialPaymentNow,
+      partialPaymentLater,
+      remainingPaymentStatus,
       paymentStatus,
       orderStatus,
       notes,
     });
 
-    await checkout.save(); // ✅ This triggers pre('save')
+    await checkout.save();
 
     return NextResponse.json(
       { success: true, data: checkout },
@@ -122,10 +129,9 @@ export async function GET(req: NextRequest) {
     if (status) filter.orderStatus = status;
 
     const checkouts = await Checkout.find(filter)
-      .populate('user')
-      .populate('service')
-      .populate('serviceCustomer')
-      .populate('provider')
+      .populate({ path: 'user', select: 'fullName email mobileNumber' })
+      .populate({ path: 'service', select: 'serviceName price discountedPrice' })
+      .populate({ path: 'serviceCustomer', select: 'fullName email city' }).populate('provider')
       .populate('coupon')
       .sort({ createdAt: -1 });
 

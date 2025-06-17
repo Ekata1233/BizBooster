@@ -96,7 +96,7 @@ export interface TableData {
 const ProviderDetailsPage = () => {
   const { id } = useParams();
   const { providerDetails } = useProvider();
-  console.log("provider details : ", providerDetails)
+  // console.log("particular provider details : ", providerDetails)
 
   const [provider, setProvider] = useState<Provider | null>(null);
   const [activeTab, setActiveTab] = useState('info');
@@ -224,7 +224,7 @@ const ProviderDetailsPage = () => {
 
         <div className='space-y-6 pt-4'>
           {activeTab === 'info' && <ProviderInfoSection provider={provider} />}
-{activeTab === 'stats' && provider && <ProviderStatsSection provider={provider} />}
+          {activeTab === 'stats' && provider && <ProviderStatsSection provider={provider} />}
           {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}
         </div>
       </div>
