@@ -3,6 +3,15 @@ import ServiceMan from "@/models/ServiceMan";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 export async function POST(req: NextRequest) {
   await connectToDatabase();
   const formData = await req.formData();
@@ -21,7 +30,7 @@ export async function POST(req: NextRequest) {
   const identityImageFile = formData.get("identityImage") as File;
 
   if (password !== confirmPassword) {
-    return NextResponse.json({ message: "Passwords do not match" }, { status: 400 });
+    return NextResponse.json({ message: "Passwords do not match" }, { status: 400 ,headers: corsHeaders });
   }
 
   const bufferFromFile = async (file: File) => Buffer.from(await file.arrayBuffer());
@@ -59,11 +68,11 @@ export async function POST(req: NextRequest) {
   });
 
   await newServiceMan.save();
-  return NextResponse.json(newServiceMan, { status: 201 });
+  return NextResponse.json(newServiceMan, { status: 201 , headers: corsHeaders });
 }
 
 export async function GET() {
   await connectToDatabase();
-  const serviceMen = await ServiceMan.find().sort({ createdAt: -1 });
+  const serviceMen = await ServiceMan.find().sort({ createdAt: -1,  });
   return NextResponse.json(serviceMen);
 }
