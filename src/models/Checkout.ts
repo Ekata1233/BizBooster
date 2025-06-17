@@ -20,13 +20,9 @@ interface ICheckout extends Document {
     paymentMethod: ('credit_card' | 'upi' | 'pac' | 'net_banking' | 'wallet')[];
     walletAmount: number;
     paidByOtherMethodAmount: number;
-    partialPaymentNow: { type: Number, default: 0, min: 0 },
-    partialPaymentLater: { type: Number, default: 0, min: 0 },
-    remainingPaymentStatus: {
-        type: String,
-        enum: ['pending', 'paid', 'failed'],
-        default: 'pending'
-    },
+    partialPaymentNow: number;
+    partialPaymentLater: number;
+    remainingPaymentStatus: 'pending' | 'paid' | 'failed';
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
@@ -44,7 +40,7 @@ const checkoutSchema = new Schema<ICheckout>({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     service: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
     serviceCustomer: { type: Schema.Types.ObjectId, ref: 'ServiceCustomer', required: true },
-    provider: { type: Schema.Types.ObjectId, ref: 'Provider', default: null },
+    provider: { type: Schema.Types.ObjectId, ref: 'Provider' },
     coupon: { type: Schema.Types.ObjectId, ref: 'Coupon', default: null },
     subtotal: { type: Number, required: true, min: 0 },
     serviceDiscount: { type: Number, required: true, min: 0, default: 0 },
