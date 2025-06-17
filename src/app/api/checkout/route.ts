@@ -123,10 +123,9 @@ export async function GET(req: NextRequest) {
     if (status) filter.orderStatus = status;
 
     const checkouts = await Checkout.find(filter)
-      .populate('user')
-      .populate('service')
-      .populate('serviceCustomer')
-      .populate('provider')
+      .populate({ path: 'user', select: 'fullName email mobileNumber' })
+      .populate({ path: 'service', select: 'serviceName price discountedPrice' })
+      .populate({ path: 'serviceCustomer', select: 'fullName email city' }).populate('provider')
       .populate('coupon')
       .sort({ createdAt: -1 });
 
