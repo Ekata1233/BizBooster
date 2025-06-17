@@ -23,6 +23,7 @@ export async function POST(req: Request) {
             referenceId = '',
             method = 'Wallet',
             status = 'success',
+            source = 'checkout',
         } = body;
 
         // Validation
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
             referenceId,
             method,
             status,
+            source,
             createdAt: new Date(),
         };
 

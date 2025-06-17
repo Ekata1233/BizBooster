@@ -7,7 +7,7 @@ type Props = {
   provider: Provider;
 };
 const ProviderStatsSection = ({ provider }: Props) => {
-  console.log(provider);
+  console.log("particular provider details : ", provider)
   
   return (
     <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">

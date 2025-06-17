@@ -38,6 +38,9 @@ export async function POST(req: Request) {
       paymentMethod,
       walletAmount = 0,
       paidByOtherMethodAmount = 0,
+       partialPaymentNow = 0,
+      partialPaymentLater = 0,
+      remainingPaymentStatus = 'pending',
       paymentStatus = 'pending',
       orderStatus = 'processing',
       notes = '',
@@ -88,12 +91,15 @@ export async function POST(req: Request) {
       paymentMethod,
       walletAmount,
       paidByOtherMethodAmount,
+      partialPaymentNow,
+      partialPaymentLater,
+      remainingPaymentStatus,
       paymentStatus,
       orderStatus,
       notes,
     });
 
-    await checkout.save(); // ✅ This triggers pre('save')
+    await checkout.save();
 
     return NextResponse.json(
       { success: true, data: checkout },

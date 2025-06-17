@@ -21,6 +21,7 @@ export interface IWalletTransaction {
   description?: string;
   referenceId?: string;
   method?: string;
+  source?: string;
   status?: 'success' | 'failed' | 'pending';
   createdAt: Date;
 }
@@ -52,6 +53,11 @@ const TransactionSchema = new Schema<IWalletTransaction>(
         message: 'Invalid method',
       },
       default: 'Wallet',
+    },
+    source: {
+      type: String,
+      enum: ['checkout', 'refund', 'topup', 'adjustment'],
+      default: 'checkout',
     },
     status: {
       type: String,
