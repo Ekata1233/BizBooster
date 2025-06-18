@@ -3,6 +3,15 @@ import { createCashfreeOrder } from "@/utils/cashfree"; // Make sure this return
 import Payment from "@/models/Payment";
 import { connectToDatabase } from "@/utils/db";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -14,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!amount || !name || !email || !phone) {
       return NextResponse.json(
         { error: "Missing required fields: amount, name, email, phone" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -44,7 +53,7 @@ export async function POST(req: NextRequest) {
     if (!cfRes?.order_id || !cfRes?.payment_session_id) {
       return NextResponse.json(
         { error: "Cashfree order creation failed" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -65,7 +74,7 @@ export async function POST(req: NextRequest) {
     console.error("Payment Error:", error.message);
     return NextResponse.json(
       { error: error.message || "Payment order creation failed" },
-      { status: 500 }
+      { status: 500 , headers: corsHeaders}
     );
   }
 }
