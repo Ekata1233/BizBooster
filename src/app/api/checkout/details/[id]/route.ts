@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const checkout = await Checkout.findById(id);
+    const checkout = await Checkout.findById(id).populate({ path: 'service', select: 'serviceName price discountedPrice' });
 
     if (!checkout) {
       return NextResponse.json(
