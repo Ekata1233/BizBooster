@@ -32,9 +32,10 @@ export async function POST(req: NextRequest) {
   const confirmPassword = (formData.get("confirmPassword") as string) || "";
   const identityType = (formData.get("identityType") as string)?.trim().toLowerCase() || "";
   const identityNumber = (formData.get("identityNumber") as string)?.trim() || "";
+  const provider = (formData.get("provider") as string)?.trim() || "";
 
   // Input validations
-  if (!name || !lastName || !phoneNo || !email || !password || !confirmPassword || !identityType || !identityNumber) {
+  if (!name || !lastName || !phoneNo || !email || !password || !confirmPassword || !identityType || !identityNumber|| provider) {
     return NextResponse.json({ message: "All fields are required" }, { status: 400, headers: corsHeaders });
   }
 
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   }
 
   const bufferFromFile = async (file: File) => Buffer.from(await file.arrayBuffer());
-  
+
   let generalImageUrl = "";
   const generalImageFile = formData.get("generalImage") as File;
   if (generalImageFile && generalImageFile.size > 0) {
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
       identityNumber,
       identityImage: identityImageUrl,
     },
+    provider
   });
 
   await newServiceMan.save();
