@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     console.log("url : ", url)
-    const id = url.pathname.split("/").pop(); // Assumes /api/checkout/provider/{id}
+    const id = url.pathname.split("/").pop(); 
 
     console.log("id:", id);
 
