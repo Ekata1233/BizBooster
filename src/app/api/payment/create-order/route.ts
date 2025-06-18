@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       },
       order_note: "Next.js Cashfree Payment",
       order_meta: {
-        return_url: `http://localhost:3000/checkout?order_id=${orderId}`,
+        return_url: `https://biz-booster.vercel.app/checkout?order_id=${orderId}`,
         notify_url: "https://biz-booster.vercel.app/api/cashfree-webhook",
       },
     };
