@@ -1,16 +1,27 @@
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
 import Lead from "@/models/Lead";
 import imagekit from "@/utils/imagekit";
 
-// UPDATE lead by ID
-// UPDATE lead by ID
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    await connectToDatabase();
-    const formData = await req.formData();
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
-    const leadIndex = parseInt(formData.get("leadIndex") as string); // Which index to update
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+export async function PUT(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    const formData = await req.formData();
+    const leadIndex = parseInt(formData.get("leadIndex") as string);
     const statusType = formData.get("statusType") as string;
     const description = formData.get("description") as string;
     const zoomLink = formData.get("zoomLink") as string;
@@ -18,31 +29,31 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const paymentType = formData.get("paymentType") as "partial" | "full";
     const uploadedFile = formData.get("document") as File | null;
 
-    if (isNaN(leadIndex)) {
-      return NextResponse.json({ error: "Invalid lead index" }, { status: 400 });
+    if (!id || isNaN(leadIndex)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid request. Missing ID or lead index." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     let documentUrl = "";
-    if (uploadedFile) {
+    if (uploadedFile && uploadedFile instanceof File) {
       const bytes = await uploadedFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
       const uploaded = await imagekit.upload({
         file: buffer,
         fileName: uploadedFile.name,
         folder: "lead-documents",
       });
-
       documentUrl = uploaded.url;
     }
 
-    const lead = await Lead.findById(params.id);
-    if (!lead) {
-      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-    }
-
-    if (!lead.leads[leadIndex]) {
-      return NextResponse.json({ error: "Lead status entry not found" }, { status: 404 });
+    const lead = await Lead.findById(id);
+    if (!lead || !lead.leads[leadIndex]) {
+      return NextResponse.json(
+        { success: false, message: "Lead or lead entry not found." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
     // Update the specific entry
@@ -58,27 +69,49 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     await lead.save();
 
-    return NextResponse.json(lead, { status: 200 });
-  } catch (error) {
-    console.error("Error updating lead status:", error);
-    return NextResponse.json({ error: "Failed to update lead status" }, { status: 500 });
+    return NextResponse.json(
+      { success: true, data: lead },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: any) {
+    console.error("Error updating lead:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Update failed." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
+export async function DELETE(req: Request) {
+  await connectToDatabase();
 
-// DELETE lead by ID
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
-    await connectToDatabase();
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-    const deleted = await Lead.findByIdAndDelete(params.id);
-    if (!deleted) {
-      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    return NextResponse.json({ message: "Lead deleted successfully" }, { status: 200 });
-  } catch (error) {
-    console.error("Error deleting lead:", error);
-    return NextResponse.json({ error: "Failed to delete lead" }, { status: 500 });
+    const deleted = await Lead.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Lead not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: "Lead deleted successfully." },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || "Delete failed." },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }

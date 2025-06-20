@@ -1,6 +1,8 @@
+
 import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
-import Lead from "@/models/Lead";
 import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
@@ -21,63 +23,54 @@ export async function PUT(req: Request) {
     const id = url.pathname.split("/").pop();
 
     const formData = await req.formData();
-    const leadIndex = parseInt(formData.get("leadIndex") as string);
-    const statusType = formData.get("statusType") as string;
-    const description = formData.get("description") as string;
-    const zoomLink = formData.get("zoomLink") as string;
-    const paymentLink = formData.get("paymentLink") as string;
-    const paymentType = formData.get("paymentType") as "partial" | "full";
-    const uploadedFile = formData.get("document") as File | null;
 
-    if (!id || isNaN(leadIndex)) {
+    console.log("update module : ", formData);
+
+    const name = formData.get("name") as string;
+
+    if (!name || !id) {
       return NextResponse.json(
-        { success: false, message: "Invalid request. Missing ID or lead index." },
+        { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let documentUrl = "";
-    if (uploadedFile && uploadedFile instanceof File) {
-      const bytes = await uploadedFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const uploaded = await imagekit.upload({
+    let imageUrl = "";
+    const file = formData.get("image") as File | null;
+
+    if (file && file instanceof File) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const uploadResponse = await imagekit.upload({
         file: buffer,
-        fileName: uploadedFile.name,
-        folder: "lead-documents",
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/banner",
       });
-      documentUrl = uploaded.url;
+
+      imageUrl = uploadResponse.url;
     }
 
-    const lead = await Lead.findById(id);
-    if (!lead || !lead.leads[leadIndex]) {
-      return NextResponse.json(
-        { success: false, message: "Lead or lead entry not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+    const updateData: Record<string, unknown> = {
+      name,
+      isDeleted: false,
+    };
+    if (imageUrl) updateData.image = imageUrl;
 
-    // Update the specific entry
-    lead.leads[leadIndex].statusType = statusType;
-    lead.leads[leadIndex].description = description;
-    lead.leads[leadIndex].zoomLink = zoomLink;
-    lead.leads[leadIndex].paymentLink = paymentLink;
-    lead.leads[leadIndex].paymentType = paymentType;
-    if (documentUrl) {
-      lead.leads[leadIndex].document = documentUrl;
-    }
-    lead.leads[leadIndex].updatedAt = new Date();
-
-    await lead.save();
+    const updatedModule = await Module.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     return NextResponse.json(
-      { success: true, data: lead },
+      { success: true, data: updatedModule },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
-    console.error("Error updating lead:", error);
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { success: false, message: error.message || "Update failed." },
-      { status: 500, headers: corsHeaders }
+      { success: false, message },
+      { status: 400, headers: corsHeaders }
     );
   }
 }
@@ -91,26 +84,33 @@ export async function DELETE(req: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: "Missing ID." },
+        { success: false, message: "Missing ID parameter." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const deleted = await Lead.findByIdAndDelete(id);
-    if (!deleted) {
+    const deletedModule = await Module.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!deletedModule) {
       return NextResponse.json(
-        { success: false, message: "Lead not found." },
+        { success: false, message: "Module not found" },
         { status: 404, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: "Lead deleted successfully." },
+      { success: true, message: "Module soft-deleted successfully" },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { success: false, message: error.message || "Delete failed." },
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }
