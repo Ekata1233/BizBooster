@@ -37,7 +37,6 @@ export async function GET(req: Request) {
 
     const checkout = await Checkout.findById(id) .populate({ path: 'user', select: 'fullName email mobileNumber' })
       .populate({ path: 'service', select: 'serviceName price discountedPrice' })
-      .populate({ path: 'serviceCustomer', select: 'fullName email city' }).populate('provider')
       .populate('coupon')
 
     if (!checkout) {
