@@ -28,6 +28,7 @@ interface ICheckout extends Document {
     notes?: string;
     isVerified: boolean;
     isAccepted: boolean;
+    acceptedDate: Date;
     isCompleted: boolean;
     isCanceled: boolean;
     isDeleted: boolean;
@@ -79,6 +80,7 @@ const checkoutSchema = new Schema<ICheckout>({
     notes: { type: String, trim: true, default: '' },
     isVerified: { type: Boolean, default: false },
     isAccepted: { type: Boolean, default: false },
+    acceptedDate: { type: Date, default: null },
     isCompleted: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
