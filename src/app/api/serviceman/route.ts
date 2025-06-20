@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       errors.confirmPassword = "Passwords do not match";
     }
 
-    const allowedTypes = ['passport', 'driving_license', 'nid', 'trade_license'];
+    const allowedTypes = ['passport', 'driving_license', 'addharcard', 'pancard'];
     if (identityType && !allowedTypes.includes(identityType)) {
       errors.identityType = "Invalid identity type";
     }

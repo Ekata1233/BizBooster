@@ -4,7 +4,7 @@ const BusinessInformationSchema = new mongoose.Schema(
   {
     identityType: {
       type: String,
-      enum: ['passport', 'driving_license', 'nid', 'trade_license'],
+      enum: ['passport', 'driving_license', 'addharcard', 'pancard'],
       required: true,
     },
     identityNumber: {
