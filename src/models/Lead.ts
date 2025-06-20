@@ -1,16 +1,29 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-export interface ILead extends Document {
+/** Lead Subdocument Interface */
+export interface IStatus {
   statusType: string;
   description?: string;
   zoomLink?: string;
   paymentLink?: string;
   paymentType?: "partial" | "full";
   document?: string;
-  checkout: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const LeadSchema = new Schema<ILead>(
+/** Lead Document Interface */
+export interface ILead extends Document {
+  checkout: mongoose.Types.ObjectId;
+  serviceCustomer: mongoose.Types.ObjectId;
+  serviceMan: mongoose.Types.ObjectId;
+  service: mongoose.Types.ObjectId;
+  amount: number;
+  leads: IStatus[];
+}
+
+/** Lead Subschema */
+const StatusSchema = new Schema<IStatus>(
   {
     statusType: {
       type: String,
@@ -38,13 +51,42 @@ const LeadSchema = new Schema<ILead>(
       enum: ["partial", "full"],
     },
     document: String,
-    checkout: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Checkout",
-      required: true,
-    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Lead || mongoose.model<ILead>("Lead", LeadSchema);
+/** Lead Main Schema */
+const LeadSchema = new Schema<ILead>(
+  {
+    checkout: {
+      type: Schema.Types.ObjectId,
+      ref: "Checkout",
+      required: true,
+    },
+    serviceCustomer: {
+      type: Schema.Types.ObjectId,
+      ref: "ServiceCustomer",
+      required: true,
+    },
+    serviceMan: {
+      type: Schema.Types.ObjectId,
+      ref: "ServiceMan",
+      required: true,
+    },
+    service: {
+      type: Schema.Types.ObjectId,
+      ref: "Service",
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    leads: [StatusSchema], // Embedded status array
+  },
+  { timestamps: true }
+);
+
+/** Export the model */
+export default mongoose.models.Lead ||
+  mongoose.model<ILead>("Lead", LeadSchema);

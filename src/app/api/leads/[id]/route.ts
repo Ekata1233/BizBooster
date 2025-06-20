@@ -1,67 +1,84 @@
-import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
+import { NextResponse } from "next/server";
 import Lead from "@/models/Lead";
 import imagekit from "@/utils/imagekit";
 
-export async function PUT(req: Request) {
+// UPDATE lead by ID
+// UPDATE lead by ID
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop(); // Extract ID from URL path
-
+    await connectToDatabase();
     const formData = await req.formData();
+
+    const leadIndex = parseInt(formData.get("leadIndex") as string); // Which index to update
     const statusType = formData.get("statusType") as string;
     const description = formData.get("description") as string;
     const zoomLink = formData.get("zoomLink") as string;
     const paymentLink = formData.get("paymentLink") as string;
     const paymentType = formData.get("paymentType") as "partial" | "full";
-    const checkout = formData.get("checkout") as string;
-    const document = formData.get("document") as File;
+    const uploadedFile = formData.get("document") as File | null;
 
-    await connectToDatabase();
-
-    let documentURL = "";
-    if (document && document.name) {
-      const arrayBuffer = await document.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const result = await imagekit.upload({
-        file: buffer,
-        fileName: document.name,
-      });
-      documentURL = result.url;
+    if (isNaN(leadIndex)) {
+      return NextResponse.json({ error: "Invalid lead index" }, { status: 400 });
     }
 
-    const updatedLead = await Lead.findByIdAndUpdate(
-      id,
-      {
-        statusType,
-        description,
-        zoomLink,
-        paymentLink,
-        paymentType,
-        ...(documentURL && { document: documentURL }),
-        checkout,
-      },
-      { new: true }
-    );
+    let documentUrl = "";
+    if (uploadedFile) {
+      const bytes = await uploadedFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    return NextResponse.json(updatedLead);
+      const uploaded = await imagekit.upload({
+        file: buffer,
+        fileName: uploadedFile.name,
+        folder: "lead-documents",
+      });
+
+      documentUrl = uploaded.url;
+    }
+
+    const lead = await Lead.findById(params.id);
+    if (!lead) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+
+    if (!lead.leads[leadIndex]) {
+      return NextResponse.json({ error: "Lead status entry not found" }, { status: 404 });
+    }
+
+    // Update the specific entry
+    lead.leads[leadIndex].statusType = statusType;
+    lead.leads[leadIndex].description = description;
+    lead.leads[leadIndex].zoomLink = zoomLink;
+    lead.leads[leadIndex].paymentLink = paymentLink;
+    lead.leads[leadIndex].paymentType = paymentType;
+    if (documentUrl) {
+      lead.leads[leadIndex].document = documentUrl;
+    }
+    lead.leads[leadIndex].updatedAt = new Date();
+
+    await lead.save();
+
+    return NextResponse.json(lead, { status: 200 });
   } catch (error) {
-    console.error("PUT error:", error);
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    console.error("Error updating lead status:", error);
+    return NextResponse.json({ error: "Failed to update lead status" }, { status: 500 });
   }
 }
 
-export async function DELETE(req: Request) {
+
+// DELETE lead by ID
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop(); // Extract ID from URL path
-
     await connectToDatabase();
-    await Lead.findByIdAndDelete(id);
 
-    return NextResponse.json({ message: "Deleted successfully" });
+    const deleted = await Lead.findByIdAndDelete(params.id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Lead deleted successfully" }, { status: 200 });
   } catch (error) {
-    console.error("DELETE error:", error);
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    console.error("Error deleting lead:", error);
+    return NextResponse.json({ error: "Failed to delete lead" }, { status: 500 });
   }
 }

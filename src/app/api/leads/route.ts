@@ -1,55 +1,138 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Lead from "@/models/Lead";
+import "@/models/Checkout"; // ✅ Import referenced models
+import "@/models/ServiceMan"; // Assuming used for serviceCustomer and serviceMan
+import  "@/models/Service";
+import "@/models/ServiceCustomer"; // ✅ Import referenced models
+
 import imagekit from "@/utils/imagekit";
+
+// export async function POST(req: NextRequest) {
+//   try {
+//     await connectToDatabase();
+//     const formData = await req.formData();
+
+//     const checkout = formData.get("checkout") as string;
+//     const serviceCustomer = formData.get("serviceCustomer") as string;
+//     const serviceMan = formData.get("serviceMan") as string;
+//     const service = formData.get("service") as string;
+//     const amount = parseFloat(formData.get("amount") as string);
+
+//     const leadsData = JSON.parse(formData.get("leads") as string);
+
+//     const uploadedDocument = formData.get("document") as File | null;
+//     let documentUrl = "";
+
+//     if (uploadedDocument) {
+//       const bytes = await uploadedDocument.arrayBuffer();
+//       const buffer = Buffer.from(bytes);
+
+//       const uploaded = await imagekit.upload({
+//         file: buffer,
+//         fileName: uploadedDocument.name,
+//         folder: "lead-documents",
+//       });
+
+//       documentUrl = uploaded.url;
+//     }
+
+//     // Add document URL to the first status if exists
+//     if (documentUrl && leadsData.length > 0) {
+//       leadsData[0].document = documentUrl;
+//     }
+
+//     const newLead = await Lead.create({
+//       checkout,
+//       serviceCustomer,
+//       serviceMan,
+//       service,
+//       amount,
+//       leads: leadsData,
+//     });
+
+//     return NextResponse.json(newLead, { status: 201 });
+//   } catch (error) {
+//     console.error(error);
+//     return NextResponse.json({ error: "Failed to create lead" }, { status: 500 });
+//   }
+// }
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const statusType = formData.get("statusType") as string;
-    const description = formData.get("description") as string;
-    const zoomLink = formData.get("zoomLink") as string;
-    const paymentLink = formData.get("paymentLink") as string;
-    const paymentType = formData.get("paymentType") as "partial" | "full";
-    const checkout = formData.get("checkout") as string;
-    const document = formData.get("document") as File;
-
     await connectToDatabase();
 
-    let documentURL = "";
-    if (document && document.name) {
-      const arrayBuffer = await document.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const result = await imagekit.upload({
+    const formData = await req.formData();
+
+    const checkout = formData.get("checkout") as string;
+    const serviceCustomer = formData.get("serviceCustomer") as string;
+    const serviceMan = formData.get("serviceMan") as string;
+    const service = formData.get("service") as string;
+    const amount = parseFloat(formData.get("amount") as string);
+
+    const leadsData = JSON.parse(formData.get("leads") as string); // should be an array with one status object
+
+    const uploadedDocument = formData.get("document") as File | null;
+    let documentUrl = "";
+
+    if (uploadedDocument) {
+      const bytes = await uploadedDocument.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const uploaded = await imagekit.upload({
         file: buffer,
-        fileName: document.name,
+        fileName: uploadedDocument.name,
+        folder: "lead-documents",
       });
-      documentURL = result.url;
+
+      documentUrl = uploaded.url;
     }
 
-    const lead = await Lead.create({
-      statusType,
-      description,
-      zoomLink,
-      paymentLink,
-      paymentType,
-      document: documentURL,
-      checkout,
-    });
+    // Attach document URL if available
+    if (documentUrl && leadsData.length > 0) {
+      leadsData[0].document = documentUrl;
+    }
 
-    return NextResponse.json(lead, { status: 201 });
+    // Step 1: Check if a lead already exists with this checkout
+    const existingLead = await Lead.findOne({ checkout });
+
+    if (existingLead) {
+      // Step 2: Append new status to existing lead
+      existingLead.leads.push(leadsData[0]); // Add only one status at a time
+      await existingLead.save();
+      return NextResponse.json(existingLead, { status: 200 });
+    } else {
+      // Step 3: Create new lead
+      const newLead = await Lead.create({
+        checkout,
+        serviceCustomer,
+        serviceMan,
+        service,
+        amount,
+        leads: leadsData,
+      });
+      return NextResponse.json(newLead, { status: 201 });
+    }
   } catch (error) {
-    console.error("POST error:", error);
-    return NextResponse.json({ error: "Failed to create lead" }, { status: 500 });
+    console.error("Error in POST /api/lead:", error);
+    return NextResponse.json({ error: "Failed to process lead" }, { status: 500 });
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
-    const leads = await Lead.find().populate("checkout").sort({ createdAt: -1 });
-    return NextResponse.json(leads);
+
+    const leads = await Lead.find({})
+      // .populate("checkout")
+      // .populate("serviceCustomer")
+      // .populate("serviceMan")
+      // .populate("service")
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json(leads, { status: 200 });
   } catch (error) {
+    console.error("Error fetching leads:", error);
     return NextResponse.json({ error: "Failed to fetch leads" }, { status: 500 });
   }
 }
