@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/utils/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Lead from "@/models/Lead";
 import imagekit from "@/utils/imagekit";
 
