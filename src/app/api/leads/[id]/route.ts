@@ -13,6 +13,50 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// export async function GET(req: Request) {
+//   await connectToDatabase();
+
+//   try {
+//     const url = new URL(req.url);
+//     const checkoutId = url.searchParams.get("checkoutId");
+
+//     console.log("checkout url : ",url)
+//     console.log("checkout id : ",checkoutId)
+
+//     if (!checkoutId) {
+//       return NextResponse.json(
+//         { success: false, message: "Missing checkoutId in query." },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     const lead = await Lead.findOne({ checkout: checkoutId })
+//       .populate("checkout")
+//       .populate("serviceCustomer")
+//       .populate("serviceMan")
+//       .populate("service");
+
+//     if (!lead) {
+//       return NextResponse.json(
+//         { success: false, message: "No lead found for this checkoutId." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     return NextResponse.json(
+//       { success: true, data: lead },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: any) {
+//     console.error("Error fetching lead by checkoutId:", error);
+//     return NextResponse.json(
+//       { success: false, message: error.message || "Fetch failed." },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
 export async function PUT(req: Request) {
   await connectToDatabase();
 

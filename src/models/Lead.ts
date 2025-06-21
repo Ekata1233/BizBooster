@@ -71,7 +71,6 @@ const LeadSchema = new Schema<ILead>(
     serviceMan: {
       type: Schema.Types.ObjectId,
       ref: "ServiceMan",
-      required: true,
     },
     service: {
       type: Schema.Types.ObjectId,
