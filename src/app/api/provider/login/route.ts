@@ -6,8 +6,12 @@ import { z } from "zod";
 import { signToken } from "@/utils/auth";
 import { connectToDatabase } from "@/utils/db";
 
-const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000'];
-
+const allowedOrigins = [
+  'http://localhost:3001',
+  'https://biz-booster.vercel.app',
+  'http://localhost:3000',
+  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+];
 function getCORSHeaders(origin: string) {
   const headers = new Headers();
   if (allowedOrigins.includes(origin)) {

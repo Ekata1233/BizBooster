@@ -16,8 +16,12 @@ import { signToken } from "@/utils/auth";
 // export async function OPTIONS() {
 //   return NextResponse.json({}, { headers: corsHeaders });
 // }
-const allowedOrigins = ['http://localhost:3001', 'https://your-production-webapp.com'];
-
+const allowedOrigins = [
+  'http://localhost:3001',
+  'https://biz-booster.vercel.app',
+  'http://localhost:3000',
+  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+];
 function getCorsHeaders(origin: string | null): HeadersInit {
   const headers: HeadersInit = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
