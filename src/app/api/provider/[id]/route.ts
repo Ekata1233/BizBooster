@@ -4,8 +4,12 @@ import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import '@/models/Service';
 
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://biz-booster.vercel.app'];
-
+const allowedOrigins = [
+  'http://localhost:3001',
+  'https://biz-booster.vercel.app',
+  'http://localhost:3000',
+  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+];
 function getCorsHeaders(origin: string | null) {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
