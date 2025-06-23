@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
 
     const checkouts = await Checkout.find(filter)
       .populate({ path: 'user', select: 'fullName email mobileNumber' })
-      .populate({ path: 'service', select: 'serviceName price discountedPrice' })
+      .populate({ path: 'service', select: 'serviceName price discount discountedPrice' })
       .populate({ path: 'serviceCustomer', select: 'fullName email city' }).populate('provider')
       .populate('coupon')
       .sort({ createdAt: -1 });

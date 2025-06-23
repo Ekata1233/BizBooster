@@ -75,10 +75,19 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(newLead, { status: 201, headers: corsHeaders });
     }
-  } catch (error) {
-    console.error("Error in POST /api/lead:", error);
-    return NextResponse.json({ error: "Failed to process lead" }, { status: 500, headers: corsHeaders });
-  }
+} catch (error: any) {
+  console.error("Error in POST /api/lead:", error);
+
+  return NextResponse.json(
+    {
+      error: "Failed to process lead",
+      message: error?.message || "Unknown error",
+      stack: process.env.NODE_ENV !== "production" ? error?.stack : undefined,
+    },
+    { status: 500, headers: corsHeaders }
+  );
+}
+
 }
 
 export async function GET(req: NextRequest) {

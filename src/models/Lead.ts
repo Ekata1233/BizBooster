@@ -1,5 +1,11 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+interface IExtraService {
+  serviceName: string;
+  price: number;
+  discount: number;
+  total: number;
+}
 /** Lead Subdocument Interface */
 export interface IStatus {
   statusType: string;
@@ -19,9 +25,21 @@ export interface ILead extends Document {
   serviceMan: mongoose.Types.ObjectId;
   service: mongoose.Types.ObjectId;
   amount: number;
+  newAmount?: number;
+  extraService?: IExtraService[];
   leads: IStatus[];
 }
 
+/** ExtraService Subschema */
+const ExtraServiceSchema = new Schema<IExtraService>(
+  {
+    serviceName: { type: String, required: true },
+    price: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
+    total: { type: Number, required: true },
+  },
+  { _id: false } // Disable _id for subdocuments if not needed
+);
 /** Lead Subschema */
 const StatusSchema = new Schema<IStatus>(
   {
@@ -71,7 +89,6 @@ const LeadSchema = new Schema<ILead>(
     serviceMan: {
       type: Schema.Types.ObjectId,
       ref: "ServiceMan",
-      required: true,
     },
     service: {
       type: Schema.Types.ObjectId,
@@ -82,6 +99,10 @@ const LeadSchema = new Schema<ILead>(
       type: Number,
       required: true,
     },
+    newAmount: {
+      type: Number,
+    },
+    extraService: [ExtraServiceSchema],
     leads: [StatusSchema], // Embedded status array
   },
   { timestamps: true }
