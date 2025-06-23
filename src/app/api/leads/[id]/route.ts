@@ -13,48 +13,48 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// export async function GET(req: Request) {
-//   await connectToDatabase();
+export async function GET(req: Request) {
+  await connectToDatabase();
 
-//   try {
-//     const url = new URL(req.url);
-//     const checkoutId = url.searchParams.get("checkoutId");
+  try {
+    const url = new URL(req.url);
+    const checkoutId = url.searchParams.get("checkoutId");
 
-//     console.log("checkout url : ",url)
-//     console.log("checkout id : ",checkoutId)
+    console.log("checkout url : ",url)
+    console.log("checkout id : ",checkoutId)
 
-//     if (!checkoutId) {
-//       return NextResponse.json(
-//         { success: false, message: "Missing checkoutId in query." },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
+    if (!checkoutId) {
+      return NextResponse.json(
+        { success: false, message: "Missing checkoutId in query." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     const lead = await Lead.findOne({ checkout: checkoutId })
-//       .populate("checkout")
-//       .populate("serviceCustomer")
-//       .populate("serviceMan")
-//       .populate("service");
+    const lead = await Lead.findOne({ checkout: checkoutId })
+      .populate("checkout")
+      .populate("serviceCustomer")
+      .populate("serviceMan")
+      .populate("service");
 
-//     if (!lead) {
-//       return NextResponse.json(
-//         { success: false, message: "No lead found for this checkoutId." },
-//         { status: 404, headers: corsHeaders }
-//       );
-//     }
+    if (!lead) {
+      return NextResponse.json(
+        { success: false, message: "No lead found for this checkoutId." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
-//     return NextResponse.json(
-//       { success: true, data: lead },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: any) {
-//     console.error("Error fetching lead by checkoutId:", error);
-//     return NextResponse.json(
-//       { success: false, message: error.message || "Fetch failed." },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
+    return NextResponse.json(
+      { success: true, data: lead },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: any) {
+    console.error("Error fetching lead by checkoutId:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Fetch failed." },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
 
 
 export async function PUT(req: Request) {
@@ -63,7 +63,7 @@ export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
-
+                                      
     const formData = await req.formData();
     const leadIndex = parseInt(formData.get("leadIndex") as string);
     const statusType = formData.get("statusType") as string;
