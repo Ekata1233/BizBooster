@@ -105,14 +105,21 @@ export async function POST(req: NextRequest) {
     );
 
     console.log("Cashfree response:", response.data);
+const rawSessionId = response.data.payment_session_id;
+console.log("Raw Session ID:", rawSessionId);
 
-    const paymentSessionId = response.data.payment_session_id;
-    const paymentLink = paymentSessionId
-      ? `https://sandbox.cashfree.com/pg/checkout?session_id=${paymentSessionId}`
-      : null;
+const cleanSessionId = rawSessionId?.replace(/paymentpayment$/, "");
+const paymentLink = cleanSessionId
+  ? `https://sandbox.cashfree.com/pg/checkout?session_id=${cleanSessionId}`
+  : null;
+
+    // const paymentSessionId = response.data.payment_session_id;
+    // const paymentLink = paymentSessionId
+    //   ? `https://sandbox.cashfree.com/pg/checkout?session_id=${paymentSessionId}`
+    //   : null;
 
     return NextResponse.json(
-      { paymentSessionId, paymentLink },
+      { cleanSessionId, paymentLink },
       { headers: corsHeaders }
     )
 
