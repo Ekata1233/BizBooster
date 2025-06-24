@@ -86,7 +86,7 @@ export async function PUT(req: Request) {
 
     if (!updatedLead) {
       return NextResponse.json(
-        { success: false, message: "Lead not found for this checkoutId." },
+        { success: false, message: "Update the status of lead." },
         { status: 404, headers: corsHeaders }
       );
     }

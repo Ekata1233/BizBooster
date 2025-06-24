@@ -61,7 +61,6 @@ export async function POST(req: NextRequest) {
 
       documentUrl = uploaded.url;
     }
-
     // Attach document URL if available
     if (documentUrl && leadsData.length > 0) {
       leadsData[0].document = documentUrl;
