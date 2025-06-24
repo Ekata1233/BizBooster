@@ -76,7 +76,7 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { amount, customerId, customerName, customerEmail,customerPhone } = body;
+  const { amount, customerId, customerName, customerEmail, customerPhone } = body;
 
   try {
     console.log("Generating Cashfree payment link for:");
@@ -91,26 +91,30 @@ export async function POST(req: NextRequest) {
           customer_id: customerId,
           customer_name: customerName,
           customer_email: customerEmail,
-           customer_phone: customerPhone,
+          customer_phone: customerPhone,
         },
       },
       {
         headers: {
           "Content-Type": "application/json",
           "x-api-version": "2022-09-01",
-          "x-client-id": CASHFREE_APP_ID,
-          "x-client-secret": CASHFREE_SECRET_KEY,
+          "x-client-id": process.env.CASHFREE_APP_ID,
+          "x-client-secret": process.env.CASHFREE_SECRET_KEY,
         },
       }
     );
 
     console.log("Cashfree response:", response.data);
 
-    const paymentLink = response.data.payment_session_id
-      ? `https://sandbox.cashfree.com/pg/checkout/${response.data.payment_session_id}`
+    const paymentSessionId = response.data.payment_session_id;
+    const paymentLink = paymentSessionId
+      ? `https://sandbox.cashfree.com/pg/checkout?session_id=${paymentSessionId}`
       : null;
 
-    return NextResponse.json({ paymentLink }, { headers: corsHeaders });
+    return NextResponse.json(
+      { paymentSessionId, paymentLink },
+      { headers: corsHeaders }
+    )
 
   } catch (error: any) {
     console.error("Cashfree API Error:");
