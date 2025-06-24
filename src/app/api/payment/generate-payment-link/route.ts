@@ -46,14 +46,12 @@ export async function POST(req: NextRequest) {
       : null;
 
     return NextResponse.json({ paymentLink }, { headers: corsHeaders });
-  } catch (err) {
-    console.error("Cashfree Error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate payment link" },
-      {
-        status: 500,
-        headers: corsHeaders,
-      }
-    );
-  }
+  } catch (err: any) {
+  console.error("Cashfree Error:", err?.response?.data || err.message || err);
+  return NextResponse.json(
+    { error: "Failed to generate payment link" },
+    { status: 500, headers: corsHeaders }
+  );
+}
+
 }
