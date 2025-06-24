@@ -1,14 +1,23 @@
-// pages/api/generate-payment-link.ts
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID!;
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY!;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
+// Common CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-  const { amount, customerId, customerName, customerEmail } = req.body;
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { amount, customerId, customerName, customerEmail } = body;
 
   try {
     const response = await axios.post(
@@ -36,9 +45,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? `https://sandbox.cashfree.com/pg/checkout/${response.data.payment_session_id}`
       : null;
 
-    res.status(200).json({ paymentLink });
+    return NextResponse.json({ paymentLink }, { headers: corsHeaders });
   } catch (err) {
     console.error("Cashfree Error:", err);
-    res.status(500).json({ error: "Failed to generate payment link" });
+    return NextResponse.json(
+      { error: "Failed to generate payment link" },
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
   }
 }
