@@ -10,6 +10,14 @@ import Link from 'next/link';
 import { useLead } from '@/context/LeadContext';
 import axios from 'axios';
 
+interface IExtraService {
+    serviceName: string;
+    price: number;
+    discount: number;
+    total: number;
+    isLeadApproved?: boolean;
+}
+
 interface LeadRow {
     _id: string;
     bookingId: string;
@@ -18,11 +26,12 @@ interface LeadRow {
     totalAmount: number;
     paymentStatus: string;
     orderStatus: string;
+    extraService?: IExtraService[] | undefined;
     isAdminApproved: string;
 }
 
 const LeadRequests = () => {
-    const { leads, loading, error,fetchLeads } = useLead();
+    const { leads, loading, error, fetchLeads } = useLead();
     const [search, setSearch] = useState('');
 
     const columns = [
@@ -162,7 +171,8 @@ const LeadRequests = () => {
 
     const filteredData = leads
         ?.filter((lead) =>
-            lead.isAdminApproved === false &&
+            lead.isAdminApproved === false || (Array.isArray(lead.extraService) &&
+                lead.extraService.some((service) => service.isLeadApproved === false)) &&
             lead.checkout?.bookingId?.toLowerCase().includes(search.toLowerCase())
         )
         .map((lead) => ({

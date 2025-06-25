@@ -77,7 +77,7 @@ export async function PUT(req: Request) {
     const updateFields: any = {};
     if (newAmount !== undefined) updateFields.newAmount = newAmount;
     if (extraService !== undefined) updateFields.extraService = extraService;
-    updateFields.isAdminApproved = false;
+    updateFields.isLeadApproved = false;
 
     const updatedLead = await Lead.findOneAndUpdate(
       { checkout: checkoutId },

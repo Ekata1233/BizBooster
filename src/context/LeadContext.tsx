@@ -102,7 +102,13 @@
 
 import axios from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
-
+interface IExtraService {
+  serviceName: string;
+  price: number;
+  discount: number;
+  total: number;
+  isLeadApproved?: boolean;
+}
 // Define the Lead type
 interface Lead {
   _id: string;
@@ -113,6 +119,7 @@ interface Lead {
   paymentType?: "partial" | "full";
   document?: string;
   checkout: any;
+  extraService?: IExtraService[] | undefined;
   isAdminApproved: boolean;
   serviceCustomer: any;
 }
