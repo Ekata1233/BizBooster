@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const pathnameParts = url.pathname.split("/");
     const checkoutId = pathnameParts[pathnameParts.length - 1];
-    console.log("checkout id : ",checkoutId)
+    console.log("checkout id : ", checkoutId)
 
     if (!checkoutId) {
       return NextResponse.json(
@@ -77,6 +77,7 @@ export async function PUT(req: Request) {
     const updateFields: any = {};
     if (newAmount !== undefined) updateFields.newAmount = newAmount;
     if (extraService !== undefined) updateFields.extraService = extraService;
+    updateFields.isAdminApproved = false;
 
     const updatedLead = await Lead.findOneAndUpdate(
       { checkout: checkoutId },
