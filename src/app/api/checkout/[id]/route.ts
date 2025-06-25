@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     console.log("url : ", url)
-    const id = url.pathname.split("/").pop(); 
+    const id = url.pathname.split("/").pop();
 
     console.log("id:", id);
 
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const checkouts = await Checkout.find({ provider: new mongoose.Types.ObjectId(id) });
+    const checkouts = await Checkout.find({ provider: new mongoose.Types.ObjectId(id) }).populate({ path: 'serviceCustomer', select: 'fullName email city' });
 
     return NextResponse.json(
       { success: true, data: checkouts },

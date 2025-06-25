@@ -28,6 +28,7 @@ export interface ILead extends Document {
   newAmount?: number;
   extraService?: IExtraService[];
   leads: IStatus[];
+   isAdminApproved?: boolean;
 }
 
 /** ExtraService Subschema */
@@ -104,6 +105,10 @@ const LeadSchema = new Schema<ILead>(
     },
     extraService: [ExtraServiceSchema],
     leads: [StatusSchema], // Embedded status array
+     isAdminApproved: {
+      type: Boolean,
+      default: false, // ✅ Optional: default value
+    },
   },
   { timestamps: true }
 );

@@ -169,13 +169,30 @@ const promotionItems: NavItem[] = [
   },
 ];
 
+const bookingItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Bookings",
+    subItems: [
+      { name: "All Bookings", path: "/booking-management/all-booking", pro: false },
+    ],
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Leads",
+    subItems: [
+      { name: "Lead Requests", path: "/booking-management/lead-request", pro: false },
+    ],
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon"
+    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon" | "booking"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -291,7 +308,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon";
+    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -305,23 +322,24 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "subscribe", "coupon"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
           : menuType === "module"
             ? moduleItems : menuType === "provider"
               ? providerItems : menuType === "service"
-                ? serviceItems : menuType === "subscribe"
-                  ? subscribeItems : menuType === "coupon"
-                    ? promotionItems
-                    : customerItems;
+                ? serviceItems : menuType === "booking"
+                  ? bookingItems : menuType === "subscribe"
+                    ? subscribeItems : menuType === "coupon"
+                      ? promotionItems
+                      : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "subscribe"| "coupon",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon",
                 index,
               });
               submenuMatched = true;
@@ -350,7 +368,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -484,6 +502,22 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
+                  "BOOKING MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(bookingItems, "booking")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
                   "SUBSCRIBE MANAGEMENT"
                 ) : (
                   <HorizontaLDots />
@@ -523,6 +557,8 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(promotionItems, "coupon")}
             </div>
+
+
 
           </div>
         </nav>
