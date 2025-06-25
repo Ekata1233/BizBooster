@@ -69,9 +69,17 @@ export async function POST(req: NextRequest) {
     // Step 1: Check if a lead already exists with this checkout
     const existingLead = await Lead.findOne({ checkout });
 
+    const shouldSetAdminApprovalFalse =
+  leadsData.length > 0 &&
+  leadsData[0].statusType === "Payment request (partial/full)";
+
     if (existingLead) {
       // Step 2: Append new status to existing lead
       existingLead.leads.push(leadsData[0]); // Add only one status at a time
+        if (shouldSetAdminApprovalFalse) {
+    existingLead.isAdminApproved = false;
+  }
+
       await existingLead.save();
       return NextResponse.json(existingLead, { status: 200, headers: corsHeaders });
     } else {
@@ -83,6 +91,7 @@ export async function POST(req: NextRequest) {
         service,
         amount,
         leads: leadsData,
+        ...(shouldSetAdminApprovalFalse && { isAdminApproved: false }),
       });
       return NextResponse.json(newLead, { status: 201, headers: corsHeaders });
     }
