@@ -17,6 +17,7 @@ import RouteLoader from '@/components/RouteLoader';
 import { SubscribeProvider } from '@/context/SubscribeContext';
 import { CouponProvider } from '@/context/CouponContext';
 import { ServiceCustomerProvider } from '@/context/ServiceCustomerContext';
+import { CheckoutProvider } from '@/context/CheckoutContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -46,7 +47,9 @@ export default function RootLayout({
                                 <SubscribeProvider>
                                   <CouponProvider>
                                     <ServiceCustomerProvider>
+                                      <CheckoutProvider>
                                     {children}
+                                    </CheckoutProvider>
                                     </ServiceCustomerProvider>
                                   </CouponProvider>
                                 </SubscribeProvider>
