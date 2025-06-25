@@ -77,7 +77,14 @@ export async function PUT(req: Request) {
     const updateFields: any = {};
     if (newAmount !== undefined) updateFields.newAmount = newAmount;
     if (extraService !== undefined) updateFields.extraService = extraService;
-    updateFields.isLeadApproved = false;
+    // updateFields.isLeadApproved = false;
+    if (extraService !== undefined) {
+  updateFields.extraService = extraService.map((item: any) => ({
+    ...item,
+    isLeadApproved: false,
+  }));
+}
+
 
     const updatedLead = await Lead.findOneAndUpdate(
       { checkout: checkoutId },
