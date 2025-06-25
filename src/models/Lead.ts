@@ -107,7 +107,7 @@ const LeadSchema = new Schema<ILead>(
     leads: [StatusSchema], // Embedded status array
      isAdminApproved: {
       type: Boolean,
-      default: false, // ✅ Optional: default value
+      default: null,
     },
   },
   { timestamps: true }
