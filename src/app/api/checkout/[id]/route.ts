@@ -37,7 +37,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const checkouts = await Checkout.find({ provider: new mongoose.Types.ObjectId(id) }).populate({ path: 'serviceCustomer', select: 'fullName email city' });
+    const checkouts = await Checkout.find({ provider: new mongoose.Types.ObjectId(id) })
+    // .populate({ path: 'serviceCustomer', select: 'fullName email city' });
 
     return NextResponse.json(
       { success: true, data: checkouts },
