@@ -10,16 +10,40 @@ import { useCheckout } from '@/context/CheckoutContext';
 import BookingStatus from '@/components/booking-management/BookingStatus';
 import ServiceMenCard from '@/components/booking-management/ServiceMenCard';
 import InvoiceDownload from '@/components/booking-management/InvoiceDownload';
+import { Lead, useLead } from '@/context/LeadContext';
 
 const AllBookingsDetails = () => {
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
-  const [showAll, setShowAll] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
+  const { getLeadByCheckoutId } = useLead();
+  const [leadDetails, setLead] = useState<Lead | null>(null);
 
-  const handleUpdateStatus = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+
+  useEffect(() => {
+    const fetchLead = async () => {
+      if (!checkoutDetails?._id) return;
+
+      try {
+        const fetchedLead = await getLeadByCheckoutId(checkoutDetails._id);
+
+        if (!fetchedLead) {
+          console.warn("No lead found for ID:", checkoutDetails._id);
+          return;
+        }
+
+        setLead(fetchedLead);
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          console.warn("Lead not found (404) for ID:", checkoutDetails._id);
+        } else {
+          console.error("Error fetching lead:", error.message || error);
+        }
+      }
+    };
+
+    fetchLead();
+  }, [checkoutDetails]);
+
 
   const { fetchCheckoutById } = useCheckout();
   const params = useParams();
@@ -32,9 +56,27 @@ const AllBookingsDetails = () => {
       });
     }
   }, [id]);
+  const formatPrice = (amount: number) => `₹${amount?.toFixed(2)}`;
+
+  const hasExtraServices =
+    leadDetails?.isAdminApproved === true &&
+    Array.isArray(leadDetails?.extraService) &&
+    leadDetails.extraService.length > 0;
+
+  const baseAmount = leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0;
+
+  console.log("base amoutn : ", baseAmount);
+  const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
+  console.log("extraAmount amoutn : ", extraAmount);
+  const grandTotal = baseAmount + extraAmount;
+  console.log("grandTotal amoutn : ", grandTotal);
 
   if (!checkoutDetails) {
     return <div className="p-6 text-center">Loading booking details...</div>;
+  }
+
+  if (!hasExtraServices) {
+    return <div className="p-6 text-center">Loading service details...</div>;
   }
 
   const serviceId = checkoutDetails?.service._id;
@@ -56,15 +98,7 @@ const AllBookingsDetails = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-2 mt-4">
-              <button
-                className="bg-blue-800 text-white px-6 py-2 rounded-md hover:bg-blue-900 transition duration-300"
-                onClick={() => setIsEditOpen(true)}
-              >
-                Edit Lead
-              </button>
-              {/* <button className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-300">
-                Download Invoice
-              </button> */}
+
               <InvoiceDownload
                 checkoutDetails={checkoutDetails}
               />
@@ -98,7 +132,7 @@ const AllBookingsDetails = () => {
                   <p className="text-gray-700"><strong>Total Amount:</strong> ₹{checkoutDetails?.totalAmount || 0}</p>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-gray-700"><strong>Payment Status:</strong> <span className="text-green-600 capitalize">{checkoutDetails?.paymentStatus || 'N/A'}</span></p>
+                  <p className="text-gray-700"><strong>Payment Status:</strong> <span className="text-blue-600 capitalize">{checkoutDetails?.paymentStatus || 'N/A'}</span></p>
                   <p className="text-gray-700">
                     <strong>Schedule Date:</strong>{' '}
                     {checkoutDetails?.acceptedDate ? new Date(checkoutDetails.acceptedDate).toLocaleString('en-IN', {
@@ -123,43 +157,92 @@ const AllBookingsDetails = () => {
                   <tbody>
                     <tr>
                       <td className="border px-4 py-2">{checkoutDetails?.service?.serviceName || 'N/A'}</td>
-                      <td className="border px-4 py-2">₹{checkoutDetails?.service?.price || 0}</td>
-                      <td className="border px-4 py-2">₹{checkoutDetails?.service?.discountedPrice || 0}</td>
-                      <td className="border px-4 py-2">₹{checkoutDetails?.totalAmount || 0}</td>
+                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0)}</td>
+                      <td className="border px-4 py-2">
+                        {leadDetails?.newAmount != null
+                          ? '₹0'
+                          : `₹${checkoutDetails?.service?.discountedPrice || 0}`}
+                      </td>
+                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}</td>
                     </tr>
                   </tbody>
                 </table>
+
+                {hasExtraServices && (
+                  <>
+                    <h4 className="text-sm font-semibold text-gray-700 my-3">Extra Services</h4>
+                    <table className="w-full table-auto border border-gray-200 text-sm mb-5">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border px-4 py-2 text-left">SL</th>
+                          <th className="border px-4 py-2 text-left">Service Name</th>
+                          <th className="border px-4 py-2 text-left">Price</th>
+                          <th className="border px-4 py-2 text-left">Discount</th>
+                          <th className="border px-4 py-2 text-left">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leadDetails!.extraService!.map((service, index) => (
+                          <tr key={index}>
+                            <td className="border px-4 py-2 text-left">{index + 1}</td>
+                            <td className="border px-4 py-2 text-left">{service.serviceName}</td>
+                            <td className="border px-4 py-2 text-left">{formatPrice(service.price)}</td>
+                            <td className="border px-4 py-2 text-left">{formatPrice(service.discount)}</td>
+                            <td className="border px-4 py-2 text-left">{formatPrice(service.total)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </>
+                )}
               </div>
 
+
               <div className="mt-6 space-y-2 text-sm text-gray-800">
-                <div className="flex justify-between"><span className="font-medium">Subtotal :</span><span>₹{checkoutDetails?.subtotal || 0}</span></div>
-                <div className="flex justify-between"><span className="font-medium">Discount :</span><span>₹{checkoutDetails?.serviceDiscount || 0}</span></div>
-                <div className="flex justify-between"><span className="font-medium">Campaign Discount :</span><span>₹{checkoutDetails?.champaignDiscount || 0}</span></div>
-                <div className="flex justify-between"><span className="font-medium">Coupon Discount :</span><span>₹{checkoutDetails?.couponDiscount || 0}</span></div>
-                <div className="flex justify-between"><span className="font-medium">VAT :</span><span>₹{checkoutDetails?.vat || 0}</span></div>
-                <div className="flex justify-between"><span className="font-medium">Platform Fee :</span><span>₹{checkoutDetails?.platformFee || 0}</span></div>
-                <div className="flex justify-between border-t pt-2 mt-2 font-semibold text-base">
-                  <span>Grand Total :</span>
-                  <span>₹{checkoutDetails?.totalAmount || 0}</span>
+                <div className="flex justify-between">
+                  <span className="font-medium">Subtotal :</span>
+                  <span>₹{checkoutDetails?.subtotal || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Discount :</span>
+                  <span>₹{checkoutDetails?.serviceDiscount || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Campaign Discount :</span>
+                  <span>₹{checkoutDetails?.champaignDiscount || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Coupon Discount :</span>
+                  <span>₹{checkoutDetails?.couponDiscount || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">VAT :</span>
+                  <span>₹{checkoutDetails?.vat || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Platform Fee :</span>
+                  <span>₹{checkoutDetails?.platformFee || 0}</span>
+                </div>
+
+                {leadDetails?.extraService?.map((service, index) => (
+                  <div key={index} className="flex justify-between font-semibold">
+                    <span>Extra Service</span>
+                    <span>{formatPrice(service.total)}</span>
+                  </div>
+                ))}
+
+                <div className="flex justify-between font-bold text-blue-600">
+                  <span>Total</span>
+                  <span>{formatPrice(grandTotal || 0)}</span>
                 </div>
               </div>
+
             </div>
 
             {/* RIGHT SIDE */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-              {/* <div className="bg-gray-100 p-4 rounded-xl mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Booking Setup</h4>
-                <hr className="my-4 border-gray-300" />
-                <button
-                  className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition duration-300"
-                  onClick={handleUpdateStatus}
-                >
-                  Update Status
-                </button>
-              </div> */}
-
-              <CustomerInfoCard checkoutDetails={checkoutDetails}  />
-              <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id}/>
+              <CustomerInfoCard checkoutDetails={checkoutDetails} />
+              <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} />
             </div>
           </div>
         )}

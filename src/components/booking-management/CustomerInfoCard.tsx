@@ -19,7 +19,7 @@ const CustomerInfo: React.FC<Props> = ({ checkoutDetails }) => {
   const customer = checkoutDetails?.serviceCustomer;
 
   return (
-    <div className="px-8 py-6 bg-gray-100 m-3 rounded-xl">
+    <div className="px-8 py-6 bg-gray-100 rounded-xl">
       <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Customer Information</h4>
       <hr className="my-4 border-gray-300 dark:border-gray-700" />
 
