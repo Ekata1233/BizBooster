@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface Checkout {
+// ✅ Define your Checkout interface
+export interface Checkout {
   _id: string;
   bookingId: string;
   paymentStatus: string;
@@ -112,17 +113,20 @@ interface Checkout {
   couponDiscount?: number;
 }
 
-
+// ✅ Define Context Type
 interface CheckoutContextType {
   checkouts: Checkout[];
   fetchCheckouts: (user?: string, status?: string) => Promise<void>;
-  updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
+  fetchCheckoutById: (id: string) => Promise<Checkout | null>;
+   updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
 
+// ✅ Create Context
 const CheckoutContext = createContext<CheckoutContextType | undefined>(undefined);
 
+// ✅ Custom Hook
 export const useCheckout = () => {
   const context = useContext(CheckoutContext);
   if (!context) {
@@ -131,11 +135,13 @@ export const useCheckout = () => {
   return context;
 };
 
+// ✅ Provider Component
 export const CheckoutProvider = ({ children }: { children: React.ReactNode }) => {
   const [checkouts, setCheckouts] = useState<Checkout[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 🔹 Fetch All Checkouts
   const fetchCheckouts = async (user?: string, status?: string) => {
     setLoading(true);
     setError(null);
@@ -160,6 +166,29 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 Fetch Checkout By ID
+  const fetchCheckoutById = async (id: string): Promise<Checkout | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/checkout/details/${id}`);
+      const data = await res.json();
+
+      if (data.success) {
+        return data.data as Checkout;
+      } else {
+        setError(data.message || 'Failed to fetch checkout');
+        return null;
+      }
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -202,11 +231,11 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
 
 
   useEffect(() => {
-    fetchCheckouts(); // Initial load
+    fetchCheckouts(); // Fetch all on mount
   }, []);
 
   return (
-    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, updateCheckout, loading, error }}>
+    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, fetchCheckoutById,updateCheckout, loading, error }}>
       {children}
     </CheckoutContext.Provider>
   );

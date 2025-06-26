@@ -44,6 +44,7 @@
     "cashfree-pg": "^5.0.8",
     "ckeditor5-build-classic-nextjs": "^29.5.26",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "express-validator": "^7.2.1",
     "flatpickr": "^4.6.13",
     "formidable": "^3.5.4",
