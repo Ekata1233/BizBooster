@@ -8,6 +8,10 @@ import Input from '@/components/form/input/InputField';
 import { CheckLineIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useLead } from '@/context/LeadContext';
+import { Modal } from '@/components/ui/modal';
+import Button from '@/components/ui/button/Button';
+import { useModal } from '@/hooks/useModal';
+import { useCheckout } from '@/context/CheckoutContext';
 import axios from 'axios';
 
 interface IExtraService {
@@ -20,6 +24,7 @@ interface IExtraService {
 
 interface LeadRow {
     _id: string;
+    checkoutId: string;
     bookingId: string;
     fullName: string;
     email: string;
@@ -33,7 +38,12 @@ interface LeadRow {
 const LeadRequests = () => {
     const { leads, loading, error, fetchLeads } = useLead();
     const [search, setSearch] = useState('');
+    const { isOpen, openModal, closeModal } = useModal();
+    const [commission, setCommissioin] = useState('');
+    const [selectedRow, setSelectedRow] = useState<LeadRow | null>(null);
+    const { updateCheckout } = useCheckout();
 
+    console.log("leads data checkout id : ", leads)
     const columns = [
         {
             header: 'Booking ID',
@@ -73,7 +83,7 @@ const LeadRequests = () => {
             },
         },
         {
-            header: 'Admin Approved',
+            header: 'Payment Request',
             accessor: 'isAdminApproved',
             render: (row: LeadRow) => {
                 const colorClass =
@@ -119,64 +129,48 @@ const LeadRequests = () => {
         {
             header: 'Action',
             accessor: 'action',
-            render: (row: LeadRow) => (
-                <div className="flex gap-2">
-                    <Link href={`/lead-management/view/${row._id}`} passHref>
-                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-                            <EyeIcon />
+            render: (row: LeadRow) => {
+                console.log('Row data:', row); // 👈 This logs the row
+                return (
+                    <div className="flex gap-2">
+                        <Link href={`/lead-management/view/${row._id}`} passHref>
+                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+                                <EyeIcon />
+                            </button>
+                        </Link>
+                        <button
+                            onClick={() => {
+                                setSelectedRow(row); // new state to track selected row
+                                openModal();
+                            }}
+                            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                        >
+                            <CheckLineIcon />
                         </button>
-                    </Link>
-                    <button
-                        onClick={async () => {
-                            try {
-                                const formData = new FormData();
-                                formData.append("updateType", "adminApproval"); // custom flag
-                                formData.append("isAdminApproved", "true");
+                        <button
+                            onClick={() => alert(`Deleting lead ID: ${row.bookingId}`)}
+                            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                        >
+                            <TrashBinIcon />
+                        </button>
+                    </div>
+                );
+            },
+        }
 
-                                const response = await axios.put(
-                                    `/api/leads/${row._id}`,
-                                    formData,
-                                    {
-                                        headers: {
-                                            "Content-Type": "multipart/form-data",
-                                        },
-                                    }
-                                );
-
-                                if (response.data.success) {
-                                    alert("Lead approved successfully");
-                                    fetchLeads();
-                                } else {
-                                    alert("Failed to approve lead");
-                                }
-                            } catch (error: any) {
-                                console.error(error);
-                                alert("Error approving lead");
-                            }
-                        }}
-                        className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                    >
-                        <CheckLineIcon />
-                    </button>
-                    <button
-                        onClick={() => alert(`Deleting lead ID: ${row.bookingId}`)}
-                        className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                    >
-                        <TrashBinIcon />
-                    </button>
-                </div>
-            ),
-        },
     ];
 
     const filteredData = leads
         ?.filter((lead) =>
-            lead.isAdminApproved === false || (Array.isArray(lead.extraService) &&
-                lead.extraService.some((service) => service.isLeadApproved === false)) &&
+            lead.isAdminApproved === false 
+        // || (Array.isArray(lead.extraService) &&
+        //         lead.extraService.some((service) => service.isLeadApproved === false))
+                 &&
             lead.checkout?.bookingId?.toLowerCase().includes(search.toLowerCase())
         )
         .map((lead) => ({
             _id: lead._id,
+            checkoutId : lead.checkout?._id || "N/A",
             bookingId: lead.checkout?.bookingId || '-',
             fullName: lead.serviceCustomer?.fullName || 'N/A',
             email: lead.serviceCustomer?.email || '',
@@ -190,6 +184,44 @@ const LeadRequests = () => {
                         ? 'Pending'
                         : 'Not Set',
         }));
+
+    const handleApprove = async () => {
+        if (!selectedRow || !commission) return alert("Missing data");
+
+        try {
+        // 1. Update checkout commission
+        await updateCheckout(selectedRow.checkoutId, {
+            commission: Number(commission),
+        });
+
+        // 2. Approve lead via FormData
+        const formData = new FormData();
+        formData.append("updateType", "adminApproval");
+        formData.append("isAdminApproved", "true");
+
+        const response = await axios.put(
+            `/api/leads/${selectedRow._id}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        if (response.data.success) {
+            alert("Commission and Lead approval updated successfully");
+            fetchLeads();
+            closeModal();
+        } else {
+            throw new Error(response.data.message || "Approval failed");
+        }
+
+    }  catch (error) {
+            console.error(error);
+            alert("Error updating commission");
+        }
+    };
 
     return (
         <div>
@@ -216,6 +248,31 @@ const LeadRequests = () => {
                         <p className="text-sm text-gray-500">No lead requests to display.</p>
                     )}
                 </ComponentCard>
+            </div>
+
+            <div>
+                <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[500px] m-4">
+                    <div className="rounded-xl bg-white p-6 dark:bg-gray-900">
+                        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                            Commission
+                        </h2>
+                        <Input
+                            placeholder="Enter Commission"
+                            value={commission}
+                            onChange={(e) => setCommissioin(e.target.value)}
+                            className='mt-3'
+                        />
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <Button size="sm" variant="outline" onClick={closeModal}>
+                                Cancel
+                            </Button>
+                            <Button size="sm" onClick={handleApprove}>
+                                Approve
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     );

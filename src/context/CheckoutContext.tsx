@@ -22,6 +22,7 @@ interface Checkout {
   partialPaymentNow?: number;
   platformFee?: number;
   remainingPaymentStatus?: string;
+  commission?: number;
   subtotal?: number;
   tax?: number;
   termsCondition?: boolean;
@@ -106,7 +107,7 @@ interface Checkout {
     createdAt: string;
     updatedAt: string;
   };
-  
+
   champaignDiscount?: number;
   couponDiscount?: number;
 }
@@ -115,6 +116,7 @@ interface Checkout {
 interface CheckoutContextType {
   checkouts: Checkout[];
   fetchCheckouts: (user?: string, status?: string) => Promise<void>;
+  updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -151,7 +153,6 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
 
       const res = await fetch(url);
       const data = await res.json();
-
       if (data.success) {
         setCheckouts(data.data);
       } else {
@@ -164,12 +165,48 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
     }
   };
 
+  const updateCheckout = async (id: string, updateData: Partial<Checkout>) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/checkout/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to update checkout"); // 🔥 throw on failure
+      }
+
+      if (data.success) {
+        setCheckouts((prev) =>
+          prev.map((checkout) =>
+            checkout._id === id ? { ...checkout, ...data.data } : checkout
+          )
+        );
+      } else {
+        setError(data.message || "Failed to update checkout");
+      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchCheckouts(); // Initial load
   }, []);
 
   return (
-    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, loading, error }}>
+    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, updateCheckout, loading, error }}>
       {children}
     </CheckoutContext.Provider>
   );
