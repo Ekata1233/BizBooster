@@ -179,7 +179,6 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   useEffect(() => {
     const fetchProviders = async () => {
       const allProviders = await getAllProviders();
-      console.log("All Providers:", allProviders);
     };
 
     fetchProviders();

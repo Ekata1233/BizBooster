@@ -5,6 +5,7 @@ interface IExtraService {
   price: number;
   discount: number;
   total: number;
+  isLeadApproved?: boolean;
 }
 /** Lead Subdocument Interface */
 export interface IStatus {
@@ -28,7 +29,7 @@ export interface ILead extends Document {
   newAmount?: number;
   extraService?: IExtraService[];
   leads: IStatus[];
-   isAdminApproved?: boolean;
+  isAdminApproved?: boolean;
 }
 
 /** ExtraService Subschema */
@@ -38,6 +39,10 @@ const ExtraServiceSchema = new Schema<IExtraService>(
     price: { type: Number, required: true },
     discount: { type: Number, default: 0 },
     total: { type: Number, required: true },
+    isLeadApproved: {
+      type: Boolean,
+      default: null,
+    },
   },
   { _id: false } // Disable _id for subdocuments if not needed
 );
@@ -105,7 +110,7 @@ const LeadSchema = new Schema<ILead>(
     },
     extraService: [ExtraServiceSchema],
     leads: [StatusSchema], // Embedded status array
-     isAdminApproved: {
+    isAdminApproved: {
       type: Boolean,
       default: null,
     },

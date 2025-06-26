@@ -19,8 +19,6 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-
-
 export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
@@ -115,7 +113,7 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
 
     const leads = await Lead.find({})
-      // .populate("checkout")
+      .populate("checkout")
       // .populate("serviceCustomer")
       // .populate("serviceMan")
       // .populate("service")
