@@ -7,6 +7,9 @@ import CustomerInfoCard from '@/components/booking-management/CustomerInfoCard';
 import ProviderAssignedCard from '@/components/booking-management/ProviderAssignedCard';
 import { useParams } from 'next/navigation';
 import { useCheckout } from '@/context/CheckoutContext';
+import BookingStatus from '@/components/booking-management/BookingStatus';
+import ServiceMenCard from '@/components/booking-management/ServiceMenCard';
+import InvoiceDownload from '@/components/booking-management/InvoiceDownload';
 
 const AllBookingsDetails = () => {
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
@@ -25,7 +28,6 @@ const AllBookingsDetails = () => {
   useEffect(() => {
     if (id) {
       fetchCheckoutById(id).then((data) => {
-        console.log('✅ Fetched Checkout:', data);
         setCheckoutDetails(data);
       });
     }
@@ -34,6 +36,8 @@ const AllBookingsDetails = () => {
   if (!checkoutDetails) {
     return <div className="p-6 text-center">Loading booking details...</div>;
   }
+
+  const serviceId = checkoutDetails?.service._id;
 
   return (
     <div>
@@ -58,9 +62,12 @@ const AllBookingsDetails = () => {
               >
                 Edit Lead
               </button>
-              <button className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-300">
+              {/* <button className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-300">
                 Download Invoice
-              </button>
+              </button> */}
+              <InvoiceDownload
+                checkoutDetails={checkoutDetails}
+              />
             </div>
           </div>
         </ComponentCard>
@@ -139,8 +146,8 @@ const AllBookingsDetails = () => {
             </div>
 
             {/* RIGHT SIDE */}
-            <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-6">
-              <div className="bg-gray-100 p-4 rounded-xl mb-4">
+            <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
+              {/* <div className="bg-gray-100 p-4 rounded-xl mb-4">
                 <h4 className="text-lg font-semibold text-gray-800">Booking Setup</h4>
                 <hr className="my-4 border-gray-300" />
                 <button
@@ -149,10 +156,10 @@ const AllBookingsDetails = () => {
                 >
                   Update Status
                 </button>
-              </div>
+              </div> */}
 
-              <CustomerInfoCard  />
-              <ProviderAssignedCard />
+              <CustomerInfoCard checkoutDetails={checkoutDetails}  />
+              <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id}/>
             </div>
           </div>
         )}
@@ -177,13 +184,15 @@ const AllBookingsDetails = () => {
                   </p>
                 </div>
               </div>
-              <hr className="my-4 border-gray-300" />
+              <hr className="my-4 border-gray-300 dark:border-gray-700" />
+              <BookingStatus checkout={checkoutDetails} />
             </div>
 
             {/* RIGHT */}
-            <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-6">
-              <CustomerInfoCard />
-              <ProviderAssignedCard  />
+            <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
+              <CustomerInfoCard checkoutDetails={checkoutDetails} />
+              {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
+              <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} />
             </div>
           </div>
         )}

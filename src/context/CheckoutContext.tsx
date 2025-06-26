@@ -18,6 +18,7 @@ export interface Checkout {
   isDeleted: boolean;
   isVerified: boolean;
   notes?: string;
+  paymentMethod: ('credit_card' | 'upi' | 'pac' | 'net_banking' | 'wallet')[];
   paidByOtherMethodAmount?: number;
   partialPaymentLater?: number;
   partialPaymentNow?: number;
@@ -30,7 +31,7 @@ export interface Checkout {
   totalAmount: number;
   vat?: number;
   walletAmount?: number;
-
+serviceDate?: Date;
   user: {
     fullName: string;
     email: string;
@@ -50,6 +51,8 @@ export interface Checkout {
     fullName: string;
     email: string;
     city: string;
+    phone : string;
+    address: string;
   };
 
   serviceMan?: string;
@@ -113,12 +116,13 @@ export interface Checkout {
   couponDiscount?: number;
 }
 
+
 // ✅ Define Context Type
 interface CheckoutContextType {
   checkouts: Checkout[];
   fetchCheckouts: (user?: string, status?: string) => Promise<void>;
   fetchCheckoutById: (id: string) => Promise<Checkout | null>;
-   updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
+  updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -235,7 +239,7 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
   }, []);
 
   return (
-    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, fetchCheckoutById,updateCheckout, loading, error }}>
+    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, fetchCheckoutById, updateCheckout, loading, error }}>
       {children}
     </CheckoutContext.Provider>
   );

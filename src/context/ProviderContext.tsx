@@ -25,10 +25,12 @@ type ProviderContextType = {
   registerProvider: (data: FormData) => Promise<void>;
   updateStoreInfo: (data: FormData) => Promise<void>;
   updateKycInfo: (data: FormData) => Promise<void>;
-  getProviderById: (id: string) => Promise<void>;
+  getProviderById: (id: string) =>Promise<Provider>;
   updateProvider: (id: string, updates: any) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
   getAllProviders: () => Promise<Provider[]>;
+  getProvidersByServiceId: (serviceId: string) => Promise<Provider[]>;
+
 };
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
@@ -42,6 +44,7 @@ export const useProvider = () => {
 export const ProviderContextProvider = ({ children }: { children: ReactNode }) => {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [providerDetails, setProviderDetails] = useState<Provider | null>(null);
+  const [providersByService, setProvidersByService] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,6 +118,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
 
       if (!res.ok) throw new Error(data.message || 'Failed to fetch provider');
       setProvider(data);
+      return data; 
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -158,6 +162,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     }
   };
+
   const getAllProviders = async (): Promise<Provider[]> => {
     setLoading(true);
     try {
@@ -176,6 +181,26 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     }
   };
+
+  const getProvidersByServiceId = async (serviceId: string): Promise<Provider[]> => {
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/provider/findByService/${serviceId}`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch providers by serviceId');
+
+    setProvidersByService(data.data || []);
+    setError(null);
+    return data.data || [];
+  } catch (err: any) {
+    setError(err.message);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
+
   useEffect(() => {
     const fetchProviders = async () => {
       const allProviders = await getAllProviders();
@@ -197,6 +222,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
         updateProvider,
         deleteProvider,
         getAllProviders,
+         getProvidersByServiceId,
       }}
     >
       {children}

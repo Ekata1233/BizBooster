@@ -109,8 +109,19 @@ interface IExtraService {
   total: number;
   isLeadApproved?: boolean;
 }
+
+export interface IStatus {
+  statusType: string;
+  description?: string;
+  zoomLink?: string;
+  paymentLink?: string;
+  paymentType?: "partial" | "full";
+  document?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 // Define the Lead type
-interface Lead {
+export interface Lead {
   _id: string;
   statusType: string;
   description?: string;
@@ -119,7 +130,9 @@ interface Lead {
   paymentType?: "partial" | "full";
   document?: string;
   checkout: any;
+  newAmount?: number;
   extraService?: IExtraService[] | undefined;
+    leads: IStatus[];
   isAdminApproved: boolean;
   serviceCustomer: any;
 }
@@ -133,6 +146,7 @@ interface LeadContextType {
   addLead: (formData: FormData) => Promise<Lead>;
   updateLead: (id: string, formData: FormData) => Promise<Lead>;
   deleteLead: (id: string) => Promise<void>;
+   getLeadByCheckoutId: (checkoutId: string) => Promise<Lead | null>;
 }
 
 // Create the context
@@ -193,13 +207,30 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+    const getLeadByCheckoutId = async (checkoutId: string): Promise<Lead | null> => {
+    try {
+      const res = await axios.get(
+        `/api/leads/FindByCheckout/${checkoutId}`
+      );
+      return res.data?.data || null;
+    } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.warn("Lead not found for ID:");
+      return null;
+    }
+
+    console.error("Unexpected error in getLeadByCheckoutId:", error.message || error);
+    return null;
+  }
+};
+
   useEffect(() => {
     fetchLeads();
   }, []);
 
   return (
     <LeadContext.Provider
-      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead }}
+      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead, getLeadByCheckoutId, }}
     >
       {children}
     </LeadContext.Provider>

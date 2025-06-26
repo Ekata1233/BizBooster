@@ -27,6 +27,7 @@ interface ServiceManContextType {
   addServiceMan: (formData: FormData) => Promise<void>;
   updateServiceMan: (id: string, formData: FormData) => Promise<void>;
   deleteServiceMan: (id: string) => Promise<void>;
+  fetchServiceManById: (id: string) => Promise<ServiceMan | null>;
   loading: boolean;
   error: string | null;
 }
@@ -48,6 +49,26 @@ export const ServiceManProvider = ({ children }: { children: React.ReactNode }) 
       setServiceMen(data);
     } catch (err: any) {
       setError(err.message || "Failed to fetch servicemen");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchServiceManById = async (id: string): Promise<ServiceMan | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/serviceman/${id}`);
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch serviceman");
+      }
+
+      return result.data;
+    } catch (err: any) {
+      setError(err.message || "Error fetching serviceman");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -126,6 +147,7 @@ export const ServiceManProvider = ({ children }: { children: React.ReactNode }) 
         addServiceMan,
         updateServiceMan,
         deleteServiceMan,
+        fetchServiceManById,
         loading,
         error,
       }}

@@ -17,14 +17,13 @@ import { IServiceCustomer } from "@/models/ServiceCustomer";
 
 interface ServiceCustomerContextType {
   customers: IServiceCustomer[];
-  /** Re-fetch the list (optionally with a search query) */
   refreshCustomers: (search?: string) => Promise<void>;
-  /** Create a new service customer */
   addCustomer: (formData: FormData) => Promise<void>;
-  /** Update an existing service customer */
   updateCustomer: (id: string, formData: FormData) => Promise<void>;
-  /** Permanently delete a service customer */
   deleteCustomer: (id: string) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  fetchServiceCustomer: (id: string) => void;
 }
 
 /*───────────────────────────────────────────────────────────────────────────*
@@ -42,6 +41,9 @@ export const ServiceCustomerProvider = ({
   children: ReactNode;
 }) => {
   const [customers, setCustomers] = useState<IServiceCustomer[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+    const [serviceCustomer, setServiceCustomer] = useState<IServiceCustomer | null>(null);
 
   /* Fetch (and optionally search) customers */
   const refreshCustomers = async (search?: string) => {
@@ -87,6 +89,21 @@ export const ServiceCustomerProvider = ({
     }
   };
 
+    const fetchServiceCustomer = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`/api/service-customer/${id}`);
+      setServiceCustomer(response.data.data);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || "Something went wrong");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ServiceCustomerContext.Provider
       value={{
@@ -94,7 +111,7 @@ export const ServiceCustomerProvider = ({
         refreshCustomers,
         addCustomer,
         updateCustomer,
-        deleteCustomer,
+        deleteCustomer, loading, error, fetchServiceCustomer
       }}
     >
       {children}
