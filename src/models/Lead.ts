@@ -37,7 +37,7 @@ export interface ILead extends Document {
 /** ExtraService Subschema */
 const ExtraServiceSchema = new Schema<IExtraService>(
   {
-    serviceName: { type: String, required: true },
+    serviceName: { type: String},
     price: { type: Number, required: true },
     discount: { type: Number, default: 0 },
     total: { type: Number, required: true },
@@ -92,7 +92,6 @@ const LeadSchema = new Schema<ILead>(
     serviceCustomer: {
       type: Schema.Types.ObjectId,
       ref: "ServiceCustomer",
-      required: true,
     },
     serviceMan: {
       type: Schema.Types.ObjectId,
