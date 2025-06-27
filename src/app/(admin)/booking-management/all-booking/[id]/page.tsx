@@ -18,8 +18,8 @@ const AllBookingsDetails = () => {
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
-  
-    const {
+
+  const {
     fetchServiceCustomer,
     customers,
     loading,
@@ -53,7 +53,7 @@ const AllBookingsDetails = () => {
     fetchLead();
   }, [checkoutDetails]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (checkoutDetails?.serviceCustomer) {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
     }
@@ -287,7 +287,7 @@ const AllBookingsDetails = () => {
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
               <CustomerInfoCard serviceCustomer={customers[0]} loading={loading} error={error} />
               {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
-              <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} />
+              {/* <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} /> */}
             </div>
           </div>
         )}

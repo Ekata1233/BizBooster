@@ -1,101 +1,3 @@
-// "use client";
-
-// import axios from "axios";
-// import React, { createContext, useContext, useEffect, useState } from "react";
-
-// // Define the Lead type
-// interface Lead {
-//   _id: string;
-//   statusType: string;
-//   description?: string;
-//   zoomLink?: string;
-//   paymentLink?: string;
-//   paymentType?: "partial" | "full";
-//   document?: string;
-//   checkout: any; // You can replace `any` with a more specific type if available
-//   isAdminApproved: boolean;
-//   serviceCustomer: any;
-// }
-
-// // Define the context type
-// interface LeadContextType {
-//   leads: Lead[];
-//   addLead: (formData: FormData) => Promise<Lead>;
-//   updateLead: (id: string, formData: FormData) => Promise<Lead>;
-//   deleteLead: (id: string) => Promise<void>;
-// }
-
-// // Create the context
-// const LeadContext = createContext<LeadContextType | null>(null);
-
-// // Provider component
-// export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
-//   const [leads, setLeads] = useState<Lead[]>([]);
-
-//   // Fetch all leads
-//   const fetchLeads = async () => {
-//     try {
-//       const res = await axios.get("/api/leads");
-//       setLeads(res.data.data || res.data); // Adjust according to your API response
-//     } catch (error) {
-//       console.error("Error fetching leads:", error);
-//     }
-//   };
-
-//   // Add a new lead
-//   const addLead = async (formData: FormData) => {
-//     try {
-//       const res = await axios.post("/api/leads", formData);
-//       fetchLeads();
-//       return res.data;
-//     } catch (error) {
-//       console.error("Error adding lead:", error);
-//       throw error;
-//     }
-//   };
-
-//   // Update an existing lead
-//   const updateLead = async (id: string, formData: FormData) => {
-//     try {
-//       const res = await axios.put(`/api/leads/${id}`, formData);
-//       fetchLeads();
-//       return res.data;
-//     } catch (error) {
-//       console.error("Error updating lead:", error);
-//       throw error;
-//     }
-//   };
-
-//   // Delete a lead
-//   const deleteLead = async (id: string) => {
-//     try {
-//       await axios.delete(`/api/leads/${id}`);
-//       fetchLeads();
-//     } catch (error) {
-//       console.error("Error deleting lead:", error);
-//     }
-//   };
-
-//   // Initial fetch
-//   useEffect(() => {
-//     fetchLeads();
-//   }, []);
-
-//   return (
-//     <LeadContext.Provider value={{ leads, addLead, updateLead, deleteLead }}>
-//       {children}
-//     </LeadContext.Provider>
-//   );
-// };
-
-// // Custom hook to use the context
-// export const useLead = () => {
-//   const context = useContext(LeadContext);
-//   if (!context) {
-//     throw new Error("useLead must be used within a LeadProvider");
-//   }
-//   return context;
-// };
 
 
 'use client';
@@ -132,7 +34,7 @@ export interface Lead {
   checkout: any;
   newAmount?: number;
   extraService?: IExtraService[] | undefined;
-    leads: IStatus[];
+  leads: IStatus[];
   isAdminApproved: boolean;
   serviceCustomer: any;
 }
@@ -146,7 +48,8 @@ interface LeadContextType {
   addLead: (formData: FormData) => Promise<Lead>;
   updateLead: (id: string, formData: FormData) => Promise<Lead>;
   deleteLead: (id: string) => Promise<void>;
-   getLeadByCheckoutId: (checkoutId: string) => Promise<Lead | null>;
+  getLeadByCheckoutId: (checkoutId: string) => Promise<Lead | null>;
+   getLeadById: (id: string) => Promise<Lead | null>;
 }
 
 // Create the context
@@ -207,22 +110,37 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-    const getLeadByCheckoutId = async (checkoutId: string): Promise<Lead | null> => {
+  const getLeadByCheckoutId = async (checkoutId: string): Promise<Lead | null> => {
     try {
       const res = await axios.get(
         `/api/leads/FindByCheckout/${checkoutId}`
       );
       return res.data?.data || null;
     } catch (error: any) {
-    if (error.response?.status === 404) {
-      console.warn("Lead not found for ID:");
+      if (error.response?.status === 404) {
+        console.warn("Lead not found for ID:");
+        return null;
+      }
+
+      console.error("Unexpected error in getLeadByCheckoutId:", error.message || error);
       return null;
     }
+  };
 
-    console.error("Unexpected error in getLeadByCheckoutId:", error.message || error);
+  const getLeadById = async (id: string): Promise<Lead | null> => {
+  try {
+    const res = await axios.get(`/api/leads/${id}`);
+    return res.data?.data || null;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.warn("Lead not found for ID:", id);
+      return null;
+    }
+    console.error("Unexpected error in getLeadById:", error.message || error);
     return null;
   }
 };
+
 
   useEffect(() => {
     fetchLeads();
@@ -230,7 +148,7 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <LeadContext.Provider
-      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead, getLeadByCheckoutId, }}
+      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead, getLeadByCheckoutId,  getLeadById,}}
     >
       {children}
     </LeadContext.Provider>

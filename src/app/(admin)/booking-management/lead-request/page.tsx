@@ -133,7 +133,7 @@ const LeadRequests = () => {
                 console.log('Row data:', row); // 👈 This logs the row
                 return (
                     <div className="flex gap-2">
-                        <Link href={`/lead-management/view/${row._id}`} passHref>
+                        <Link href={`/booking-management/lead-request/${row._id}`} passHref>
                             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                                 <EyeIcon />
                             </button>

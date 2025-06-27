@@ -160,7 +160,7 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                         <div style={{ width: '25%' }}>
                             <p><strong>Invoice of (INR)</strong></p>
                             <p style={{ fontWeight: 'bold', fontSize: '18px', color: '#007bff' }}>
-                                {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}
+                              {formatPrice(grandTotal || 0)}
                             </p>
 
                         </div>
