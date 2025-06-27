@@ -13,8 +13,8 @@ const page = () => {
 
     useEffect(() => {
         const fetchLead = async () => {
-            // const lead = await getLeadById(leadId);
-            // console.log("Fetched lead:", lead);
+            const lead = await getLeadById(leadId);
+            console.log("Fetched lead:", lead);
         };
 
         fetchLead();
