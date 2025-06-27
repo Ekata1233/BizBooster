@@ -27,6 +27,7 @@ export interface ILead extends Document {
   service: mongoose.Types.ObjectId;
   amount: number;
   newAmount?: number;
+  newDiscountAmount?: number;
   extraService?: IExtraService[];
   leads: IStatus[];
   isAdminApproved?: boolean;
@@ -106,6 +107,9 @@ const LeadSchema = new Schema<ILead>(
       required: true,
     },
     newAmount: {
+      type: Number,
+    },
+    newDiscountAmount:{
       type: Number,
     },
     extraService: [ExtraServiceSchema],
