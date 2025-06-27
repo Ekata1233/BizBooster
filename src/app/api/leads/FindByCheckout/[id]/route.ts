@@ -71,20 +71,14 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { newAmount, extraService } = body;
+    const { newAmount, extraService, newDiscountAmount } = body;
 
     // Build dynamic update object
     const updateFields: any = {};
     if (newAmount !== undefined) updateFields.newAmount = newAmount;
+    if (newDiscountAmount !== undefined) updateFields.newDiscountAmount = newDiscountAmount;
     if (extraService !== undefined) updateFields.extraService = extraService;
     updateFields.isAdminApproved = false;
-//     if (extraService !== undefined) {
-//   updateFields.extraService = extraService.map((item: any) => ({
-//     ...item,
-//     isLeadApproved: false,
-//   }));
-// }
-
 
     const updatedLead = await Lead.findOneAndUpdate(
       { checkout: checkoutId },
@@ -111,3 +105,4 @@ export async function PUT(req: Request) {
     );
   }
 }
+
