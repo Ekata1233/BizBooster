@@ -6,13 +6,15 @@ import jsPDF from 'jspdf';
 import { Lead, useLead } from '@/context/LeadContext';
 import { Checkout } from '@/context/CheckoutContext';
 import { Provider, useProvider } from '@/context/ProviderContext';
+import { IServiceCustomer } from '@/models/ServiceCustomer';
 
 
 interface InvoiceDownloadProps {
     checkoutDetails: Checkout;
+    serviceCustomer: IServiceCustomer | null;
 }
 
-export default function InvoiceDownload({ checkoutDetails }: InvoiceDownloadProps) {
+export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: InvoiceDownloadProps) {
     const invoiceRef = useRef<HTMLDivElement>(null);
     const { getProviderById } = useProvider();
     const { getLeadByCheckoutId } = useLead();
@@ -48,7 +50,7 @@ export default function InvoiceDownload({ checkoutDetails }: InvoiceDownloadProp
         const fetchProvider = async () => {
             if (!checkoutDetails?.provider) return;
             try {
-                const fetchedProvider = await getProviderById(checkoutDetails?.provider?._id);
+                const fetchedProvider = await getProviderById(checkoutDetails?.provider);
                 setProviderDetails(fetchedProvider); // ✅ now this works
             } catch (error: any) {
                 if (error.response?.status === 404) {
@@ -145,20 +147,20 @@ export default function InvoiceDownload({ checkoutDetails }: InvoiceDownloadProp
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                         <div style={{ width: '30%' }}>
                             <p><strong>Customer Details</strong></p>
-                            <p>{checkoutDetails?.serviceCustomer?.fullName || '-'}</p>
+                            <p>{serviceCustomer?.fullName || '-'}</p>
                         </div>
                         <div style={{ width: '20%' }}>
                             <p><strong>Email</strong></p>
-                            <p>{checkoutDetails?.serviceCustomer?.phone || '-'}</p>
+                            <p>{serviceCustomer?.email || '-'}</p>
                         </div>
                         <div style={{ width: '25%' }}>
                             <p><strong>Phone</strong></p>
-                            <p>{checkoutDetails?.serviceCustomer?.address || '-'}</p>
+                            <p>{serviceCustomer?.phone || '-'}</p>
                         </div>
                         <div style={{ width: '25%' }}>
                             <p><strong>Invoice of (INR)</strong></p>
                             <p style={{ fontWeight: 'bold', fontSize: '18px', color: '#007bff' }}>
-                                {formatPrice(checkoutDetails?.totalAmount || 0)}
+                                {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}
                             </p>
 
                         </div>
@@ -179,7 +181,9 @@ export default function InvoiceDownload({ checkoutDetails }: InvoiceDownloadProp
                         <div style={{ width: '33%' }}>
                             <p><strong>Service Time</strong></p>
                             <p>Request: {formatDateTime(checkoutDetails?.createdAt)}</p>
-                            <p>Service: {formatDateTime(checkoutDetails?.serviceDate?.toISOString())}</p>
+                            <p>
+                                Service: {checkoutDetails?.serviceDate ? formatDateTime(checkoutDetails.serviceDate.toISOString()) : 'N/A'}
+                            </p>
 
                         </div>
                     </div>
