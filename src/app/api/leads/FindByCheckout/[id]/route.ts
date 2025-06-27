@@ -71,12 +71,13 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { newAmount, extraService, newDiscountAmount } = body;
+    const { newAmount, extraService, newDiscountAmount,afterDicountAmount } = body;
 
     // Build dynamic update object
     const updateFields: any = {};
     if (newAmount !== undefined) updateFields.newAmount = newAmount;
     if (newDiscountAmount !== undefined) updateFields.newDiscountAmount = newDiscountAmount;
+    if (afterDicountAmount !== undefined) updateFields.afterDicountAmount = afterDicountAmount;
     if (extraService !== undefined) updateFields.extraService = extraService;
     updateFields.isAdminApproved = false;
 

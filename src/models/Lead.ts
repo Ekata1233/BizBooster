@@ -28,6 +28,7 @@ export interface ILead extends Document {
   amount: number;
   newAmount?: number;
   newDiscountAmount?: number;
+  afterDicountAmount?:number;
   extraService?: IExtraService[];
   leads: IStatus[];
   isAdminApproved?: boolean;
@@ -110,6 +111,9 @@ const LeadSchema = new Schema<ILead>(
       type: Number,
     },
     newDiscountAmount:{
+      type: Number,
+    },
+    afterDicountAmount: {
       type: Number,
     },
     extraService: [ExtraServiceSchema],
