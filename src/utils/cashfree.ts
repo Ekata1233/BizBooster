@@ -65,8 +65,8 @@ const PAYOUT_BASE_URL =
     : "https://payout-api.cashfree.com/payout/v1/authorize";
 
 export async function getToken(): Promise<string> {
-  console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
-  console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
+  console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_PAYOUT_ID);
+  console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_PAYOUT_SECRET_KEY);
   console.log("DEBUG: PAYOUT_BASE_URL:", PAYOUT_BASE_URL);
 
   try {
