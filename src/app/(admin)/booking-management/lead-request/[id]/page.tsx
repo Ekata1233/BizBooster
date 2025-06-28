@@ -4,8 +4,7 @@ import React, { useEffect, useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import { useParams, useRouter } from 'next/navigation';
-import { useLead } from '@/context/LeadContext';
-import { LeadType } from '@/types/LeadType';
+import { Lead, useLead } from '@/context/LeadContext';
 import { format } from 'date-fns';
 import BookingStatus from '@/components/booking-management/BookingStatus';
 import axios from 'axios';
@@ -17,7 +16,7 @@ const LeadRequestDetails = () => {
   const { getLeadById, fetchLeads } = useLead();
   const { updateCheckout } = useCheckout();
 const router = useRouter();
-  const [lead, setLead] = useState<LeadType | null>(null);
+  const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commissionValue, setCommissionValue] = useState<number | ''>('');
