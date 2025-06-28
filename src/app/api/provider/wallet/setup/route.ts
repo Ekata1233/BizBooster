@@ -103,6 +103,8 @@ export async function POST(req: Request) {
     await connectToDatabase();
     const body = await req.json();
 
+    console.log("body of the provider bank setup : ", body)
+
     const { providerId, bankAccount, ifsc, upiId, name, email, phone } = body;
 
     if (!providerId || !bankAccount || !ifsc || !name || !email || !phone) {
