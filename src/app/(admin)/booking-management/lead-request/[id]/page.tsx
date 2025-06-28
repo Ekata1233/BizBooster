@@ -10,6 +10,8 @@ import BookingStatus from '@/components/booking-management/BookingStatus';
 import axios from 'axios';
 import { useCheckout } from '@/context/CheckoutContext';
 
+
+
 const LeadRequestDetails = () => {
   const params = useParams();
   const leadId = params?.id as string;
@@ -22,7 +24,7 @@ const router = useRouter();
   const [commissionValue, setCommissionValue] = useState<number | ''>('');
   const [isCommissionSet, setIsCommissionSet] = useState(false);
   const [isApproved, setIsApproved] = useState(false); // ✅ Added
-
+ const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   useEffect(() => {
     if (!leadId) return;
 
@@ -93,9 +95,7 @@ const handleApprove = async () => {
         <h2 className="text-xl font-bold text-blue-700 mb-1">
           Booking ID: {lead.checkout?.bookingId}
         </h2>
-        <h5 className="text-sm text-gray-600 font-bold">
-          Service Name: <span>{lead.service?.name || 'N/A'}</span>
-        </h5>
+       
         <p className="text-sm text-gray-600">
           Status: <span className="font-medium">{lead.checkout?.orderStatus || 'N/A'}</span>
         </p>
@@ -162,38 +162,39 @@ const handleApprove = async () => {
             </div>
           </ComponentCard>
 
-          {lead.extraService?.length > 0 && (
-            <ComponentCard title="🧾 Extra Services">
-              <table className="w-full text-sm border border-gray-300">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 border">#</th>
-                    <th className="px-4 py-2 border text-left">Service Name</th>
-                    <th className="px-4 py-2 border">Price</th>
-                    <th className="px-4 py-2 border">Discount</th>
-                    <th className="px-4 py-2 border">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lead.extraService.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 border text-center">{index + 1}</td>
-                      <td className="px-4 py-2 border">{item.serviceName}</td>
-                      <td className="px-4 py-2 border text-center">₹{item.price}</td>
-                      <td className="px-4 py-2 border text-center">₹{item.discount}</td>
-                      <td className="px-4 py-2 border text-center">₹{item.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </ComponentCard>
-          )}
+          {(lead.extraService?.length ?? 0) > 0 && (
+  <ComponentCard title="🧾 Extra Services">
+    <table className="w-full text-sm border border-gray-300">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="px-4 py-2 border">#</th>
+          <th className="px-4 py-2 border text-left">Service Name</th>
+          <th className="px-4 py-2 border">Price</th>
+          <th className="px-4 py-2 border">Discount</th>
+          <th className="px-4 py-2 border">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {lead.extraService!.map((item, index) => (
+          <tr key={index}>
+            <td className="px-4 py-2 border text-center">{index + 1}</td>
+            <td className="px-4 py-2 border">{item.serviceName}</td>
+            <td className="px-4 py-2 border text-center">₹{item.price}</td>
+            <td className="px-4 py-2 border text-center">₹{item.discount}</td>
+            <td className="px-4 py-2 border text-center">₹{item.total}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </ComponentCard>
+)}
+
         </div>
       )}
 
       {activeTab === 'status' && (
         <ComponentCard title="Lead Status Updates">
-          <BookingStatus />
+          <BookingStatus checkout={checkoutDetails}/>
         </ComponentCard>
       )}
 
