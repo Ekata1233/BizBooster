@@ -38,25 +38,59 @@ export const createCashfreeOrder = async (orderData: any) => {
 };
 
 
+// export async function getToken(): Promise<string> {
+//   console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
+//   console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
+
+// const res = await axios.post("https://payout-api.cashfree.com/payout/v1/authorize", {}, {
+//     headers: {
+//       "content-type": "application/json",
+//       "x-cashfree-client-id": process.env.CASHFREE_APP_ID!,
+//       "x-cashfree-client-secret": process.env.CASHFREE_SECRET_KEY!,
+//     },
+//   });
+
+//   const data: CashfreeTokenResponse = res.data;
+
+//   if (data.status !== "SUCCESS" || !data.data?.token) {
+//     throw new Error(`Failed to get Cashfree token: ${data.message}`);
+//   }
+
+//   return data.data.token;
+// }
+
 export async function getToken(): Promise<string> {
   console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
   console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
 
-const res = await axios.post("https://payout-api.cashfree.com/payout/v1/authorize", {}, {
-    headers: {
-      "content-type": "application/json",
-      "x-cashfree-client-id": process.env.CASHFREE_APP_ID!,
-      "x-cashfree-client-secret": process.env.CASHFREE_SECRET_KEY!,
-    },
-  });
+  try {
+    const response = await axios.post(
+      "https://payout-api.cashfree.com/payout/v1/authorize",
+      {}, // Empty body
+      {
+        headers: {
+          "content-type": "application/json",
+          "x-cashfree-client-id": process.env.CASHFREE_APP_ID ?? "",
+          "x-cashfree-client-secret": process.env.CASHFREE_SECRET_KEY ?? "",
+        },
+      }
+    );
 
-  const data: CashfreeTokenResponse = res.data;
+    const data = response.data;
 
-  if (data.status !== "SUCCESS" || !data.data?.token) {
-    throw new Error(`Failed to get Cashfree token: ${data.message}`);
+    if (data.status !== "SUCCESS" || !data.data?.token) {
+      throw new Error(`Failed to get Cashfree token: ${data.message}`);
+    }
+
+    return data.data.token;
+  } catch (err: any) {
+    console.error("CASHFREE_TOKEN_ERROR", err.response?.data || err.message);
+    throw new Error(
+      `Failed to get Cashfree token: ${
+        err.response?.data?.message || err.message
+      }`
+    );
   }
-
-  return data.data.token;
 }
 
 export async function sendPayout(
