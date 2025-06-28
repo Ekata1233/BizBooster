@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Input from '@/components/form/input/InputField';
-import { CheckLineIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import {  EyeIcon,  TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useLead } from '@/context/LeadContext';
 import { Modal } from '@/components/ui/modal';
@@ -82,24 +82,24 @@ const LeadRequests = () => {
                 );
             },
         },
-        {
-            header: 'Payment Request',
-            accessor: 'isAdminApproved',
-            render: (row: LeadRow) => {
-                const colorClass =
-                    row.isAdminApproved === 'Approved'
-                        ? 'bg-green-100 text-green-700 border-green-300'
-                        : row.isAdminApproved === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                            : 'bg-gray-100 text-gray-700 border-gray-300';
+        // {
+        //     header: 'Payment Request',
+        //     accessor: 'isAdminApproved',
+        //     render: (row: LeadRow) => {
+        //         const colorClass =
+        //             row.isAdminApproved === 'Approved'
+        //                 ? 'bg-green-100 text-green-700 border-green-300'
+        //                 : row.isAdminApproved === 'Pending'
+        //                     ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
+        //                     : 'bg-gray-100 text-gray-700 border-gray-300';
 
-                return (
-                    <span className={`px-3 py-1 rounded-full text-sm border ${colorClass}`}>
-                        {row.isAdminApproved}
-                    </span>
-                );
-            },
-        },
+        //         return (
+        //             <span className={`px-3 py-1 rounded-full text-sm border ${colorClass}`}>
+        //                 {row.isAdminApproved}
+        //             </span>
+        //         );
+        //     },
+        // },
         {
             header: 'Status',
             accessor: 'orderStatus',
@@ -138,7 +138,7 @@ const LeadRequests = () => {
                                 <EyeIcon />
                             </button>
                         </Link>
-                        <button
+                        {/* <button
                             onClick={() => {
                                 setSelectedRow(row); // new state to track selected row
                                 openModal();
@@ -146,7 +146,7 @@ const LeadRequests = () => {
                             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                         >
                             <CheckLineIcon />
-                        </button>
+                        </button> */}
                         <button
                             onClick={() => alert(`Deleting lead ID: ${row.bookingId}`)}
                             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
