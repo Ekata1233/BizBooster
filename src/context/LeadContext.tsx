@@ -37,6 +37,10 @@ export interface Lead {
   leads: IStatus[];
   isAdminApproved: boolean;
   serviceCustomer: any;
+    service?: {
+    name?: string;
+  };
+  amount?: number;
 }
 
 // Define the context type
