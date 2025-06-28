@@ -1,4 +1,23 @@
 import axios from "axios";
+// utils/cashfree.ts
+
+interface CashfreeTokenResponse {
+  status: string;
+  subCode: string;
+  message: string;
+  data: {
+    token: string;
+    expiry: number;
+  };
+}
+
+interface PayoutResponse {
+  status: "SUCCESS" | "ERROR" | "PENDING";
+  subCode: string;
+  message: string;
+  data?: any; // You can replace `any` with a more specific type based on actual API
+}
+
 
 const BASE_URL =
   process.env.CASHFREE_ENVIRONMENT === "TEST"
@@ -17,3 +36,48 @@ export const createCashfreeOrder = async (orderData: any) => {
 
   return response.data;
 };
+
+
+export async function getToken(): Promise<string> {
+  const res = await fetch("https://payout-api.cashfree.com/payout/v1/authorize", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Cashfree-Client-Id": process.env.CASHFREE_APP_ID!,
+      "X-Cashfree-Client-Secret": process.env.CASHFREE_SECRET_KEY!,
+    },
+  });
+
+  const data: CashfreeTokenResponse = await res.json();
+
+  if (data.status !== "SUCCESS" || !data.data?.token) {
+    throw new Error(`Failed to get Cashfree token: ${data.message}`);
+  }
+
+  return data.data.token;
+}
+
+export async function sendPayout(
+  beneId: string,
+  amount: number
+): Promise<PayoutResponse> {
+  const token = await getToken();
+
+  const response = await fetch("https://payout-api.cashfree.com/payout/v1/requestTransfer", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      beneId,
+      amount,
+      transferId: `TXN_${Date.now()}`,
+      transferMode: "banktransfer", // Can be changed to "upi", "paytm" etc.
+      remarks: "Withdrawal from wallet",
+    }),
+  });
+
+  const data: PayoutResponse = await response.json();
+  return data;
+}
