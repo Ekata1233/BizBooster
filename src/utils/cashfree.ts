@@ -59,14 +59,20 @@ export const createCashfreeOrder = async (orderData: any) => {
 //   return data.data.token;
 // }
 
+const PAYOUT_BASE_URL =
+  process.env.CASHFREE_ENVIRONMENT === "TEST"
+    ? "https://sandbox.cashfree.com/payout/v1/authorize"
+    : "https://payout-api.cashfree.com/payout/v1/authorize";
+
 export async function getToken(): Promise<string> {
   console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
   console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
+  console.log("DEBUG: PAYOUT_BASE_URL:", PAYOUT_BASE_URL);
 
   try {
     const response = await axios.post(
-      "https://payout-api.cashfree.com/payout/v1/authorize",
-      {}, // Empty body
+      PAYOUT_BASE_URL,
+      {},
       {
         headers: {
           "content-type": "application/json",
@@ -86,8 +92,7 @@ export async function getToken(): Promise<string> {
   } catch (err: any) {
     console.error("CASHFREE_TOKEN_ERROR", err.response?.data || err.message);
     throw new Error(
-      `Failed to get Cashfree token: ${
-        err.response?.data?.message || err.message
+      `Failed to get Cashfree token: ${err.response?.data?.message || err.message
       }`
     );
   }
