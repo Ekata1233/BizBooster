@@ -70,17 +70,20 @@ export async function getToken(): Promise<string> {
   console.log("DEBUG: PAYOUT_BASE_URL:", PAYOUT_BASE_URL);
 
   try {
-    const response = await axios.post(
-      PAYOUT_BASE_URL,
-      {},
-      {
-        headers: {
-          "content-type": "application/json",
-          "x-cashfree-client-id": process.env.CASHFREE_APP_ID ?? "",
-          "x-cashfree-client-secret": process.env.CASHFREE_SECRET_KEY ?? "",
-        },
-      }
-    );
+    const headers =
+      process.env.CASHFREE_ENVIRONMENT === "TEST"
+        ? {
+            "X-Client-Id": process.env.CASHFREE_APP_ID ?? "",
+            "X-Client-Secret": process.env.CASHFREE_SECRET_KEY ?? "",
+            "Content-Type": "application/json",
+          }
+        : {
+            "x-cashfree-client-id": process.env.CASHFREE_APP_ID ?? "",
+            "x-cashfree-client-secret": process.env.CASHFREE_SECRET_KEY ?? "",
+            "content-type": "application/json",
+          };
+
+    const response = await axios.post(PAYOUT_BASE_URL, {}, { headers });
 
     const data = response.data;
 
@@ -92,7 +95,8 @@ export async function getToken(): Promise<string> {
   } catch (err: any) {
     console.error("CASHFREE_TOKEN_ERROR", err.response?.data || err.message);
     throw new Error(
-      `Failed to get Cashfree token: ${err.response?.data?.message || err.message
+      `Failed to get Cashfree token: ${
+        err.response?.data?.message || err.message
       }`
     );
   }
