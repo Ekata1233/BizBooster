@@ -39,6 +39,9 @@ export const createCashfreeOrder = async (orderData: any) => {
 
 
 export async function getToken(): Promise<string> {
+  console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
+  console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
+
   const res = await fetch("https://payout-api.cashfree.com/payout/v1/authorize", {
     method: "POST",
     headers: {
