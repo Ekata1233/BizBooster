@@ -7,7 +7,8 @@ import { Lead, useLead } from '@/context/LeadContext';
 import { Checkout } from '@/context/CheckoutContext';
 import { Provider, useProvider } from '@/context/ProviderContext';
 import { IServiceCustomer } from '@/models/ServiceCustomer';
-
+import Image from 'next/image';
+import img from '../../../public/images/logo/fetcht-true.jpg'
 
 interface InvoiceDownloadProps {
     checkoutDetails: Checkout;
@@ -138,11 +139,18 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                         <p style={{ margin: '4px 0' }}>Booking #{checkoutDetails?.bookingId}</p>
                         <p>Date: {formatDateTime(checkoutDetails?.createdAt)}</p>
                     </div>
-                    <div style={{ textAlign: 'right', lineHeight: '1.4' }}>
-                        <p>3rd Floor, 307 Amanora Chamber, Amanora Mall, Hadapsar Pune–411028</p>
+                    <div style={{ textAlign: 'right', lineHeight: '1.6' }}>
+                        {/* <Image
+                            src="../../../public/images/logo/fetcht-true.jpg"
+                            alt="Company Logo"
+                            width={100}
+                            height={50}
+                        /> */}
+                        <p>3rd Floor, 307 Amanora Chamber, Amanora Mall, Hadapsar, Pune – 411028</p>
                         <p>+91 93096 517500</p>
                         <p>info@bizbooster2x.com</p>
                     </div>
+
                 </div>
                 <div style={{ border: '1px solid #ccc', padding: '16px', marginBottom: '20px', fontSize: '14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -161,7 +169,7 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                         <div style={{ width: '25%' }}>
                             <p><strong>Invoice of (INR)</strong></p>
                             <p style={{ fontWeight: 'bold', fontSize: '18px', color: '#007bff' }}>
-                              {formatPrice(grandTotal || 0)}
+                                {formatPrice(grandTotal || 0)}
                             </p>
 
                         </div>
@@ -271,8 +279,20 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                 {/* Footer */}
                 <div style={{ marginTop: '30px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
                     <p><strong>Terms & Conditions</strong></p>
-                    <p>Change of mind is not applicable as a reason for refund.</p>
+                    <p>
+                        All service purchases are final and non-refundable once the project has been initiated or delivered. Refunds are
+                        not applicable for change-of-mind requests or delays caused by incomplete information or approvals from the client.
+                    </p>
+                    <p>
+                        Customers who opt for the "Assurity" option at the time of purchase are eligible for a 100% refund in case of
+                        dissatisfaction, subject to company review and approval. This assurance is designed to provide added confidence
+                        and transparency in our service process.
+                    </p>
+                    <p>
+                        Please read the full Terms & Conditions for complete details regarding our refund policy and service commitments.
+                    </p>
                 </div>
+
 
                 <div style={{
                     display: 'flex',
