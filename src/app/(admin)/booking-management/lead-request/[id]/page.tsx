@@ -24,8 +24,16 @@ const router = useRouter();
   const [isCommissionSet, setIsCommissionSet] = useState(false);
   const [isApproved, setIsApproved] = useState(false); // ✅ Added
 
+<<<<<<< HEAD
   useEffect(() => {
     if (!leadId) return;
+=======
+    useEffect(() => {
+        const fetchLead = async () => {
+            // const lead = await getLeadById(leadId);
+            // console.log("Fetched lead:", lead);
+        };
+>>>>>>> 44ea7d948983fa06c12a924df960a66624457a4f
 
     const fetchLead = async () => {
       const result = await getLeadById(leadId);
