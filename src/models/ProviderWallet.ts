@@ -18,6 +18,12 @@ export interface IProviderWallet extends Document {
   bankAccount: string;
   upiId?: string;
   transactions: IWalletTransaction[];
+  receivableBalance: number;
+  withdrawableBalance: number;
+  pendingWithdraw: number;
+  alreadyWithdrawn: number;
+  totalEarning: number;
+  cashInHand: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -36,7 +42,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment','withdraw'],
       default: 'topup',
     },
     status: {
@@ -84,6 +90,36 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
       type: [TransactionSchema],
       default: [],
     },
+     receivableBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    withdrawableBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    pendingWithdraw: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    alreadyWithdrawn: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    totalEarning: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    cashInHand: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -92,5 +128,6 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
   { timestamps: true }
 );
 
-const ProviderWallet = mongoose.model<IProviderWallet>('ProviderWallet', ProviderWalletSchema);
+const ProviderWallet = mongoose.models.ProviderWallet || mongoose.model<IProviderWallet>('ProviderWallet', ProviderWalletSchema);
+
 export default ProviderWallet;

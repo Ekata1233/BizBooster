@@ -7,7 +7,7 @@ export default function AdminSendMoney() {
   const [amount, setAmount] = useState("");
 
   const handleSend = async () => {
-    const res = await fetch("/api/wallet/send", {
+    const res = await fetch("/api/provider/wallet/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ providerId, amount: parseFloat(amount) }),
