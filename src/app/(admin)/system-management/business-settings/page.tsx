@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import { useCommission } from "@/context/CommissionContext";
+import React, { useEffect, useState } from "react";
 
 const tabs = [
   "Business Info",
@@ -13,10 +14,54 @@ const tabs = [
 
 function VendorDashboardPage() {
   const [activeTab, setActiveTab] = useState("Business Info");
-
-  // States for input fields
   const [adminCommission, setAdminCommission] = useState("");
   const [platformFee, setPlatformFee] = useState("");
+  const [commissionId, setCommissionId] = useState<string | null>(null);
+
+  const {
+    commissions,
+    createCommission,
+    updateCommission,
+    fetchCommissions,
+  } = useCommission();
+
+  console.log("assurity:",commissions);
+  
+  useEffect(() => {
+    fetchCommissions();
+  }, []);
+
+  useEffect(() => {
+    if (commissions.length > 0) {
+      const current = commissions[0];
+      setAdminCommission(current.adminCommission.toString());
+      setPlatformFee(current.platformFee.toString());
+      setCommissionId(current._id);
+    }
+  }, [commissions]);
+
+  const handleSave = async () => {
+    const admin = parseFloat(adminCommission);
+    const platform = parseFloat(platformFee);
+
+    if (isNaN(admin) || isNaN(platform)) {
+      alert("Please enter valid numbers for both fields.");
+      return;
+    }
+
+    try {
+      if (commissionId) {
+        await updateCommission(commissionId, admin, platform);
+        alert("Commission updated successfully!");
+      } else {
+        await createCommission(admin, platform);
+        alert("Commission created successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving commission:", error);
+      alert("Failed to save commission.");
+    }
+  };
 
   return (
     <div className="p-4">
@@ -45,7 +90,7 @@ function VendorDashboardPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Default Commission for Admin (%)
+              Assurity Fee (%)
               </label>
               <input
                 type="number"
@@ -68,6 +113,13 @@ function VendorDashboardPage() {
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
+
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            >
+              Save
+            </button>
           </div>
         )}
 

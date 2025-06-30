@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const CommissionSchema = new mongoose.Schema({
-  adminCommission: {
+  assurityfee: {
     type: Number,
   
   },

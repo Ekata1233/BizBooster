@@ -13,7 +13,7 @@ interface ICheckout extends Document {
     champaignDiscount: number;
     vat: number;
     platformFee: number;
-    garrentyFee: number;
+    assurityfee: number;
     tax: number;
     totalAmount: number;
     termsCondition: boolean;
@@ -51,7 +51,7 @@ const checkoutSchema = new Schema<ICheckout>({
     champaignDiscount: { type: Number, required: true, min: 0, default: 0 },
     vat: { type: Number, required: true, min: 0, default: 0 },
     platformFee: { type: Number, required: true, min: 0, default: 0 },
-    garrentyFee: { type: Number, required: true, min: 0, default: 0 },
+    assurityfee: { type: Number, required: true, min: 0, default: 0 },
     tax: { type: Number, required: true, min: 0, default: 0 },
     termsCondition: { type: Boolean, default: false },
     totalAmount: { type: Number, required: true, min: 0 },
