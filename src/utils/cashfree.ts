@@ -61,12 +61,12 @@ export const createCashfreeOrder = async (orderData: any) => {
 
 const PAYOUT_BASE_URL =
   process.env.CASHFREE_ENVIRONMENT === "TEST"
-    ? "https://sandbox.cashfree.com/payout/v1/authorize"
+    ? "https://payout-gamma.cashfree.com/payout/v1/authorize"
     : "https://payout-api.cashfree.com/payout/v1/authorize";
 
 export async function getToken(): Promise<string> {
-  console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_APP_ID);
-  console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_SECRET_KEY);
+  console.log("DEBUG: CASHFREE_APP_ID:", process.env.CASHFREE_PAYOUT_ID);
+  console.log("DEBUG: CASHFREE_SECRET_KEY:", process.env.CASHFREE_PAYOUT_SECRET_KEY);
   console.log("DEBUG: PAYOUT_BASE_URL:", PAYOUT_BASE_URL);
 
   try {
