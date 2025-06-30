@@ -11,7 +11,7 @@ export interface Checkout {
   createdAt: string;
   updatedAt: string;
   acceptedDate?: string;
-  garrentyFee?: number;
+  assurityfee?: number;
   isAccepted: boolean;
   isCanceled: boolean;
   isCompleted: boolean;

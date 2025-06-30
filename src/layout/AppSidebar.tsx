@@ -157,7 +157,16 @@ const subscribeItems: NavItem[] = [
     ],
   },
 ];
-
+const systemItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Settings Management",
+    subItems: [
+      { name: "Business Settings", path: "/system-management/business-settings", pro: false },
+      // { name: "Subscribe List", path: "/subscribe-management/subscribe-list", pro: false },
+    ],
+  },
+];
 const promotionItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -192,7 +201,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon" | "booking"
+    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "system"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -308,7 +317,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking";
+    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "system";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -322,7 +331,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon" , "system"].forEach((menuType) => {
       const items =
         menuType === "main"
           ? navItems
@@ -339,7 +348,7 @@ const AppSidebar: React.FC = () => {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "system",
                 index,
               });
               submenuMatched = true;
@@ -368,7 +377,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon"| "system") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -444,6 +453,21 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
+            </div>
+<div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "SYSTEM MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(systemItems, "system")}
             </div>
 
             <div className="">
