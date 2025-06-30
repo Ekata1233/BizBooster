@@ -58,7 +58,6 @@ export async function POST(req: Request) {
     wallet.balance += amount;
     wallet.totalEarning += amount;
     wallet.cashInHand += amount;
-    wallet.withdrawableBalance = wallet.balance - wallet.pendingWithdraw;
     wallet.transactions.push(transaction);
     await wallet.save();
 
