@@ -18,7 +18,7 @@ export async function OPTIONS() {
 }
 
 // Replace this with your admin ID or logic
-// const ADMIN_ID = new Types.ObjectId("64f123456789abcdef123456");
+const ADMIN_ID = new Types.ObjectId("444c44d4444be444d4444444");
 
 export async function POST(req: Request) {
     await connectToDatabase();
@@ -117,12 +117,12 @@ export async function POST(req: Request) {
             });
         }
 
-        // await creditWallet(ADMIN_ID, adminShare, "Referral Commission - Admin", checkout._id.toString());
-        // await ReferralCommission.create({
-        //   fromLead: checkout._id,
-        //   receiver: ADMIN_ID,
-        //   amount: adminShare,
-        // });
+        await creditWallet(ADMIN_ID, adminShare, "Referral Commission - Admin", checkout._id.toString());
+        await ReferralCommission.create({
+          fromLead: checkout._id,
+          receiver: ADMIN_ID,
+          amount: adminShare,
+        });
 
         checkout.commissionDistributed = true;
         await checkout.save();
