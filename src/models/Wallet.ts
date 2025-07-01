@@ -56,7 +56,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment','referral'],
       default: 'checkout',
     },
     status: {
@@ -116,5 +116,9 @@ const WalletSchema = new Schema<IWallet>(
   { timestamps: true }
 );
 
-const Wallet = mongoose.model<IWallet>('Wallet', WalletSchema);
+// const Wallet = mongoose.model<IWallet>('Wallet', WalletSchema);
+// export default Wallet;
+
+
+const Wallet = mongoose.models.Wallet || mongoose.model<IWallet>('Wallet', WalletSchema);
 export default Wallet;
