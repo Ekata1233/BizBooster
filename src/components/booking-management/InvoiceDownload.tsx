@@ -51,8 +51,8 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
         const fetchProvider = async () => {
             if (!checkoutDetails?.provider) return;
             try {
-                // const fetchedProvider = await getProviderById(checkoutDetails?.provider);
-                const fetchedProvider = await getProviderById(checkoutDetails?.provider?._id);
+                const fetchedProvider = await getProviderById(checkoutDetails?.provider);
+                // const fetchedProvider = await getProviderById(checkoutDetails?.provider?._id);
                 setProviderDetails(fetchedProvider); // ✅ now this works
             } catch (error: any) {
                 if (error.response?.status === 404) {
