@@ -1,87 +1,106 @@
-import CustomerInfoCard from "@/components/booking-management/CustomerInfoCard";
-import Lead from "@/models/Lead";
-import ReferralCommission from "@/models/ReferralCommission";
-import User from "@/models/User";
-import { Types } from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 
-// Replace this with your admin ID or logic
-const ADMIN_ID = new Types.ObjectId("64f123456789abcdef123456");
+import { v4 as uuidv4 } from "uuid";
+import Module from "@/models/Module";
+import { connectToDatabase } from "@/utils/db";
+import imagekit from "@/utils/imagekit";
+import Category from "@/models/Category";
 
-export const distributeLeadCommission = async (leadId: string) => {
-//   const lead = await Lead.findById(leadId).populate("generatedBy");
-//   if (!lead || lead.commissionDistributed) return;
-
-//   const leadAmount = lead.amount;
-//   const userC = lead.generatedBy;
-
-//   const userB = userC.referredBy
-//     ? await User.findById(userC.referredBy)
-//     : null;
-
-//   const userA = userB?.referredBy
-//     ? await User.findById(userB.referredBy)
-//     : null;
-
-//   const commissionPool = leadAmount * 0.2; // 20% of lead amount
-//   const providerShare = leadAmount * 0.8;
-
-//   const C_share = commissionPool * 0.5;
-//   const B_share = commissionPool * 0.2;
-//   const A_share = commissionPool * 0.1;
-//   let adminShare = commissionPool * 0.2;
-
-//   // Add B and A shares to admin if missing
-//   if (!userB) adminShare += B_share;
-//   if (!userA) adminShare += A_share;
-
-//   // Credit Customer C (lead generator)
-//   userC.walletBalance += C_share;
-//   await userC.save();
-//   await ReferralCommission.create({
-//     fromLead: lead._id,
-//     receiver: CustomerInfoCard._id,
-//     amount: C_share,
-//   });
-  
-
-//   // Credit Customer B (referrer of C)
-//   if (userB) {
-//     userB.walletBalance += B_share;
-//     await userB.save();
-//     await ReferralCommission.create({
-//       fromLead: lead._id,
-//       receiver: userB._id,
-//       amount: B_share,
-//     });
-//   }
-
-//   // Credit Customer A (referrer of B)
-//   if (userA) {
-//     userA.walletBalance += A_share;
-//     await userA.save();
-//     await ReferralCommission.create({
-//       fromLead: lead._id,
-//       receiver: userA._id,
-//       amount: A_share,
-//     });
-//   }
-
-//   // Credit Admin
-//   if (ADMIN_ID) {
-//     await ReferralCommission.create({
-//       fromLead: lead._id,
-//       receiver: ADMIN_ID,
-//       amount: adminShare,
-//     });
-//     await User.findByIdAndUpdate(
-//       ADMIN_ID,
-//       { $inc: { walletBalance: adminShare } },
-//       { new: true }
-//     );
-//   }
-
-//   lead.commissionDistributed = true;
-//   await lead.save();
-console.log("abc");
-
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+export async function POST(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const formData = await req.formData();
+    const name = formData.get("name") as string;
+
+    if (!name) {
+      return NextResponse.json(
+        { success: false, message: "Name is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    let imageUrl = "";
+    const file = formData.get("image") as File;
+
+    if (file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const uploadResponse = await imagekit.upload({
+        file: buffer, // binary file
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/uploads", // optional folder in ImageKit
+      });
+
+      imageUrl = uploadResponse.url;
+    }
+
+    const newModule = await Module.create({
+      name,
+      image: imageUrl,
+    });
+
+    return NextResponse.json(
+      { success: true, data: newModule },
+      { status: 201, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+}
+
+// ✅ Get All Modules
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
+
+  const { searchParams } = new URL(req.url);
+  console.log("search params in module : ", searchParams);
+  const search = searchParams.get('search');
+
+  const filter: {
+    $or?: { [key: string]: { $regex: string; $options: string } }[];
+  } = {};
+
+  if (search) {
+    const searchRegex = { $regex: search, $options: 'i' };
+    filter.$or = [
+      { name: searchRegex },
+    ];
+  }
+
+  try {
+    const modules = await Module.find(filter);
+     const modulesWithCategoryCount = await Promise.all(modules.map(async (module) => {
+      // Count categories related to each module
+      const categoryCount = await Category.countDocuments({ module: module._id, isDeleted: false });
+      
+      // Add category count to each module
+      return {
+        ...module.toObject(),
+        categoryCount,
+      };
+    }));
+    return NextResponse.json(
+      { success: true, data: modulesWithCategoryCount },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
