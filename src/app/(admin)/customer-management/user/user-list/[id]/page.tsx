@@ -11,6 +11,7 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
+import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 
 const columnsTeamLead = [
   { header: 'Booking Id', accessor: 'bookingId' },
@@ -163,11 +164,8 @@ const UserDetails = () => {
             />
           )}
 
-          {activeTab === 'teamLead' && (
-            <ComponentCard title="Team Lead Bookings">
-              <BasicTableOne columns={columnsTeamLead} data={dataTeamLead} />
-            </ComponentCard>
-          )}
+         {activeTab === 'teamLead' && <TeamLeadTable />}
+
 
           {activeTab === 'selfLead' && <SelfLeadTable />}
 
