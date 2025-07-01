@@ -2,12 +2,18 @@
 import { NextResponse } from "next/server";
 import ProviderWallet, { IWalletTransaction } from "@/models/ProviderWallet";
 import { connectToDatabase } from "@/utils/db";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
 
 export async function POST(req: Request) {
   try {
@@ -16,6 +22,8 @@ export async function POST(req: Request) {
 
     const { providerId, amount } = body;
 
+    console.log("provider Id : ", providerId);
+
     if (!providerId || typeof amount !== "number" || amount <= 0) {
       return NextResponse.json(
         { success: false, message: "Invalid provider ID or amount" },
@@ -23,7 +31,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const wallet = await ProviderWallet.findOne({ providerId });
+    // const wallet = await ProviderWallet.findOne({ providerId });
+    const wallet = await ProviderWallet.findOne({
+      providerId: new mongoose.Types.ObjectId(providerId),
+    });
+
 
     if (!wallet) {
       return NextResponse.json(
@@ -42,7 +54,10 @@ export async function POST(req: Request) {
       createdAt: new Date(),
     };
 
+    // wallet.balance += amount;
     wallet.balance += amount;
+    wallet.totalEarning += amount;
+    wallet.cashInHand += amount;
     wallet.transactions.push(transaction);
     await wallet.save();
 
@@ -51,10 +66,16 @@ export async function POST(req: Request) {
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
+    console.log("[WALLET_SEND_ERROR]", error);
+
     console.error("[WALLET_SEND_ERROR]", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500, headers: corsHeaders }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ success: true, message: "Route working!" });
 }
