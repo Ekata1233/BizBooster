@@ -49,19 +49,20 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
 
     useEffect(() => {
         const fetchProvider = async () => {
-            if (!checkoutDetails?.provider) return;
-            try {
-                const fetchedProvider = await getProviderById(checkoutDetails?.provider);
-                // const fetchedProvider = await getProviderById(checkoutDetails?.provider?._id);
-                setProviderDetails(fetchedProvider); // ✅ now this works
-            } catch (error: any) {
-                if (error.response?.status === 404) {
-                    console.warn("Provider not found (404) for ID:", checkoutDetails?.provider);
-                } else {
-                    console.error("Error fetching provider:", error.message || error);
-                }
-            }
-        };
+  if (!checkoutDetails?.provider) return;
+  try {
+    const fetchedProvider = await getProviderById(checkoutDetails.provider._id);
+    setProviderDetails(fetchedProvider); // ✅ now this works
+  } catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error("Error fetching provider:", error.message);
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+
+};
+
 
         fetchProvider();
     }, [checkoutDetails]);
@@ -108,8 +109,10 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
     const updatedAmount = leadDetails?.newAmount;
 
     const baseAmount = leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0;
+        const assurityfee = checkoutDetails?.assurityfee ?? 0;
+  const platformFee = checkoutDetails?.platformFee ?? 0;
     const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
-    const grandTotal = baseAmount + extraAmount;
+    const grandTotal = baseAmount + extraAmount + assurityfee + platformFee;
     return (
         <div className="p-4">
             <button
@@ -253,6 +256,8 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                         <tbody>
                             <tr><td>Subtotal</td><td style={rightAlign}> {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}</td></tr>
                             <tr><td>Discount</td><td style={rightAlign}>- ₹0.00</td></tr>
+                            <tr><td>Assurity Fee</td><td style={rightAlign}>- {assurityfee}</td></tr>
+                            <tr><td>Platform Fee</td><td style={rightAlign}>- {platformFee}</td></tr>
                             <tr><td>Coupon</td><td style={rightAlign}>- ₹0.00</td></tr>
                             <tr><td>Tax</td><td style={rightAlign}>+ ₹0.00</td></tr>
                             {leadDetails?.extraService?.map((service, index) => (
