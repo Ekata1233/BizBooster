@@ -49,19 +49,20 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
 
     useEffect(() => {
         const fetchProvider = async () => {
-            if (!checkoutDetails?.provider) return;
-            try {
-                const fetchedProvider = await getProviderById(checkoutDetails?.provider);
-                // const fetchedProvider = await getProviderById(checkoutDetails?.provider?._id);
-                setProviderDetails(fetchedProvider); // ✅ now this works
-            } catch (error: any) {
-                if (error.response?.status === 404) {
-                    console.warn("Provider not found (404) for ID:", checkoutDetails?.provider);
-                } else {
-                    console.error("Error fetching provider:", error.message || error);
-                }
-            }
-        };
+  if (!checkoutDetails?.provider) return;
+  try {
+    const fetchedProvider = await getProviderById(checkoutDetails.provider._id);
+    setProviderDetails(fetchedProvider); // ✅ now this works
+  } catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error("Error fetching provider:", error.message);
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+
+};
+
 
         fetchProvider();
     }, [checkoutDetails]);
