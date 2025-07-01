@@ -23,6 +23,7 @@ export interface Checkout {
   partialPaymentLater?: number;
   partialPaymentNow?: number;
   platformFee?: number;
+  
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;
