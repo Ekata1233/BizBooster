@@ -1,10 +1,28 @@
 // models/ReferralCommission.ts
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
+import { Types } from "mongoose";
 
-const referralCommissionSchema = new Schema({
-  fromLead: { type: Schema.Types.ObjectId, ref: "Lead" },
-  receiver: { type: Schema.Types.ObjectId, ref: "Customer" }, // A or B
-  amount: Number,
-}, { timestamps: true });
+// Interfaces for referenced models
+export interface IReferralCommission extends Document {
+  fromLead: Types.ObjectId;
+  receiver: Types.ObjectId;
+  amount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export default mongoose.models.ReferralCommission || mongoose.model("ReferralCommission", referralCommissionSchema);
+const referralCommissionSchema = new Schema<IReferralCommission>(
+  {
+    fromLead: { type: Schema.Types.ObjectId, ref: "Lead", required: true },
+    receiver: { type: Schema.Types.ObjectId, ref: "Customer", required: true },
+    amount: { type: Number, required: true },
+  },
+  { timestamps: true }
+);
+
+// Exporting the model with type safety
+const ReferralCommission: Model<IReferralCommission> =
+  mongoose.models.ReferralCommission ||
+  mongoose.model<IReferralCommission>("ReferralCommission", referralCommissionSchema);
+
+export default ReferralCommission;

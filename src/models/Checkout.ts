@@ -32,6 +32,7 @@ interface ICheckout extends Document {
     acceptedDate: Date;
     serviceMan : mongoose.Types.ObjectId;
     isCompleted: boolean;
+    commissionDistributed: boolean;
     isCanceled: boolean;
     isDeleted: boolean;
     createdAt: Date;
@@ -86,6 +87,7 @@ const checkoutSchema = new Schema<ICheckout>({
     acceptedDate: { type: Date, default: null },
     serviceMan :  { type: Schema.Types.ObjectId, ref: 'ServiceMan', default: null },
     isCompleted: { type: Boolean, default: false },
+    commissionDistributed: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
