@@ -69,7 +69,7 @@ const UserDetails = () => {
 
         {/* Tab content */}
         <div className="space-y-6 pt-4">
-          {activeTab === 'selfLead' && <SelfLeadTable />}
+          {activeTab === 'selfLead' && <SelfLeadTable  userId={leadUserId || ' '} isAction={false} />}
 
           {activeTab === 'teamLead' && <TeamLeadTable
             userId={leadUserId || ' '} isAction={false}

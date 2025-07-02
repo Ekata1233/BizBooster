@@ -198,7 +198,7 @@ const UserWallet = () => {
       </div>
 
       {/* Transaction Table */}
-      <BasicTableOne columns={columnsWallet} data={filteredTransactions} />
+      {/* <BasicTableOne columns={columnsWallet} data={filteredTransactions} /> */}
     </ComponentCard>
   );
 };

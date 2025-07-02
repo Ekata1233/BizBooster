@@ -23,7 +23,7 @@ export interface Checkout {
   partialPaymentLater?: number;
   partialPaymentNow?: number;
   platformFee?: number;
-  
+
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;
@@ -32,7 +32,7 @@ export interface Checkout {
   totalAmount: number;
   vat?: number;
   walletAmount?: number;
-serviceDate?: Date;
+  serviceDate?: Date;
   user: {
     fullName: string;
     email: string;
@@ -52,7 +52,7 @@ serviceDate?: Date;
     fullName: string;
     email: string;
     city: string;
-    phone : string;
+    phone: string;
     address: string;
   };
 
@@ -126,6 +126,7 @@ interface CheckoutContextType {
   updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
   loading: boolean;
   error: string | null;
+ fetchCheckoutByUser: (userId: string) => Promise<void>;
 }
 
 // ✅ Create Context
@@ -234,14 +235,35 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
     }
   };
 
+  // 🔹 Fetch Checkouts By User (from /api/checkout/user/[id])
+const fetchCheckoutByUser = async (userId: string) => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const res = await fetch(`/api/checkout/lead-by-user/${userId}`);
+    const data = await res.json();
+
+    if (data.success) {
+      setCheckouts(data.data);
+    } else {
+      setError(data.message || 'Failed to fetch checkouts by user');
+    }
+  } catch (err: any) {
+    setError(err.message || 'Something went wrong');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchCheckouts(); // Fetch all on mount
   }, []);
 
   return (
-    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, fetchCheckoutById, updateCheckout, loading, error }}>
-      {children}
+    <CheckoutContext.Provider value={{ checkouts, fetchCheckoutByUser, fetchCheckouts, fetchCheckoutById, updateCheckout, loading, error }}>
+    {children}
     </CheckoutContext.Provider>
   );
 };
