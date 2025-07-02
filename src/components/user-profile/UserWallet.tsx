@@ -1,132 +1,136 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { Search } from 'lucide-react';
 import { FaMoneyBillWave, FaMoneyCheckAlt, FaWallet } from 'react-icons/fa';
+import { IWalletTransaction, useUserWallet } from '@/context/WalletContext';
 
-interface WalletTransaction {
-  id: string;
-  transactionId: string;
-  type: 'Credit' | 'Debit';
-  date: string;
-  leadId: string;
-  debit: string;
-  credit: string;
-  withdraw: string;
-  balance: string;
+interface UserWalletProps {
+  userId: string;
 }
 
 const columnsWallet = [
   {
-  header: 'Sr',
-  render: (_: WalletTransaction, index: number) => <div>{index + 1}</div>,
-},
-  {
     header: 'Transaction ID',
     accessor: 'transactionId',
+    render: (row: IWalletTransaction) => <span>{row.referenceId || '-'}</span>,
   },
   {
     header: 'Transaction Type',
     accessor: 'type',
-    render: (row: WalletTransaction) => (
+    render: (row: IWalletTransaction) => (
       <span
-        className={`px-2 py-1 rounded-full text-xs border ${
-          row.type === 'Credit'
+        className={`px-2 py-1 rounded-full text-xs border ${row.type === 'credit'
             ? 'bg-green-50 text-green-600 border-green-100'
             : 'bg-red-50 text-red-600 border-red-100'
-        }`}
+          }`}
       >
-        {row.type}
+        {row.type.charAt(0).toUpperCase() + row.type.slice(1)}
       </span>
     ),
   },
   {
     header: 'Transaction Date',
     accessor: 'date',
+    render: (row: IWalletTransaction) => (
+      <span>{new Date(row.createdAt).toLocaleString()}</span>
+    ),
   },
   {
     header: 'Lead ID',
     accessor: 'leadId',
+    render: (row: IWalletTransaction) => <span>{row.referenceId || '-'}</span>,
   },
   {
     header: 'Debit',
     accessor: 'debit',
-    render: (row: WalletTransaction) => <span>{row.debit || '-'}</span>,
+    render: (row: IWalletTransaction) =>
+      row.type === 'debit' ? `₹${row.amount}` : '-',
   },
   {
     header: 'Credit',
     accessor: 'credit',
-    render: (row: WalletTransaction) => <span>{row.credit || '-'}</span>,
+    render: (row: IWalletTransaction) =>
+      row.type === 'credit' ? `₹${row.amount}` : '-',
   },
   {
     header: 'Withdraw',
     accessor: 'withdraw',
-    render: (row: WalletTransaction) => <span>{row.withdraw || '-'}</span>,
+    render: (row: IWalletTransaction) =>
+      row.source === 'withdraw' ? `₹${row.amount}` : '-',
   },
   {
     header: 'Balance',
     accessor: 'balance',
+    render: (_row: IWalletTransaction, index: number, allRows: IWalletTransaction[]) => {
+      let runningBalance = 0;
+      for (let i = 0; i <= index; i++) {
+        const txn = allRows[i];
+        runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
+      }
+      return <span>₹{runningBalance}</span>;
+    },
   },
 ];
 
-const dummyData: WalletTransaction[] = [
-  {
-    id: '1',
-    transactionId: 'TXN123456',
-    type: 'Credit',
-    date: '2025-07-01',
-    leadId: 'LEAD001',
-    debit: '',
-    credit: '₹500',
-    withdraw: '',
-    balance: '₹5000',
-  },
-  {
-    id: '2',
-    transactionId: 'TXN123457',
-    type: 'Debit',
-    date: '2025-07-02',
-    leadId: 'LEAD002',
-    debit: '₹500',
-    credit: '',
-    withdraw: '',
-    balance: '₹4500',
-  },
-];
+const UserWallet = ({ userId }: UserWalletProps) => {
+  const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
 
-const UserWallet = () => {
+  useEffect(() => {
+    if (userId) {
+      fetchWalletByUser(userId);
+    }
+  }, [userId]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
 
-  const filteredTransactions = dummyData.filter((txn) => {
-    const matchSearch =
-      txn.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      txn.leadId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchTab =
-      activeTab === 'all' || txn.type.toLowerCase() === activeTab;
-    return matchSearch && matchTab;
-  });
+  if (loading) return <p>Loading wallet...</p>;
+  if (error) return <p className="text-red-500">Error: {error}</p>;
+  if (!wallet) return <p>No wallet found</p>;
+
+  const transactions = wallet.transactions || [];
+
+  const filteredTransactions = transactions
+    .filter((txn) => {
+      const matchSearch =
+        txn.referenceId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        txn.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchTab = activeTab === 'all' || txn.type === activeTab;
+      return matchSearch && matchTab;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+  const totalCredits = transactions
+    .filter((t) => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalDebits = transactions
+    .filter((t) => t.type === 'debit')
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const summaryCards = [
     {
       title: 'Credit',
-      amount: '₹200000.00',
+      amount: `₹${totalCredits.toLocaleString()}`,
       icon: <FaMoneyBillWave />,
       gradient: 'from-green-50 to-green-100',
       textColor: 'text-green-800',
     },
     {
       title: 'Debit',
-      amount: '₹500000.00',
+      amount: `₹${totalDebits.toLocaleString()}`,
       icon: <FaMoneyCheckAlt />,
       gradient: 'from-red-50 to-red-100',
       textColor: 'text-red-800',
     },
     {
       title: 'Balance',
-      amount: '₹1500000.00',
+      amount: `₹${wallet.balance.toLocaleString()}`,
       icon: <FaWallet />,
       gradient: 'from-blue-50 to-blue-100',
       textColor: 'text-blue-800',
@@ -171,24 +175,26 @@ const UserWallet = () => {
       <div className="flex gap-2 mb-4">
         {['all', 'credit', 'debit'].map((tab) => (
           <button
-  key={tab}
-  onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
-  className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
-    activeTab === tab
-      ? 'bg-blue-600 text-white border-blue-600'
-      : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
-  }`}
->
-  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-</button>
-
+            key={tab}
+            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
+            className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${activeTab === tab
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
+              }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
         ))}
       </div>
 
       {/* Transaction Table */}
-      {/* <BasicTableOne columns={columnsWallet} data={filteredTransactions} /> */}
+      <BasicTableOne
+        columns={columnsWallet}
+        data={filteredTransactions as IWalletTransaction[]}
+      />
     </ComponentCard>
   );
 };
+
 
 export default UserWallet;

@@ -105,7 +105,7 @@ const UserDetails = () => {
 
           {activeTab === 'selfLead' && <SelfLeadTable userId={userId || ' '} isAction={true} />}
 
-          {activeTab === 'wallet' && <UserWallet />}
+          {activeTab === 'wallet' && <UserWallet userId={userId || ' '} />}
 
           {activeTab === 'guarantee' && (
             <ComponentCard title="5x Guarantee">
