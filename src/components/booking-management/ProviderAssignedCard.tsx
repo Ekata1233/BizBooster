@@ -10,6 +10,7 @@ interface Props {
   checkoutId: string;
 }
 
+
 function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
   const { getProvidersByServiceId } = useProvider();
   const { updateCheckout } = useCheckout();
@@ -37,7 +38,7 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
 
     try {
       setLoading(true);
-      await updateCheckout(checkoutId, { provider: providerId });
+      // await updateCheckout(checkoutId, { provider: providerId });
       alert('Provider assigned successfully');
     } catch (error) {
       console.error('Error assigning provider:', error);
