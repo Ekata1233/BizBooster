@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import ComponentCard from '@/components/common/ComponentCard';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
+import UserWallet from '@/components/user-profile/UserWallet';
 
 
 const UserDetails = () => {
@@ -103,11 +104,7 @@ const UserDetails = () => {
 
           {activeTab === 'selfLead' && <SelfLeadTable userId={userId || ' '} isAction={true} />}
 
-          {activeTab === 'wallet' && (
-            <ComponentCard title="Wallet">
-              <div className="text-gray-600">Wallet info goes here.</div>
-            </ComponentCard>
-          )}
+          {activeTab === 'wallet' && <UserWallet />}
 
           {activeTab === 'guarantee' && (
             <ComponentCard title="5x Guarantee">
