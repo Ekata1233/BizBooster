@@ -20,8 +20,8 @@ interface RowData {
 
 
 interface FranchiseData {
-  commission?: string ;
-  commissionType?: string ;
+  commission?: string;
+  commissionType?: string;
   overview?: string;
   howItWorks?: string;
   termsAndConditions?: string;
@@ -31,9 +31,10 @@ interface FranchiseData {
 interface FranchiseDetailsFormProps {
   data: FranchiseData;
   setData: (newData: Partial<FranchiseData>) => void;
+  price?: number;
 }
 
-const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
+const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [termsAndConditions, setTermsAndConditions] = useState('');
@@ -70,11 +71,11 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
   //   setData({ commission: e.target.value });
   // };
   const handleTypeChange = (newType: 'percentage' | 'amount') => {
-  setCommissionType(newType);
-  const formatted =
-    newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
-  setData({ commissionType: newType, commission: formatted });
-};
+    setCommissionType(newType);
+    const formatted =
+      newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
+    setData({ commissionType: newType, commission: formatted });
+  };
 
   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -127,7 +128,16 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
         </div> */}
 
         <div className="space-y-2">
-          <div>
+          {/* <div  className="flex flex-wrap gap-6">
+            <div className="w-full md:w-1/2">
+              <Label className="block text-sm font-medium text-gray-700 mb-1">
+                Basic Price
+              </Label>
+              <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
+                ₹{price || 0}
+              </div>
+            </div>
+            
             <Label className="block text-sm font-medium text-gray-700 mb-1">
               {commissionType === "percentage" ? "Commission (%)" : "Commission (₹)"}
             </Label>
@@ -174,7 +184,92 @@ const FranchiseDetailsForm = ({ data, setData }: FranchiseDetailsFormProps) => {
                 ₹
               </button>
             </div>
+          </div> */}
+          <div className="flex flex-wrap gap-6">
+            {/* Basic Price */}
+            <div className="w-2/6">
+              <Label className="block text-sm font-medium text-gray-700 mb-1">
+                Basic Price
+              </Label>
+              <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
+                ₹{price || 0}
+              </div>
+            </div>
+
+            {/* Commission Section */}
+            <div className="w-3/6">
+              <Label className="block text-sm font-medium text-gray-700 mb-1">
+                {commissionType === "percentage" ? "Commission (%)" : "Commission (₹)"}
+              </Label>
+              <div className="flex items-center gap-4">
+                {/* Commission Input */}
+                <div className="relative w-32">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
+                    {commissionType === "percentage" ? "%" : "₹"}
+                  </span>
+                  <Input
+                    type="text"
+                    value={commissionValue}
+                    onChange={handleCommissionChange}
+                    placeholder="Commission"
+                    className="pl-8"
+                  />
+                </div>
+
+                {/* Toggle Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange("percentage")}
+                    className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "percentage"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                      }`}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange("amount")}
+                    className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "amount"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                      }`}
+                  >
+                    ₹
+                  </button>
+                </div>
+              </div>
+            </div>
+            {(() => {
+              // Calculate total commission in ₹
+              const totalCommission =
+                commissionType === "percentage"
+                  ? (Number(price || 0) * Number(commissionValue || 0)) / 100
+                  : Number(commissionValue || 0);
+
+              const distributionPercents = [0.5, 0.2, 0.1, 0.2];
+              const distributedValues = distributionPercents.map(
+                (ratio) => totalCommission * ratio
+              );
+
+              return (
+                <>
+                  {distributedValues.map((val, idx) => (
+                    <div key={idx} className="w-1/5">
+                      <Label className="block text-sm font-medium text-gray-700 mb-1">
+                        Share {idx + 1} ({distributionPercents[idx] * 100}%)
+                      </Label>
+                      <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
+                        ₹{val.toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
           </div>
+
         </div>
 
         <div className='my-3'>

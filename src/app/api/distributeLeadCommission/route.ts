@@ -4,8 +4,10 @@ import { Types } from "mongoose";// adjust this path if needed
 import Checkout from "@/models/Checkout";
 import ReferralCommission from "@/models/ReferralCommission";
 import User from "@/models/User";
+import "@/models/Service";
 import Wallet from "@/models/Wallet";
 import { connectToDatabase } from "@/utils/db";
+import ProviderWallet from "@/models/ProviderWallet";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -35,7 +37,15 @@ export async function POST(req: Request) {
             );
         }
 
-        const checkout = await Checkout.findById(checkoutId).populate("user");
+        const checkout = await Checkout.findById(checkoutId).populate("user").populate({
+            path: "service",
+            select: "franchiseDetails.commission"
+        });
+
+        const commission = checkout.service?.franchiseDetails?.commission;
+        console.log("checkout commission : ", commission)
+
+
         if (!checkout || checkout.commissionDistributed) {
             return NextResponse.json(
                 { success: false, message: "Checkout not found or commission already distributed." },
@@ -56,7 +66,24 @@ export async function POST(req: Request) {
             ? await User.findById(userB.referredBy)
             : null;
 
-        const commissionPool = leadAmount * 0.2;
+        // const providerShare = leadAmount * 0.8;
+        // const commissionPool = leadAmount * 0.2;
+        let commissionPool = 0;
+        let providerShare = 0;
+
+        if (typeof commission === "string" && commission.trim().endsWith("%")) {
+            const percent = parseFloat(commission.replace("%", ""));
+            commissionPool = (leadAmount * percent) / 100;
+            providerShare = leadAmount - commissionPool;
+        } else if (typeof commission === "number") {
+            commissionPool = commission;
+            providerShare = leadAmount - commissionPool;
+        } else {
+            throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
+        }
+
+        console.log("commission commission : ",commissionPool);
+        console.log("proivder commission : ", providerShare);
         const C_share = commissionPool * 0.5;
         const B_share = commissionPool * 0.2;
         const A_share = commissionPool * 0.1;
@@ -119,10 +146,33 @@ export async function POST(req: Request) {
 
         await creditWallet(ADMIN_ID, adminShare, "Referral Commission - Admin", checkout._id.toString());
         await ReferralCommission.create({
-          fromLead: checkout._id,
-          receiver: ADMIN_ID,
-          amount: adminShare,
+            fromLead: checkout._id,
+            receiver: ADMIN_ID,
+            amount: adminShare,
         });
+
+        const providerId = checkout.provider;
+        const providerWallet = await ProviderWallet.findOne({ providerId });
+        if (!providerWallet) {
+            throw new Error(`Provider wallet not found for provider ${providerId}`);
+        }
+
+        providerWallet.balance += providerShare;
+        providerWallet.totalEarning += providerShare;
+        providerWallet.updatedAt = new Date();
+
+        providerWallet.transactions.push({
+            type: "credit",
+            amount: providerShare,
+            description: "Provider earning from lead",
+            referenceId: checkout._id.toString(),
+            method: "Wallet",
+            source: "checkout",
+            status: "success",
+            createdAt: new Date(),
+        });
+
+        await providerWallet.save();
 
         checkout.commissionDistributed = true;
         await checkout.save();
