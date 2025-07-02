@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCustomer"
   }],
+  // packageActive: [{
+  //   type: Boolean,
+  //   default: false
+  // }],
   isDeleted: {
     type: Boolean,
     default: false
