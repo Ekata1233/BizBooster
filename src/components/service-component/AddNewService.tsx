@@ -93,24 +93,24 @@ console.log("form data of service : ", formData);
       case 1:
         return (
           !!formData?.basic?.name?.trim()
-          //  &&
-          // !!formData?.basic?.category &&
-          // !!formData?.basic?.subcategory &&
-          // !!formData?.basic?.price &&
-          // !!formData?.basic?.discount &&
-          // !!formData?.basic?.thumbnail &&
-          // !!formData?.basic?.covers &&
-          // !!formData?.basic?.tags
+           &&
+          !!formData?.basic?.category &&
+          !!formData?.basic?.subcategory &&
+          !!formData?.basic?.price &&
+          !!formData?.basic?.discount &&
+          !!formData?.basic?.thumbnail &&
+          !!formData?.basic?.covers &&
+          !!formData?.basic?.tags
         );
       case 2:
         return (
-          // !!formData?.service?.benefits?.trim()
-          //  &&
-          // !!formData?.service?.overview?.trim() &&
-          // !!formData?.service?.howItWorks?.trim() &&
-          // !!formData?.service?.document?.trim() &&
-          // !!formData?.service?.terms?.trim() &&
-          // !!formData?.service?.faqs &&
+          !!formData?.service?.benefits?.trim()
+           &&
+          !!formData?.service?.overview?.trim() &&
+          !!formData?.service?.howItWorks?.trim() &&
+          !!formData?.service?.document?.trim() &&
+          !!formData?.service?.terms?.trim() &&
+          !!formData?.service?.faqs &&
           !!formData?.service?.whyChoose
         );
       case 3:
