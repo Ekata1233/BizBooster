@@ -47,6 +47,7 @@ const UserDetails = () => {
     { key: 'wallet', label: 'Wallet' },
     { key: 'guarantee', label: '5x Guarantee' },
     { key: 'support', label: 'Support' },
+    { key: 'deposite', label: 'Deposite' },
   ];
 
   return (
@@ -61,7 +62,7 @@ const UserDetails = () => {
         />
 
         {/* Tabs */}
-        <div className="grid grid-cols-7 gap-2 pt-2">
+        <div className="grid grid-cols-8 gap-2 pt-2">
           {tabButtons.map((tab) => (
             <button
               key={tab.key}
@@ -111,7 +112,11 @@ const UserDetails = () => {
               <div className="text-gray-600">5x Guarantee info goes here.</div>
             </ComponentCard>
           )}
-
+ {activeTab === 'deposite' && (
+            <ComponentCard title="Deposite">
+              <div className="text-gray-600">Deposite info goes here.</div>
+            </ComponentCard>
+          )}
           {activeTab === 'support' && (
             <ComponentCard title="Support">
               <div className="text-gray-600">Support and preferences go here.</div>
