@@ -20,9 +20,9 @@ interface WalletTransaction {
 
 const columnsWallet = [
   {
-  header: 'Sr',
-  render: (_: WalletTransaction, index: number) => <div>{index + 1}</div>,
-},
+    header: 'Sr',
+    render: (_: WalletTransaction, index: number) => <div>{index + 1}</div>,
+  },
   {
     header: 'Transaction ID',
     accessor: 'transactionId',
@@ -35,7 +35,9 @@ const columnsWallet = [
         className={`px-2 py-1 rounded-full text-xs border ${
           row.type === 'Credit'
             ? 'bg-green-50 text-green-600 border-green-100'
-            : 'bg-red-50 text-red-600 border-red-100'
+            : row.type === 'Debit'
+            ? 'bg-red-50 text-red-600 border-red-100'
+            : 'bg-yellow-50 text-yellow-700 border-yellow-100'
         }`}
       >
         {row.type}
@@ -94,11 +96,22 @@ const dummyData: WalletTransaction[] = [
     withdraw: '',
     balance: '₹4500',
   },
+  {
+    id: '3',
+    transactionId: 'TXN123458',
+    type: 'Withdraw',
+    date: '2025-07-03',
+    leadId: 'LEAD003',
+    debit: '',
+    credit: '',
+    withdraw: '₹200',
+    balance: '₹4300',
+  },
 ];
 
 const UserWallet = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' | 'withdraw'>('all');
 
   const filteredTransactions = dummyData.filter((txn) => {
     const matchSearch =
@@ -169,19 +182,18 @@ const UserWallet = () => {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-4">
-        {['all', 'credit', 'debit'].map((tab) => (
+        {['all', 'credit', 'debit', 'withdraw'].map((tab) => (
           <button
-  key={tab}
-  onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
-  className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
-    activeTab === tab
-      ? 'bg-blue-600 text-white border-blue-600'
-      : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
-  }`}
->
-  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-</button>
-
+            key={tab}
+            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit' | 'withdraw')}
+            className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
+              activeTab === tab
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
         ))}
       </div>
 
