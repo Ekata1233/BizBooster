@@ -1,8 +1,10 @@
 'use client';
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
+import { useCheckout } from '@/context/CheckoutContext';
 
 interface SelfLeadProps {
   userId: string;
@@ -12,7 +14,17 @@ interface SelfLeadProps {
 const columnsSelfLead = [
   { header: 'Sr', accessor: 'sr' },
   { header: 'Service Name', accessor: 'serviceName' },
-  { header: 'Contact Details', accessor: 'contactDetails' },
+  {
+    header: 'Contact Details',
+    accessor: 'contactDetails',
+    render: (row: any) => (
+      <div className="text-sm text-gray-700">
+        <div className="font-semibold">{row.userName}</div>
+        <div>{row.userEmail}</div>
+        <div>{row.userPhone}</div>
+      </div>
+    ),
+  },
   { header: 'Price', accessor: 'price' },
   { header: 'My Commission', accessor: 'commission' },
   {
@@ -54,37 +66,39 @@ const columnsSelfLead = [
   },
 ];
 
-const dataSelfLead = [
-  {
-    sr: 1,
-    serviceName: 'Office Booking',
-    contactDetails: 'aniket@example.com / 9876543210',
-    price: '₹50,000',
-    commission: '₹5,000',
-    leadStatus: 'completed',
-  },
-  {
-    sr: 2,
-    serviceName: 'Meeting Room',
-    contactDetails: 'riya@example.com / 9123456789',
-    price: '₹20,000',
-    commission: '₹2,000',
-    leadStatus: 'pending',
-  },
-  {
-    sr: 3,
-    serviceName: 'Coworking',
-    contactDetails: 'rahul@example.com / 9012345678',
-    price: '₹30,000',
-    commission: '₹3,000',
-    leadStatus: 'ongoing',
-  },
-];
-
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
+  const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
+
+  useEffect(() => {
+    fetchCheckoutByUser(userId);
+  }, [userId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const mappedData = checkouts.map((checkout, index) => {
+    const customer = checkout?.serviceCustomer || {};
+
+    return {
+      sr: index + 1,
+      serviceName: checkout?.service?.serviceName || 'N/A',
+      userName: customer?.fullName || 'N/A',
+      userEmail: customer?.email || 'N/A',
+      userPhone: customer?.phone || 'N/A',
+      price: `₹${checkout?.totalAmount?.toLocaleString() || 0}`,
+      commission: `₹${checkout?.commission?.toLocaleString() || 0}`,
+      leadStatus: checkout?.isCompleted
+        ? 'completed'
+        : checkout?.orderStatus === 'processing'
+          ? 'ongoing'
+          : 'pending',
+    };
+  });
+
+
   return (
     <ComponentCard title="Self Lead Table">
-      <BasicTableOne columns={columnsSelfLead} data={dataSelfLead} />
+      <BasicTableOne columns={columnsSelfLead} data={mappedData} />
     </ComponentCard>
   );
 };
