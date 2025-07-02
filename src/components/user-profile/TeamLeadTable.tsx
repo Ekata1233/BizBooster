@@ -1,17 +1,36 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
-import Image from 'next/image';
-import img from '../../../public/images/logo/user1.webp'
+import img from '../../../public/images/logo/user1.webp';
+
+interface TeamLeadData {
+  id: string;
+  userPhoto: string;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  joinDate: string;
+  managerPhoto: string;
+  managerName: string;
+  managerEmail: string;
+  managerPhone: string;
+  status: string;
+  teamCount: number;
+  myEarnings: string;
+  kycStatus: 'completed' | 'pending' | 'not started';
+  leadCount: number;
+}
 
 const columnsTeamLead = [
   {
     header: 'User Details',
     accessor: 'userDetails',
-    render: (row: any) => (
+    render: (row: TeamLeadData) => (
       <div className="flex items-center gap-3">
         <Image
           src={row.userPhoto}
@@ -32,7 +51,7 @@ const columnsTeamLead = [
   {
     header: 'Account Manager',
     accessor: 'accountManager',
-    render: (row: any) => (
+    render: (row: TeamLeadData) => (
       <div className="flex items-center gap-3">
         <Image
           src={row.managerPhoto}
@@ -53,16 +72,24 @@ const columnsTeamLead = [
     header: 'Status',
     accessor: 'status',
     render: () => (
-      <div >
-        <div className="bg-green-100 border border-green-300 text-green-600 px-3 py-1 text-xs rounded-md text-center leading-tight">GP</div>
+      <div>
+        <div className="bg-green-100 border border-green-300 text-green-600 px-3 py-1 text-xs rounded-full text-center leading-tight">
+          GP
+        </div>
         <div className="text-[11px] font-medium">ID:23489</div>
       </div>
     ),
   },
-  {
-    header: 'Team Count',
-    accessor: 'teamCount',
-  },
+ {
+  header: 'Team Count',
+  accessor: 'teamCount',
+  render: (row: any) => (
+    <div className="text-center border border-yellow-300 bg-yellow-100 text-yellow-600 border-yellow-300  px-3 py-1 text-xs rounded-full text-center leading-tight">
+      {row.teamCount}
+    </div>
+  ),
+},
+
   {
     header: 'My Earnings',
     accessor: 'myEarnings',
@@ -76,7 +103,7 @@ const columnsTeamLead = [
   {
     header: 'KYC',
     accessor: 'kycStatus',
-    render: (row: any) => {
+    render: (row: TeamLeadData) => {
       const status = row.kycStatus;
       const color =
         status === 'completed'
@@ -101,26 +128,29 @@ const columnsTeamLead = [
   {
     header: 'Action',
     accessor: 'action',
-    render: () => (
-      <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-        <EyeIcon />
-      </button>
+    render: (row: TeamLeadData) => (
+      <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+          <EyeIcon />
+        </button>
+      </Link>
     ),
   },
 ];
 
-const dataTeamLead = [
+const dataTeamLead: TeamLeadData[] = [
   {
-    userPhoto: img,
-    userName: 'Satish Kadam',
-    userEmail: 'Satishkadam24@gmail.com',
+    id: '681c72d2062be714d7037844',
+    userPhoto: img.src,
+    userName: 'LiamWilliams',
+    userEmail: 'liam.williams@example.com',
     userPhone: '7083742078',
     joinDate: '11-11-2025',
-    managerPhoto:img,
+    managerPhoto: img.src,
     managerName: 'Dilip Ghorpade',
     managerEmail: 'dilipghorp@gmail.com',
     managerPhone: '7083742078',
-    status: 'GP', // Display handled via render
+    status: 'GP',
     teamCount: 10,
     myEarnings: '', // handled via render
     kycStatus: 'completed',
