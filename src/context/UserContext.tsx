@@ -34,6 +34,11 @@ interface UserContextType {
   refreshUsers: () => void;
   setUsers: (users: User[]) => void;
   fetchSingleUser: (id: string) => void;
+
+  referredUsers: User[] | null;
+  referredUsersLoading: boolean;
+  referredUsersError: string | null;
+  fetchUsersByReferral: (id: string) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -55,6 +60,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [singleUser, setSingleUser] = useState<User | null>(null);
   const [singleUserLoading, setSingleUserLoading] = useState<boolean>(false);
   const [singleUserError, setSingleUserError] = useState<string | null>(null);
+
+  const [referredUsers, setReferredUsers] = useState<User[] | null>(null);
+  const [referredUsersLoading, setReferredUsersLoading] = useState<boolean>(false);
+  const [referredUsersError, setReferredUsersError] = useState<string | null>(null);
+
 
 
   const fetchUsers = async () => {
@@ -89,17 +99,42 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchUsersByReferral = async (id: string) => {
+    setReferredUsersLoading(true);
+    try {
+      const res = await axios.get(`/api/users/findByReferral/${id}`);
+      setReferredUsers(res.data?.data || []);
+      setReferredUsersError(null);
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setReferredUsersError(
+        axiosError.response?.data?.message || 'Failed to fetch referred users'
+      );
+      setReferredUsers(null);
+    } finally {
+      setReferredUsersLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
   return (
-    <UserContext.Provider value={{ users, loading, error,  singleUser,
+    <UserContext.Provider value={{
+      users, loading, error, singleUser,
       singleUserLoading,
       singleUserError,
       refreshUsers: fetchUsers,
       setUsers,
-      fetchSingleUser, }}>
+      fetchSingleUser,
+
+      referredUsers,
+      referredUsersLoading,
+      referredUsersError,
+      fetchUsersByReferral,
+    }}>
       {children}
     </UserContext.Provider>
   );

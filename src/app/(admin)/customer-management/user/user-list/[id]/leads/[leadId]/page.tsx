@@ -1,15 +1,11 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import UserStatCard from '@/components/user-profile/UserAddressCard';
-import UserInfoCard from '@/components/user-profile/UserInfoCard';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/context/UserContext';
 import { useParams } from 'next/navigation';
-import ComponentCard from '@/components/common/ComponentCard';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
-
 
 const UserDetails = () => {
   const {
@@ -21,15 +17,16 @@ const UserDetails = () => {
 
   const params = useParams();
   const userId = params?.id as string;
+    const leadUserId = params?.leadId as string;
 
-  console.log("user Id : ", userId)
-  const [activeTab, setActiveTab] = useState('info');
+  console.log("leadUserId Id : ", leadUserId)
+  const [activeTab, setActiveTab] = useState('selfLead');
 
   useEffect(() => {
-    if (userId) {
-      fetchSingleUser(userId);
+    if (leadUserId) {
+      fetchSingleUser(leadUserId);
     }
-  }, [userId]);
+  }, [leadUserId]);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
@@ -39,13 +36,8 @@ const UserDetails = () => {
     return <div className="text-center text-gray-500">No user found.</div>;
 
   const tabButtons = [
-    { key: 'info', label: 'Profile' },
-    { key: 'stats', label: 'Stats' },
     { key: 'selfLead', label: 'Self Lead' },
     { key: 'teamLead', label: 'Team Lead' },
-    { key: 'wallet', label: 'Wallet' },
-    { key: 'guarantee', label: '5x Guarantee' },
-    { key: 'support', label: 'Support' },
   ];
 
   return (
@@ -77,49 +69,13 @@ const UserDetails = () => {
 
         {/* Tab content */}
         <div className="space-y-6 pt-4">
-          {activeTab === 'info' && (
-            <UserInfoCard
-              fullName={singleUser.fullName}
-              email={singleUser.email}
-              phone={singleUser.mobileNumber}
-              referralCode={singleUser.referralCode || ' '}
-              address="Amanora Chember, Hadapsar, Pune"
-            />
-          )}
-
-          {activeTab === 'stats' && (
-            <UserStatCard
-              stat1={{ title: 'Total Booking', value: '20' }}
-              stat2={{ title: 'Total Revenue', value: '$8420' }}
-              stat3={{ title: 'Other', value: '420' }}
-              stat4={{ title: 'Next Other', value: '320' }}
-            />
-          )}
+          {activeTab === 'selfLead' && <SelfLeadTable />}
 
           {activeTab === 'teamLead' && <TeamLeadTable
-            userId={userId || ' '} isAction={true}
+            userId={leadUserId || ' '} isAction={false}
           />}
 
-
-          {activeTab === 'selfLead' && <SelfLeadTable userId={userId || ' '} isAction={true} />}
-
-          {activeTab === 'wallet' && (
-            <ComponentCard title="Wallet">
-              <div className="text-gray-600">Wallet info goes here.</div>
-            </ComponentCard>
-          )}
-
-          {activeTab === 'guarantee' && (
-            <ComponentCard title="5x Guarantee">
-              <div className="text-gray-600">5x Guarantee info goes here.</div>
-            </ComponentCard>
-          )}
-
-          {activeTab === 'support' && (
-            <ComponentCard title="Support">
-              <div className="text-gray-600">Support and preferences go here.</div>
-            </ComponentCard>
-          )}
+          
         </div>
       </div>
     </div>

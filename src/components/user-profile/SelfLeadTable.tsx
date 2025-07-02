@@ -4,6 +4,11 @@ import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
 
+interface SelfLeadProps {
+  userId: string;
+  isAction: boolean;
+}
+
 const columnsSelfLead = [
   { header: 'Sr', accessor: 'sr' },
   { header: 'Service Name', accessor: 'serviceName' },
@@ -76,7 +81,7 @@ const dataSelfLead = [
   },
 ];
 
-const SelfLeadTable = () => {
+const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   return (
     <ComponentCard title="Self Lead Table">
       <BasicTableOne columns={columnsSelfLead} data={dataSelfLead} />
