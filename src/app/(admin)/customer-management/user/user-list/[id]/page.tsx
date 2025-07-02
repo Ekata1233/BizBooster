@@ -10,6 +10,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 import UserWallet from '@/components/user-profile/UserWallet';
+import FiveXGuarantee from '@/components/user-profile/FiveXGuarantee';
 
 
 const UserDetails = () => {
@@ -107,11 +108,7 @@ const UserDetails = () => {
 
           {activeTab === 'wallet' && <UserWallet userId={userId || ' '} />}
 
-          {activeTab === 'guarantee' && (
-            <ComponentCard title="5x Guarantee">
-              <div className="text-gray-600">5x Guarantee info goes here.</div>
-            </ComponentCard>
-          )}
+          {activeTab === 'guarantee' && <FiveXGuarantee/>}
  {activeTab === 'deposite' && (
             <ComponentCard title="Deposite">
               <div className="text-gray-600">Deposite info goes here.</div>

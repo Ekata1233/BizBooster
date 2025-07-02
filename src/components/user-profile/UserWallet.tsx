@@ -85,7 +85,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
   }, [userId]);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' | 'withdraw'>('all');
 
   if (loading) return <p>Loading wallet...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
@@ -173,7 +173,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-4">
-        {['all', 'credit', 'debit'].map((tab) => (
+        {['all', 'credit', 'debit', 'withdraw'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
