@@ -1,5 +1,7 @@
 'use client';
 
+import { IProviderWallet } from '@/models/ProviderWallet';
+import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 export interface Provider {
   _id: string;
@@ -7,7 +9,7 @@ export interface Provider {
   email: string;
   phoneNo?: string;
   password?: string;
-referralCode?: string | null;
+  referralCode?: string | null;
 
   storeInfo?: Record<string, any>;
   kyc?: Record<string, any>;
@@ -18,6 +20,7 @@ referralCode?: string | null;
 }
 
 type ProviderContextType = {
+    wallet: IProviderWallet | null;
   provider: Provider | null;
   providerDetails: Provider | null;
   loading: boolean;
@@ -25,12 +28,12 @@ type ProviderContextType = {
   registerProvider: (data: FormData) => Promise<void>;
   updateStoreInfo: (data: FormData) => Promise<void>;
   updateKycInfo: (data: FormData) => Promise<void>;
-  getProviderById: (id: string) =>Promise<Provider>;
+  getProviderById: (id: string) => Promise<Provider>;
   updateProvider: (id: string, updates: any) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
   getAllProviders: () => Promise<Provider[]>;
   getProvidersByServiceId: (serviceId: string) => Promise<Provider[]>;
-
+  fetchWalletByProvider: (providerId: string) => Promise<void>;
 };
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
@@ -47,6 +50,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   const [providersByService, setProvidersByService] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<IProviderWallet | null>(null);
 
   const registerProvider = async (formData: FormData) => {
     setLoading(true);
@@ -118,7 +122,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
 
       if (!res.ok) throw new Error(data.message || 'Failed to fetch provider');
       setProvider(data);
-      return data; 
+      return data;
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -183,24 +187,38 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   };
 
   const getProvidersByServiceId = async (serviceId: string): Promise<Provider[]> => {
-  setLoading(true);
-  try {
-    const res = await fetch(`/api/provider/findByService/${serviceId}`);
-    const data = await res.json();
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/provider/findByService/${serviceId}`);
+      const data = await res.json();
 
-    if (!res.ok) throw new Error(data.message || 'Failed to fetch providers by serviceId');
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch providers by serviceId');
 
-    setProvidersByService(data.data || []);
+      setProvidersByService(data.data || []);
+      setError(null);
+      return data.data || [];
+    } catch (err: any) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWalletByProvider = async (providerId: string) => {
+    setLoading(true);
     setError(null);
-    return data.data || [];
-  } catch (err: any) {
-    setError(err.message);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      const response = await axios.get(`/api/provider/wallet/${providerId}`);
+      setWallet(response.data.data); // assuming { success: true, data: {...wallet} }
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || err?.message || "Error fetching wallet";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchProviders = async () => {
       const allProviders = await getAllProviders();
@@ -211,6 +229,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   return (
     <ProviderContext.Provider
       value={{
+        wallet,
         provider,
         providerDetails,
         loading,
@@ -222,7 +241,8 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
         updateProvider,
         deleteProvider,
         getAllProviders,
-         getProvidersByServiceId,
+        getProvidersByServiceId,
+        fetchWalletByProvider,
       }}
     >
       {children}
