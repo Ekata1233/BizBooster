@@ -66,14 +66,26 @@ export async function POST(req: Request) {
             ? await User.findById(userB.referredBy)
             : null;
 
-        // const providerShare = leadAmount * 0.8;
-        // const commissionPool = leadAmount * 0.2;
         let commissionPool = 0;
         let providerShare = 0;
 
-        if (typeof commission === "string" && commission.trim().endsWith("%")) {
-            const percent = parseFloat(commission.replace("%", ""));
-            commissionPool = (leadAmount * percent) / 100;
+        // if (typeof commission === "string" && commission.trim().endsWith("%")) {
+        //     const percent = parseFloat(commission.replace("%", ""));
+        //     commissionPool = (leadAmount * percent) / 100;
+        //     providerShare = leadAmount - commissionPool;
+        if (typeof commission === "string") {
+            const trimmed = commission.trim();
+
+            if (trimmed.endsWith("%")) {
+                const percent = parseFloat(trimmed.replace("%", ""));
+                commissionPool = (leadAmount * percent) / 100;
+            } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
+                const numericString = trimmed.replace("₹", "").trim();
+                commissionPool = parseFloat(numericString);
+            } else {
+                throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
+            }
+
             providerShare = leadAmount - commissionPool;
         } else if (typeof commission === "number") {
             commissionPool = commission;
@@ -82,12 +94,17 @@ export async function POST(req: Request) {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }
 
-        console.log("commission commission : ",commissionPool);
+        console.log("commission commission : ", commissionPool);
         console.log("proivder commission : ", providerShare);
         const C_share = commissionPool * 0.5;
         const B_share = commissionPool * 0.2;
         const A_share = commissionPool * 0.1;
         let adminShare = commissionPool * 0.2;
+
+        console.log("C_share commission : ", C_share);
+        console.log("B_share commission : ", B_share);
+        console.log("A_share commission : ", A_share);
+        console.log("adminShare commission : ", adminShare);
 
         if (!userB) adminShare += B_share;
         if (!userA) adminShare += A_share;
