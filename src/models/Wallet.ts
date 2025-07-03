@@ -24,6 +24,7 @@ export interface IWalletTransaction {
   source?: string;
   status?: 'success' | 'failed' | 'pending';
   createdAt: Date;
+  balanceAfterTransaction: number;
 }
 
 const TransactionSchema = new Schema<IWalletTransaction>(
@@ -63,6 +64,10 @@ const TransactionSchema = new Schema<IWalletTransaction>(
       type: String,
       enum: ['success', 'failed', 'pending'],
       default: 'success',
+    },
+     balanceAfterTransaction: {
+      type: Number,
+      required: true, // This should always be present
     },
     createdAt: {
       type: Date,
