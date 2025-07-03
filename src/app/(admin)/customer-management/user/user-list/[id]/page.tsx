@@ -11,6 +11,8 @@ import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 import UserWallet from '@/components/user-profile/UserWallet';
 import FiveXGuarantee from '@/components/user-profile/FiveXGuarantee';
+import HelpSupport from '@/components/user-profile/HelpSupport';
+import UserDeposite from '@/components/user-profile/UserDeposite';
 
 
 const UserDetails = () => {
@@ -109,16 +111,8 @@ const UserDetails = () => {
           {activeTab === 'wallet' && <UserWallet />}
 
           {activeTab === 'guarantee' && <FiveXGuarantee/>}
- {activeTab === 'deposite' && (
-            <ComponentCard title="Deposite">
-              <div className="text-gray-600">Deposite info goes here.</div>
-            </ComponentCard>
-          )}
-          {activeTab === 'support' && (
-            <ComponentCard title="Support">
-              <div className="text-gray-600">Support and preferences go here.</div>
-            </ComponentCard>
-          )}
+ {activeTab === 'deposite' && <UserDeposite/>}
+          {activeTab === 'support' && <HelpSupport/>}
         </div>
       </div>
     </div>
