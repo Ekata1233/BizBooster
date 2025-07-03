@@ -55,7 +55,7 @@ const ProviderSubscribedServices: React.FC<Props> = ({ data }) => {
     ];
 
     return (
-        <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
+        <div className="">
             <ComponentCard title="Statestics">
                 <BasicTableOne columns={columns} data={data} />
             </ComponentCard>

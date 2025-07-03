@@ -51,6 +51,7 @@ export async function POST(req: Request) {
 
         // Find wallet or create a new one
         let wallet = await Wallet.findOne({ userId });
+        
 
         const transaction = {
             type,

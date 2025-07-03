@@ -43,7 +43,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
 
     return (
         <>
-            <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br  to-white">
+            <div className="">
                 <ComponentCard title="Basic Information">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
+                <div className="">
                     <ComponentCard title="Store Information">
                         {!hasStoreInfo ? (
                             <p className="text-red-500 italic">Store info pending</p>
@@ -120,23 +120,25 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     </div>
                                 </div>
                             </div>
+
+                        )}
+                        {provider.storeInfo?.cover && (
+                            <div className="mt-4">
+                                <p className="text-sm text-gray-500">Store Cover Image</p>
+                                <Image
+                                    src={provider.storeInfo.cover}
+                                    alt="Store Cover"
+                                    width={250}
+                                    height={140}
+                                    className="rounded border border-gray-200"
+                                />
+                            </div>
                         )}
                     </ComponentCard>
-                    {provider.storeInfo?.cover && (
-                        <div className="mt-4">
-                            <p className="text-sm text-gray-500">Store Cover Image</p>
-                            <Image
-                                src={provider.storeInfo.cover}
-                                alt="Store Cover"
-                                width={250}
-                                height={140}
-                                className="rounded border border-gray-200"
-                            />
-                        </div>
-                    )}
+
                 </div>
 
-                <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-brto-white">
+                <div className="">
                     <ComponentCard title="KYC Documents">
                         {!hasKYC ? (
                             <p className="text-red-500 italic">KYC details pending</p>

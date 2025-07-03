@@ -16,7 +16,7 @@ const ProviderStatsSection = ({ provider }: Props) => {
   // const subscribedServicesCount = provider?.subscribedServices?.length || 0;
 
   return (
-    <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br to-white">
+    <div className="">
       <ComponentCard title="Statestics">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
           <StatCard

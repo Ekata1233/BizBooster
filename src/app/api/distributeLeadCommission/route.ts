@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
         if (!checkout || checkout.commissionDistributed) {
             return NextResponse.json(
-                { success: false, message: "Checkout not found or commission already distributed." },
+                { success: false, message: "commission already distributed." },
                 { status: 400, headers: corsHeaders }
             );
         }
@@ -175,6 +175,7 @@ export async function POST(req: Request) {
         }
 
         providerWallet.balance += providerShare;
+        providerWallet.totalCredits +=providerShare;
         providerWallet.totalEarning += providerShare;
         providerWallet.updatedAt = new Date();
 

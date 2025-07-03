@@ -125,6 +125,13 @@ const UserWallet = ({ userId }: UserWalletProps) => {
 
   const summaryCards = [
     {
+      title: 'Balance',
+      amount: `₹${wallet.balance.toLocaleString()}`,
+      icon: <FaWallet />,
+      gradient: 'from-blue-50 to-blue-100',
+      textColor: 'text-blue-800',
+    },
+    {
       title: 'Credit',
       amount: `₹${wallet.totalCredits.toLocaleString()}`,
       icon: <FaMoneyBillWave />,
@@ -138,19 +145,12 @@ const UserWallet = ({ userId }: UserWalletProps) => {
       gradient: 'from-red-50 to-red-100',
       textColor: 'text-red-800',
     },
-    {
-      title: 'Balance',
-      amount: `₹${wallet.balance.toLocaleString()}`,
-      icon: <FaWallet />,
-      gradient: 'from-blue-50 to-blue-100',
-      textColor: 'text-blue-800',
-    },
   ];
 
   return (
     <ComponentCard title="Wallet">
       {/* Search */}
-      <div className="flex justify-end mb-4">
+      {/* <div className="flex justify-end mb-4">
         <div className="relative w-full max-w-sm">
           <input
             type="text"
@@ -161,7 +161,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
           />
           <Search className="absolute right-3 top-2.5 text-gray-400" size={18} />
         </div>
-      </div>
+      </div> */}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
