@@ -32,8 +32,8 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
       setCheckoutDetails(data);
       // Check if already assigned
       if (data.provider) {
-        const providerData = await getProviderById(data.provider); // ⬅️ fetch assigned provider
-        setAssignedProvider(providerData);
+        // const providerData = await getProviderById(data.provider); // ⬅️ fetch assigned provider
+        // setAssignedProvider(providerData);
       } else {
         const result = await getProvidersByServiceId(serviceId); // ⬅️ load provider list
         setProviders(result);
@@ -50,7 +50,7 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
 
     try {
       setLoading(true);
-      await updateCheckout(checkoutId, { provider: providerId });
+      // await updateCheckout(checkoutId, { provider: providerId });
       alert('Provider assigned successfully');
       await fetchCheckout();
     } catch (error) {
