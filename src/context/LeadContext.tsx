@@ -93,16 +93,16 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Update an existing lead
-  const updateLead = async (id: string, formData: FormData) => {
-    try {
-      const res = await axios.put(`/api/leads/${id}`, formData);
-      await fetchLeads();
-      return res.data;
-    } catch (error) {
-      console.error("Error updating lead:", error);
-      throw error;
-    }
-  };
+    const updateLead = async (id: string, formData: FormData) => {
+      try {
+        const res = await axios.put(`/api/leads/${id}`, formData);
+        await fetchLeads();
+        return res.data;
+      } catch (error) {
+        console.error("Error updating lead:", error);
+        throw error;
+      }
+    };
 
   // Delete a lead
   const deleteLead = async (id: string) => {
