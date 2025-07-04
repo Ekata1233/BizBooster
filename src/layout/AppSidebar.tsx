@@ -357,8 +357,8 @@ const AppSidebar: React.FC = () => {
                   ? bookingItems : menuType === "subscribe"
                     ? subscribeItems : menuType === "coupon"
                       ? promotionItems : menuType === "report"
-                      ? reportItems
-                      : customerItems;
+                        ? reportItems
+                        : customerItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -469,22 +469,6 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
-            </div>
-
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "SYSTEM MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(systemItems, "system")}
             </div>
 
             <div className="">
@@ -613,6 +597,22 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(reportItems, "report")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "SYSTEM MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(systemItems, "system")}
             </div>
 
           </div>
