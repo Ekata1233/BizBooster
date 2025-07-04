@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         const leadAmount = lead?.afterDiscountAmount ?? checkout.totalAmount;
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
-            ? lead.extraService.reduce((sum, item) => sum + (item.total || 0), 0)
+            ? lead.extraService.reduce((sum: number, item: { total?: number }) => sum + (item.total || 0), 0)
             : 0;
 
         const extraCommission = Array.isArray(lead?.extraService) && lead?.extraService.length > 0
