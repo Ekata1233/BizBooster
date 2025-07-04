@@ -30,6 +30,9 @@ interface ServiceManContextType {
   fetchServiceManById: (id: string) => Promise<ServiceMan | null>;
   loading: boolean;
   error: string | null;
+  fetchServiceMenByProvider: (providerId: string) => void;
+  serviceMenByProvider: ServiceMan[];
+
 }
 
 const ServiceManContext = createContext<ServiceManContextType | undefined>(undefined);
@@ -38,6 +41,7 @@ export const ServiceManProvider = ({ children }: { children: React.ReactNode }) 
   const [serviceMen, setServiceMen] = useState<ServiceMan[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [serviceMenByProvider, setServiceMenByProvider] = useState<ServiceMan[]>([]);
 
   // Fetch all servicemen
   const fetchServiceMen = async () => {
@@ -135,6 +139,23 @@ export const ServiceManProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
+  const fetchServiceMenByProvider = async (providerId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/serviceman/filterByProvider/${providerId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch by provider");
+      setServiceMenByProvider(data.data || []);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || "Something went wrong");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchServiceMen();
   }, []);
@@ -143,11 +164,13 @@ export const ServiceManProvider = ({ children }: { children: React.ReactNode }) 
     <ServiceManContext.Provider
       value={{
         serviceMen,
+        serviceMenByProvider,
         fetchServiceMen,
         addServiceMan,
         updateServiceMan,
         deleteServiceMan,
         fetchServiceManById,
+        fetchServiceMenByProvider,
         loading,
         error,
       }}

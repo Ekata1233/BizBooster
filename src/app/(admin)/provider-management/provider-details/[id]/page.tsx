@@ -279,7 +279,7 @@ const ProviderDetailsPage = () => {
           {activeTab === 'bookings' && <ProviderBookings provider={provider} />}
           {activeTab === 'serviceMan' && <ProviderServiceMan provider={provider} />}
           {activeTab === 'bank' && <ProviderBankInfo />}
-          {activeTab === 'wallet' && <ProviderWallet />}
+          {activeTab === 'wallet' && <ProviderWallet provider={provider} />}
         </div>
       </div>
     </div>
