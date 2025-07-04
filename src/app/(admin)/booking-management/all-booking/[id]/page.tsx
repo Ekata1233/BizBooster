@@ -19,6 +19,8 @@ const AllBookingsDetails = () => {
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
 
+  console.log("lead details : ", leadDetails)
+
   const {
     fetchServiceCustomer,
     customers,
@@ -36,14 +38,14 @@ const AllBookingsDetails = () => {
         const fetchedLead = await getLeadByCheckoutId(checkoutDetails._id);
 
         if (!fetchedLead) {
-          console.warn("No lead found for ID:", checkoutDetails._id);
+          console.log("No lead found for ID:", checkoutDetails._id);
           return;
         }
 
         setLead(fetchedLead);
       } catch (error: any) {
         if (error.response?.status === 404) {
-          console.warn("Lead not found (404) for ID:", checkoutDetails._id);
+          console.log("Lead not found (404) for ID:", checkoutDetails._id);
         } else {
           console.error("Error fetching lead:", error.message || error);
         }
@@ -86,9 +88,9 @@ const AllBookingsDetails = () => {
     return <div className="p-6 text-center">Loading booking details...</div>;
   }
 
-  if (!hasExtraServices) {
-    return <div className="p-6 text-center">Loading service details...</div>;
-  }
+  // if (!hasExtraServices) {
+  //   return <div className="p-6 text-center">Loading service details...</div>;
+  // }
 
   const serviceId = checkoutDetails?.service._id;
 
@@ -180,7 +182,7 @@ const AllBookingsDetails = () => {
                   </tbody>
                 </table>
 
-                {hasExtraServices && (
+                {/* {hasExtraServices && (
                   <>
                     <h4 className="text-sm font-semibold text-gray-700 my-3">Extra Services</h4>
                     <table className="w-full table-auto border border-gray-200 text-sm mb-5">
@@ -206,6 +208,32 @@ const AllBookingsDetails = () => {
                       </tbody>
                     </table>
                   </>
+                )} */}
+                {hasExtraServices ? (
+                  <table className="w-full table-auto border border-gray-200 text-sm mb-5">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border px-4 py-2 text-left">SL</th>
+                        <th className="border px-4 py-2 text-left">Service Name</th>
+                        <th className="border px-4 py-2 text-left">Price</th>
+                        <th className="border px-4 py-2 text-left">Discount</th>
+                        <th className="border px-4 py-2 text-left">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leadDetails!.extraService!.map((service, index) => (
+                        <tr key={index}>
+                          <td className="border px-4 py-2 text-left">{index + 1}</td>
+                          <td className="border px-4 py-2 text-left">{service.serviceName}</td>
+                          <td className="border px-4 py-2 text-left">{formatPrice(service.price)}</td>
+                          <td className="border px-4 py-2 text-left">{formatPrice(service.discount)}</td>
+                          <td className="border px-4 py-2 text-left">{formatPrice(service.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="text-gray-500 text-sm my-5">No extra services added.</p>
                 )}
               </div>
 
