@@ -53,7 +53,6 @@ export async function POST(req: Request) {
       serviceCustomer,
       totalAmount,
       paymentMethod,
-      provider
     };
 
     if (!termsCondition) {
