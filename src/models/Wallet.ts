@@ -67,7 +67,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
      balanceAfterTransaction: {
       type: Number,
-      required: true, // This should always be present
+      // required: true, 
     },
     createdAt: {
       type: Date,

@@ -12,7 +12,6 @@ const FiveXGuarantee = () => {
   const totalLeads = 768;
   const targetEarning = 500000;
 
-  // 36 months * 25 leads = 900
   const targetLeads = 36 * 25;
   const levelStep = targetLeads / 5; // 180 leads = 1X
   const leadPercent = Math.min((totalLeads / targetLeads) * 100, 100);
@@ -26,7 +25,6 @@ const FiveXGuarantee = () => {
     'September', 'October', 'November', 'December',
   ];
 
-  // Fake monthly data generator
   const generateMonthlyData = (month: number, year: number) => {
     return Array.from({ length: 5 }, (_, i) => {
       const totalLead = Math.floor(Math.random() * 50);
@@ -83,7 +81,7 @@ const FiveXGuarantee = () => {
                 strokeDashoffset={345 - (leadPercent * 345) / 100}
               />
               <text x="150" y="100" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#10b981">
-                {currentLevel}X
+                {leadPercent === 100 ? '5X' : `${currentLevel}X`}
               </text>
             </svg>
           </div>

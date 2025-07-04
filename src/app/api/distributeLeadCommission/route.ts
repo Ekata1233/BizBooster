@@ -8,6 +8,7 @@ import "@/models/Service";
 import Wallet from "@/models/Wallet";
 import { connectToDatabase } from "@/utils/db";
 import ProviderWallet from "@/models/ProviderWallet";
+import Lead from "@/models/Lead";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -37,6 +38,10 @@ export async function POST(req: Request) {
             );
         }
 
+        const lead = await Lead.findOne({ checkout: checkoutId })
+
+        console.log("lead : ", lead)
+
         const checkout = await Checkout.findById(checkoutId).populate("user").populate({
             path: "service",
             select: "franchiseDetails.commission"
@@ -53,7 +58,25 @@ export async function POST(req: Request) {
             );
         }
 
-        const leadAmount = checkout.totalAmount;
+        const leadAmount = lead?.afterDiscountAmount ?? checkout.totalAmount;
+
+        const extraLeadAmount = Array.isArray(lead?.extraService)
+            ? lead.extraService.reduce((sum, item) => sum + (item.total || 0), 0)
+            : 0;
+
+        console.log("lead extraService raw:", lead?.extraService);
+        console.log("lead extraService[0].commission:", lead?.extraService?.[0]?.commission);
+        console.log("typeof commission:", typeof lead?.extraService?.[0]?.commission);
+
+        const extraCommission = Array.isArray(lead?.extraService) && lead?.extraService.length > 0
+            ? Number(lead?.extraService[0]?.commission) || 0
+            : 0;
+
+
+        console.log("extra lead amount : ", extraLeadAmount)
+        console.log("extra lead commsioin : ", extraCommission)
+
+        // const leadAmount = checkout.totalAmount;
         const userC = checkout.user;
 
 
@@ -94,17 +117,17 @@ export async function POST(req: Request) {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }
 
-        console.log("commission commission : ", commissionPool);
-        console.log("proivder commission : ", providerShare);
+        // console.log("commission commission : ", commissionPool);
+        // console.log("proivder commission : ", providerShare);
         const C_share = commissionPool * 0.5;
         const B_share = commissionPool * 0.2;
         const A_share = commissionPool * 0.1;
         let adminShare = commissionPool * 0.2;
 
-        console.log("C_share commission : ", C_share);
-        console.log("B_share commission : ", B_share);
-        console.log("A_share commission : ", A_share);
-        console.log("adminShare commission : ", adminShare);
+        // console.log("C_share commission : ", C_share);
+        // console.log("B_share commission : ", B_share);
+        // console.log("A_share commission : ", A_share);
+        // console.log("adminShare commission : ", adminShare);
 
         if (!userB) adminShare += B_share;
         if (!userA) adminShare += A_share;
@@ -175,7 +198,7 @@ export async function POST(req: Request) {
         }
 
         providerWallet.balance += providerShare;
-        providerWallet.totalCredits +=providerShare;
+        providerWallet.totalCredits += providerShare;
         providerWallet.totalEarning += providerShare;
         providerWallet.updatedAt = new Date();
 
