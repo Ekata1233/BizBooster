@@ -64,17 +64,9 @@ export async function POST(req: Request) {
             ? lead.extraService.reduce((sum, item) => sum + (item.total || 0), 0)
             : 0;
 
-        console.log("lead extraService raw:", lead?.extraService);
-        console.log("lead extraService[0].commission:", lead?.extraService?.[0]?.commission);
-        console.log("typeof commission:", typeof lead?.extraService?.[0]?.commission);
-
         const extraCommission = Array.isArray(lead?.extraService) && lead?.extraService.length > 0
             ? Number(lead?.extraService[0]?.commission) || 0
             : 0;
-
-
-        console.log("extra lead amount : ", extraLeadAmount)
-        console.log("extra lead commsioin : ", extraCommission)
 
         // const leadAmount = checkout.totalAmount;
         const userC = checkout.user;
@@ -212,6 +204,68 @@ export async function POST(req: Request) {
             status: "success",
             createdAt: new Date(),
         });
+
+
+        if (extraLeadAmount > 0 && extraCommission > 0) {
+            const extraCommissionPool = (extraLeadAmount * extraCommission) / 100;
+            const extraProviderShare = extraLeadAmount - extraCommissionPool;
+
+            const extra_C_share = extraCommissionPool * 0.5;
+            const extra_B_share = extraCommissionPool * 0.2;
+            const extra_A_share = extraCommissionPool * 0.1;
+            let extra_adminShare = extraCommissionPool * 0.2;
+
+            if (!userB) extra_adminShare += extra_B_share;
+            if (!userA) extra_adminShare += extra_A_share;
+
+            await creditWallet(userC._id, extra_C_share, "Extra Service Commission - Level C", checkout._id.toString());
+            await ReferralCommission.create({
+                fromLead: checkout._id,
+                receiver: userC._id,
+                amount: extra_C_share,
+            });
+
+            if (userB) {
+                await creditWallet(userB._id, extra_B_share, "Extra Service Commission - Level B", checkout._id.toString());
+                await ReferralCommission.create({
+                    fromLead: checkout._id,
+                    receiver: userB._id,
+                    amount: extra_B_share,
+                });
+            }
+
+            if (userA) {
+                await creditWallet(userA._id, extra_A_share, "Extra Service Commission - Level A", checkout._id.toString());
+                await ReferralCommission.create({
+                    fromLead: checkout._id,
+                    receiver: userA._id,
+                    amount: extra_A_share,
+                });
+            }
+
+            await creditWallet(ADMIN_ID, extra_adminShare, "Extra Service Commission - Admin", checkout._id.toString());
+            await ReferralCommission.create({
+                fromLead: checkout._id,
+                receiver: ADMIN_ID,
+                amount: extra_adminShare,
+            });
+
+            providerWallet.balance += extraProviderShare;
+            providerWallet.totalCredits += extraProviderShare;
+            providerWallet.totalEarning += extraProviderShare;
+            providerWallet.updatedAt = new Date();
+
+            providerWallet.transactions.push({
+                type: "credit",
+                amount: extraProviderShare,
+                description: "Provider earning from extra service",
+                referenceId: checkout._id.toString(),
+                method: "Wallet",
+                source: "extraService",
+                status: "success",
+                createdAt: new Date(),
+            });
+        }
 
         await providerWallet.save();
 

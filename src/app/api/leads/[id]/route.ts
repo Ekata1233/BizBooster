@@ -129,7 +129,7 @@ export async function GET(req: Request) {
   await connectToDatabase();
 
   try {
-   const url = new URL(req.url);
+    const url = new URL(req.url);
 
     console.log("Requested URL:", url);
 
@@ -194,6 +194,17 @@ export async function PUT(req: Request) {
         { status: 200, headers: corsHeaders }
       );
     }
+
+    const commission = formData.get("commission");
+    if (updateType === "setCommission" && commission) {
+      const updated = await Lead.findByIdAndUpdate(
+        id,
+        { "extraService.0.commission": Number(commission) }, // OR your correct path
+        { new: true }
+      );
+      return NextResponse.json({ success: true, data: updated }, { status: 200, headers: corsHeaders });
+    }
+
 
     // ✅ Existing nested update logic...
     const leadIndex = parseInt(formData.get("leadIndex") as string);

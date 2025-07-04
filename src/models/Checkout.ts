@@ -23,7 +23,7 @@ interface ICheckout extends Document {
     partialPaymentNow: number;
     partialPaymentLater: number;
     remainingPaymentStatus: 'pending' | 'paid' | 'failed';
-    commission: number;
+    
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
@@ -70,7 +70,7 @@ const checkoutSchema = new Schema<ICheckout>({
         enum: ['pending', 'paid', 'failed'],
         default: 'pending'
     },
-    commission:{type: Number , default: 0},
+    
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
