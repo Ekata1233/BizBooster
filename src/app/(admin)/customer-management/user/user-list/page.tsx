@@ -78,14 +78,23 @@ const columns = [
             </div>
         ),
     },
-    {
-        header: "Email",
-        accessor: "email",
-    },
-    {
-        header: "Mobile Number",
-        accessor: "mobileNumber",
-    },
+  {
+  header: "Contact Info",
+  accessor: "contactInfo", // dummy accessor, not used
+  render: (row: TableData) => {
+    console.log("dfdffd",row); // 👈 Console the entire row object
+    return (
+      <div className="text-sm text-gray-700">
+        <div>{row?.email || 'N/A'}</div>
+        <div>{row?.mobileNumber || 'N/A'}</div>
+      </div>
+    );
+  },
+},
+
+
+
+
     {
         header: "Referred By",
         accessor: "referredBy",
