@@ -322,7 +322,7 @@ export async function POST(req: Request) {
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
-        const totalRevenue = leadAmount + extraLeadAmount;
+        const totalRevenue = adminCommissionTotal;
         const franchiseEarningsTotal =
             C_share + B_share + A_share +
             (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
@@ -337,8 +337,8 @@ export async function POST(req: Request) {
                     // Optional fields:
                     extraFees: 0,
                     pendingPayouts: 0,
-                    franchiseEarnings: 0,
-                    refundsToUsers: franchiseEarningsTotal,
+                    franchiseEarnings: franchiseEarningsTotal,
+                    refundsToUsers: 0,
                 },
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
