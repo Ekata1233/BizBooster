@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         });
 
         const commission = checkout.service?.franchiseDetails?.commission;
-        console.log("checkout commission : ", commission)
+        // console.log("checkout commission : ", commission)
 
 
         if (!checkout || checkout.commissionDistributed) {
@@ -109,17 +109,18 @@ export async function POST(req: Request) {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }
 
-        // console.log("commission commission : ", commissionPool);
-        // console.log("proivder commission : ", providerShare);
+
         const C_share = commissionPool * 0.5;
         const B_share = commissionPool * 0.2;
         const A_share = commissionPool * 0.1;
         let adminShare = commissionPool * 0.2;
 
-        // console.log("C_share commission : ", C_share);
-        // console.log("B_share commission : ", B_share);
-        // console.log("A_share commission : ", A_share);
-        // console.log("adminShare commission : ", adminShare);
+        console.log("commission commission : ", commissionPool);
+        console.log("proivder commission : ", providerShare);
+        console.log("C_share commission : ", C_share);
+        console.log("B_share commission : ", B_share);
+        console.log("A_share commission : ", A_share);
+        console.log("adminShare commission : ", adminShare);
 
         if (!userB) adminShare += B_share;
         if (!userA) adminShare += A_share;
@@ -215,6 +216,13 @@ export async function POST(req: Request) {
             const extra_A_share = extraCommissionPool * 0.1;
             let extra_adminShare = extraCommissionPool * 0.2;
 
+            console.log("commission commission : ", extraCommissionPool);
+            console.log("proivder commission : ", extraProviderShare);
+            console.log("C_share commission : ", extra_C_share);
+            console.log("B_share commission : ", extra_B_share);
+            console.log("A_share commission : ", extra_A_share);
+            console.log("adminShare commission : ", extra_adminShare);
+
             if (!userB) extra_adminShare += extra_B_share;
             if (!userA) extra_adminShare += extra_A_share;
 
@@ -261,7 +269,7 @@ export async function POST(req: Request) {
                 description: "Provider earning from extra service",
                 referenceId: checkout._id.toString(),
                 method: "Wallet",
-                source: "extraService",
+                source: "checkout",
                 status: "success",
                 createdAt: new Date(),
             });
