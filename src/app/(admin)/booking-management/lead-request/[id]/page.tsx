@@ -57,19 +57,19 @@ const LeadRequestDetails = () => {
       // 2. Approve the lead
       // const formData = new FormData();
       // Step 1: Set commission
-const commissionFormData = new FormData();
-commissionFormData.append("updateType", "setCommission");
-commissionFormData.append("commission", String(commissionValue));
-await updateLead(lead._id!, commissionFormData);
+      const commissionFormData = new FormData();
+      commissionFormData.append("updateType", "setCommission");
+      commissionFormData.append("commission", String(commissionValue));
+      await updateLead(lead._id!, commissionFormData);
 
-// Step 2: Approve the lead
-const approvalFormData = new FormData();
-approvalFormData.append("updateType", "adminApproval");
-approvalFormData.append("isAdminApproved", "true");
+      // Step 2: Approve the lead
+      const approvalFormData = new FormData();
+      approvalFormData.append("updateType", "adminApproval");
+      approvalFormData.append("isAdminApproved", "true");
 
-const response = await axios.put(`/api/leads/${lead._id}`, approvalFormData, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-});
+      const response = await axios.put(`/api/leads/${lead._id}`, approvalFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
 
       if (response.data.success) {

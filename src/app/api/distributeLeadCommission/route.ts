@@ -9,6 +9,7 @@ import Wallet from "@/models/Wallet";
 import { connectToDatabase } from "@/utils/db";
 import ProviderWallet from "@/models/ProviderWallet";
 import Lead from "@/models/Lead";
+import AdminEarnings from "@/models/AdminEarnings";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -238,15 +239,20 @@ export async function POST(req: Request) {
             createdAt: new Date(),
         });
 
+        let extraProviderShare = 0;
+        let extra_C_share = 0;
+        let extra_B_share = 0;
+        let extra_A_share = 0;
+        let extra_adminShare = 0;
 
         if (extraLeadAmount > 0 && extraCommission > 0) {
             const extraCommissionPool = (extraLeadAmount * extraCommission) / 100;
-            const extraProviderShare = extraLeadAmount - extraCommissionPool;
+            extraProviderShare = extraLeadAmount - extraCommissionPool;
 
-            const extra_C_share = extraCommissionPool * 0.5;
-            const extra_B_share = extraCommissionPool * 0.2;
-            const extra_A_share = extraCommissionPool * 0.1;
-            let extra_adminShare = extraCommissionPool * 0.2;
+            extra_C_share = extraCommissionPool * 0.5;
+            extra_B_share = extraCommissionPool * 0.2;
+            extra_A_share = extraCommissionPool * 0.1;
+            extra_adminShare = extraCommissionPool * 0.2;
 
             console.log("commission commission : ", extraCommissionPool);
             console.log("proivder commission : ", extraProviderShare);
@@ -310,7 +316,35 @@ export async function POST(req: Request) {
         await providerWallet.save();
 
         checkout.commissionDistributed = true;
+        checkout.isCompleted = true;
+        checkout.orderStatus = "completed";
         await checkout.save();
+
+        const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+        const adminCommissionTotal = adminShare + (extra_adminShare || 0);
+        const providerEarningsTotal = providerShare + (extraProviderShare || 0);
+        const totalRevenue = adminCommissionTotal;
+        const franchiseEarningsTotal =
+            C_share + B_share + A_share +
+            (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
+
+        await AdminEarnings.findOneAndUpdate(
+            { date: todayDate },
+            {
+                $inc: {
+                    adminCommission: adminCommissionTotal,
+                    providerEarnings: providerEarningsTotal,
+                    totalRevenue: totalRevenue,
+                    // Optional fields:
+                    extraFees: 0,
+                    pendingPayouts: 0,
+                    franchiseEarnings: franchiseEarningsTotal,
+                    refundsToUsers: 0,
+                },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
 
         return NextResponse.json(
             { success: true, message: "Commission distributed successfully." },

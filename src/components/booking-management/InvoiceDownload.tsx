@@ -200,86 +200,109 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
                         </div>
                     </div>
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                    <thead>
-                        <tr style={{ backgroundColor: '#f0f0f0' }}>
-                            <th style={thStyle}>SL</th>
-                            <th style={thStyle}>Description</th>
-                            <th style={thStyle}>Qty</th>
-                            <th style={thStyle}>Cost</th>
-                            <th style={thStyle}>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style={tdStyle}>01</td>
-                            <td style={tdStyle}>
-                                <strong>{checkoutDetails?.service?.serviceName || 'Service'}</strong>
-                                <br />
-                                {'-'}
-                            </td>
-                            <td style={tdStyle}>1</td>
-                            <td style={tdStyleRight}> {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}</td>
-                            <td style={tdStyleRight}> {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}</td>
-                        </tr>
-                    </tbody>
+
+
+               <div style={{ margin: '20px 0' }}>
+          <h3 style={{ fontWeight: 600, marginBottom: '10px', color: '#333' }}>Booking Summary</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <thead style={{ backgroundColor: '#f3f3f3' }}>
+              <tr>
+                <th style={thStyle}>Service</th>
+                <th style={thStyle}>Price</th>
+                <th style={thStyle}>Discount Price</th>
+                <th style={thStyle}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={tdStyle}>{checkoutDetails?.service?.serviceName || 'N/A'}</td>
+                <td style={tdStyle}>
+                  {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0)}
+                </td>
+                <td style={tdStyle}>
+                  {formatPrice(leadDetails?.newDiscountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0)}
+                </td>
+                <td style={tdStyle}>
+                  {formatPrice(leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Summary Totals */}
+        <div style={{ marginTop: '20px', fontSize: '13px', color: '#222' }}>
+          {[
+            ['Subtotal', leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0],
+            ['Discount', leadDetails?.newDiscountAmount ?? (checkoutDetails?.service?.price - checkoutDetails?.service?.discountedPrice) ?? 0],
+            ['Campaign Discount', 0],
+            ['Coupon Discount', checkoutDetails.couponDiscount || 0],
+            ['VAT', 0],
+            ['Platform Fee', 0],
+            ['Total', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0],
+          ].map(([label, amount]) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontWeight: 500 }}>{label}:</span>
+              <span>{formatPrice(Number(amount))}</span>
+            </div>
+          ))}
+
+          {/* Extra Services */}
+          {hasExtraServices && (() => {
+            const extraServices = leadDetails!.extraService!;
+            const subtotal = extraServices.reduce((acc, s) => acc + (s.price || 0), 0);
+            const totalDiscount = extraServices.reduce((acc, s) => acc + (s.discount || 0), 0);
+            const extraTotal = extraServices.reduce((acc, s) => acc + (s.total || 0), 0);
+
+            return (
+              <>
+                <h4 style={{ fontWeight: 600, marginTop: '30px', marginBottom: '10px', color: '#333' }}>Extra Services</h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', marginBottom: '10px' }}>
+                  <thead style={{ backgroundColor: '#f3f3f3' }}>
+                    <tr>
+                      <th style={thStyle}>SL</th>
+                      <th style={thStyle}>Service Name</th>
+                      <th style={thStyle}>Price</th>
+                      <th style={thStyle}>Discount</th>
+                      <th style={thStyle}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {extraServices.map((service, index) => (
+                      <tr key={index}>
+                        <td style={tdStyle}>{index + 1}</td>
+                        <td style={tdStyle}>{service.serviceName}</td>
+                        <td style={tdStyle}>{formatPrice(service.price)}</td>
+                        <td style={tdStyle}>{formatPrice(service.discount)}</td>
+                        <td style={tdStyle}>{formatPrice(service.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
-                {hasExtraServices && (
-                    <>
-                        <h4 style={{ fontSize: '15px', margin: '10px 0' }}>Extra Services</h4>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: '#f0f0f0' }}>
-                                    <th style={thStyle}>SL</th>
-                                    <th style={thStyle}>Service Name</th>
-                                    <th style={thStyle}>Price</th>
-                                    <th style={thStyle}>Discount</th>
-                                    <th style={thStyle}>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {leadDetails!.extraService!.map((service, index) => (
-                                    <tr key={index}>
-                                        <td style={tdStyle}>{index + 1}</td>
-                                        <td style={tdStyle}>{service.serviceName}</td>
-                                        <td style={tdStyleRight}>{formatPrice(service.price)}</td>
-                                        <td style={tdStyleRight}>{formatPrice(service.discount)}</td>
-                                        <td style={tdStyleRight}>{formatPrice(service.total)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <table style={{ width: '50%', fontSize: '13px' }}>
-                        <tbody>
-                            <tr><td>Subtotal</td><td style={rightAlign}> {formatPrice(leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0)}</td></tr>
-                            <tr><td>Discount</td><td style={rightAlign}>- ₹0.00</td></tr>
-                            <tr><td>Assurity Fee</td><td style={rightAlign}>- {assurityfee}</td></tr>
-                            <tr><td>Platform Fee</td><td style={rightAlign}>- {platformFee}</td></tr>
-                            <tr><td>Coupon</td><td style={rightAlign}>- ₹0.00</td></tr>
-                            <tr><td>Tax</td><td style={rightAlign}>+ ₹0.00</td></tr>
-                            {leadDetails?.extraService?.map((service, index) => (
-                                <tr key={index} style={{ fontWeight: 'bold' }}>
-                                    <td>Extra Service</td>
-                                    <td style={rightAlign}>{formatPrice(service.total)}</td>
-                                </tr>
-                            ))}
 
-                            <tr style={{ fontWeight: 'bold', color: '#007bff' }}>
-                                <td>Total</td><td style={rightAlign}>{formatPrice(grandTotal || 0)}</td>
-                            </tr>
+                {[
+                  ['Subtotal', subtotal],
+                  ['Discount', totalDiscount],
+                  ['Campaign Discount', 0],
+                  ['Coupon Discount', checkoutDetails.couponDiscount || 0],
+                  ['VAT', 0],
+                  ['Platform Fee', 0],
+                  ['Extra Service Total', extraTotal],
+                ].map(([label, amount]) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: 500 }}>{label}:</span>
+                    <span>{formatPrice(Number(amount))}</span>
+                  </div>
+                ))}
+              </>
+            );
+          })()}
 
-                            <tr style={{ fontWeight: 'bold', color: '#007bff' }}>
-                                <td>Due</td>
-                                <td style={rightAlign}>
-                                    {formatPrice(grandTotal || 0)}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontWeight: 'bold', color: '#007bff' }}>
+            <span>Grand Total</span>
+            <span>{formatPrice(grandTotal)}</span>
+          </div>
+        </div>
 
                 {/* Footer */}
                 <div style={{ marginTop: '30px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
@@ -320,7 +343,16 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
 }
 
 // Styles
-const thStyle = { border: '1px solid #ccc', padding: '8px', textAlign: 'left' as const };
-const tdStyle = { border: '1px solid #ccc', padding: '8px' };
-const tdStyleRight = { border: '1px solid #ccc', padding: '8px', textAlign: 'right' as const };
-const rightAlign = { textAlign: 'right' as const };
+const thStyle = {
+  border: '1px solid #ccc',
+  padding: '8px',
+  textAlign: 'left' as const,
+  fontWeight: 'bold',
+  backgroundColor: '#f9f9f9',
+};
+
+const tdStyle = {
+  border: '1px solid #ccc',
+  padding: '8px',
+  textAlign: 'left' as const,
+};
