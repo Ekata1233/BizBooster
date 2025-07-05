@@ -316,6 +316,7 @@ export async function POST(req: Request) {
         await providerWallet.save();
 
         checkout.commissionDistributed = true;
+        checkout.orderStatus = "completed";
         await checkout.save();
 
         const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
