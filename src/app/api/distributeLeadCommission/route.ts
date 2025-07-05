@@ -58,7 +58,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const leadAmount = lead?.afterDiscountAmount ?? checkout.totalAmount;
+        const leadAmount = lead?.afterDicountAmount  ?? checkout.totalAmount;
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
             ? lead.extraService.reduce((sum: number, item: { total?: number }) => sum + (item.total || 0), 0)
