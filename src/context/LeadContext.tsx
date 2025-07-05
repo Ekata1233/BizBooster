@@ -33,6 +33,8 @@ export interface Lead {
   document?: string;
   checkout: any;
   newAmount?: number;
+  newDiscountAmount?: number;
+  afterDicountAmount?: number;
   extraService?: IExtraService[] | undefined;
   leads: IStatus[];
   isAdminApproved: boolean;

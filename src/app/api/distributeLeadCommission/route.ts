@@ -316,6 +316,7 @@ export async function POST(req: Request) {
         await providerWallet.save();
 
         checkout.commissionDistributed = true;
+        checkout.isCompleted = true;
         checkout.orderStatus = "completed";
         await checkout.save();
 
