@@ -1,6 +1,7 @@
 "use client";
 import { useCommission } from "@/context/CommissionContext";
 import React, { useEffect, useState } from "react";
+import PackagesCommissionPage from "../../packages-commission/page";
 
 const tabs = [
   "Business Info",
@@ -123,7 +124,12 @@ function VendorDashboardPage() {
           </div>
         )}
 
-        {activeTab === "General Setup" && <div>Package Commision</div>}
+        {activeTab === "Package Commision" && (
+  <div className="space-y-4">
+    <PackagesCommissionPage />
+  </div>
+)}
+
         {activeTab === "Promotions" && <div>Promotions Content</div>}
         {activeTab === "Bookings" && <div>Bookings Content</div>}
         {activeTab === "Customers" && <div>Customers Content</div>}

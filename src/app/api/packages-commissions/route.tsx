@@ -1,3 +1,4 @@
+
 import { PackagesCommission } from '@/models/PackagesCommission';
 import { connectToDatabase } from '@/utils/db';
 import { NextResponse } from 'next/server';
@@ -19,6 +20,8 @@ export async function POST(req: Request) {
 
     const { level1Commission, level2Commission } = body;
 
+    console.log("bdy : ", body)
+
     // Validate input
     if (typeof level1Commission !== 'number' || typeof level2Commission !== 'number') {
       return NextResponse.json({ error: 'Invalid commission values' }, { status: 400 });
@@ -27,6 +30,8 @@ export async function POST(req: Request) {
     // Check if commission document exists
     const existingCommission = await PackagesCommission.findOne();
 
+    console.log("extist : ", existingCommission)
+
     let result;
     if (existingCommission) {
       // Update the existing commission
@@ -34,12 +39,15 @@ export async function POST(req: Request) {
       existingCommission.level2Commission = level2Commission;
       await existingCommission.save();
       result = existingCommission;
+      console.log("result : ", result)
     } else {
       // Create new commission only once
       result = await PackagesCommission.create({
         level1Commission,
         level2Commission,
       });
+
+      console.log('restult A: ', result)
     }
 
     return NextResponse.json(result, { status: 200 });
