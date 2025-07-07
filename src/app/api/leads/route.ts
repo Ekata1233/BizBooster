@@ -115,9 +115,9 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const checkout = formData.get("checkout") as string;
-    const serviceCustomer = formData.get("serviceCustomer") as string;
+    // const serviceCustomer = formData.get("serviceCustomer") as string;
     // const serviceManRaw = formData.get("serviceMan") as string;
-    const service = formData.get("service") as string;
+    // const service = formData.get("service") as string;
     const amount = parseFloat(formData.get("amount") as string);
 
 
@@ -174,9 +174,9 @@ export async function POST(req: NextRequest) {
       // Step 3: Create new lead
       const newLead = await Lead.create({
         checkout,
-        serviceCustomer,
+        // serviceCustomer,
         serviceMan : serviceMan  || undefined,
-        service,
+        // service,
         amount,
         leads: leadsData,
       });
