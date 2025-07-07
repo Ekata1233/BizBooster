@@ -870,6 +870,8 @@ const academyItems: NavItem[] = [
       { name: "Training Tutorials", path: "/academy/certifications" },
       { name: "Live Webinars", path: "/academy/livewebinars" },
       { name: "Recorded Webinars", path: "/academy/webinars" },
+      { name: "Understanding Fetch True", path: "/academy/understandingfetchtrue" },
+
     ],
   },
 ];
