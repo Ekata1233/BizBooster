@@ -8,6 +8,7 @@ export interface IWalletTransaction {
   method?: string;
   source?: string;
   status?: 'success' | 'failed' | 'pending';
+  balanceAfterTransaction: number;
   createdAt: Date;
 }
 
@@ -23,6 +24,8 @@ export interface IProviderWallet extends Document {
   pendingWithdraw: number;
   alreadyWithdrawn: number;
   totalEarning: number;
+  totalCredits: number;
+  totalDebits: number;
   cashInHand: number;
   isActive: boolean;
   createdAt: Date;
@@ -42,13 +45,17 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment','withdraw'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment', 'withdraw'],
       default: 'topup',
     },
     status: {
       type: String,
       enum: ['success', 'failed', 'pending'],
       default: 'success',
+    },
+    balanceAfterTransaction: {
+      type: Number,
+      // required: true, 
     },
     createdAt: {
       type: Date,
@@ -90,7 +97,7 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
       type: [TransactionSchema],
       default: [],
     },
-     receivableBalance: {
+    receivableBalance: {
       type: Number,
       default: 0,
       min: 0,
@@ -114,6 +121,16 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    totalCredits: {
+      type: Number,
+      default: 0,
+      min: [0, 'Total credits cannot be negative'],
+    },
+    totalDebits: {
+      type: Number,
+      default: 0,
+      min: [0, 'Total debits cannot be negative'],
     },
     cashInHand: {
       type: Number,

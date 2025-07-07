@@ -16,10 +16,10 @@ interface BookingRow {
   email: string;
   totalAmount: number;
   paymentStatus: string;
-  scheduleDate?: string;
   bookingDate: string;
   orderStatus: string;
   provider?: any;
+  isCompleted: boolean; // ✅ new field
 }
 
 const AllBookings = () => {
@@ -61,15 +61,10 @@ const AllBookings = () => {
         <span className="text-gray-800 font-semibold">₹ {row.totalAmount}</span>
       ),
     },
-    {
-      header: 'Schedule Date',
-      accessor: 'scheduleDate',
-      render: (row: BookingRow) => (
-        <span>
-          {row.scheduleDate ? new Date(row.scheduleDate).toLocaleString() : 'N/A'}
-        </span>
-      ),
-    },
+
+    // ✅ NEW COLUMN: Booking Status based on isCompleted
+    
+
     {
       header: 'Booking Date',
       accessor: 'bookingDate',
@@ -112,6 +107,23 @@ const AllBookings = () => {
       },
     },
     {
+      header: 'Booking Status',
+      accessor: 'bookingStatus',
+      render: (row: BookingRow) => {
+        const isCompleted = row.isCompleted;
+        const label = isCompleted ? 'Completed' : 'Pending';
+        const colorClass = isCompleted
+          ? 'bg-green-100 text-green-700 border border-green-300'
+          : 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+
+        return (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+            {label}
+          </span>
+        );
+      },
+    },
+    {
       header: 'Action',
       accessor: 'action',
       render: (row: BookingRow) => (
@@ -148,11 +160,11 @@ const AllBookings = () => {
       email: checkout.serviceCustomer?.email,
       totalAmount: checkout.service?.discountedPrice || 0,
       paymentStatus: checkout?.paymentStatus || 'unpaid',
-      scheduleDate: checkout?.createdAt,
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,
       _id: checkout._id,
-      provider: checkout.provider, // ✅ added provider for status check
+      provider: checkout.provider,
+      isCompleted: checkout.isCompleted, // ✅ mapped for booking status
     }));
 
   return (

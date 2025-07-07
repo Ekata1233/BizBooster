@@ -13,6 +13,10 @@ import Link from 'next/link';
 import ProviderInfoSection from '@/components/provider-component/ProviderInfoSection';
 import ProviderStatsSection from '@/components/provider-component/ProviderStatsSection';
 import ProviderSubscribedServices from '@/components/provider-component/ProviderSubscribedServices';
+import ProviderBookings from '@/components/provider-component/ProviderBookings';
+import ProviderServiceMan from '@/components/provider-component/ProviderServiceMan';
+import ProviderBankInfo from '@/components/provider-component/ProviderBankInfo';
+import ProviderWallet from '@/components/provider-component/ProviderWallet';
 
 interface KycDocs {
   GST?: string[];
@@ -190,7 +194,7 @@ const ProviderDetailsPage = () => {
       <PageBreadcrumb pageTitle="Provider Details" />
 
       <div className="space-y-6">
-        <div className="border rounded-lg p-6 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+        <div className="">
           <UserMetaCard
             imageSrc={provider.storeInfo?.logo || "/images/logo/default-provider.webp"}
             name={provider.fullName || provider.storeInfo?.storeName || "No Name"}
@@ -199,33 +203,83 @@ const ProviderDetailsPage = () => {
           />
         </div>
 
-        <div className="border-b border-gray-200">
+        <div className="">
           <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
             <li
-              className={`cursor-pointer px-4 py-2 ${activeTab === 'info' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'info'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
               onClick={() => setActiveTab('info')}
             >
               Provider Info
             </li>
             <li
-              className={`cursor-pointer px-4 py-2 ${activeTab === 'stats' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'stats'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
               onClick={() => setActiveTab('stats')}
             >
               Statestics
             </li>
             <li
-              className={`cursor-pointer px-4 py-2 ${activeTab === 'subscribe' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'subscribe'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
               onClick={() => setActiveTab('subscribe')}
             >
               Subscribe Services
             </li>
+            <li
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'bookings'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
+              onClick={() => setActiveTab('bookings')}
+            >
+              Bookings
+            </li>
+            <li
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'serviceMan'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
+              onClick={() => setActiveTab('serviceMan')}
+            >
+              Service Man List
+            </li>
+            <li
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'bank'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
+              onClick={() => setActiveTab('bank')}
+            >
+              Bank Information
+            </li>
+            <li
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'wallet'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
+              onClick={() => setActiveTab('wallet')}
+            >
+              Wallet
+            </li>
           </ul>
         </div>
+
 
         <div className='space-y-6 pt-4'>
           {activeTab === 'info' && <ProviderInfoSection provider={provider} />}
           {activeTab === 'stats' && provider && <ProviderStatsSection provider={provider} />}
           {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}
+          {activeTab === 'bookings' && <ProviderBookings provider={provider} />}
+          {activeTab === 'serviceMan' && <ProviderServiceMan provider={provider} />}
+          {activeTab === 'bank' && <ProviderBankInfo />}
+          {activeTab === 'wallet' && <ProviderWallet provider={provider} />}
         </div>
       </div>
     </div>

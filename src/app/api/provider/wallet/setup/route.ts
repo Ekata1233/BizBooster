@@ -93,7 +93,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-// 👇 Add this handler to respond to CORS preflight requests
 export async function OPTIONS() {
   return NextResponse.json({}, { status: 200, headers: corsHeaders });
 }

@@ -16,15 +16,15 @@ const LeadRequestDetails = () => {
   const params = useParams();
   const leadId = params?.id as string;
   const { getLeadById, fetchLeads } = useLead();
-  const { updateCheckout } = useCheckout();
-const router = useRouter();
+  const { updateLead } = useLead();
+  const router = useRouter();
   const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commissionValue, setCommissionValue] = useState<number | ''>('');
   const [isCommissionSet, setIsCommissionSet] = useState(false);
   const [isApproved, setIsApproved] = useState(false); // ✅ Added
- const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
+  const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   useEffect(() => {
     if (!leadId) return;
 
@@ -43,47 +43,56 @@ const router = useRouter();
     }
   };
 
-const handleApprove = async () => {
-  if (!lead || commissionValue === '') {
-    return alert('Missing lead or commission value');
-  }
-
-  try {
-    // 1. Update checkout commission
-    await updateCheckout(lead.checkout?._id!, {
-      commission: Number(commissionValue),
-    });
-
-    // 2. Approve the lead
-    const formData = new FormData();
-    formData.append('updateType', 'adminApproval');
-    formData.append('isAdminApproved', 'true');
-
-    const response = await axios.put(`/api/leads/${lead._id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    if (response.data.success) {
-      alert('Commission and Lead approved successfully');
-
-      // Optional: refetch or update state
-      fetchLeads();
-      const updatedLead = await getLeadById(lead._id);
-      setLead(updatedLead);
-      setIsCommissionSet(false);
-      setCommissionValue('');
-      setIsApproved(true);
-
-      // ✅ Redirect to lead-request page
-      router.push('/booking-management/lead-request');
-    } else {
-      throw new Error(response.data.message || 'Approval failed');
+  const handleApprove = async () => {
+    if (!lead || commissionValue === '') {
+      return alert('Missing lead or commission value');
     }
-  } catch (error) {
-    console.error(error);
-    alert('Error during approval');
-  }
-};
+
+    try {
+      // 1. Update checkout commission
+      // await updateLead(lead._id!, {
+      //   commission: Number(commissionValue),
+      // });
+
+      // 2. Approve the lead
+      // const formData = new FormData();
+      // Step 1: Set commission
+      const commissionFormData = new FormData();
+      commissionFormData.append("updateType", "setCommission");
+      commissionFormData.append("commission", String(commissionValue));
+      await updateLead(lead._id!, commissionFormData);
+
+      // Step 2: Approve the lead
+      const approvalFormData = new FormData();
+      approvalFormData.append("updateType", "adminApproval");
+      approvalFormData.append("isAdminApproved", "true");
+
+      const response = await axios.put(`/api/leads/${lead._id}`, approvalFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+
+      if (response.data.success) {
+        alert('Commission and Lead approved successfully');
+
+        // Optional: refetch or update state
+        fetchLeads();
+        const updatedLead = await getLeadById(lead._id);
+        setLead(updatedLead);
+        setIsCommissionSet(false);
+        setCommissionValue('');
+        setIsApproved(true);
+
+        // ✅ Redirect to lead-request page
+        router.push('/booking-management/lead-request');
+      } else {
+        throw new Error(response.data.message || 'Approval failed');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error during approval');
+    }
+  };
 
   if (!lead) return <div className="p-4">Loading lead details...</div>;
 
@@ -95,7 +104,7 @@ const handleApprove = async () => {
         <h2 className="text-xl font-bold text-blue-700 mb-1">
           Booking ID: {lead.checkout?.bookingId}
         </h2>
-       
+
         <p className="text-sm text-gray-600">
           Status: <span className="font-medium">{lead.checkout?.orderStatus || 'N/A'}</span>
         </p>
@@ -163,38 +172,38 @@ const handleApprove = async () => {
           </ComponentCard>
 
           {(lead.extraService?.length ?? 0) > 0 && (
-  <ComponentCard title="🧾 Extra Services">
-    <table className="w-full text-sm border border-gray-300">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="px-4 py-2 border">#</th>
-          <th className="px-4 py-2 border text-left">Service Name</th>
-          <th className="px-4 py-2 border">Price</th>
-          <th className="px-4 py-2 border">Discount</th>
-          <th className="px-4 py-2 border">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {lead.extraService!.map((item, index) => (
-          <tr key={index}>
-            <td className="px-4 py-2 border text-center">{index + 1}</td>
-            <td className="px-4 py-2 border">{item.serviceName}</td>
-            <td className="px-4 py-2 border text-center">₹{item.price}</td>
-            <td className="px-4 py-2 border text-center">₹{item.discount}</td>
-            <td className="px-4 py-2 border text-center">₹{item.total}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </ComponentCard>
-)}
+            <ComponentCard title="🧾 Extra Services">
+              <table className="w-full text-sm border border-gray-300">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 border">#</th>
+                    <th className="px-4 py-2 border text-left">Service Name</th>
+                    <th className="px-4 py-2 border">Price</th>
+                    <th className="px-4 py-2 border">Discount</th>
+                    <th className="px-4 py-2 border">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lead.extraService!.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-2 border text-center">{index + 1}</td>
+                      <td className="px-4 py-2 border">{item.serviceName}</td>
+                      <td className="px-4 py-2 border text-center">₹{item.price}</td>
+                      <td className="px-4 py-2 border text-center">₹{item.discount}</td>
+                      <td className="px-4 py-2 border text-center">₹{item.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ComponentCard>
+          )}
 
         </div>
       )}
 
       {activeTab === 'status' && (
         <ComponentCard title="Lead Status Updates">
-          <BookingStatus checkout={checkoutDetails}/>
+          <BookingStatus checkout={checkoutDetails} />
         </ComponentCard>
       )}
 

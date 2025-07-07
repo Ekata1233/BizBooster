@@ -23,7 +23,7 @@ interface ICheckout extends Document {
     partialPaymentNow: number;
     partialPaymentLater: number;
     remainingPaymentStatus: 'pending' | 'paid' | 'failed';
-    commission: number;
+    
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
@@ -32,6 +32,7 @@ interface ICheckout extends Document {
     acceptedDate: Date;
     serviceMan : mongoose.Types.ObjectId;
     isCompleted: boolean;
+    commissionDistributed: boolean;
     isCanceled: boolean;
     isDeleted: boolean;
     createdAt: Date;
@@ -69,7 +70,7 @@ const checkoutSchema = new Schema<ICheckout>({
         enum: ['pending', 'paid', 'failed'],
         default: 'pending'
     },
-    commission:{type: Number , default: 0},
+    
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
@@ -86,6 +87,7 @@ const checkoutSchema = new Schema<ICheckout>({
     acceptedDate: { type: Date, default: null },
     serviceMan :  { type: Schema.Types.ObjectId, ref: 'ServiceMan', default: null },
     isCompleted: { type: Boolean, default: false },
+    commissionDistributed: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },

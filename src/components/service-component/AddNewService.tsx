@@ -80,7 +80,7 @@ const AddNewService = () => {
     },
   });
 
-
+console.log("form data of service : ", formData);
   
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,7 +92,8 @@ const AddNewService = () => {
     switch (stepNumber) {
       case 1:
         return (
-          !!formData?.basic?.name?.trim() &&
+          !!formData?.basic?.name?.trim()
+           &&
           !!formData?.basic?.category &&
           !!formData?.basic?.subcategory &&
           !!formData?.basic?.price &&
@@ -103,7 +104,8 @@ const AddNewService = () => {
         );
       case 2:
         return (
-          !!formData?.service?.benefits?.trim() &&
+          !!formData?.service?.benefits?.trim()
+           &&
           !!formData?.service?.overview?.trim() &&
           !!formData?.service?.howItWorks?.trim() &&
           !!formData?.service?.document?.trim() &&
@@ -313,6 +315,7 @@ const AddNewService = () => {
                 setData={(newData) =>
                   setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
                 }
+                price={formData.basic.price}
               />
             )}
 

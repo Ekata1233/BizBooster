@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     match: [/^[A-Za-z]+(?: [A-Za-z]+)*$/, 'Full name must be 2-30 alphabetic characters and may include spaces'],
     minlength: 2,
     maxlength: 30
-  },  
+  },
   email: {
     type: String,
     required: true,
@@ -55,10 +55,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-serviceCustomers: [{ 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "ServiceCustomer" 
+  serviceCustomers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ServiceCustomer"
   }],
+  // packageActive: [{
+  //   type: Boolean,
+  //   default: false
+  // }],
   isDeleted: {
     type: Boolean,
     default: false

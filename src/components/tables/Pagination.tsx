@@ -1,11 +1,13 @@
 type PaginationProps = {
   currentPage: number;
+   totalItems: number;    
   totalPages: number;
   onPageChange: (page: number) => void;
 };
 
 const Pagination: React.FC<PaginationProps> = ({
   currentPage,
+  totalItems,
   totalPages,
   onPageChange,
 }) => {

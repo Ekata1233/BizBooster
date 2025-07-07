@@ -24,6 +24,7 @@ export interface IWalletTransaction {
   source?: string;
   status?: 'success' | 'failed' | 'pending';
   createdAt: Date;
+  balanceAfterTransaction: number;
 }
 
 const TransactionSchema = new Schema<IWalletTransaction>(
@@ -56,13 +57,17 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment','referral'],
       default: 'checkout',
     },
     status: {
       type: String,
       enum: ['success', 'failed', 'pending'],
       default: 'success',
+    },
+     balanceAfterTransaction: {
+      type: Number,
+      // required: true, 
     },
     createdAt: {
       type: Date,
@@ -116,5 +121,9 @@ const WalletSchema = new Schema<IWallet>(
   { timestamps: true }
 );
 
-const Wallet = mongoose.model<IWallet>('Wallet', WalletSchema);
+// const Wallet = mongoose.model<IWallet>('Wallet', WalletSchema);
+// export default Wallet;
+
+
+const Wallet = mongoose.models.Wallet || mongoose.model<IWallet>('Wallet', WalletSchema);
 export default Wallet;

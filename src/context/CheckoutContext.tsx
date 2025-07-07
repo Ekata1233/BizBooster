@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // ✅ Define your Checkout interface
@@ -23,6 +24,7 @@ export interface Checkout {
   partialPaymentLater?: number;
   partialPaymentNow?: number;
   platformFee?: number;
+
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;
@@ -31,7 +33,7 @@ export interface Checkout {
   totalAmount: number;
   vat?: number;
   walletAmount?: number;
-serviceDate?: Date;
+  serviceDate?: Date;
   user: {
     fullName: string;
     email: string;
@@ -51,7 +53,7 @@ serviceDate?: Date;
     fullName: string;
     email: string;
     city: string;
-    phone : string;
+    phone: string;
     address: string;
   };
 
@@ -125,6 +127,9 @@ interface CheckoutContextType {
   updateCheckout: (id: string, updateData: Partial<Checkout>) => Promise<void>;
   loading: boolean;
   error: string | null;
+  fetchCheckoutByUser: (userId: string) => Promise<void>;
+  fetchCheckoutsByProviderId: (providerId: string) => Promise<void>;
+
 }
 
 // ✅ Create Context
@@ -233,13 +238,51 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
     }
   };
 
+  // 🔹 Fetch Checkouts By User (from /api/checkout/user/[id])
+  const fetchCheckoutByUser = async (userId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/checkout/lead-by-user/${userId}`);
+      const data = await res.json();
+
+      if (data.success) {
+        setCheckouts(data.data);
+      } else {
+        setError(data.message || 'Failed to fetch checkouts by user');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const fetchCheckoutsByProviderId = async (providerId: string) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/checkout/${providerId}`
+      );
+      setCheckouts(res.data?.data || []);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching checkouts:", err);
+      setError("Failed to fetch checkouts.");
+    } finally {
+      setError("Failed to fetch checkouts.");
+    }
+  };
+
 
   useEffect(() => {
     fetchCheckouts(); // Fetch all on mount
   }, []);
 
   return (
-    <CheckoutContext.Provider value={{ checkouts, fetchCheckouts, fetchCheckoutById, updateCheckout, loading, error }}>
+    <CheckoutContext.Provider value={{ checkouts, fetchCheckoutByUser, fetchCheckouts, fetchCheckoutById, updateCheckout, fetchCheckoutsByProviderId, loading, error }}>
       {children}
     </CheckoutContext.Provider>
   );

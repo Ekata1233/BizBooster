@@ -21,8 +21,10 @@ import { CheckoutProvider } from '@/context/CheckoutContext';
 import { LeadProvider } from '@/context/LeadContext';
 import { ServiceManProvider } from '@/context/ServiceManContext';
 import { CommissionProvider } from '@/context/CommissionContext';
-import { CertificationProvider } from '@/context/CertificationContext';
+import { WalletUser } from '@/context/WalletContext';
+import { AdminEarningsProvider } from '@/context/AdminEarningsContext';
 import { WebinarsProvider } from '@/context/WebinarContext';
+import { CertificationProvider } from '@/context/CertificationContext';
 import { LiveWebinarsProvider } from '@/context/LiveWebinarContext';
 
 const outfit = Outfit({
@@ -57,13 +59,18 @@ export default function RootLayout({
                                         <LeadProvider>
                                           <ServiceManProvider>
                                             <CommissionProvider>
-                                              <CertificationProvider>
-                                                <WebinarsProvider>
-                                                  <LiveWebinarsProvider>
-                                                    {children}
-                                                  </LiveWebinarsProvider>
-                                                </WebinarsProvider>
-                                            </CertificationProvider>
+                                              <WalletUser>
+                                                <AdminEarningsProvider>
+
+                                                  <WebinarsProvider>
+                                                    <CertificationProvider>
+                                                      <LiveWebinarsProvider>
+                                                      {children}
+                                                      </LiveWebinarsProvider>
+                                                    </CertificationProvider>
+                                                  </WebinarsProvider>
+                                                </AdminEarningsProvider>
+                                              </WalletUser>
                                             </CommissionProvider>
                                           </ServiceManProvider>
                                         </LeadProvider>
