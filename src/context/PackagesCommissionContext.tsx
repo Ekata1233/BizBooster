@@ -39,7 +39,7 @@ export const PackagesCommissionProvider = ({ children }: { children: ReactNode }
   const saveCommission = async (data: CommissionType) => {
     try {
       setLoading(true);
-      const res = await axios.post('/api/packages-commissions', data);
+      const res = await axios.post('/api/packages-commission', data);
       setCommission(res.data);
     } catch (error) {
       console.error('Failed to save commission:', error);
