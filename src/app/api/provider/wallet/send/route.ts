@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       method: "Wallet",
       source: "topup",
       status: "success",
+      balanceAfterTransaction: 0,
       createdAt: new Date(),
     };
 
