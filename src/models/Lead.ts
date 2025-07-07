@@ -92,22 +92,23 @@ const LeadSchema = new Schema<ILead>(
       ref: "Checkout",
       required: true,
     },
-    serviceCustomer: {
-      type: Schema.Types.ObjectId,
-      ref: "ServiceCustomer",
-    },
+    // serviceCustomer: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "ServiceCustomer",
+    // },
     serviceMan: {
       type: Schema.Types.ObjectId,
       ref: "ServiceMan",
     },
-    service: {
-      type: Schema.Types.ObjectId,
-      ref: "Service",
-      required: true,
-    },
+    // service: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "Service",
+    //   required: true,
+    // },
     amount: {
       type: Number,
-      required: true,
+      default: 0,
+      // required: true,
     },
     newAmount: {
       type: Number,
