@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
+ 
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
-  UserCircleIcon,
+  
   FolderIcon,
   BoxIcon
 } from "../icons/index";
@@ -29,34 +29,7 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/",
   },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
-  // {
-  //   icon: <UserCircleIcon />,
-  //   name: "User Profile",
-  //   path: "/profile",
-  // },
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
+ 
 ];
 
 const moduleItems: NavItem[] = [
@@ -72,17 +45,13 @@ const moduleItems: NavItem[] = [
     icon: <FolderIcon />,
     name: "Category",
     path: "/category-management/category"
-    // subItems: [
-    //   { name: "Category", path: "/category-management/category", pro: false },
-    // ],
+    
   },
   {
     icon: <BoxIcon />,
     name: "SubCategory",
     path: "/subCategory-management/subCategory"
-    // subItems: [
-    //   { name: "SubCategory", path: "/subCategory-management/subCategory", pro: false },
-    // ],
+    
   },
   {
     icon: <FolderIcon />,
