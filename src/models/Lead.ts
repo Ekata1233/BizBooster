@@ -107,7 +107,7 @@ const LeadSchema = new Schema<ILead>(
     // },
     amount: {
       type: Number,
-      default: 0,
+      // default: 0,
       // required: true,
     },
     newAmount: {
