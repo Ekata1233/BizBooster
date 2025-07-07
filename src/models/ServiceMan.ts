@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import '@/models/Provider'
 
 const BusinessInformationSchema = new mongoose.Schema(
   {
@@ -20,6 +21,7 @@ const BusinessInformationSchema = new mongoose.Schema(
 
 const ServiceManSchema = new mongoose.Schema(
   {
+    serviceManId: { type: String, unique: true },
     name: { type: String, required: true },
     lastName: { type: String, required: true },
     phoneNo: { type: String, required: true },
@@ -35,5 +37,45 @@ const ServiceManSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+ServiceManSchema.pre("save", async function (next) {
+  if (this.serviceManId) return next(); // Already exists, skip
+
+  console.log("proivder id : ", this.provider);
+  const providerDoc = await mongoose.model("Provider").findById(this.provider);
+
+ if (!providerDoc) {
+    return next(new Error("Provider not found"));
+  }
+
+  // Use storeName if available, otherwise fallback to fullName
+  let sourceName = providerDoc?.storeInfo?.storeName || providerDoc.fullName;
+
+  if (!sourceName) {
+    return next(new Error("Provider name or store name not found"));
+  }
+
+  const prefix = sourceName.trim().substring(0, 3).toLowerCase();
+
+  const latestServiceMan = await mongoose.model("ServiceMan").findOne({
+    serviceManId: { $regex: `^${prefix}` },
+  }).sort({ createdAt: -1 });
+
+  let nextNumber = 1;
+
+  if (latestServiceMan && latestServiceMan.serviceManId) {
+    const numberPart = latestServiceMan.serviceManId.slice(3);
+    const parsedNumber = parseInt(numberPart, 10);
+    if (!isNaN(parsedNumber)) {
+      nextNumber = parsedNumber + 1;
+    }
+  }
+
+  const paddedNumber = String(nextNumber).padStart(5, '0');
+  this.serviceManId = `${prefix}${paddedNumber}`;
+
+  next();
+});
+
 
 export default mongoose.models.ServiceMan || mongoose.model("ServiceMan", ServiceManSchema);

@@ -5,6 +5,7 @@ import React, {
   useContext,
   useState,
   ReactNode,
+  useEffect,
 } from 'react';
 import axios from 'axios';
 
@@ -21,17 +22,35 @@ export interface AdminEarningsType {
   updatedAt?: string;
 }
 
+export interface TransactionType {
+  transactionId: string;
+  walletType: 'User' | 'Provider';
+  to: string;
+  date: string; // use string to simplify JSON parsing
+  type: 'credit' | 'debit';
+  source: string;
+  method: string;
+  status: 'success' | 'pending' | 'failed';
+  credit: number;
+  debit: number;
+  balance: number | string;
+}
+
 interface AdminEarningsContextType {
   summary: AdminEarningsType | null;
   loading: boolean;
   fetchSummary: () => Promise<void>;
   createOrUpdateEarnings: (data: Partial<AdminEarningsType>) => Promise<void>;
+
+  transactions: TransactionType[];
+  fetchTransactions: () => Promise<void>;
 }
 
 const AdminEarningsContext = createContext<AdminEarningsContextType | undefined>(undefined);
 
 export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => {
   const [summary, setSummary] = useState<AdminEarningsType | null>(null);
+  const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchSummary = async () => {
@@ -64,6 +83,24 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
     }
   };
 
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/admin/all-transactions');
+      if (res.status === 200) {
+        setTransactions(res.data);
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
   return (
     <AdminEarningsContext.Provider
       value={{
@@ -71,6 +108,8 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         loading,
         fetchSummary,
         createOrUpdateEarnings,
+        transactions,
+        fetchTransactions,
       }}
     >
       {children}

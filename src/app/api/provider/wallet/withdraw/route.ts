@@ -74,6 +74,7 @@ export async function POST(req: Request) {
       method: "Wallet", // Make sure this is also allowed in IWalletTransaction
       source: "withdraw", // Same here
       status: "success",  // Same here
+      balanceAfterTransaction: 0,
       createdAt: new Date(),
     };
 
