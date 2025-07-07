@@ -104,14 +104,14 @@ const customerItems: NavItem[] = [
     //   { name: "User List", path: "/customer-management/user/user-list", pro: false },
     // ],
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Franchise",
-    path: "/customer-management/franchise/franchise-list",
-    // subItems: [
-    //   { name: "Franchise List", path: "/customer-management/franchise/franchise-list", pro: false },
-    // ],
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Franchise",
+  //   path: "/customer-management/franchise/franchise-list",
+  //   // subItems: [
+  //   //   { name: "Franchise List", path: "/customer-management/franchise/franchise-list", pro: false },
+  //   // ],
+  // },
 
 ];
 

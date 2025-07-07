@@ -1,27 +1,15 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useAdminEarnings } from '@/context/AdminEarningsContext';
+import React from 'react';
+import { FaUsers, FaClipboardList, FaMoneyBill, FaTools, FaStore, FaChartLine } from 'react-icons/fa';
 import ColorStatCard from '@/components/common/ColorStatCard';
-import {
-  FaUsers,
-  FaChartLine,
-  FaMoneyBill,
-  FaClipboardList,
-  FaStore,
-  FaTools,
-} from 'react-icons/fa';
+import { AdminEarningsType } from '@/context/AdminEarningsContext';
 
-const Page = () => {
-  const { summary, loading, fetchSummary } = useAdminEarnings();
+interface Props {
+  summary: AdminEarningsType;
+}
 
-  useEffect(() => {
-    fetchSummary();
-  }, []);
-
-  if (loading) return <p className="p-6 text-lg">Loading earnings summary...</p>;
-  if (!summary) return <p className="p-6 text-red-600">No summary data available.</p>;
-
+const SummaryCards: React.FC<Props> = ({ summary }) => {
   const formatAmount = (amount: number) =>
     `₹${amount.toLocaleString('en-IN', {
       minimumFractionDigits: 2,
@@ -89,4 +77,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default SummaryCards;
