@@ -59,10 +59,15 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCustomer"
   }],
-  // packageActive: [{
-  //   type: Boolean,
-  //   default: false
-  // }],
+  packageType: {
+    type: String,
+    enum: ['partial', 'full'],
+    default: null, // starts as null
+  },
+  packageActive: {
+    type: Boolean,
+    default: false
+  },
   isDeleted: {
     type: Boolean,
     default: false

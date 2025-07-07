@@ -115,22 +115,22 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const checkout = formData.get("checkout") as string;
-    const serviceCustomer = formData.get("serviceCustomer") as string;
+    // const serviceCustomer = formData.get("serviceCustomer") as string;
     // const serviceManRaw = formData.get("serviceMan") as string;
-    const service = formData.get("service") as string;
-    const amount = parseFloat(formData.get("amount") as string);
-
+    // const service = formData.get("service") as string;
+    const amountRaw = formData.get("amount") as string | null;
+    const amount = amountRaw && amountRaw.trim() !== "" ? parseFloat(amountRaw) : undefined;
 
     // const serviceMan =
     //   serviceManRaw && serviceManRaw.trim() !== "" && mongoose.Types.ObjectId.isValid(serviceManRaw)
     //     ? serviceManRaw
     //     : null;
     const serviceManRaw = formData.get("serviceMan") as string;
-    const serviceMan = 
-      serviceManRaw && 
-      serviceManRaw.trim() !== "" && 
-      serviceManRaw !== "null" &&  // Add this check
-      mongoose.Types.ObjectId.isValid(serviceManRaw)
+    const serviceMan =
+      serviceManRaw &&
+        serviceManRaw.trim() !== "" &&
+        serviceManRaw !== "null" &&  // Add this check
+        mongoose.Types.ObjectId.isValid(serviceManRaw)
         ? serviceManRaw
         : undefined;
 
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     //     { status: 400 }
     //   );
     // }
-        const leadsData = JSON.parse(formData.get("leads") as string); // should be an array with one status object
+    const leadsData = JSON.parse(formData.get("leads") as string); // should be an array with one status object
 
     const uploadedDocument = formData.get("document") as File | null;
     let documentUrl = "";
@@ -174,9 +174,9 @@ export async function POST(req: NextRequest) {
       // Step 3: Create new lead
       const newLead = await Lead.create({
         checkout,
-        serviceCustomer,
-        serviceMan : serviceMan  || undefined,
-        service,
+        // serviceCustomer,
+        serviceMan: serviceMan || undefined,
+        // service,
         amount,
         leads: leadsData,
       });

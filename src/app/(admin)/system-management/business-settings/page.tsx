@@ -1,10 +1,11 @@
 "use client";
 import { useCommission } from "@/context/CommissionContext";
 import React, { useEffect, useState } from "react";
+import PackagesCommissionPage from "../../packages-commission/page";
 
 const tabs = [
   "Business Info",
-  "General Setup",
+  "Package Commision",
   "Promotions",
   "Bookings",
   "Customers",
@@ -86,8 +87,10 @@ function VendorDashboardPage() {
 
       {/* Tab Content */}
       <div className="mt-4">
+        
         {activeTab === "Business Info" && (
           <div className="space-y-4">
+            <h2 className="text-xl font-semibold mb-6"> Commission Setup</h2>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
               Assurity Fee (%)
@@ -123,7 +126,12 @@ function VendorDashboardPage() {
           </div>
         )}
 
-        {activeTab === "General Setup" && <div>General Setup Content</div>}
+        {activeTab === "Package Commision" && (
+  <div className="space-y-4">
+    <PackagesCommissionPage />
+  </div>
+)}
+
         {activeTab === "Promotions" && <div>Promotions Content</div>}
         {activeTab === "Bookings" && <div>Bookings Content</div>}
         {activeTab === "Customers" && <div>Customers Content</div>}
