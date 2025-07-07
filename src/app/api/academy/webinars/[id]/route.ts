@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
@@ -20,18 +20,19 @@ interface MongooseValidationError {
   errors: Record<string, ValidationErrorItem>;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
-  try {
-    const { id } = params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid Certification ID format." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+  try {
+    if (!id) {
+  return NextResponse.json(
+    { success: false, message: "Missing or invalid ID in URL." },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
     const formData = await req.formData();
     const name = formData.get("name") as string | null;
@@ -169,21 +170,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
+   
+if (!id) {
+  return NextResponse.json(
         { success: false, message: "Invalid Webinars ID format." },
         { status: 400, headers: corsHeaders }
       );
-    }
-
+}
     const deletedWebinar = await Webinars.findByIdAndDelete(id);
     if (!deletedWebinar) {
       return NextResponse.json(
@@ -212,14 +212,13 @@ export async function DELETE(
   }
 }
 
-export async function GET(
-  _req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(req: Request) {
   await connectToDatabase();
-  try {
-    const { id } = context.params;
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
+  try {
     const certificationEntry = await Webinars.findById(id);
 
     if (!certificationEntry) {
