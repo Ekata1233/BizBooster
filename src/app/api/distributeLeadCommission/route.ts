@@ -320,7 +320,7 @@ export async function POST(req: Request) {
         checkout.orderStatus = "completed";
         await checkout.save();
 
-        const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const todayDate = new Date().toISOString().split("T")[0]; 
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
