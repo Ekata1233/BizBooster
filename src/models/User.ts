@@ -68,6 +68,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isCommissionDistribute: {
+    type: Boolean,
+    default: false
+  },
+  favoriteServices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
   isDeleted: {
     type: Boolean,
     default: false
