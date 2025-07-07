@@ -11,9 +11,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-/* ──────────────────────────────────────────────────────
- *  POST /api/coupon  →  create a new coupon
- * ──────────────────────────────────────────────────── */
 export async function POST(req: Request) {
   await connectToDatabase();
 
@@ -105,11 +102,6 @@ export async function POST(req: Request) {
   }
 }
 
-/* ──────────────────────────────────────────────────────
- *  GET /api/coupon  →  list coupons
- *     ?search=SAVE10       fuzzy search on code / title
- *     ?active=true         quick filter on active window
- * ──────────────────────────────────────────────────── */
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 

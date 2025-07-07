@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 const tabs = [
   "Business Info",
-  "General Setup",
+  "Package Commision",
   "Promotions",
   "Bookings",
   "Customers",
@@ -123,7 +123,7 @@ function VendorDashboardPage() {
           </div>
         )}
 
-        {activeTab === "General Setup" && <div>General Setup Content</div>}
+        {activeTab === "General Setup" && <div>Package Commision</div>}
         {activeTab === "Promotions" && <div>Promotions Content</div>}
         {activeTab === "Bookings" && <div>Bookings Content</div>}
         {activeTab === "Customers" && <div>Customers Content</div>}

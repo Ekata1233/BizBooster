@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
-// import Certifications from "@/models/Certifications";
 import LiveWebinars from "@/models/LiveWebinars";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
-
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,12 +20,18 @@ interface MongooseValidationError {
   errors: Record<string, ValidationErrorItem>;
 }
 
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
-  const { params } = context;
-  const { id } = params;
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+export async function PUT(req: Request) {
   await connectToDatabase();
+
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: "Invalid Webinar ID format." },
         { status: 400, headers: corsHeaders }
@@ -53,13 +57,13 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
       );
     }
 
-    // Update fields conditionally
     if (name !== null) existingWebinar.name = name;
     if (description !== null) existingWebinar.description = description;
     if (date !== null) existingWebinar.date = date;
     if (startTime !== null) existingWebinar.startTime = startTime;
     if (endTime !== null) existingWebinar.endTime = endTime;
-    if (displayVideoUrls.length > 0) existingWebinar.displayVideoUrls = displayVideoUrls;
+    if (displayVideoUrls.length > 0)
+      existingWebinar.displayVideoUrls = displayVideoUrls;
 
     if (imageFile && imageFile.size > 0) {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -122,15 +126,14 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: "Invalid Webinars ID format." },
         { status: 400, headers: corsHeaders }
@@ -165,70 +168,28 @@ export async function DELETE(
   }
 }
 
-// export async function GET(
-//   _req: NextRequest,
-//   context: { params: { id: string } }
-// ) {
-//   await connectToDatabase();
-//   try {
-//     const { id } = context.params;
-
-//     const certificationEntry = await LiveWebinars.findById(id);
-
-//     if (!certificationEntry) {
-//       return NextResponse.json(
-//         { success: false, message: "Webinar not found." },
-//         { status: 404, headers: corsHeaders }
-//       );
-//     }
-
-//     return NextResponse.json(
-//       { success: true, data: certificationEntry },
-//       { status: 200, headers: corsHeaders }
-//     );
-
-
-//   } catch (error: unknown) {
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message:
-//           error instanceof Error ? error.message : "Internal Server Error",
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
-
-
-
-export async function GET(
-  _req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(req: Request) {
   await connectToDatabase();
 
-  const { id } = context.params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-  /* 1. validate ID ---------------------------------------------------- */
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json(
-      { success: false, message: 'Invalid webinar ID.' },
+      { success: false, message: "Invalid webinar ID." },
       { status: 400, headers: corsHeaders }
     );
   }
 
   try {
-    /* 2. find + populate --------------------------------------------- */
     const webinar = await LiveWebinars.findById(id).populate({
-      path: 'user',
-      select: 'fullName email mobileNumber', // only these fields
+      path: "user",
+      select: "fullName email mobileNumber",
     });
 
-    /* 3. return ------------------------------------------------------- */
     if (!webinar) {
       return NextResponse.json(
-        { success: false, message: 'Webinar not found.' },
+        { success: false, message: "Webinar not found." },
         { status: 404, headers: corsHeaders }
       );
     }
@@ -241,8 +202,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message:
-          err instanceof Error ? err.message : 'Internal Server Error',
+        message: err instanceof Error ? err.message : "Internal Server Error",
       },
       { status: 500, headers: corsHeaders }
     );

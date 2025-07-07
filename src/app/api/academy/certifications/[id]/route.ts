@@ -11,22 +11,56 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-interface ValidationErrorItem {
-  message: string;
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
-interface MongooseValidationError {
-  name: string;
-  errors: Record<string, ValidationErrorItem>;
-}
-
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: Request) {
   await connectToDatabase();
 
   try {
-    const { id } = params;
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Certification ID format." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const certification = await Webinars.findById(id);
+
+    if (!certification) {
+      return NextResponse.json(
+        { success: false, message: "Certification not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: certification },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+export async function PUT(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: "Invalid Certification ID format." },
         { status: 400, headers: corsHeaders }
@@ -121,71 +155,34 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       { success: true, data: updated },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    console.error("PUT /api/certifications/[id] error:", error);
-
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as { code: number }).code === 11000
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "A certification with this name already exists.",
-        },
-        { status: 409, headers: corsHeaders }
-      );
-    }
-
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "name" in error &&
-      (error as MongooseValidationError).name === "ValidationError"
-    ) {
-      const validationError = error as MongooseValidationError;
-      const messages = Object.values(validationError.errors).map(
-        (err) => err.message
-      );
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Validation Error: ${messages.join(", ")}`,
-        },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
+  } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error ? error.message : "Internal Server Error",
+        message: error instanceof Error ? error.message : "Internal Server Error",
       },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
   try {
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: "Invalid Certifications ID format." },
+        { success: false, message: "Invalid Certification ID format." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const deletedCertification = await Webinars.findByIdAndDelete(id);
-    if (!deletedCertification) {
+    const deleted = await Webinars.findByIdAndDelete(id);
+
+    if (!deleted) {
       return NextResponse.json(
         { success: false, message: "Certification not found." },
         { status: 404, headers: corsHeaders }
@@ -196,49 +193,15 @@ export async function DELETE(
       {
         success: true,
         message: "Certification deleted successfully.",
-        data: deletedCertification,
+        data: deleted,
       },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
+  } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-
-export async function GET(
-  _req: NextRequest,
-  context: { params: { id: string } }
-) {
-  await connectToDatabase();
-  try {
-    const { id } = context.params;
-
-    const certificationEntry = await Webinars.findById(id);
-
-    if (!certificationEntry) {
-      return NextResponse.json(
-        { success: false, message: "Certification not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, data: certificationEntry },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Internal Server Error",
+        message: error instanceof Error ? error.message : "Internal Server Error",
       },
       { status: 500, headers: corsHeaders }
     );
