@@ -87,8 +87,10 @@ function VendorDashboardPage() {
 
       {/* Tab Content */}
       <div className="mt-4">
+        
         {activeTab === "Business Info" && (
           <div className="space-y-4">
+            <h2 className="text-xl font-semibold mb-6"> Commission Setup</h2>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
               Assurity Fee (%)
