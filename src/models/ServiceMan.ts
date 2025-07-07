@@ -43,12 +43,18 @@ ServiceManSchema.pre("save", async function (next) {
   console.log("proivder id : ", this.provider);
   const providerDoc = await mongoose.model("Provider").findById(this.provider);
 
-  console.log("proivder details : ", providerDoc)
-  if (!providerDoc || !providerDoc.name) {
-    return next(new Error("Provider or provider name not found"));
+ if (!providerDoc) {
+    return next(new Error("Provider not found"));
   }
 
-  const prefix = providerDoc.name.trim().substring(0, 3).toLowerCase();
+  // Use storeName if available, otherwise fallback to fullName
+  let sourceName = providerDoc?.storeInfo?.storeName || providerDoc.fullName;
+
+  if (!sourceName) {
+    return next(new Error("Provider name or store name not found"));
+  }
+
+  const prefix = sourceName.trim().substring(0, 3).toLowerCase();
 
   const latestServiceMan = await mongoose.model("ServiceMan").findOne({
     customId: { $regex: `^${prefix}` },
