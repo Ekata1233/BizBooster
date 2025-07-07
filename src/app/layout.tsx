@@ -21,6 +21,9 @@ import { CheckoutProvider } from '@/context/CheckoutContext';
 import { LeadProvider } from '@/context/LeadContext';
 import { ServiceManProvider } from '@/context/ServiceManContext';
 import { CommissionProvider } from '@/context/CommissionContext';
+import { CertificationProvider } from '@/context/CertificationContext';
+import { WebinarsProvider } from '@/context/WebinarContext';
+import { LiveWebinarsProvider } from '@/context/LiveWebinarContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -54,7 +57,13 @@ export default function RootLayout({
                                         <LeadProvider>
                                           <ServiceManProvider>
                                             <CommissionProvider>
-                                            {children}
+                                              <CertificationProvider>
+                                                <WebinarsProvider>
+                                                  <LiveWebinarsProvider>
+                                                    {children}
+                                                  </LiveWebinarsProvider>
+                                                </WebinarsProvider>
+                                            </CertificationProvider>
                                             </CommissionProvider>
                                           </ServiceManProvider>
                                         </LeadProvider>

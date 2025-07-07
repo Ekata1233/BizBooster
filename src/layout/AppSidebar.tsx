@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
+  // CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
-  UserCircleIcon,
+  // UserCircleIcon,
   FolderIcon,
   BoxIcon
 } from "../icons/index";
@@ -135,6 +135,18 @@ const providerItems: NavItem[] = [
   },
 ];
 
+const menuItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Menu",
+    subItems: [
+      { name: "About Us", path: "/about-us-management/about-us", pro: false },
+
+    ],
+  },
+];
+
+
 const serviceItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -210,13 +222,41 @@ const reportItems: NavItem[] = [
   },
 ];
 
+
+const privacyItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Preferences",
+    subItems: [
+      { name: "Privacy & Policy", path: "/preferences/privacy-policy", pro: false },
+      { name: "Refund Policy", path: "/preferences/refund-policy", pro: false },
+      { name: "Terms and Conditions", path: "/preferences/terms-conditions", pro: false },
+      { name: "Cancellation Policy", path: "/preferences/cancellation-policy", pro: false },
+    ],
+  },
+];
+
+const academyItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Academy",
+    subItems: [
+      { name: "Training Tutorials", path: "/academy/certifications", pro: false },
+      { name: "Live Webinars", path: "/academy/livewebinars", pro: false },
+      { name: "Recorded Webinars", path: "/academy/webinars", pro: false },
+    ],
+  },
+];
+
+
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "report" | "system"
+    menuType: "main" | "module" | "customer" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "report" | "system" | "preferences" | "academy" | "menu"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -332,7 +372,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "report" | "system";
+    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "report" | "system" | "preferences" | "academy" | "menu";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -346,25 +386,55 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon", "report", "system"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon", "report", "system", "preferences", "academy", "menu"].forEach((menuType) => {
+      // const items =
+      //   menuType === "main"
+      //     ? navItems
+      //     : menuType === "module"
+      //       ? moduleItems : menuType === "provider"
+      //         ? providerItems : menuType === "service"
+      //           ? serviceItems : menuType === "booking"
+      //             ? bookingItems : menuType === "subscribe"
+      //               ? subscribeItems : menuType === "coupon"
+      //                 ? promotionItems : menuType === "report"
+      //                   ? privacyItems : menuType === "preferences"
+      //                     ? academyItems : menuType === "academy"
+      //                       ? menuItems : menuType === "menu"
+      //                         ? reportItems
+      //                         : customerItems;
       const items =
         menuType === "main"
           ? navItems
           : menuType === "module"
-            ? moduleItems : menuType === "provider"
-              ? providerItems : menuType === "service"
-                ? serviceItems : menuType === "booking"
-                  ? bookingItems : menuType === "subscribe"
-                    ? subscribeItems : menuType === "coupon"
-                      ? promotionItems : menuType === "report"
-                      ? reportItems
-                      : customerItems;
+            ? moduleItems
+            : menuType === "provider"
+              ? providerItems
+              : menuType === "service"
+                ? serviceItems
+                : menuType === "booking"
+                  ? bookingItems
+                  : menuType === "subscribe"
+                    ? subscribeItems
+                    : menuType === "coupon"
+                      ? promotionItems
+                      : menuType === "report"
+                        ? reportItems
+                        : menuType === "system"
+                          ? systemItems
+                          : menuType === "preferences"
+                            ? privacyItems
+                            : menuType === "academy"
+                              ? academyItems
+                              : menuType === "menu"
+                                ? menuItems
+                                : customerItems;
+
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "report" | "system",
+                type: menuType as "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "report" | "system" | "preferences" | "academy" | "menu",
                 index,
               });
               submenuMatched = true;
@@ -393,7 +463,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "report" | "system") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "report" | "system" | "preferences" | "academy" | "menu") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -527,6 +597,22 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
+                  "MENU MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(menuItems, "menu")}
+            </div>
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
                   "SERVICE MANAGEMENT"
                 ) : (
                   <HorizontaLDots />
@@ -615,6 +701,38 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(reportItems, "report")}
             </div>
 
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "MENU MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(privacyItems, "preferences")}
+            </div>
+
+
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "ACADEMY"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(academyItems, "academy")}
+            </div>
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
@@ -624,3 +742,8 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
+
+
+
+
+
