@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-// import TutorialVideos from "@/models/TutorialVideos";
-// import Certifications from "@/models/Certifications";
+import { NextResponse } from "next/server";
 import Webinars from "@/models/Webinars";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
-  const { id } = params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
   try {
     const formData = await req.formData();
@@ -20,7 +19,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const tutorial = await Webinars.findById(id);
     if (!tutorial || !tutorial.video || tutorial.video.length <= videoIndex) {
-      return NextResponse.json({ success: false, message: "Invalid video index or ID" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Invalid video index or ID" },
+        { status: 404 }
+      );
     }
 
     if (videoName) tutorial.video[videoIndex].videoName = videoName;
@@ -31,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       const uploadRes = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${videoFile.name}`,
-        folder: "/tutorial-videos"
+        folder: "/tutorial-videos",
       });
       tutorial.video[videoIndex].videoUrl = uploadRes.url;
     }
@@ -39,47 +41,56 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updated = await tutorial.save();
 
     return NextResponse.json({ success: true, data: updated }, { status: 200 });
-
   } catch (error) {
     console.error("PUT error:", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
-
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
-  const { id } = params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
   try {
-    const { searchParams } = new URL(req.url);
-    const videoIndexStr = searchParams.get("videoIndex");
+    const videoIndexStr = url.searchParams.get("videoIndex");
     if (!videoIndexStr) {
-      return NextResponse.json({ success: false, message: "Missing videoIndex in query" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Missing videoIndex in query" },
+        { status: 400 }
+      );
     }
 
     const videoIndex = parseInt(videoIndexStr);
-
     const tutorial = await Webinars.findById(id);
+
     if (!tutorial || !tutorial.video || tutorial.video.length <= videoIndex) {
-      return NextResponse.json({ success: false, message: "Invalid ID or video index" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Invalid ID or video index" },
+        { status: 404 }
+      );
     }
 
-    tutorial.video.splice(videoIndex, 1); // Remove video at that index
+    tutorial.video.splice(videoIndex, 1);
     await tutorial.save();
 
     return NextResponse.json({ success: true, message: "Video deleted" }, { status: 200 });
-
   } catch (error) {
     console.error("DELETE error:", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
-
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: Request) {
   await connectToDatabase();
-  const { id } = params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
   try {
     const tutorial = await Webinars.findById(id);
@@ -91,10 +102,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
-    return NextResponse.json(
-      { success: true, data: tutorial },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: tutorial }, { status: 200 });
   } catch (error) {
     console.error("GET /api/tutorial-videos/[id] error:", error);
     return NextResponse.json(
