@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import '@/models/Provider'
 
 const BusinessInformationSchema = new mongoose.Schema(
   {
