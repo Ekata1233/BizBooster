@@ -7,4 +7,5 @@ const PackagesCommissionSchema = new Schema({
   timestamps: true,
 });
 
-export const PackagesCommission = mongoose.models.Commission || mongoose.model('PackagesCommission', PackagesCommissionSchema);
+export const PackagesCommission =
+  mongoose.models.PackagesCommission || mongoose.model('PackagesCommission', PackagesCommissionSchema);
