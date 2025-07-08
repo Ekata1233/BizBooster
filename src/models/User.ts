@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   favoriteServices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
+  favoriteProviders : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' }],
   isDeleted: {
     type: Boolean,
     default: false
