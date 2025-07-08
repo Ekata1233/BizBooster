@@ -22,6 +22,8 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
   const [leadDetails, setLead] = useState<Lead | null>(null);
   const [providerDetails, setProviderDetails] = useState<Provider | null>(null)
 
+  console.log("provdier in invoice : ", providerDetails)
+
   useEffect(() => {
     const fetchLead = async () => {
       if (!checkoutDetails?._id) return;
@@ -49,9 +51,14 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
 
   useEffect(() => {
     const fetchProvider = async () => {
+      console.log("checout in invoice : ", checkoutDetails?.provider)
       if (!checkoutDetails?.provider) return;
       try {
-        const fetchedProvider = await getProviderById(checkoutDetails.provider._id);
+        const providerId = typeof checkoutDetails?.provider === 'string'
+          ? checkoutDetails.provider
+          : checkoutDetails?.provider?._id;
+
+        const fetchedProvider = await getProviderById(providerId);
         setProviderDetails(fetchedProvider); // ✅ now this works
       } catch (error: unknown) {
         if (error instanceof Error) {
