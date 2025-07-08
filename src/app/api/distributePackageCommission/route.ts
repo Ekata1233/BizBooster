@@ -5,6 +5,8 @@ import ReferralCommission from "@/models/ReferralCommission";
 import User from "@/models/User";
 import Wallet from "@/models/Wallet";
 import { Types } from "mongoose";
+import { Package } from "@/models/Package";
+import AdminEarnings from "@/models/AdminEarnings";
 
 // Enable CORS
 const corsHeaders = {
@@ -27,7 +29,17 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const { userId, packagePrice } = body;
+        const { userId } = body;
+
+        const pkg = await Package.findOne(); // or use Package.findById(packageId) if you know the package
+        if (!pkg || typeof pkg.price !== "number") {
+            return NextResponse.json(
+                { success: false, message: "Valid package not found." },
+                { status: 400, headers: corsHeaders }
+            );
+        }
+
+        const packagePrice = pkg.discountedPrice;
 
         if (!userId || !packagePrice) {
             return NextResponse.json(
@@ -132,6 +144,35 @@ export async function POST(req: NextRequest) {
                 amount: adminAmount,
             });
         }
+
+        const todayDate = new Date().toISOString().split("T")[0];
+
+        const adminCommissionTotal = adminAmount;
+        const providerEarningsTotal = 0;
+        const totalRevenue = adminCommissionTotal;
+        const franchiseEarningsTotal =
+            level1Amount + level2Amount  ;
+
+        await AdminEarnings.findOneAndUpdate(
+            { date: todayDate },
+            {
+                $inc: {
+                    adminCommission: adminCommissionTotal,
+                    providerEarnings: providerEarningsTotal,
+                    totalRevenue: totalRevenue,
+                    // Optional fields:
+                    extraFees: 0,
+                    pendingPayouts: 0,
+                    franchiseEarnings: franchiseEarningsTotal,
+                    refundsToUsers: 0,
+                },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        userC.isCommissionDistribute = true;
+        await userC.save();
+
 
         return NextResponse.json(
             { success: true, message: "Package commission distributed successfully." },

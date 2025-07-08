@@ -27,6 +27,7 @@ import { WebinarsProvider } from '@/context/WebinarContext';
 import { CertificationProvider } from '@/context/CertificationContext';
 import { LiveWebinarsProvider } from '@/context/LiveWebinarContext';
 import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext';
+import { PackageProvider } from '@/context/PackageContext';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -67,7 +68,9 @@ export default function RootLayout({
                                                     <CertificationProvider>
                                                       <LiveWebinarsProvider>
                                                         <PackagesCommissionProvider>
+                                                          <PackageProvider>
                                                       {children}
+                                                      </PackageProvider>
                                                       </PackagesCommissionProvider>
                                                       </LiveWebinarsProvider>
                                                     </CertificationProvider>
