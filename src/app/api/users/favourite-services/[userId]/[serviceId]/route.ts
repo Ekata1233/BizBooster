@@ -14,7 +14,7 @@ export async function OPTIONS() {
 }
 
 /* ───────────────────────────────────────────────
- *  PUT /api/user-favorites/:userId/:serviceId
+ *  PUT method for the service add in to the favourite
  * ───────────────────────────────────────────── */
 export async function PUT(req: Request) {
     await connectToDatabase();
@@ -79,7 +79,7 @@ export async function PUT(req: Request) {
 }
 
 /* ───────────────────────────────────────────────
- *  DELETE /api/user-favorites/:userId/:serviceId
+ *  DELETE method for the remove the service from the favourite
  * ───────────────────────────────────────────── */
 export async function DELETE(req: Request) {
     await connectToDatabase();
