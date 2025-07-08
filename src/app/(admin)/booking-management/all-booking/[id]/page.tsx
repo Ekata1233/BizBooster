@@ -19,16 +19,15 @@ const AllBookingsDetails = () => {
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
 
-  console.log("lead details : ", leadDetails)
 
   const {
     fetchServiceCustomer,
     customers,
+    serviceCustomer,
     loading,
     error,
   } = useServiceCustomer();
 
-  console.log("checkout details : ", checkoutDetails)
 
   useEffect(() => {
     const fetchLead = async () => {
@@ -56,6 +55,7 @@ const AllBookingsDetails = () => {
   }, [checkoutDetails]);
 
   useEffect(() => {
+    console.log("fetch the correct customer : ", checkoutDetails?.serviceCustomer)
     if (checkoutDetails?.serviceCustomer) {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
     }
@@ -97,7 +97,7 @@ const AllBookingsDetails = () => {
     Array.isArray(leadDetails?.extraService) &&
     leadDetails.extraService.length > 0;
 
-  const baseAmount = leadDetails?.newAmount ?? checkoutDetails?.totalAmount ?? 0;
+  const baseAmount = leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0;
   const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
   const grandTotal = baseAmount + extraAmount;
 
@@ -131,7 +131,7 @@ const AllBookingsDetails = () => {
 
               <InvoiceDownload
                 checkoutDetails={checkoutDetails}
-                serviceCustomer={customers[0]}
+                serviceCustomer={serviceCustomer}
               />
             </div>
           </div>
@@ -281,7 +281,7 @@ const AllBookingsDetails = () => {
             </div>
             {/* RIGHT SIDE */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-              <CustomerInfoCard serviceCustomer={customers[0]} loading={loading} error={error} />
+              <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
               <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} />
             </div>
           </div>
@@ -313,7 +313,7 @@ const AllBookingsDetails = () => {
 
             {/* RIGHT */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-              <CustomerInfoCard serviceCustomer={customers[0]} loading={loading} error={error} />
+             <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
               {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
               {/* <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} /> */}
             </div>

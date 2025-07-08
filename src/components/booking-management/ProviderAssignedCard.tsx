@@ -188,7 +188,6 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
     fetchProviders();
   }, [serviceId]);
 
-console.log("privd fdf ;df ", providers)
   const handleAssign = async () => {
     if (!providerId) {
       alert('Please select a provider');
