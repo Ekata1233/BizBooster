@@ -22,7 +22,6 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
   const [leadDetails, setLead] = useState<Lead | null>(null);
   const [providerDetails, setProviderDetails] = useState<Provider | null>(null)
 
-  console.log("provdier in invoice : ", providerDetails)
 
   useEffect(() => {
     const fetchLead = async () => {
@@ -51,7 +50,6 @@ export default function InvoiceDownload({ checkoutDetails, serviceCustomer }: In
 
   useEffect(() => {
     const fetchProvider = async () => {
-      console.log("checout in invoice : ", checkoutDetails?.provider)
       if (!checkoutDetails?.provider) return;
       try {
         const providerId = typeof checkoutDetails?.provider === 'string'
