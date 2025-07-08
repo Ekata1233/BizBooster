@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import UnderStandingFetchTrue from '@/models/UnderstandingFetchTrue';
-import imagekit from '@/utils/imagekit';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,22 +39,24 @@ export async function PUT(req: NextRequest) {
       doc.fullName = fullName;
     }
 
-    if (videoFile instanceof File && videoFile.size > 0) {
-      const buffer = Buffer.from(await videoFile.arrayBuffer());
+if (videoFile instanceof File && videoFile.size > 0) {
+  const buffer = Buffer.from(await videoFile.arrayBuffer());
 
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${Date.now()}-${videoFile.name}`,
-        folder: '/webinars/videos',
-      });
+  const { default: imagekit } = await import('@/utils/imagekit');
 
-      // Replace video at given index
-      doc.videoUrl[videoIndex] = {
-        fileName: videoFile.name,
-        filePath: uploadResponse.url,
-        fileId: uploadResponse.fileId, // Save for later deletion
-      };
-    }
+  const uploadResponse = await imagekit.upload({
+    file: buffer,
+    fileName: `${Date.now()}-${videoFile.name}`,
+    folder: '/webinars/videos',
+  });
+
+  doc.videoUrl[videoIndex] = {
+    fileName: videoFile.name,
+    filePath: uploadResponse.url,
+    fileId: uploadResponse.fileId,
+  };
+}
+
 
     const updated = await doc.save();
 
@@ -107,13 +108,15 @@ export async function DELETE(req: NextRequest) {
     const video = doc.videoUrl[idx];
 
     // Optional: Delete from ImageKit if fileId exists
-    if (video.fileId) {
-      try {
-        await imagekit.deleteFile(video.fileId);
-      } catch (err) {
-        console.warn('Could not delete file from ImageKit:', err);
-      }
-    }
+if (video.fileId) {
+  try {
+    const { default: imagekit } = await import('@/utils/imagekit');
+    await imagekit.deleteFile(video.fileId);
+  } catch (err) {
+    console.warn('Could not delete file from ImageKit:', err);
+  }
+}
+
 
     doc.videoUrl.splice(idx, 1);
     const updated = await doc.save();
