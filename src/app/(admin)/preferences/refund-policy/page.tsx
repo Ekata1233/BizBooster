@@ -5,6 +5,8 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios'; // Ensure axios is imported
+import { PlusCircle } from 'lucide-react';
+import { TrashBinIcon } from '@/icons';
 
 // Assuming AboutUsPage is the component with the CKEditor form
 const RefundPolicyPage = dynamic(() => import('@/components/privacy&policy-components/Refund-Policy-Page'), {
@@ -135,7 +137,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p className="text-xl text-gray-700">Loading About Us content...</p>
+        <p className="text-xl text-gray-700">Loading Refund Policy content...</p>
       </div>
     );
   }
@@ -153,7 +155,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
-        Manage About Us Sections
+        Manage Refund Policy Sections
       </h1>
 
       {/* Messages */}
@@ -178,9 +180,9 @@ const AdminAboutUsManagementPage: React.FC = () => {
         <div className="mb-6 text-right">
           <button
             onClick={() => setEditingEntry({ _id: '', content: '' })} // Set empty entry for new creation
-            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
           >
-            Add New About Us Section
+            Add New Refund Policy Section
           </button>
         </div>
       )}
@@ -200,9 +202,9 @@ const AdminAboutUsManagementPage: React.FC = () => {
       )}
 
       {/* Display List of About Us Entries */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing About Us Sections</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Refund Policy Sections</h2>
       {aboutUsList.length === 0 && !isLoading && !error && (
-        <p className="text-gray-600">No About Us sections found. Click &quot;Add New&quot; to create one.</p>
+        <p className="text-gray-600">No Refund Policy sections found. Click &quot;Add New&quot; to create one.</p>
       )}
 
       <div className="space-y-6">
@@ -211,20 +213,20 @@ const AdminAboutUsManagementPage: React.FC = () => {
             <div className="flex justify-between items-start mb-3">
               {/* Display a snippet or title if you had one, otherwise just content */}
               <h3 className="text-xl font-semibold text-gray-800">
-                About Us Entry (ID: {entry._id.substring(0, 6)}...)
+                Refund Policy Entry (ID: {entry._id.substring(0, 6)}...)
               </h3>
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleEditClick(entry)}
                   className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
-                  Edit
+                  <PlusCircle />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry._id)}
                   className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
-                  Delete
+              <TrashBinIcon />
                 </button>
               </div>
             </div>

@@ -33,8 +33,10 @@ export const PackageProvider = ({ children }: { children: React.ReactNode }) => 
   const getPackages = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/');
-      setPackages(res.data);
+      const res = await axios.get('/api/packages');
+      // If your API always returns one package object, wrap it in an array
+      const data = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+      setPackages(data);
     } catch (err) {
       console.error('Error fetching packages:', err);
     } finally {
@@ -44,8 +46,9 @@ export const PackageProvider = ({ children }: { children: React.ReactNode }) => 
 
   const addPackage = async (pkg: PackageType) => {
     try {
-      const res = await axios.post('/', pkg);
-      setPackages(prev => [res.data, ...prev]);
+      const res = await axios.post('/api/packages', pkg);
+      // Replace the package instead of adding new (since only one is allowed)
+      setPackages([res.data]);
     } catch (err) {
       console.error('Error adding package:', err);
     }
@@ -53,7 +56,7 @@ export const PackageProvider = ({ children }: { children: React.ReactNode }) => 
 
   const updatePackage = async (id: string, pkg: Partial<PackageType>) => {
     try {
-      const res = await axios.put(`/${id}`, pkg);
+      const res = await axios.put(`/api/packages/${id}`, pkg);
       setPackages(prev => prev.map(p => (p._id === id ? res.data : p)));
     } catch (err) {
       console.error('Error updating package:', err);
@@ -62,7 +65,7 @@ export const PackageProvider = ({ children }: { children: React.ReactNode }) => 
 
   const deletePackage = async (id: string) => {
     try {
-      await axios.delete(`/${id}`);
+      await axios.delete(`/api/packages/${id}`);
       setPackages(prev => prev.filter(p => p._id !== id));
     } catch (err) {
       console.error('Error deleting package:', err);
