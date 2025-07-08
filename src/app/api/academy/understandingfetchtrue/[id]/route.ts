@@ -11,11 +11,6 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-
-
-
-
-
 export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
@@ -82,11 +77,12 @@ export async function PUT(req: NextRequest) {
 }
 
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
 
-  const id = context.params.id;
-  const idx = Number(new URL(req.url).searchParams.get("videoIndex"));
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop(); // Get the id from URL path
+  const idx = Number(url.searchParams.get("videoIndex"));
 
   if (!id || Number.isNaN(idx)) {
     return NextResponse.json(
@@ -111,18 +107,17 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
       );
     }
 
-    // Optional: remove the file from local storage (only if you store locally)
+    // Optional: remove local file
     const filePath = doc.videoUrl[idx].filePath;
     const fullPath = path.join(process.cwd(), "public", filePath);
 
     try {
       await fs.rm(fullPath);
-    } catch (e:unknown) {
+    } catch (e: unknown) {
       console.warn("Could not delete local file:", filePath);
-      console.error("Could not delete local file:", e);
     }
 
-    // Remove the video from the array
+    // Remove the video
     doc.videoUrl.splice(idx, 1);
     await doc.save();
 
