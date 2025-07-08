@@ -59,7 +59,7 @@ export interface Checkout {
 
   serviceMan?: string;
 
-  provider: {
+  provider:  string | {
     _id: string;
     fullName: string;
     email: string;
