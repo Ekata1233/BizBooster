@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import UnderStandingFetchTrue from '@/models/UnderstandingFetchTrue';
+import imagekit from '@/utils/imagekit';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,18 +43,17 @@ export async function PUT(req: NextRequest) {
     if (videoFile instanceof File && videoFile.size > 0) {
       const buffer = Buffer.from(await videoFile.arrayBuffer());
 
-      const imagekit = (await import('@/utils/imagekit')).default;
-
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${Date.now()}-${videoFile.name}`,
         folder: '/webinars/videos',
       });
 
+      // Replace video at given index
       doc.videoUrl[videoIndex] = {
         fileName: videoFile.name,
         filePath: uploadResponse.url,
-        fileId: uploadResponse.fileId, // Used for delete
+        fileId: uploadResponse.fileId, // Save for later deletion
       };
     }
 
@@ -106,12 +106,12 @@ export async function DELETE(req: NextRequest) {
 
     const video = doc.videoUrl[idx];
 
+    // Optional: Delete from ImageKit if fileId exists
     if (video.fileId) {
-      const imagekit = (await import('@/utils/imagekit')).default;
       try {
         await imagekit.deleteFile(video.fileId);
       } catch (err) {
-        console.warn('Failed to delete from ImageKit:', err);
+        console.warn('Could not delete file from ImageKit:', err);
       }
     }
 
