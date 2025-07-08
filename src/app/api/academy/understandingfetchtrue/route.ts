@@ -1,9 +1,8 @@
-// src/app/api/understandingfetchtrue/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { connectToDatabase } from "@/utils/db";
-import UnderStandingFetchTrue from "@/models/UnderstandingFetchTrue";
+import UnderStandingFetchTrue, { IUnderstandingFetchTrue, VideoItem } from '@/models/UnderstandingFetchTrue';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,43 +15,86 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const fullName = (formData.get("fullName") || formData.get("name")) as string;
-    const videoFile = formData.get("videoUrl");
+    const fullName = formData.get("fullName") as string;
+    const videoFiles = formData.getAll("videoUrl");
 
-    if (!fullName || !(videoFile instanceof File))
+    if (!fullName || !videoFiles.length)
       return NextResponse.json(
-        { success: false, message: "fullName and video file are required" },
+        { success: false, message: "fullName and at least one video is required" },
         { status: 400, headers: corsHeaders }
       );
 
-    const bytes = await videoFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
     const uploadDir = path.join(process.cwd(), "public/uploads");
     await mkdir(uploadDir, { recursive: true });
-    const filename = `${Date.now()}-${videoFile.name}`;
-    await writeFile(path.join(uploadDir, filename), buffer);
-    const videoUrl = `/uploads/${filename}`;
 
-    const doc = await UnderStandingFetchTrue.create({ fullName, videoUrl });
+    const uploadedVideos = [];
 
-    return NextResponse.json({ success: true, data: doc }, { status: 201, headers: corsHeaders });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
-      { status: 500, headers: corsHeaders }
-    );
+    for (const file of videoFiles) {
+      if (!(file instanceof File)) continue;
+
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filename = `${Date.now()}-${file.name}`;
+      const filePath = path.join(uploadDir, filename);
+      await writeFile(filePath, buffer);
+
+      uploadedVideos.push({
+        fileName: file.name,
+        filePath: `/uploads/${filename}`,
+      });
+    }
+
+    const newEntry = await UnderStandingFetchTrue.create({
+      fullName,
+      videoUrl: uploadedVideos,
+    });
+
+    return NextResponse.json({ success: true, data: newEntry }, { status: 201, headers: corsHeaders });
+  } catch (error: unknown) {
+      console.error("GET /api/understandingfetchtrue error:", error);
+  
+      return NextResponse.json(
+        {
+          success: false,
+          message: (error as Error).message || "Internal Server Error",
+        },
+        { status: 500, headers: corsHeaders }
+      );
+    }
   }
-}
+
+
+
 
 export async function GET() {
   await connectToDatabase();
 
   try {
-    const data = await UnderStandingFetchTrue.find({});
-    return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
-  } catch (error: any) {
+    const entries: IUnderstandingFetchTrue[] = await UnderStandingFetchTrue.find({}).sort({ createdAt: -1 });
+
+    const formattedData = entries.map((entry) => ({
+      _id: entry._id,
+      fullName: entry.fullName,
+      videos: (entry.videoUrl || []).map((vid: VideoItem) => ({
+        fileName: vid.fileName || 'Untitled',
+        filePath: vid.filePath.startsWith('/')
+          ? `${process.env.NEXT_PUBLIC_BASE_URL || ''}${vid.filePath}`
+          : vid.filePath,
+      })),
+      createdAt: entry.createdAt,
+    }));
+
     return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
+      { success: true, data: formattedData },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    console.error('GET /api/academy/understandingfetchtrue error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500, headers: corsHeaders }
     );
   }

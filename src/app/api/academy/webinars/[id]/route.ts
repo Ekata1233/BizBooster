@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
-import mongoose from "mongoose";
 import Webinars from "@/models/Webinars";
 
 const corsHeaders = {
