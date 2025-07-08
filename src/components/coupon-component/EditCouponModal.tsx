@@ -76,14 +76,15 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
     [categories]
   );
 
-  const customersOptions = useMemo(
-    () =>
-      customers.map(cus => ({
-        value: String(cus._id), // 👈 Cast _id to string
-        label: cus.fullName,
-      })),
-    [customers]
-  );
+ const customersOptions = useMemo(() => {
+  if (!Array.isArray(customers)) return [];
+
+  return customers.map(cus => ({
+    value: String(cus._id),
+    label: cus.fullName,
+  }));
+}, [customers]);
+
 
 
   const serviceOptions = useMemo(
