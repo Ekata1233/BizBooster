@@ -15,7 +15,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   try {
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
