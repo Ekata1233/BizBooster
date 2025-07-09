@@ -27,10 +27,11 @@ export interface ILead extends Document {
   serviceMan: mongoose.Types.ObjectId;
   service: mongoose.Types.ObjectId;
   amount: number;
-  
+
   newAmount?: number;
   newDiscountAmount?: number;
-  afterDicountAmount?:number;
+  afterDicountAmount?: number;
+  newCommission?: number;
   extraService?: IExtraService[];
   leads: IStatus[];
   isAdminApproved?: boolean;
@@ -39,11 +40,11 @@ export interface ILead extends Document {
 /** ExtraService Subschema */
 const ExtraServiceSchema = new Schema<IExtraService>(
   {
-    serviceName: { type: String},
+    serviceName: { type: String },
     price: { type: Number, required: true },
     discount: { type: Number, default: 0 },
     total: { type: Number, required: true },
-    commission:{type: Number , default: 0},
+    commission: { type: Number, default: 0 },
     isLeadApproved: {
       type: Boolean,
       default: null,
@@ -113,11 +114,15 @@ const LeadSchema = new Schema<ILead>(
     newAmount: {
       type: Number,
     },
-    newDiscountAmount:{
+    newDiscountAmount: {
       type: Number,
     },
     afterDicountAmount: {
       type: Number,
+    },
+    newCommission: {
+      type: Number,
+      default: 0
     },
     extraService: [ExtraServiceSchema],
     leads: [StatusSchema], // Embedded status array

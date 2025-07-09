@@ -29,7 +29,7 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
   const fetchCheckout = async () => {
     setLoading(true);
     const data = await fetchCheckoutById(checkoutId);
-    console.log("in provider chekcout : ", data)
+    console.log("chekcout details : : ", data)
     if (data) {
       setCheckoutDetails(data);
       if (data.provider) {
@@ -38,7 +38,6 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
           typeof data.provider === 'string' ? data.provider : data.provider._id;
         const providerData = await getProviderById(providerId);
 
-        console.log("privde r detials in card : ", providerData)
         setAssignedProvider(providerData);
       } else {
         const result = await getProvidersByServiceId(serviceId); // ⬅️ load provider list

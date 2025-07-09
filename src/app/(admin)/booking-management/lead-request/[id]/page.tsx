@@ -9,6 +9,9 @@ import { format } from 'date-fns';
 import BookingStatus from '@/components/booking-management/BookingStatus';
 import axios from 'axios';
 import { useCheckout } from '@/context/CheckoutContext';
+import Label from '@/components/form/Label';
+import Input from '@/components/form/input/InputField';
+import { useService } from '@/context/ServiceContext';
 
 
 
@@ -21,10 +24,20 @@ const LeadRequestDetails = () => {
   const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [commissionValue, setCommissionValue] = useState<number | ''>('');
+  const [extraCommissionValue, setExtraCommissionValue] = useState<number | ''>('');
+  const [newCommissionValue, setNewCommissionValue] = useState<number | ''>('');
   const [isCommissionSet, setIsCommissionSet] = useState(false);
-  const [isApproved, setIsApproved] = useState(false); // ✅ Added
+  const [isApproved, setIsApproved] = useState(false);
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
+  const { fetchSingleService, singleService, singleServiceLoading, singleServiceError } = useService();
+  const [extraCommissionType, setExtraCommissionType] = useState<'percentage' | 'amount'>('percentage');
+  const [newCommissionType, setNewCommissionType] = useState<'percentage' | 'amount'>('percentage');
+
+
+  const serviceId = lead?.checkout?.service;
+  console.log("service service : ", singleService);
+  console.log("lead details : ", lead);
+
   useEffect(() => {
     if (!leadId) return;
 
@@ -36,30 +49,25 @@ const LeadRequestDetails = () => {
     fetchLead();
   }, [leadId]);
 
-  const handleSaveCommission = () => {
-    if (commissionValue !== '') {
-      setIsCommissionSet(true);
-      setIsModalOpen(false);
+  useEffect(() => {
+    if (serviceId) {
+      fetchSingleService(serviceId);
     }
-  };
+  }, [serviceId]);
+
+
 
   const handleApprove = async () => {
-    if (!lead || commissionValue === '') {
+    if (!lead || newCommissionValue === '' || extraCommissionValue === '') {
       return alert('Missing lead or commission value');
     }
 
     try {
-      // 1. Update checkout commission
-      // await updateLead(lead._id!, {
-      //   commission: Number(commissionValue),
-      // });
 
-      // 2. Approve the lead
-      // const formData = new FormData();
-      // Step 1: Set commission
       const commissionFormData = new FormData();
       commissionFormData.append("updateType", "setCommission");
-      commissionFormData.append("commission", String(commissionValue));
+      commissionFormData.append("commission", String(extraCommissionValue));
+      commissionFormData.append("newCommission", String(newCommissionValue));
       await updateLead(lead._id!, commissionFormData);
 
       // Step 2: Approve the lead
@@ -76,21 +84,54 @@ const LeadRequestDetails = () => {
         alert('Commission and Lead approved successfully');
 
         // Optional: refetch or update state
-        fetchLeads();
-        const updatedLead = await getLeadById(lead._id);
-        setLead(updatedLead);
-        setIsCommissionSet(false);
-        setCommissionValue('');
-        setIsApproved(true);
+        // fetchLeads();
+        // const updatedLead = await getLeadById(lead._id);
+        // setLead(updatedLead);
+        // setIsCommissionSet(false);
+        // setExtraCommissionValue('');
+        // setNewCommissionValue('');
+        // setIsApproved(true);
 
         // ✅ Redirect to lead-request page
-        router.push('/booking-management/lead-request');
+        // router.push('/booking-management/lead-request');
       } else {
         throw new Error(response.data.message || 'Approval failed');
       }
     } catch (error) {
       console.error(error);
       alert('Error during approval');
+    }
+  };
+
+  const handleExtraTypeChange = (newType: 'percentage' | 'amount') => {
+    setExtraCommissionType(newType);
+    const formatted =
+      newType === 'percentage' ? `${extraCommissionValue}%` : `₹${extraCommissionType}`;
+  };
+
+  const handleExtraCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers
+    if (/^\d*$/.test(value)) {
+      setExtraCommissionValue(value === '' ? '' : Number(value));
+      const formatted =
+        extraCommissionType === "percentage" ? `${value}%` : `₹${value}`;
+    }
+  };
+
+  const handleNewTypeChange = (newType: 'percentage' | 'amount') => {
+    setNewCommissionType(newType);
+    const formatted =
+      newType === 'percentage' ? `${newCommissionValue}%` : `₹${newCommissionType}`;
+  };
+
+  const handleNewCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers
+    if (/^\d*$/.test(value)) {
+      setNewCommissionValue(value === '' ? '' : Number(value));
+      const formatted =
+        newCommissionType === "percentage" ? `${value}%` : `₹${value}`;
     }
   };
 
@@ -129,7 +170,7 @@ const LeadRequestDetails = () => {
 
       {activeTab === 'details' && (
         <div className="space-y-6">
-          <ComponentCard title="🎯 Lead Info">
+          <ComponentCard title="Lead Info">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InfoItem label="Booking ID" value={lead.checkout?.bookingId} />
               <InfoItem label="Order Status" value={lead.checkout?.orderStatus} />
@@ -148,31 +189,93 @@ const LeadRequestDetails = () => {
             </div>
           </ComponentCard>
 
-          <ComponentCard title="💰 Payment Details">
-            <div className="overflow-x-auto">
-              <table className="min-w-full table-auto border border-gray-200">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Label</th>
-                    <th className="px-4 py-2 text-left">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-800">
-                  <tr><td className="px-4 py-2">Service Amount</td><td className="px-4 py-2">₹{lead.amount}</td></tr>
-                  <tr><td className="px-4 py-2">Subtotal</td><td className="px-4 py-2">₹{lead.checkout?.subtotal || 0}</td></tr>
-                  <tr><td className="px-4 py-2">Service Discount</td><td className="px-4 py-2">₹{lead.checkout?.serviceDiscount || 0}</td></tr>
-                  <tr><td className="px-4 py-2">Coupon Discount</td><td className="px-4 py-2">₹{lead.checkout?.couponDiscount || 0}</td></tr>
-                  <tr><td className="px-4 py-2 font-semibold">Total Amount</td><td className="px-4 py-2 font-semibold">₹{lead.checkout?.totalAmount || 0}</td></tr>
-                  <tr><td className="px-4 py-2">Commission</td><td className="px-4 py-2">₹{lead.checkout?.commission || 0}</td></tr>
-                  <tr><td className="px-4 py-2">Platform Fee</td><td className="px-4 py-2">₹{lead.checkout?.platformFee || 0}</td></tr>
-                  <tr><td className="px-4 py-2">Guarantee Fee</td><td className="px-4 py-2">₹{lead.checkout?.garrentyFee || 0}</td></tr>
-                </tbody>
-              </table>
+          <ComponentCard title="Payment Details">
+            <div className="grid grid-cols-3 gap-6">
+              {/* Block 1 */}
+              <div className="flex flex-col">
+                <Label>Previous Price</Label>
+                <Input
+                  type="text"
+                  placeholder="Previous Price"
+                  value={`₹${singleService?.price ?? ''}`}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <Label>Previous After Discount Price</Label>
+                <Input
+                  type="text"
+                  placeholder="After Discount Price"
+                  value={`₹${singleService?.discountedPrice ?? ''}`}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <Label>Previous Commission</Label>
+                <Input
+                  type="text"
+                  placeholder="Previous Commission"
+                  value={singleService?.franchiseDetails?.commission ?? ''}
+                />
+              </div>
+
+
+              {/* Block 2 */}
+              <div className="flex flex-col">
+                <Label>Updated Price</Label>
+                <Input type="text" placeholder="Updated Price" value={lead.newAmount} />
+              </div>
+              <div className="flex flex-col">
+                <Label>Updated After Discount Price</Label>
+                <Input type="text" placeholder="After Discount Price" value={lead.afterDicountAmount} />
+              </div>
+
             </div>
+            <div className="flex items-center gap-4">
+              {/* Input with symbol */}
+              <div className="relative w-40">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
+                  {newCommissionType === "percentage" ? "%" : "₹"}
+                </span>
+                <Input
+                  type="text"
+                  value={newCommissionValue}
+                  onChange={handleNewCommissionChange}
+                  placeholder="Commission"
+                  className="pl-8 pr-3 py-2 text-sm w-full"
+                />
+              </div>
+
+              {/* Type selector buttons */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleNewTypeChange("percentage")}
+                  className={`px-3 py-2 rounded-md border text-sm transition ${newCommissionType === "percentage"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    }`}
+                >
+                  %
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNewTypeChange("amount")}
+                  className={`px-3 py-2 rounded-md border text-sm transition ${newCommissionType === "amount"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    }`}
+                >
+                  ₹
+                </button>
+              </div>
+            </div>
+
           </ComponentCard>
 
+
           {(lead.extraService?.length ?? 0) > 0 && (
-            <ComponentCard title="🧾 Extra Services">
+            <ComponentCard title="Extra Services">
               <table className="w-full text-sm border border-gray-300">
                 <thead className="bg-gray-100">
                   <tr>
@@ -195,6 +298,47 @@ const LeadRequestDetails = () => {
                   ))}
                 </tbody>
               </table>
+
+              <div className="flex items-center gap-4">
+                {/* Input with symbol */}
+                <div className="relative w-40">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
+                    {extraCommissionType === "percentage" ? "%" : "₹"}
+                  </span>
+                  <Input
+                    type="text"
+                    value={extraCommissionValue}
+                    onChange={handleExtraCommissionChange}
+                    placeholder="Commission"
+                    className="pl-8 pr-3 py-2 text-sm w-full"
+                  />
+                </div>
+
+                {/* Type selector buttons */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExtraTypeChange("percentage")}
+                    className={`px-3 py-2 rounded-md border text-sm transition ${extraCommissionType === "percentage"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                      }`}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExtraTypeChange("amount")}
+                    className={`px-3 py-2 rounded-md border text-sm transition ${extraCommissionType === "amount"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                      }`}
+                  >
+                    ₹
+                  </button>
+                </div>
+              </div>
+
             </ComponentCard>
           )}
 
@@ -210,57 +354,16 @@ const LeadRequestDetails = () => {
       {/* ✅ Action Buttons / Done */}
       <div className="flex justify-end mt-8">
         {!isApproved ? (
-          !isCommissionSet ? (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl shadow font-medium"
-            >
-              Add Commission & Approve
-            </button>
-          ) : (
-            <button
-              onClick={handleApprove}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl shadow font-medium"
-            >
-              Approve
-            </button>
-          )
-        ) : (
-          <div className="flex items-center gap-2 text-green-600 font-semibold text-lg">
-            ✅ Done
-          </div>
-        )}
+          <button
+            onClick={handleApprove}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow font-medium"
+          >
+            Approve
+          </button>
+        ) : null}
+
       </div>
 
-      {/* Modal for Commission Input */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Set Commission Amount</h2>
-            <input
-              type="number"
-              value={commissionValue}
-              onChange={(e) => setCommissionValue(Number(e.target.value))}
-              placeholder="Enter commission"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveCommission}
-                className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
