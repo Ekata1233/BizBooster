@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Lead from "@/models/Lead";
+import "@/models/Checkout";
 import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
@@ -205,8 +206,8 @@ export async function PUT(req: Request) {
         id,
         {
           $set: {
-            newCommission: Number(newCommission),
-            "extraService.0.commission": Number(commission),
+            newCommission: newCommission,
+            "extraService.0.commission": commission,
           },
         },
         { new: true }

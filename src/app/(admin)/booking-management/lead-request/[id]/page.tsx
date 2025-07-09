@@ -24,8 +24,8 @@ const LeadRequestDetails = () => {
   const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [extraCommissionValue, setExtraCommissionValue] = useState<number | ''>('');
-  const [newCommissionValue, setNewCommissionValue] = useState<number | ''>('');
+  const [extraCommissionValue, setExtraCommissionValue] = useState<string>('');
+  const [newCommissionValue, setNewCommissionValue] = useState<string>('');
   const [isCommissionSet, setIsCommissionSet] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
@@ -35,8 +35,6 @@ const LeadRequestDetails = () => {
 
 
   const serviceId = lead?.checkout?.service;
-  console.log("service service : ", singleService);
-  console.log("lead details : ", lead);
 
   useEffect(() => {
     if (!leadId) return;
@@ -58,16 +56,35 @@ const LeadRequestDetails = () => {
 
 
   const handleApprove = async () => {
-    if (!lead || newCommissionValue === '' || extraCommissionValue === '') {
+    if (!lead || extraCommissionType === null) {
       return alert('Missing lead or commission value');
     }
 
+    const fallbackCommissionRaw = singleService?.franchiseDetails?.commission;
+    const fallbackCommission = fallbackCommissionRaw?.replace(/[^0-9.]/g, "") || "";
+
+    console.log("fallback commission : ", fallbackCommission)
+
+    if (newCommissionValue === "" && !fallbackCommission) {
+      return alert('Missing new commission and no default available');
+    }
+
     try {
+      const formattedExtraCommission =
+        extraCommissionType === 'percentage'
+          ? `${extraCommissionValue}%`
+          : `₹${extraCommissionValue}`;
+
+      const rawNewCommission = newCommissionValue === '' ? fallbackCommission : newCommissionValue;
+      const formattedNewCommission =
+        newCommissionType === 'percentage'
+          ? `${rawNewCommission}%`
+          : `₹${rawNewCommission}`;
 
       const commissionFormData = new FormData();
       commissionFormData.append("updateType", "setCommission");
-      commissionFormData.append("commission", String(extraCommissionValue));
-      commissionFormData.append("newCommission", String(newCommissionValue));
+      commissionFormData.append("commission", formattedExtraCommission);
+      commissionFormData.append("newCommission", formattedNewCommission);
       await updateLead(lead._id!, commissionFormData);
 
       // Step 2: Approve the lead
@@ -84,16 +101,16 @@ const LeadRequestDetails = () => {
         alert('Commission and Lead approved successfully');
 
         // Optional: refetch or update state
-        // fetchLeads();
-        // const updatedLead = await getLeadById(lead._id);
-        // setLead(updatedLead);
-        // setIsCommissionSet(false);
-        // setExtraCommissionValue('');
-        // setNewCommissionValue('');
-        // setIsApproved(true);
+        fetchLeads();
+        const updatedLead = await getLeadById(lead._id);
+        setLead(updatedLead);
+        setIsCommissionSet(false);
+        setExtraCommissionValue('');
+        setNewCommissionValue('');
+        setIsApproved(true);
 
         // ✅ Redirect to lead-request page
-        // router.push('/booking-management/lead-request');
+        router.push('/booking-management/lead-request');
       } else {
         throw new Error(response.data.message || 'Approval failed');
       }
@@ -113,7 +130,7 @@ const LeadRequestDetails = () => {
     const value = e.target.value;
     // Allow only numbers
     if (/^\d*$/.test(value)) {
-      setExtraCommissionValue(value === '' ? '' : Number(value));
+      setExtraCommissionValue(value);
       const formatted =
         extraCommissionType === "percentage" ? `${value}%` : `₹${value}`;
     }
@@ -129,7 +146,7 @@ const LeadRequestDetails = () => {
     const value = e.target.value;
     // Allow only numbers
     if (/^\d*$/.test(value)) {
-      setNewCommissionValue(value === '' ? '' : Number(value));
+      setNewCommissionValue(value); // ✅ string
       const formatted =
         newCommissionType === "percentage" ? `${value}%` : `₹${value}`;
     }
@@ -241,7 +258,7 @@ const LeadRequestDetails = () => {
                   type="text"
                   value={newCommissionValue}
                   onChange={handleNewCommissionChange}
-                  placeholder="Commission"
+                  placeholder={singleService?.franchiseDetails?.commission}
                   className="pl-8 pr-3 py-2 text-sm w-full"
                 />
               </div>
