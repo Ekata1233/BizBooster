@@ -55,7 +55,6 @@ const AllBookingsDetails = () => {
   }, [checkoutDetails]);
 
   useEffect(() => {
-    console.log("fetch the correct customer : ", checkoutDetails?.serviceCustomer)
     if (checkoutDetails?.serviceCustomer) {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
     }

@@ -48,7 +48,7 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        const commission = checkout.service?.franchiseDetails?.commission;
+        const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
 
 
         if (!checkout || checkout.commissionDistributed) {
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
             : 0;
 
         const extraCommission = Array.isArray(lead?.extraService) && lead?.extraService.length > 0
-            ? Number(lead?.extraService[0]?.commission) || 0
+            ? (lead?.extraService[0]?.commission) || 0
             : 0;
 
         const userC = checkout.user;
@@ -245,21 +245,46 @@ export async function POST(req: Request) {
         let extra_A_share = 0;
         let extra_adminShare = 0;
 
-        if (extraLeadAmount > 0 && extraCommission > 0) {
-            const extraCommissionPool = (extraLeadAmount * extraCommission) / 100;
-            extraProviderShare = extraLeadAmount - extraCommissionPool;
+        // -------------------------------------------------------------
+
+        let extraCommissionPool = 0;
+
+        if (typeof extraCommission === "string") {
+            const trimmed = extraCommission.trim();
+
+            if (trimmed.endsWith("%")) {
+                const percent = parseFloat(trimmed.replace("%", ""));
+                extraCommissionPool = (leadAmount * percent) / 100;
+            } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
+                const numericString = trimmed.replace("₹", "").trim();
+                extraCommissionPool = parseFloat(numericString);
+            } else {
+                throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
+            }
+
+            extraProviderShare = leadAmount - extraCommissionPool;
+        } else if (typeof extraCommission === "number") {
+            extraCommissionPool = extraCommission;
+            extraProviderShare = leadAmount - extraCommissionPool;
+        } else {
+            throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
+        }
+
+
+        if (extraLeadAmount > 0) {
+
 
             extra_C_share = extraCommissionPool * 0.5;
             extra_B_share = extraCommissionPool * 0.2;
             extra_A_share = extraCommissionPool * 0.1;
             extra_adminShare = extraCommissionPool * 0.2;
 
-            console.log("commission commission : ", extraCommissionPool);
-            console.log("proivder commission : ", extraProviderShare);
-            console.log("C_share commission : ", extra_C_share);
-            console.log("B_share commission : ", extra_B_share);
-            console.log("A_share commission : ", extra_A_share);
-            console.log("adminShare commission : ", extra_adminShare);
+            console.log("extra commission commission : ", extraCommissionPool);
+            console.log("extra proivder commission : ", extraProviderShare);
+            console.log("extra C_share commission : ", extra_C_share);
+            console.log("extra B_share commission : ", extra_B_share);
+            console.log("extra A_share commission : ", extra_A_share);
+            console.log("extra adminShare commission : ", extra_adminShare);
 
             if (!userB) extra_adminShare += extra_B_share;
             if (!userA) extra_adminShare += extra_A_share;
@@ -320,7 +345,7 @@ export async function POST(req: Request) {
         checkout.orderStatus = "completed";
         await checkout.save();
 
-        const todayDate = new Date().toISOString().split("T")[0]; 
+        const todayDate = new Date().toISOString().split("T")[0];
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);

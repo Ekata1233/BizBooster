@@ -54,7 +54,7 @@ export async function PUT(req: Request) {
         }
 
         return NextResponse.json(
-            { success: true, data: updatedUser.favoriteProviders },
+            { success: true, message: "Provider successfully added to favourites." },
             { status: 200, headers: corsHeaders }
         );
     } catch (error: any) {
@@ -104,7 +104,7 @@ export async function DELETE(req: Request) {
         }
 
         return NextResponse.json(
-            { success: true, data: updatedUser.favoriteProviders },
+            { success: true, message: "Provider successfully removed from favourites." },
             { status: 200, headers: corsHeaders }
         );
     } catch (error: any) {

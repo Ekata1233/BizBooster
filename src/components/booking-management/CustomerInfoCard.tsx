@@ -16,7 +16,6 @@ type CustomerInfoCardProps = {
 
 const CustomerInfoCard = ({ serviceCustomer, loading, error }: CustomerInfoCardProps) => {
   useEffect(() => {
-    console.log("Customer Info:", serviceCustomer);
   }, [serviceCustomer]);
 
   return (
