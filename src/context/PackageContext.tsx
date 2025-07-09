@@ -6,7 +6,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 // /types/package.ts
 export interface PackageType {
   _id?: string;
-  description: string;
+  description: {
+    gp: string;
+    sgp: string;
+    pgp: string;
+  };
   price: number;
   discount: number;
   discountedPrice: number;
@@ -14,6 +18,7 @@ export interface PackageType {
   createdAt?: string;
   updatedAt?: string;
 }
+
 
 interface PackageContextProps {
   packages: PackageType[];
@@ -54,14 +59,17 @@ export const PackageProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  const updatePackage = async (id: string, pkg: Partial<PackageType>) => {
-    try {
-      const res = await axios.put(`/api/packages/${id}`, pkg);
-      setPackages(prev => prev.map(p => (p._id === id ? res.data : p)));
-    } catch (err) {
-      console.error('Error updating package:', err);
-    }
-  };
+ const updatePackage = async (id: string, pkg: Partial<PackageType>) => {
+  try {
+    const res = await axios.put(`/api/packages/${id}`, pkg);
+    setPackages([res.data]); // Only 1 package exists
+  } catch (err) {
+    console.error('Error updating package:', err);
+  }
+};
+
+
+
 
   const deletePackage = async (id: string) => {
     try {
