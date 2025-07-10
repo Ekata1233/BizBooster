@@ -23,14 +23,16 @@ interface ICheckout extends Document {
     partialPaymentNow: number;
     partialPaymentLater: number;
     remainingPaymentStatus: 'pending' | 'paid' | 'failed';
-    
+
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
     isVerified: boolean;
     isAccepted: boolean;
     acceptedDate: Date;
-    serviceMan : mongoose.Types.ObjectId;
+    serviceMan: mongoose.Types.ObjectId;
+    otp: string;
+    isOtpVerified: boolean;
     isCompleted: boolean;
     commissionDistributed: boolean;
     isCanceled: boolean;
@@ -70,7 +72,7 @@ const checkoutSchema = new Schema<ICheckout>({
         enum: ['pending', 'paid', 'failed'],
         default: 'pending'
     },
-    
+
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
@@ -85,7 +87,9 @@ const checkoutSchema = new Schema<ICheckout>({
     isVerified: { type: Boolean, default: false },
     isAccepted: { type: Boolean, default: false },
     acceptedDate: { type: Date, default: null },
-    serviceMan :  { type: Schema.Types.ObjectId, ref: 'ServiceMan', default: null },
+    serviceMan: { type: Schema.Types.ObjectId, ref: 'ServiceMan', default: null },
+    otp: { type: String, unique: true },
+    isOtpVerified: { type: Boolean, default: false },
     isCompleted: { type: Boolean, default: false },
     commissionDistributed: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },
@@ -112,6 +116,18 @@ checkoutSchema.pre<ICheckout>('save', async function (next) {
         }
 
         this.bookingId = `FTB${String(nextId).padStart(6, '0')}`;
+    }
+
+    if (!this.otp) {
+        let isUnique = false;
+        while (!isUnique) {
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit number
+            const existing = await mongoose.model<ICheckout>('Checkout').findOne({ otp: generatedOtp });
+            if (!existing) {
+                this.otp = generatedOtp;
+                isUnique = true;
+            }
+        }
     }
 
     this.updatedAt = new Date();
