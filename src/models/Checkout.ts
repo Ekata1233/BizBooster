@@ -7,7 +7,6 @@ interface ICheckout extends Document {
     serviceCustomer: mongoose.Types.ObjectId;
     provider: mongoose.Types.ObjectId;
     coupon?: mongoose.Types.ObjectId;
-    otp: string;
     subtotal: number;
     serviceDiscount: number;
     couponDiscount: number;
@@ -32,6 +31,8 @@ interface ICheckout extends Document {
     isAccepted: boolean;
     acceptedDate: Date;
     serviceMan: mongoose.Types.ObjectId;
+    otp: string;
+    isOtpVerified: boolean;
     isCompleted: boolean;
     commissionDistributed: boolean;
     isCanceled: boolean;
@@ -47,7 +48,6 @@ const checkoutSchema = new Schema<ICheckout>({
     serviceCustomer: { type: Schema.Types.ObjectId, ref: 'ServiceCustomer', required: true },
     provider: { type: Schema.Types.ObjectId, ref: 'Provider' },
     coupon: { type: Schema.Types.ObjectId, ref: 'Coupon', default: null },
-    otp: { type: String, unique: true },
     subtotal: { type: Number, required: true, min: 0 },
     serviceDiscount: { type: Number, required: true, min: 0, default: 0 },
     couponDiscount: { type: Number, required: true, min: 0, default: 0 },
@@ -88,6 +88,8 @@ const checkoutSchema = new Schema<ICheckout>({
     isAccepted: { type: Boolean, default: false },
     acceptedDate: { type: Date, default: null },
     serviceMan: { type: Schema.Types.ObjectId, ref: 'ServiceMan', default: null },
+    otp: { type: String, unique: true },
+    isOtpVerified: { type: Boolean, default: false },
     isCompleted: { type: Boolean, default: false },
     commissionDistributed: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },

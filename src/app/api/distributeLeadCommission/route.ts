@@ -48,6 +48,8 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
+        console.log("checkout : ", checkout)
+
         const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
 
 

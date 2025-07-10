@@ -49,6 +49,10 @@ export async function POST(req: Request) {
             );
         }
 
+        checkout.isOtpVerified = true;
+        await checkout.save();
+
+
         return NextResponse.json(
             { success: true, message: "OTP verified successfully." },
             { status: 200, headers: corsHeaders }
