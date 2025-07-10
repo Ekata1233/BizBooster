@@ -4,6 +4,8 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IWallet extends Document {
   userId: mongoose.Types.ObjectId;
   balance: number;
+  selfEarnings: number;
+  referralEarnings: number;
   transactions: IWalletTransaction[];
   totalCredits: number;
   totalDebits: number;
@@ -17,7 +19,10 @@ export interface IWallet extends Document {
 // Transaction Subdocument Interface
 export interface IWalletTransaction {
   type: 'credit' | 'debit';
+  leadId : string;
+  commissionFrom : string;
   amount: number;
+  from: string;
   description?: string;
   referenceId?: string;
   method?: string;
@@ -34,10 +39,19 @@ const TransactionSchema = new Schema<IWalletTransaction>(
       enum: ['credit', 'debit'],
       required: [true, 'Transaction type is required'],
     },
+    leadId:{
+      type: String,
+    },
+    commissionFrom:{
+      type: String,
+    },
     amount: {
       type: Number,
       required: [true, 'Amount is required'],
       min: [0, 'Amount must be a positive number'],
+    },
+    from: {
+      type: String,
     },
     description: {
       type: String,
@@ -57,7 +71,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment','referral'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment', 'referral'],
       default: 'checkout',
     },
     status: {
@@ -65,7 +79,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
       enum: ['success', 'failed', 'pending'],
       default: 'success',
     },
-     balanceAfterTransaction: {
+    balanceAfterTransaction: {
       type: Number,
       // required: true, 
     },
@@ -90,6 +104,14 @@ const WalletSchema = new Schema<IWallet>(
       required: true,
       default: 0,
       min: [0, 'Balance cannot be negative'],
+    },
+    selfEarnings: {
+      type: Number,
+      default: 0,
+    },
+    referralEarnings: {
+      type: Number,
+      default: 0,
     },
     transactions: {
       type: [TransactionSchema],

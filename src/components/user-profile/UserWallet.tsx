@@ -22,12 +22,9 @@ const columnsWallet = [
     accessor: 'type',
     render: (row: IWalletTransaction) => (
       <span
-        className={`px-2 py-1 rounded-full text-xs border ${row.type === 'credit'
-          ? 'bg-green-50 text-green-600 border-green-100'
-          : 'bg-red-50 text-red-600 border-red-100'
-          }`}
+        
       >
-        {row.type.charAt(0).toUpperCase() + row.type.slice(1)}
+        {row.description}
       </span>
     ),
   },
@@ -41,7 +38,15 @@ const columnsWallet = [
   {
     header: 'Lead ID',
     accessor: 'leadId',
-    render: (row: IWalletTransaction) => <span>{row.referenceId || '-'}</span>,
+    render: (row: IWalletTransaction) => {
+      console.log('Row data:', row); // Logs row data
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">Lead Id : {row.leadId || '-'}</span>
+          <span className="text-xs text-muted-foreground">From : {row.commissionFrom || 'N/A'}</span>
+        </div>
+      );
+    },
   },
   {
     header: 'Debit',
