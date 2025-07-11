@@ -13,6 +13,71 @@ export async function OPTIONS() {
 }
 
 // ✅ PATCH: Update referredBy field based on referralCode
+// export async function PATCH(req: Request) {
+//   await connectToDatabase();
+
+//   try {
+//     const { userId, referralCode } = await req.json();
+
+//     if (!userId || !referralCode) {
+//       return NextResponse.json(
+//         { success: false, message: "Missing userId or referralCode." },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return NextResponse.json(
+//         { success: false, message: "User not found." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+//     if (user.referredBy) {
+//       return NextResponse.json(
+//         { success: false, message: "User has already been referred." },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     // Find the referrer by referralCode
+//     const referrer = await User.findOne({ referralCode });
+
+//     if (!referrer) {
+//       return NextResponse.json(
+//         { success: false, message: "Invalid referral code." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     // Update the target user's referredBy field
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { referredBy: referrer._id },
+//       { new: true }
+//     );
+
+//     if (!updatedUser) {
+//       return NextResponse.json(
+//         { success: false, message: "User not found." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     return NextResponse.json(
+//       { success: true, message: "Referral applied successfully." },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message =
+//       error instanceof Error ? error.message : "An unknown error occurred.";
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+// ✅ PATCH: Update referredBy field based on referralCode and add to myLeads
 export async function PATCH(req: Request) {
   await connectToDatabase();
 
@@ -33,6 +98,7 @@ export async function PATCH(req: Request) {
         { status: 404, headers: corsHeaders }
       );
     }
+
     if (user.referredBy) {
       return NextResponse.json(
         { success: false, message: "User has already been referred." },
@@ -42,7 +108,6 @@ export async function PATCH(req: Request) {
 
     // Find the referrer by referralCode
     const referrer = await User.findOne({ referralCode });
-
     if (!referrer) {
       return NextResponse.json(
         { success: false, message: "Invalid referral code." },
@@ -50,22 +115,18 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // Update the target user's referredBy field
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { referredBy: referrer._id },
-      { new: true }
-    );
+    // ✅ 1. Update current user
+    user.referredBy = referrer._id;
+    await user.save();
 
-    if (!updatedUser) {
-      return NextResponse.json(
-        { success: false, message: "User not found." },
-        { status: 404, headers: corsHeaders }
-      );
+    // ✅ 2. Add userId to referrer's myLeads
+    if (!referrer.myLeads.includes(user._id)) {
+      referrer.myLeads.push(user._id);
+      await referrer.save();
     }
 
     return NextResponse.json(
-      { success: true, message: "Referral applied successfully." },
+      { success: true, message: "Referral applied and tracked successfully." },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -77,6 +138,7 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
 
 
 // ✅ GET: Get user by referralCode

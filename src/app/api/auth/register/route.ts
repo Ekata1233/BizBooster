@@ -76,18 +76,35 @@ export const POST = async (req: Request) => {
     const otp = generateOtp();
     console.log(`OTP for ${parsedData.email}: ${otp}`);
 
+    // let referredBy = null;
+
+    // if (parsedData.referredBy) {
+    //   const referringUser = await User.findOne({ referralCode: parsedData.referredBy });
+    //   if (!referringUser) {
+    //     return NextResponse.json(
+    //       { error: 'Referral code is not valid' },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    //   referredBy = referringUser._id;
+    // }
+
     let referredBy = null;
+    let referringUser = null;
 
     if (parsedData.referredBy) {
-      const referringUser = await User.findOne({ referralCode: parsedData.referredBy });
+      referringUser = await User.findOne({ referralCode: parsedData.referredBy });
+
       if (!referringUser) {
         return NextResponse.json(
           { error: 'Referral code is not valid' },
           { status: 400, headers: corsHeaders }
         );
       }
+
       referredBy = referringUser._id;
     }
+
 
     const newUser = new User({
       ...parsedData,
@@ -102,6 +119,11 @@ export const POST = async (req: Request) => {
     });
 
     await newUser.save();
+
+    if (referringUser) {
+      referringUser.myLeads.push(newUser._id);
+      await referringUser.save();
+    }
 
     return NextResponse.json(
       { success: true, message: 'Please verify your OTP' },
