@@ -26,6 +26,20 @@ export async function PATCH(req: Request) {
       );
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+    if (user.referredBy) {
+      return NextResponse.json(
+        { success: false, message: "User has already been referred." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     // Find the referrer by referralCode
     const referrer = await User.findOne({ referralCode });
 
@@ -51,7 +65,7 @@ export async function PATCH(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, message: "ReferredBy updated successfully.", data: updatedUser },
+      { success: true, message: "Referral applied successfully." },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
