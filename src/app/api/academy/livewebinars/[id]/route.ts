@@ -182,10 +182,17 @@ export async function GET(req: Request) {
   }
 
   try {
+    // const webinar = await LiveWebinars.findById(id).populate({
+    //   path: "user",
+    //   select: "fullName email mobileNumber",
+    // });
     const webinar = await LiveWebinars.findById(id).populate({
-      path: "user",
-      select: "fullName email mobileNumber",
+      path: 'user.user',
+      model: 'User',
+      select: 'fullName email mobileNumber'
     });
+
+
 
     if (!webinar) {
       return NextResponse.json(

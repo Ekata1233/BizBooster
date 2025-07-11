@@ -63,9 +63,6 @@ const providerItems: NavItem[] = [
   },
 ];
 
-const menuItems: NavItem[] = [
-  { icon: <PieChartIcon />, name: "Menu", subItems: [{ name: "About Us", path: "/about-us-management/about-us" }] },
-];
 
 const serviceItems: NavItem[] = [
   {
@@ -145,6 +142,22 @@ const privacyItems: NavItem[] = [
       { name: "Refund Policy", path: "/preferences/refund-policy" },
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
+       { name: "About Us", path: "/preferences/aboutus" },
+    ],
+  },
+];
+
+
+const providerpreferenceItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Provider Preferences",
+    subItems: [
+      { name: "Provider Privacy & Policy", path: "/providerpreferences/provider-privacypolicy" },
+      { name: "Provider Refund Policy", path: "/providerpreferences/provider-refundpolicy" },
+      { name: "Provider Terms and Conditions", path: "/providerpreferences/provider-termsandconditions" },
+      { name: "Provider Cancellation Policy", path: "/providerpreferences/provider-cancellationpolicy" },
+      { name: "Provider About Us", path: "/providerpreferences/provider-aboutus" },
     ],
   },
 ];
@@ -177,7 +190,8 @@ type MenuType =
   | "system"
   | "preferences"
   | "academy"
-  | "menu";
+  | "providerpreferences"
+  
 
 
 const menuMap: Record<MenuType, NavItem[]> = {
@@ -194,7 +208,8 @@ const menuMap: Record<MenuType, NavItem[]> = {
   system: systemItems,
   preferences: privacyItems,
   academy: academyItems,
-  menu: menuItems,
+  providerpreferences: providerpreferenceItems
+  
 };
 
 const AppSidebar: React.FC = () => {
@@ -387,16 +402,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(moduleItems, "module")}
             </div>
 
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "MENU MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(menuItems, "menu")}
-            </div>
+           
 
             <div>
               <h2
@@ -493,6 +499,17 @@ const AppSidebar: React.FC = () => {
                 {isExpanded || isHovered || isMobileOpen ? "PREFERENCES" : <HorizontaLDots />}
               </h2>
               {renderMenuItems(privacyItems, "preferences")}
+            </div>
+
+              <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? "PROVIDER PREFERENCES" : <HorizontaLDots />}
+              </h2>
+              {renderMenuItems(providerpreferenceItems, "providerpreferences")}
             </div>
 
             <div>

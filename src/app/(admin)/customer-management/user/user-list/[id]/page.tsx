@@ -337,7 +337,7 @@ import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/context/UserContext';
 import { useParams } from 'next/navigation';
-import ComponentCard from '@/components/common/ComponentCard';
+// import ComponentCard from '@/components/common/ComponentCard';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 import FiveXGuarantee from '@/components/user-profile/FiveXGuarantee';

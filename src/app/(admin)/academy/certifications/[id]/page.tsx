@@ -41,8 +41,8 @@
 //   }, [id, certificates]);
 
 
-   
-  
+
+
 //    const handleVideoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 //           const files = Array.from(event.target.files || []);
 //           setVideoFiles(files);
@@ -198,11 +198,11 @@
 // </div>
 
 
-     
+
 //       <Link href={`/academy/certifications/`} passHref>
 //                                    <Button onClick={() => router.back()} className="mt-4">Back</Button>
 //                               </Link>
-      
+
 //       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
 //         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
 //           <div className="px-2 pr-14">
@@ -210,7 +210,7 @@
 //               Edit Tutorial Information
 //             </h4>
 //           </div>
-      
+
 //           <form className="flex flex-col">
 //             <div className="custom-scrollbar h-[400px] overflow-y-auto px-2 pb-3">
 //               <div className="grid grid-cols-1 gap-x-6 gap-y-5">
@@ -223,7 +223,7 @@
 //                     onChange={(e) => setNewVideos([{ ...newVideos[0], name: e.target.value }])}
 //                   />
 //                 </div>
-      
+
 //                 <div>
 //                   <Label>Tutorial Video Description</Label>
 //                   <Input
@@ -233,7 +233,7 @@
 //                     onChange={(e) => setNewVideos([{ ...newVideos[0], description: e.target.value }])}
 //                   />
 //                 </div>
-      
+
 //                 <div>
 //                   <Label htmlFor="videoFiles">Select Video File(s)</Label>
 //                   <FileInput
@@ -261,15 +261,15 @@
 //                           Video {i + 1}
 //                         </a>
 //                       ))}
-      
-      
-                     
+
+
+
 //                     </div>
 //                   )}
 //                 </div>
 //               </div>
 //             </div>
-      
+
 //             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
 //               <Button size="sm" variant="outline" onClick={closeModal}>
 //                 Cancel
@@ -281,9 +281,9 @@
 //           </form>
 //         </div>
 //       </Modal>
-      
+
 //     </div>
-    
+
 //   );
 // };
 
@@ -422,7 +422,7 @@ const CertificateDetailPage: React.FC = () => {
   const handleNewVideoChange = (key: 'name' | 'description' | 'file', value: string | File | null) =>
     setNewVideos([{ ...newVideos[0], [key]: value }]);
 
- 
+
   if (!certificate) return <p className="p-4">Loading…</p>;
 
   return (
@@ -471,7 +471,18 @@ const CertificateDetailPage: React.FC = () => {
                 <h3 className="font-semibold">Video {idx + 1}</h3>
 
                 {v.videoUrl ? (
-                  <video src={v.videoUrl} controls className="w-full h-40 object-cover rounded" />
+                  // <video src={v.videoUrl} controls className="w-full h-40 object-cover rounded" />
+                  <video controls className="w-full h-40 object-cover rounded" preload="metadata">
+                    <source
+                      src="https://ik.imagekit.io/hzyuadmua/tutorial-videos/YOUR_VIDEO.mp4?ik-gbp=no-transform"
+                      type="video/mp4"
+                    />
+                    Your browser does not support the video tag.
+                  </video>
+
+
+
+
                 ) : (
                   <div className="w-full h-40 bg-gray-100 flex items-center justify-center rounded">
                     No video
