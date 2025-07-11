@@ -16,6 +16,8 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
+    console.log("formdata : ", formData)
+
     const addType = formData.get("addType") as string;
         const provider = formData.get("provider") as string;
 
