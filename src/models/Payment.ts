@@ -1,26 +1,29 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPayment extends Document {
-  order_id: string;
-  payment_session_id: string;
+  link_id: string; // cashfree payment link id
+  payment_id?: string;
   amount: number;
-  user?: mongoose.Types.ObjectId;
-  name: string;
-  email: string;
-  phone: string;
+  currency: string;
   status: string;
+  customer_id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 const PaymentSchema = new Schema<IPayment>(
   {
-    order_id: { type: String, required: true, unique: true },
-    payment_session_id: { type: String, required: true },
+    link_id: { type: String, required: true, unique: true },
+    payment_id: { type: String },
     amount: { type: Number, required: true },
-    user: { type: Schema.Types.ObjectId, ref: "User" },
-    name: String,
-    email: String,
-    phone: String,
-    status: { type: String, default: "CREATED" },
+    currency: { type: String, default: "INR" },
+    status: { type: String, default: "PENDING" },
+
+    customer_id: { type: String },
+    name: { type: String },
+    email: { type: String },
+    phone: { type: String },
   },
   { timestamps: true }
 );
