@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!serviceName || !category || !subcategory || !priceStr) {
+    if (!serviceName || !category || !priceStr) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
