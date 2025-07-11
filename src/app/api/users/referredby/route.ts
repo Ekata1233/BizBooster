@@ -81,7 +81,9 @@ export async function GET(req: Request) {
   }
 
   try {
-    const user = await User.findOne({ referralCode });
+    const user = await User.findOne({ referralCode }).select(
+      "fullName email mobileNumber referralCode"
+    );
 
     if (!user) {
       return NextResponse.json(
