@@ -5,6 +5,8 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios'; // Ensure axios is imported
+import { PlusCircle } from 'lucide-react';
+import { TrashBinIcon } from '@/icons';
 
 // Assuming AboutUsPage is the component with the CKEditor form
 const AboutUsEditorForm = dynamic(() => import('@/components/about-us-component/AboutUsEditorForm'), {
@@ -167,7 +169,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
         <div className="mb-6 text-right">
           <button
             onClick={() => setEditingEntry({ _id: '', content: '' })} // Set empty entry for new creation
-            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
           >
             Add New About Us Section
           </button>
@@ -207,13 +209,13 @@ const AdminAboutUsManagementPage: React.FC = () => {
                   onClick={() => handleEditClick(entry)}
                   className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
-                  Edit
+                 <PlusCircle />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry._id)}
                   className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
-                  Delete
+                <TrashBinIcon />
                 </button>
               </div>
             </div>

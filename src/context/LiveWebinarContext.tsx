@@ -164,6 +164,7 @@ interface LiveWebinarsContextType {
   deleteWebinar: (id: string) => Promise<void>;
   deleteTutorial: (id: string) => Promise<void>;
   fetchWebinarById: (id: string) => Promise<LiveWebinars | null>;
+   updateEnrollment:(id: string,userId:string,status:boolean ) => Promise<void>;
 }
 
 const LiveWebinarsContext = createContext<LiveWebinarsContextType | null>(null);
@@ -243,6 +244,16 @@ export const LiveWebinarsProvider = ({ children }: { children: React.ReactNode }
     }
   };
 
+  const updateEnrollment = async (webinarId: string, userId: string, status: boolean) => {
+  try {
+    await axios.put(`/api/academy/livewebinars/enroll/${webinarId}`, { userId, status });
+    fetchWebinars();
+  } catch (error) {
+    console.error("Error updating enrollment:", error);
+  }
+};
+
+
   return (
     <LiveWebinarsContext.Provider
       value={{
@@ -253,6 +264,7 @@ export const LiveWebinarsProvider = ({ children }: { children: React.ReactNode }
         deleteTutorial,
         deleteWebinar,
         fetchWebinarById,
+        updateEnrollment
       }}
     >
       {children}

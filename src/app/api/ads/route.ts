@@ -16,8 +16,10 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
+    console.log("formdata : ", formData)
+
     const addType = formData.get("addType") as string;
-        const provider = formData.get("provider") as string;
+        const providerId = formData.get("providerId") as string;
 
     const category = formData.get("category") as string;
     const service = formData.get("service") as string;
@@ -26,28 +28,15 @@ export async function POST(req: Request) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
 
-    if (!addType || !category || !service || !startDate || !endDate || !title || !provider) {
+    if (!addType || !category || !service || !startDate || !endDate || !title || !providerId) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let fileUrl = "";
-    const file = formData.get("file") as File;
+    const fileUrl = formData.get("fileUrl") as string;
 
-    if (file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/ads",
-      });
-
-      fileUrl = uploadResponse.url;
-    }
 
     const newAd = await Ad.create({
       addType,
@@ -58,7 +47,7 @@ export async function POST(req: Request) {
       title,
       description,
       fileUrl,
-      provider,
+      provider : providerId,
     });
 
     return NextResponse.json(

@@ -1,5 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Link from 'next/link';
+import { EyeIcon } from 'lucide-react';
 
 interface UserQuery {
   id: string;
@@ -11,57 +14,80 @@ interface UserQuery {
   createdAt: string;
 }
 
+interface SupportEntryFromAPI {
+  _id: string;
+  user?: {
+    _id: string;
+    fullName: string;
+    email: string;
+  };
+  question: string;
+  answer?: string;
+  createdAt: string;
+}
+
+
 const SupportPage = () => {
-  const [queries, setQueries] = useState<UserQuery[]>([
-    {
-      id: '1',
-      userId: 'u001',
-      userName: 'John Doe',
-      userEmail: 'john@example.com',
-      question: 'How can I update my profile?',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      userId: 'u002',
-      userName: 'Jane Smith',
-      userEmail: 'jane@example.com',
-      question: 'I forgot my password. What should I do?',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      userId: 'u003',
-      userName: 'Mike Johnson',
-      userEmail: 'mike@example.com',
-      question: 'Can I delete my account?',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '4',
-      userId: 'u004',
-      userName: 'Emily Brown',
-      userEmail: 'emily@example.com',
-      question: 'Why is my account locked?',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '5',
-      userId: 'u005',
-      userName: 'Chris Lee',
-      userEmail: 'chris@example.com',
-      question: 'Can I change my subscription plan?',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '6',
-      userId: 'u006',
-      userName: 'Sara White',
-      userEmail: 'sara@example.com',
-      question: 'I didn’t receive my confirmation email.',
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  // const [queries, setQueries] = useState<UserQuery[]>([
+  //   {
+  //     id: '1',
+  //     userId: '681c72b9062be714d7037840',
+  //     userName: 'EmmaJohnson',
+  //     userEmail: 'john@example.com',
+  //     question: 'How can I update my profile?',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '2',
+  //     userId: '681c72d2062be714d7037844',
+  //     userName: 'Jane Smith',
+  //     userEmail: 'jane@example.com',
+  //     question: 'I forgot my password. What should I do?',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '3',
+  //     userId: '681c72d9062be714d7037848',
+  //     userName: 'Mike Johnson',
+  //     userEmail: 'mike@example.com',
+  //     question: 'Can I delete my account?',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '4',
+  //     userId: 'u004',
+  //     userName: 'Emily Brown',
+  //     userEmail: 'emily@example.com',
+  //     question: 'Why is my account locked?',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '5',
+  //     userId: 'u005',
+  //     userName: 'Chris Lee',
+  //     userEmail: 'chris@example.com',
+  //     question: 'Can I change my subscription plan?',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '6',
+  //     userId: 'u006',
+  //     userName: 'Sara White',
+  //     userEmail: 'sara@example.com',
+  //     question: 'I didn’t receive my confirmation email.',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  //   {
+  //     id: '7',
+  //     userId: '6825ac4596afe10e5ffb1714',
+  //     userName: 'Chandu Classy',
+  //     userEmail: 'princechandu357@gmail.com',
+  //     question: 'I didn’t receive my confirmation email.',
+  //     createdAt: new Date().toISOString(),
+  //   },
+  // ]);
+
+  const [queries, setQueries] = useState<UserQuery[]>([]);
 
   const [answered, setAnswered] = useState<UserQuery[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(queries[0]?.id || null);
@@ -71,21 +97,73 @@ const SupportPage = () => {
   const selectedQuery = queries.find((q) => q.id === selectedId);
   const visibleQueries = showAll ? queries : queries.slice(0, 4);
 
-  const handleReply = (e: React.FormEvent) => {
+
+
+
+  useEffect(() => {
+    const fetchQueries = async () => {
+      try {
+        const res = await axios.get('/api/support/question');
+        const rawData: SupportEntryFromAPI[] = res.data.data;
+
+        const formatted: UserQuery[] = rawData
+          .filter((entry) => entry.user) // skip entries without user
+          .map((entry) => ({
+            id: entry._id,
+            userId: entry.user!._id,
+            userName: entry.user!.fullName,
+            userEmail: entry.user!.email,
+            question: entry.question,
+            answer: entry.answer,
+            createdAt: entry.createdAt,
+          }));
+
+        setQueries(formatted.filter((q) => !q.answer));
+        setAnswered(formatted.filter((q) => !!q.answer));
+        setSelectedId(formatted.find((q) => !q.answer)?.id || null);
+      } catch (error) {
+        console.error('Error fetching support queries:', error);
+      }
+    };
+
+    fetchQueries();
+  }, []);
+
+  const handleReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedId || !answer.trim()) return;
 
     const query = queries.find((q) => q.id === selectedId);
     if (!query) return;
 
-    const updatedAnswered = [...answered, { ...query, answer }];
-    const updatedQueries = queries.filter((q) => q.id !== selectedId);
 
-    setQueries(updatedQueries);
-    setAnswered(updatedAnswered);
-    setSelectedId(updatedQueries[0]?.id || null);
-    setAnswer('');
-    alert('Reply sent successfully!');
+    try {
+      const res = await axios.post('/api/support/answer', {
+      
+        // userId: query.userId,
+         supportId: query.id, // this is _id from HelpAndSuppor
+        question: query.question,
+        answer,
+      });
+
+      if (!res.data.success) {
+        alert('Failed to send email: ' + res.data.message);
+        return;
+      }
+
+      const updatedAnswered = [...answered, { ...query, answer }];
+      const updatedQueries = queries.filter((q) => q.id !== selectedId);
+
+      setQueries(updatedQueries);
+      setAnswered(updatedAnswered);
+      setSelectedId(updatedQueries[0]?.id || null);
+      setAnswer('');
+      alert('Reply sent successfully and email delivered!');
+    } catch (error) {
+      console.error(error);
+      alert('Error sending email.');
+    }
+
   };
 
   return (
@@ -102,9 +180,8 @@ const SupportPage = () => {
                   setSelectedId(query.id);
                   setAnswer(query.answer || '');
                 }}
-                className={`p-4 rounded-xl cursor-pointer transition border ${
-                  selectedId === query.id ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 hover:bg-blue-50'
-                }`}
+                className={`p-4 rounded-xl cursor-pointer transition border ${selectedId === query.id ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 hover:bg-blue-50'
+                  }`}
               >
                 <p className="font-semibold text-gray-800">{query.userName}</p>
                 <p className="text-sm text-gray-600 truncate">{query.question}</p>
@@ -180,6 +257,8 @@ const SupportPage = () => {
                   <th className="p-3 border">Question</th>
                   <th className="p-3 border">Answer</th>
                   <th className="p-3 border">Date</th>
+                  <th className="p-3 border">View</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -192,6 +271,17 @@ const SupportPage = () => {
                     <td className="p-3 border text-gray-500">
                       {new Date(q.createdAt).toLocaleDateString()}
                     </td>
+                    <td className="p-3 border text-center">
+                      <div className="flex justify-center items-center">
+
+                        <Link href={`/customer-management/user/user-list/helpsupportchat/${q.userId}`} passHref>
+                          <button className="text-blue-500 flex border p-2 rounded-md">
+                            <EyeIcon />
+                          </button>
+                        </Link>
+                      </div>
+                    </td>
+
                   </tr>
                 ))}
               </tbody>
