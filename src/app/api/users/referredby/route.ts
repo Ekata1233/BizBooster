@@ -63,3 +63,43 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
+
+// ✅ GET: Get user by referralCode
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  const { searchParams } = new URL(req.url);
+  console.log("serach params : ", searchParams)
+  const referralCode = searchParams.get("referralCode");
+
+  if (!referralCode) {
+    return NextResponse.json(
+      { success: false, message: "Missing referralCode." },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  try {
+    const user = await User.findOne({ referralCode });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "No user found with this referral code." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: user },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred.";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

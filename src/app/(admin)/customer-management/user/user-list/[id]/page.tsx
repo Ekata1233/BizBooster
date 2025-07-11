@@ -23,10 +23,10 @@ const UserDetails = () => {
     singleUserError,
   } = useUserContext();
 
+
   const params = useParams();
   const userId = params?.id as string;
 
-  console.log("user Id : ", userId)
   const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
@@ -62,6 +62,8 @@ const UserDetails = () => {
           name={singleUser.fullName}
           role={singleUser.email}
           location="Amanora Chember, Hadapsar, Pune"
+          userId={singleUser._id}
+          isCommissionDistribute={singleUser.isCommissionDistribute}
         />
 
         {/* Tabs */}
