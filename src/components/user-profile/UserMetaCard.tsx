@@ -46,7 +46,7 @@ export default function UserMetaCard({ imageSrc, name, role, location }: UserMet
             }`}
           >
             <span
-              className={`absolute left-1 top-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+              className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
                 isActive ? "translate-x-8" : ""
               }`}
             ></span>

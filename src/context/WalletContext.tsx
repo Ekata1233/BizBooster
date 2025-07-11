@@ -20,6 +20,7 @@ export interface IWalletTransaction {
 
 // Wallet Interface
 export interface IWallet {
+  _id: string;
   userId: mongoose.Types.ObjectId;
   balance: number;
   transactions: IWalletTransaction[];
