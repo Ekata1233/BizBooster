@@ -8,6 +8,8 @@ import React, { createContext, useContext, useState } from 'react';
 export interface IWalletTransaction {
   type: 'credit' | 'debit';
   amount: number;
+  leadId: string;
+  commissionFrom: string;
   description?: string;
   referenceId?: string;
   method?: string;
@@ -18,6 +20,7 @@ export interface IWalletTransaction {
 
 // Wallet Interface
 export interface IWallet {
+  _id: string;
   userId: mongoose.Types.ObjectId;
   balance: number;
   transactions: IWalletTransaction[];

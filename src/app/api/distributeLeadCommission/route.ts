@@ -31,16 +31,13 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { checkoutId } = body;
 
-
         if (!checkoutId) {
             return NextResponse.json(
                 { success: false, message: "Missing checkoutId." },
                 { status: 400, headers: corsHeaders }
             );
         }
-
         const lead = await Lead.findOne({ checkout: checkoutId })
-
         console.log("lead : ", lead)
 
         const checkout = await Checkout.findById(checkoutId).populate("user").populate({
@@ -152,7 +149,10 @@ export async function POST(req: Request) {
             userId: Types.ObjectId,
             amount: number,
             description: string,
-            referenceId?: string
+            referenceId?: string,
+            level?: "A" | "B" | "C",
+            leadId?: string,
+            commissionFrom?: string
         ) => {
             let wallet = await Wallet.findOne({ userId });
 
@@ -165,6 +165,9 @@ export async function POST(req: Request) {
                 source: "referral",
                 status: "success",
                 createdAt: new Date(),
+                balanceAfterTransaction: 0,
+                leadId,
+                commissionFrom
             };
 
             if (!wallet) {
@@ -173,6 +176,8 @@ export async function POST(req: Request) {
                     balance: amount,
                     totalCredits: amount,
                     totalDebits: 0,
+                    selfEarnings: level === "C" ? amount : 0,
+                    referralEarnings: level === "A" || level === "B" ? amount : 0,
                     transactions: [transaction],
                     lastTransactionAt: new Date(),
                 });
@@ -180,6 +185,12 @@ export async function POST(req: Request) {
                 wallet.balance += amount;
                 wallet.totalCredits += amount;
                 wallet.lastTransactionAt = new Date();
+                if (level === "C") {
+                    wallet.selfEarnings += amount;
+                } else if (level === "A" || level === "B") {
+                    wallet.referralEarnings += amount;
+                }
+                transaction.balanceAfterTransaction = wallet.balance;
                 wallet.transactions.push(transaction);
             }
 
@@ -187,7 +198,7 @@ export async function POST(req: Request) {
         };
 
         // Distribute commissions
-        await creditWallet(userC._id, C_share, "Lead Referral Commission - Level C", checkout._id.toString());
+        await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C",checkout.bookingId,userC._id);
         await ReferralCommission.create({
             fromLead: checkout._id,
             receiver: userC._id,
@@ -195,7 +206,7 @@ export async function POST(req: Request) {
         });
 
         if (userB) {
-            await creditWallet(userB._id, B_share, "Lead Referral Commission - Level B", checkout._id.toString());
+            await creditWallet(userB._id, B_share, "Referral Earning", checkout._id.toString(), "B",checkout.bookingId,userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userB._id,
@@ -204,7 +215,7 @@ export async function POST(req: Request) {
         }
 
         if (userA) {
-            await creditWallet(userA._id, A_share, "Lead Referral Commission - Level A", checkout._id.toString());
+            await creditWallet(userA._id, A_share, "Referral Earning", checkout._id.toString(), "A",checkout.bookingId,userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userA._id,
@@ -212,7 +223,7 @@ export async function POST(req: Request) {
             });
         }
 
-        await creditWallet(ADMIN_ID, adminShare, "Lead Referral Commission - Admin", checkout._id.toString());
+        await creditWallet(ADMIN_ID, adminShare, "Referral Earning - Admin", checkout._id.toString(),"A",checkout.bookingId,userC._id);
         await ReferralCommission.create({
             fromLead: checkout._id,
             receiver: ADMIN_ID,
@@ -291,7 +302,7 @@ export async function POST(req: Request) {
             if (!userB) extra_adminShare += extra_B_share;
             if (!userA) extra_adminShare += extra_A_share;
 
-            await creditWallet(userC._id, extra_C_share, "Extra Service Commission - Level C", checkout._id.toString());
+            await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C",checkout.bookingId,userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userC._id,
@@ -299,7 +310,7 @@ export async function POST(req: Request) {
             });
 
             if (userB) {
-                await creditWallet(userB._id, extra_B_share, "Extra Service Commission - Level B", checkout._id.toString());
+                await creditWallet(userB._id, extra_B_share, "Referral Earning", checkout._id.toString(), "B",checkout.bookingId,userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userB._id,
@@ -308,7 +319,7 @@ export async function POST(req: Request) {
             }
 
             if (userA) {
-                await creditWallet(userA._id, extra_A_share, "Extra Service Commission - Level A", checkout._id.toString());
+                await creditWallet(userA._id, extra_A_share, "Referral Earning", checkout._id.toString(), "A",checkout.bookingId,userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userA._id,
@@ -316,7 +327,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            await creditWallet(ADMIN_ID, extra_adminShare, "Extra Service Commission - Admin", checkout._id.toString());
+            await creditWallet(ADMIN_ID, extra_adminShare, "Referral Earning - Admin", checkout._id.toString(),checkout.bookingId,userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: ADMIN_ID,
