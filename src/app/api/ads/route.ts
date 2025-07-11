@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     console.log("formdata : ", formData)
 
     const addType = formData.get("addType") as string;
-        const provider = formData.get("provider") as string;
+        const providerId = formData.get("providerId") as string;
 
     const category = formData.get("category") as string;
     const service = formData.get("service") as string;
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
 
-    if (!addType || !category || !service || !startDate || !endDate || !title || !provider) {
+    if (!addType || !category || !service || !startDate || !endDate || !title || !providerId) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400, headers: corsHeaders }
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       title,
       description,
       fileUrl,
-      provider,
+      provider : providerId,
     });
 
     return NextResponse.json(

@@ -196,10 +196,12 @@ const ProviderDetailsPage = () => {
       <div className="space-y-6">
         <div className="">
           <UserMetaCard
+          userId={provider._id}
             imageSrc={provider.storeInfo?.logo || "/images/logo/default-provider.webp"}
             name={provider.fullName || provider.storeInfo?.storeName || "No Name"}
             role={provider.email}
             location={provider.storeInfo?.address || "No address provided"}
+            isCommissionDistribute={false}
           />
         </div>
 

@@ -19,6 +19,7 @@ export interface User {
   };
   isEmailVerified: boolean;
   isMobileVerified: boolean;
+  isCommissionDistribute: boolean;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
