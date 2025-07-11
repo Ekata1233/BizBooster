@@ -121,7 +121,7 @@ export const POST = async (req: Request) => {
     await newUser.save();
 
     if (referringUser) {
-      referringUser.myLeads.push(newUser._id);
+      referringUser.myTeams.push(newUser._id);
       await referringUser.save();
     }
 

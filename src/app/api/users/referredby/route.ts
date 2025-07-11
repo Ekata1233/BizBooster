@@ -77,7 +77,7 @@ export async function OPTIONS() {
 //     );
 //   }
 // }
-// ✅ PATCH: Update referredBy field based on referralCode and add to myLeads
+// ✅ PATCH: Update referredBy field based on referralCode and add to myTeams
 export async function PATCH(req: Request) {
   await connectToDatabase();
 
@@ -119,9 +119,9 @@ export async function PATCH(req: Request) {
     user.referredBy = referrer._id;
     await user.save();
 
-    // ✅ 2. Add userId to referrer's myLeads
-    if (!referrer.myLeads.includes(user._id)) {
-      referrer.myLeads.push(user._id);
+    // ✅ 2. Add userId to referrer's myTeams
+    if (!referrer.myTeams.includes(user._id)) {
+      referrer.myTeams.push(user._id);
       await referrer.save();
     }
 

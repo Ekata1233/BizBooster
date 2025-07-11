@@ -95,7 +95,6 @@ console.log("form data of service : ", formData);
           !!formData?.basic?.name?.trim()
            &&
           !!formData?.basic?.category &&
-          !!formData?.basic?.subcategory &&
           !!formData?.basic?.price &&
           !!formData?.basic?.discount &&
           !!formData?.basic?.thumbnail &&
