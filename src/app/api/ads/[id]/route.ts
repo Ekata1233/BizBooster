@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import Category from "@/models/Category";
 import { connectToDatabase } from "@/utils/db";
+import { Ad } from "@/models/Ad";
 import imagekit from "@/utils/imagekit";
-import "@/models/Module"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,43 +14,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function GET(req: Request) {
-  await connectToDatabase();
-
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Missing ID parameter." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const category = await Category.findById(id);
-
-    if (!category || category.isDeleted) {
-      return NextResponse.json(
-        { success: false, message: "Category not found" },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, data: category },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json(
-      { success: false, message },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-
+// ✅ UPDATE AD
 export async function PUT(req: Request) {
   await connectToDatabase();
 
@@ -61,50 +24,55 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    console.log("formdata of category : ", formData);
+    const addType = formData.get("addType") as string;
+    const category = formData.get("category") as string;
+    const service = formData.get("service") as string;
+    const startDate = formData.get("startDate") as string;
+    const endDate = formData.get("endDate") as string;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
 
-    const name = formData.get("name") as string;
-    const moduleId = formData.get("module") as string; // ✅ renamed
-
-    console.log("formdata of moduleId : ", moduleId);
-
-    if (!name || !moduleId || !id) {
+    if (!id || !addType || !category || !service || !startDate || !endDate || !title) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let imageUrl = "";
-    const file = formData.get("image") as File | null;
+    let fileUrl = "";
+    const file = formData.get("file") as File | null;
 
-    if (file && typeof file === "object" && file instanceof File) {
+    if (file && file instanceof File) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${file.name}`,
-        folder: "/uploads",
+        folder: "/ads",
       });
 
-      imageUrl = uploadResponse.url;
+      fileUrl = uploadResponse.url;
     }
 
     const updateData: Record<string, unknown> = {
-      name,
-      module: moduleId,
-      isDeleted: false, // ✅ renamed here too
+      addType,
+      category,
+      service,
+      startDate,
+      endDate,
+      title,
+      description,
     };
-    if (imageUrl) updateData.image = imageUrl;
 
-    const updatedCategory = await Category.findByIdAndUpdate(id, updateData, {
+    if (fileUrl) updateData.fileUrl = fileUrl;
+
+    const updatedAd = await Ad.findByIdAndUpdate(id, updateData, {
       new: true,
-      runValidators: true,
     });
 
     return NextResponse.json(
-      { success: true, data: updatedCategory },
+      { success: true, data: updatedAd },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -117,6 +85,7 @@ export async function PUT(req: Request) {
   }
 }
 
+// ✅ DELETE AD
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
@@ -131,17 +100,17 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deletedCategory = await Category.findByIdAndDelete(id);
+    const deletedAd = await Ad.findByIdAndDelete(id);
 
-    if (!deletedCategory) {
+    if (!deletedAd) {
       return NextResponse.json(
-        { success: false, message: "Category not found" },
+        { success: false, message: "Ad not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: "Category permanently deleted" },
+      { success: true, message: "Ad deleted successfully." },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -153,4 +122,3 @@ export async function DELETE(req: Request) {
     );
   }
 }
-
