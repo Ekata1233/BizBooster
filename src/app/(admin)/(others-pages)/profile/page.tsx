@@ -19,10 +19,12 @@ export default function Profile() {
         </h3>
         <div className="space-y-6">
           <UserMetaCard
+            userId={"123"}
             imageSrc="/images/logo/user1.webp"
             name="BizBooster Admin"
             role="Admin"
             location="Amanora Chember, Hadapsar, Pune"
+            isCommissionDistribute={false}
           />
           <UserInfoCard
             fullName="BizBooster Admin"
