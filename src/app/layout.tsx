@@ -29,6 +29,7 @@ import { LiveWebinarsProvider } from '@/context/LiveWebinarContext';
 import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext';
 import { PackageProvider } from '@/context/PackageContext';
 
+
 const outfit = Outfit({
   subsets: ["latin"],
 });
@@ -42,60 +43,62 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <RouteLoader />
-        <ThemeProvider>
-          <SidebarProvider>
-            <AuthProvider>
-              <UserProvider>
-                <ModuleProvider>
-                  <CategoryProvider>
-                    <SubcategoryProvider>
-                      <BannerProvider>
-                        <ServiceProvider>
-                          <ProviderContextProvider>
-                            <WhyChooseProvider>
-                              <ZoneProvider>
-                                <SubscribeProvider>
-                                  <CouponProvider>
-                                    <ServiceCustomerProvider>
-                                      <CheckoutProvider>
-                                        <LeadProvider>
-                                          <ServiceManProvider>
-                                            <CommissionProvider>
-                                              <WalletUser>
-                                                <AdminEarningsProvider>
+        
+          <ThemeProvider>
+            <SidebarProvider>
+              <AuthProvider>
+                <UserProvider>
+                  <ModuleProvider>
+                    <CategoryProvider>
+                      <SubcategoryProvider>
+                        <BannerProvider>
+                          <ServiceProvider>
+                            <ProviderContextProvider>
+                              <WhyChooseProvider>
+                                <ZoneProvider>
+                                  <SubscribeProvider>
+                                    <CouponProvider>
+                                      <ServiceCustomerProvider>
+                                        <CheckoutProvider>
+                                          <LeadProvider>
+                                            <ServiceManProvider>
+                                              <CommissionProvider>
+                                                <WalletUser>
+                                                  <AdminEarningsProvider>
 
-                                                  <WebinarsProvider>
-                                                    <CertificationProvider>
-                                                      <LiveWebinarsProvider>
-                                                        <PackagesCommissionProvider>
-                                                          <PackageProvider>
-                                                      {children}
-                                                      </PackageProvider>
-                                                      </PackagesCommissionProvider>
-                                                      </LiveWebinarsProvider>
-                                                    </CertificationProvider>
-                                                  </WebinarsProvider>
-                                                </AdminEarningsProvider>
-                                              </WalletUser>
-                                            </CommissionProvider>
-                                          </ServiceManProvider>
-                                        </LeadProvider>
-                                      </CheckoutProvider>
-                                    </ServiceCustomerProvider>
-                                  </CouponProvider>
-                                </SubscribeProvider>
-                              </ZoneProvider>
-                            </WhyChooseProvider>
-                          </ProviderContextProvider>
-                        </ServiceProvider>
-                      </BannerProvider>
-                    </SubcategoryProvider>
-                  </CategoryProvider>
-                </ModuleProvider>
-              </UserProvider>
-            </AuthProvider>
-          </SidebarProvider>
-        </ThemeProvider>
+                                                    <WebinarsProvider>
+                                                      <CertificationProvider>
+                                                        <LiveWebinarsProvider>
+                                                          <PackagesCommissionProvider>
+                                                            <PackageProvider>
+                                                              {children}
+                                                            </PackageProvider>
+                                                          </PackagesCommissionProvider>
+                                                        </LiveWebinarsProvider>
+                                                      </CertificationProvider>
+                                                    </WebinarsProvider>
+                                                  </AdminEarningsProvider>
+                                                </WalletUser>
+                                              </CommissionProvider>
+                                            </ServiceManProvider>
+                                          </LeadProvider>
+                                        </CheckoutProvider>
+                                      </ServiceCustomerProvider>
+                                    </CouponProvider>
+                                  </SubscribeProvider>
+                                </ZoneProvider>
+                              </WhyChooseProvider>
+                            </ProviderContextProvider>
+                          </ServiceProvider>
+                        </BannerProvider>
+                      </SubcategoryProvider>
+                    </CategoryProvider>
+                  </ModuleProvider>
+                </UserProvider>
+              </AuthProvider>
+            </SidebarProvider>
+          </ThemeProvider>
+        
       </body>
     </html>
   );
