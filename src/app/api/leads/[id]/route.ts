@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Lead from "@/models/Lead";
+import "@/models/Checkout";
 import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
@@ -196,10 +197,19 @@ export async function PUT(req: Request) {
     }
 
     const commission = formData.get("commission");
-    if (updateType === "setCommission" && commission) {
+    const newCommission = formData.get("newCommission");
+
+    console.log("new commission : ", newCommission)
+
+    if (updateType === "setCommission" && commission && newCommission) {
       const updated = await Lead.findByIdAndUpdate(
         id,
-        { "extraService.0.commission": Number(commission) }, // OR your correct path
+        {
+          $set: {
+            newCommission: newCommission,
+            "extraService.0.commission": commission,
+          },
+        },
         { new: true }
       );
       return NextResponse.json({ success: true, data: updated }, { status: 200, headers: corsHeaders });

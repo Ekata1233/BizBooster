@@ -24,10 +24,13 @@ export async function POST(req: NextRequest) {
     // Required fields from formData (adjust based on your schema)
     const serviceName = formData.get("basic[name]") as string;
     const category = formData.get("basic[category]") as string;
-    const subcategory = formData.get("basic[subcategory]") as string;
+    let subcategory: string | undefined = formData.get("basic[subcategory]") as string;
+    subcategory = subcategory?.trim() === "" ? undefined : subcategory;
     const priceStr = formData.get("basic[price]");
     const discount = formData.get("basic[discount]");
     const tags: string[] = [];
+
+    console.log("sibcategory in servce : ", subcategory);
 
     // Iterate all entries in formData to find all tags
     for (const key of formData.keys()) {
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!serviceName || !category || !subcategory || !priceStr) {
+    if (!serviceName || !category || !priceStr) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }

@@ -1,5 +1,5 @@
-
 "use client";
+
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -63,7 +63,6 @@ const providerItems: NavItem[] = [
   },
 ];
 
-
 const serviceItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -75,13 +74,12 @@ const serviceItems: NavItem[] = [
     ],
   },
 ];
+
 const packageItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Package",
-    subItems: [
-      { name: "Add Package", path: "/package-management/add-package" },
-    ],
+    subItems: [{ name: "Add Package", path: "/package-management/add-package" }],
   },
 ];
 
@@ -138,15 +136,15 @@ const privacyItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Preferences",
     subItems: [
+      { name: "About Us", path: "/about-us-management/about-us" },
       { name: "Privacy & Policy", path: "/preferences/privacy-policy" },
       { name: "Refund Policy", path: "/preferences/refund-policy" },
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
-       { name: "About Us", path: "/preferences/aboutus" },
+      { name: "About Us", path: "/preferences/aboutus" },
     ],
   },
 ];
-
 
 const providerpreferenceItems: NavItem[] = [
   {
@@ -171,10 +169,11 @@ const academyItems: NavItem[] = [
       { name: "Live Webinars", path: "/academy/livewebinars" },
       { name: "Recorded Webinars", path: "/academy/webinars" },
       { name: "Understanding Fetch True", path: "/academy/understandingfetchtrue" },
-
     ],
   },
 ];
+
+const menuItems: NavItem[] = [];
 
 type MenuType =
   | "main"
@@ -191,8 +190,7 @@ type MenuType =
   | "preferences"
   | "academy"
   | "providerpreferences"
-  
-
+  | "menu";
 
 const menuMap: Record<MenuType, NavItem[]> = {
   main: navItems,
@@ -200,7 +198,7 @@ const menuMap: Record<MenuType, NavItem[]> = {
   module: moduleItems,
   provider: providerItems,
   service: serviceItems,
-  package:packageItems,
+  package: packageItems,
   subscribe: subscribeItems,
   coupon: promotionItems,
   booking: bookingItems,
@@ -208,8 +206,8 @@ const menuMap: Record<MenuType, NavItem[]> = {
   system: systemItems,
   preferences: privacyItems,
   academy: academyItems,
-  providerpreferences: providerpreferenceItems
-  
+  providerpreferences: providerpreferenceItems,
+  menu: menuItems,
 };
 
 const AppSidebar: React.FC = () => {
@@ -319,7 +317,9 @@ const AppSidebar: React.FC = () => {
                         {sub.new && (
                           <span
                             className={`ml-auto ${
-                              isActive(sub.path) ? "menu-dropdown-badge-active" : "menu-dropdown-badge-inactive"
+                              isActive(sub.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
                             } menu-dropdown-badge`}
                           >
                             new
@@ -328,7 +328,9 @@ const AppSidebar: React.FC = () => {
                         {sub.pro && (
                           <span
                             className={`ml-auto ${
-                              isActive(sub.path) ? "menu-dropdown-badge-active" : "menu-dropdown-badge-inactive"
+                              isActive(sub.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
                             } menu-dropdown-badge`}
                           >
                             pro
@@ -369,159 +371,18 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(navItems, "main")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "CUSTOMER MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(customerItems, "customer")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "MODULE MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(moduleItems, "module")}
-            </div>
-
-           
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "SERVICE MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(serviceItems, "service")}
-            </div>
-                 <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "PACKAGE MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(packageItems, "package")}
-            </div>
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "BOOKING MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(bookingItems, "booking")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "SUBSCRIBE MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(subscribeItems, "subscribe")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "PROVIDER MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(providerItems, "provider")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "PROMOTION MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(promotionItems, "coupon")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "REPORTS" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(reportItems, "report")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "SYSTEM MANAGEMENT" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(systemItems, "system")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "PREFERENCES" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(privacyItems, "preferences")}
-            </div>
-
-              <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "PROVIDER PREFERENCES" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(providerpreferenceItems, "providerpreferences")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "ACADEMY" : <HorizontaLDots />}
-              </h2>
-              {renderMenuItems(academyItems, "academy")}
-            </div>
+            {Object.keys(menuMap).map((type) => (
+              <div key={type}>
+                <h2
+                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                    !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+                >
+                  {isExpanded || isHovered || isMobileOpen ? type.toUpperCase().replace(/([A-Z])/g, " $1") : <HorizontaLDots />}
+                </h2>
+                {renderMenuItems(menuMap[type as MenuType], type as MenuType)}
+              </div>
+            ))}
           </div>
         </nav>
         {(isExpanded || isHovered || isMobileOpen) && <SidebarWidget />}
@@ -531,4 +392,3 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
-

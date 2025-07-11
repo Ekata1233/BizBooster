@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
     ref: 'User', // reference to the User model
     default: null,
   },
+  myTeams: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   isAgree: {
     type: Boolean,
     required: true

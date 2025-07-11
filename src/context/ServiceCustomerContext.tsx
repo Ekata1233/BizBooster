@@ -16,7 +16,8 @@ import { IServiceCustomer } from "@/models/ServiceCustomer";
 
 
 interface ServiceCustomerContextType {
-  customers: IServiceCustomer[];
+  customers: IServiceCustomer | null;
+  serviceCustomer: IServiceCustomer | null;
   refreshCustomers: (search?: string) => Promise<void>;
   addCustomer: (formData: FormData) => Promise<void>;
   updateCustomer: (id: string, formData: FormData) => Promise<void>;
@@ -40,7 +41,7 @@ export const ServiceCustomerProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [customers, setCustomers] = useState<IServiceCustomer[]>([]);
+  const [customers, setCustomers] = useState<IServiceCustomer | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
     const [serviceCustomer, setServiceCustomer] = useState<IServiceCustomer | null>(null);
@@ -108,6 +109,7 @@ export const ServiceCustomerProvider = ({
     <ServiceCustomerContext.Provider
       value={{
         customers,
+        serviceCustomer,
         refreshCustomers,
         addCustomer,
         updateCustomer,

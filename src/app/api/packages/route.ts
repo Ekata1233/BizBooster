@@ -14,49 +14,35 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  await connectToDatabase();
   try {
-    await connectToDatabase();
     const body = await req.json();
-    const { description, price, discount, discountedPrice, deposit } = body;
 
-    // Input validation
     if (
-      typeof description !== 'string' ||
-      typeof price !== 'number' ||
-      typeof discount !== 'number' ||
-      typeof discountedPrice !== 'number' ||
-      typeof deposit !== 'number'
+      !body.description?.gp ||
+      typeof body.price !== 'number' ||
+      typeof body.discount !== 'number' ||
+      typeof body.discountedPrice !== 'number' ||
+      typeof body.deposit !== 'number'
     ) {
       return NextResponse.json({ error: 'Invalid input data' }, { status: 400 });
     }
 
-    // Check if a package already exists
-    const existingPackage = await Package.findOne();
+    const newPackage = new Package({
+      ...body,
+      description: {
+        gp: body.description.gp,
+        sgp: body.description.sgp || '',
+        pgp: body.description.pgp || '',
+      },
+    });
 
-    let result;
-    if (existingPackage) {
-      // Update existing package
-      existingPackage.description = description;
-      existingPackage.price = price;
-      existingPackage.discount = discount;
-      existingPackage.discountedPrice = discountedPrice;
-      existingPackage.deposit = deposit;
+    await newPackage.save();
 
-      await existingPackage.save();
-      result = existingPackage;
-    } else {
-      // Create new package
-      result = await Package.create({
-        description,
-        price,
-        discount,
-        discountedPrice,
-        deposit,
-      });
-    }
-
-    return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(newPackage, { status: 201 });
+  } catch (error) {
+    console.error('POST /api/packages error:', error); // 👈 Add this
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+

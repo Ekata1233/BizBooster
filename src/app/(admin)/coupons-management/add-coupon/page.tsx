@@ -39,10 +39,17 @@ const AddCouponPage = () => {
     const { categories } = useCategory();
     const { services } = useService();
     const { zones } = useZone();
-    const customersOptions: Option[] = customers?.map(cus => ({
-        value: String(cus._id), // ensure it's a string
-        label: cus.fullName,
-    })) ?? [];    // const categoryOptions = categories?.map(c => ({ value: c._id, label: c.name })) ?? [];
+    // const customersOptions: Option[] = customers?.map(cus => ({
+    //     value: String(cus._id), // ensure it's a string
+    //     label: cus.fullName,
+    // })) ?? [];  
+    const customersOptions: Option[] = Array.isArray(customers)
+  ? customers.map(cus => ({
+      value: String(cus._id),
+      label: cus.fullName,
+    }))
+  : [];
+  // const categoryOptions = categories?.map(c => ({ value: c._id, label: c.name })) ?? [];
     const categoryOptions = categories?.map(c => ({
         value: c._id ?? "",  // ensure it's never undefined
         label: c.name

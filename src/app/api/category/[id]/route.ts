@@ -131,11 +131,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deletedCategory = await Category.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true }
-    );
+    const deletedCategory = await Category.findByIdAndDelete(id);
 
     if (!deletedCategory) {
       return NextResponse.json(
@@ -145,7 +141,7 @@ export async function DELETE(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, message: "Category soft-deleted successfully" },
+      { success: true, message: "Category permanently deleted" },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -157,3 +153,4 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
