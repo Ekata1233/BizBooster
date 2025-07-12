@@ -1,8 +1,7 @@
-
 // src/app/(admin)/academy/livewebinars/[id]/page.tsx
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react'; // Import useRef
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,13 +11,13 @@ import { TrashBinIcon } from '@/icons';
 import { useLiveWebinars } from '@/context/LiveWebinarContext';
 
 /* ------------------------------------------------------------------ */
-/*  Types                                                             */
+/*  Types                                                             */
 /* ------------------------------------------------------------------ */
+
 type WebinarUser = {
   user: { _id: string; fullName: string; email: string; mobileNumber: string };
   status: boolean;
 };
-
 
 type Webinar = {
   _id: string;
@@ -32,80 +31,95 @@ type Webinar = {
   user: WebinarUser[];
 };
 
-
 const WebinarDetailPage: React.FC = () => {
-  /* --- path / router --- */
-  const { id: rawId } = useParams<{ id: string }>(); // ensures string
-  const id = rawId ?? '';                             // remove undefined
+  const { id: rawId } = useParams<{ id: string }>();
+  const id = rawId ?? '';
   const router = useRouter();
 
-  /* --- context --- */
   const { deleteTutorial, fetchWebinarById } = useLiveWebinars();
 
-  /* --- state --- */
   const [webinar, setWebinar] = useState<Webinar | null>(null);
   const [timeRemaining, setTimeRemaining] = useState({ hours: '00', minutes: '00' });
 
- const loadWebinar = useCallback(async () => {
-  if (!id) return;
+  // Use useRef to store the interval ID so it persists across renders
+  const timerRef = useRef<NodeJS.Timeout | null>(null); // Explicitly type for NodeJS.Timeout
 
-  const data = await fetchWebinarById(id);
-  if (data) {
-    const transformedData: Webinar = {
-      ...data,
-      user: (data.user || []).map((u) => ({
-        user: {
-          _id: u._id,
-          fullName: u.fullName,
-          email: u.email,
-          mobileNumber: u.mobileNumber,
-        },
-        status: true, // or false, based on your business logic
-      })),
-    };
+  const loadWebinar = useCallback(async () => {
+    if (!id) return;
+    const data = await fetchWebinarById(id);
 
-    setWebinar(transformedData);
-    calculateCountdown(data.date, data.startTime);
-  }
-}, [id, fetchWebinarById]);
+    if (data) {
+      const transformedWebinar: Webinar = {
+        _id: data._id,
+        name: data.name,
+        description: data.description,
+        imageUrl: data.imageUrl,
+        displayVideoUrls: data.displayVideoUrls,
+        date: data.date,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        user: (data.user || []) as WebinarUser[],
+      };
 
+      setWebinar(transformedWebinar);
+      // Call calculateCountdown only if data is available
+      calculateCountdown(data.date, data.startTime);
+    }
+  }, [id, fetchWebinarById]);
 
+  // Modified useEffect to correctly manage the countdown timer
   useEffect(() => {
     loadWebinar();
-  }, [loadWebinar]);
+
+    // Cleanup function for the effect to clear the interval
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [loadWebinar]); // Depend on loadWebinar to re-run when it changes
 
   const calculateCountdown = (date: string, startTime: string) => {
     const target = new Date(`${date} ${startTime}`).getTime();
+
+    // Clear any existing timer before starting a new one
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
     const tick = () => {
       const diff = target - Date.now();
       if (diff <= 0) {
         setTimeRemaining({ hours: '00', minutes: '00' });
-        clearInterval(timer);
+        if (timerRef.current) {
+          clearInterval(timerRef.current); // Clear using the ref
+          timerRef.current = null; // Reset the ref
+        }
         return;
       }
       const hrs = String(Math.floor(diff / 3_600_000)).padStart(2, '0');
       const mins = String(Math.floor((diff % 3_600_000) / 60_000)).padStart(2, '0');
       setTimeRemaining({ hours: hrs, minutes: mins });
     };
-    tick();
-    const timer = setInterval(tick, 1_000);
+
+    tick(); // Initial call
+    timerRef.current = setInterval(tick, 1_000); // Store interval ID in ref
   };
 
   /* ----------------------------------------------------------------
-     Handlers
+    Handlers
   ---------------------------------------------------------------- */
   const updateStatus = async (webinarId: string, userId: string, status: boolean) => {
     try {
-      const res = await fetch(`/api/academy/livewebinars/enroll/${webinarId}`, {
+      const result = await (await fetch(`/api/academy/livewebinars/enroll/${webinarId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, status }),
-      });
+        body: JSON.stringify({ users: [userId], status }),
+      })).json();
 
-      const result = await res.json();
       if (result.success) {
         alert("Status updated");
-        loadWebinar(); // refresh UI
+        loadWebinar(); // Refresh UI
       } else {
         alert("Error: " + result.message);
       }
@@ -129,12 +143,12 @@ const WebinarDetailPage: React.FC = () => {
   };
 
   /* ----------------------------------------------------------------
-     Loading
+    Loading
   ---------------------------------------------------------------- */
   if (!webinar) return <p className="p-4">Loading…</p>;
 
   /* ----------------------------------------------------------------
-     Render
+    Render
   ---------------------------------------------------------------- */
   return (
     <div className="p-4 space-y-6 bg-[#f5f7fa] min-h-screen">
@@ -165,10 +179,6 @@ const WebinarDetailPage: React.FC = () => {
           <p><strong>Date:</strong> {webinar.date}</p>
           <p><strong>Time:</strong> {webinar.startTime} – {webinar.endTime}</p>
         </div>
-
-        {/* <div className="mt-4 text-right">
-          <Button className="bg-blue-600 text-white px-4 py-2 rounded">Enroll Now</Button>
-        </div> */}
       </div>
 
       {/* video link */}
@@ -187,7 +197,6 @@ const WebinarDetailPage: React.FC = () => {
 
         <div className="flex space-x-4 mt-4">
           <Button onClick={() => copyToClipboard(webinar.displayVideoUrls[0])}>Copy</Button>
-          {/* just use anchor, Button doesn’t support asChild */}
           <a
             href={webinar.displayVideoUrls[0]}
             target="_blank"
@@ -201,7 +210,7 @@ const WebinarDetailPage: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-700">Time Remaining</p>
           <p className="text-xl font-bold">
-            {timeRemaining.hours}hr {timeRemaining.minutes}min
+            {timeRemaining.hours}hr {timeRemaining.minutes}min
           </p>
         </div>
       </div>
@@ -211,10 +220,11 @@ const WebinarDetailPage: React.FC = () => {
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-3 py-2">S.No</th>
-            <th className="border px-3 py-2">User ID</th>
+            <th className="border px-3 py-2">User ID</th>
             <th className="border px-3 py-2">Name</th>
             <th className="border px-3 py-2">Email</th>
             <th className="border px-3 py-2">Mobile</th>
+            <th className="border px-3 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -263,7 +273,6 @@ const WebinarDetailPage: React.FC = () => {
             </tr>
           )}
         </tbody>
-
       </table>
 
       {/* back */}
