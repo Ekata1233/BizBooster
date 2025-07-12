@@ -1,228 +1,7 @@
-
-
-// // src/app/(admin)/academy/livewebinars/[id]/page.tsx
-// 'use client';
-
-// import React, { useEffect, useState, useCallback } from 'react';
-// import { useParams, useRouter } from 'next/navigation';
-// import Image from 'next/image';
-// import Link from 'next/link';
-// import { CiLink } from 'react-icons/ci';
-// import Button from '@/components/ui/button/Button';
-// import { TrashBinIcon } from '@/icons';
-// import { useLiveWebinars } from '@/context/LiveWebinarContext';
-
-// /* ------------------------------------------------------------------ */
-// /*  Types                                                             */
-// /* ------------------------------------------------------------------ */
-// type WebinarUser = {
-//   _id: string;
-//   fullName: string;
-//   email: string;
-//   mobileNumber: string;
-// };
-
-// type Webinar = {
-//   _id: string;
-//   name: string;
-//   description: string;
-//   imageUrl: string;
-//   displayVideoUrls: string[];
-//   date: string;
-//   startTime: string;
-//   endTime: string;
-//   user: WebinarUser[];
-// };
-
-
-// const WebinarDetailPage: React.FC = () => {
-//   /* --- path / router --- */
-//   const { id: rawId } = useParams<{ id: string }>(); // ensures string
-//   const id = rawId ?? '';                             // remove undefined
-//   const router = useRouter();
-
-//   /* --- context --- */
-//   const { deleteTutorial, fetchWebinarById } = useLiveWebinars();
-
-//   /* --- state --- */
-//   const [webinar, setWebinar] = useState<Webinar | null>(null);
-//   const [timeRemaining, setTimeRemaining] = useState({ hours: '00', minutes: '00' });
-
-//   const loadWebinar = useCallback(async () => {
-//     if (!id) return;
-//     const data = await fetchWebinarById(id);
-//     if (data) {
-//       setWebinar(data as Webinar);
-//       calculateCountdown(data.date, data.startTime);
-//     }
-//   }, [id, fetchWebinarById]);
-
-//   useEffect(() => {
-//     loadWebinar();
-//   }, [loadWebinar]);
-
-//   const calculateCountdown = (date: string, startTime: string) => {
-//     const target = new Date(`${date} ${startTime}`).getTime();
-//     const tick = () => {
-//       const diff = target - Date.now();
-//       if (diff <= 0) {
-//         setTimeRemaining({ hours: '00', minutes: '00' });
-//         clearInterval(timer);
-//         return;
-//       }
-//       const hrs = String(Math.floor(diff / 3_600_000)).padStart(2, '0');
-//       const mins = String(Math.floor((diff % 3_600_000) / 60_000)).padStart(2, '0');
-//       setTimeRemaining({ hours: hrs, minutes: mins });
-//     };
-//     tick();
-//     const timer = setInterval(tick, 1_000);
-//   };
-
-//   /* ----------------------------------------------------------------
-//      Handlers
-//   ---------------------------------------------------------------- */
-//   const handleDelete = async () => {
-//     if (!id) return;
-//     if (!confirm('Are you sure you want to delete this webinar?')) return;
-//     await deleteTutorial(id);
-//     router.push('/academy/livewebinars');
-//   };
-
-//   const copyToClipboard = (text?: string) => {
-//     if (!text) return;
-//     navigator.clipboard.writeText(text);
-//     alert('Link copied to clipboard!');
-//   };
-
-//   /* ----------------------------------------------------------------
-//      Loading
-//   ---------------------------------------------------------------- */
-//   if (!webinar) return <p className="p-4">Loading…</p>;
-
-//   /* ----------------------------------------------------------------
-//      Render
-//   ---------------------------------------------------------------- */
-//   return (
-//     <div className="p-4 space-y-6 bg-[#f5f7fa] min-h-screen">
-//       {/* header */}
-//       <div className="flex justify-between items-center">
-//         <h1 className="text-xl font-semibold text-blue-700">Webinar</h1>
-//         <button
-//           onClick={handleDelete}
-//           className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-//         >
-//           <TrashBinIcon />
-//         </button>
-//       </div>
-
-//       {/* info card */}
-//       <div className="bg-white p-4 rounded-lg shadow-sm">
-//         <Image
-//           src={webinar.imageUrl}
-//           alt={webinar.name}
-//           width={500}
-//           height={200}
-//           className="rounded-md object-cover"
-//         />
-
-//         <div className="mt-4 space-y-1">
-//           <h2 className="text-lg font-bold">{webinar.name}</h2>
-//           <p className="text-gray-600">{webinar.description}</p>
-//           <p><strong>Date:</strong> {webinar.date}</p>
-//           <p><strong>Time:</strong> {webinar.startTime} – {webinar.endTime}</p>
-//         </div>
-
-//         <div className="mt-4 text-right">
-//           <Button className="bg-blue-600 text-white px-4 py-2 rounded">Enroll Now</Button>
-//         </div>
-//       </div>
-
-//       {/* video link */}
-//       <div className="bg-white p-4 rounded-lg shadow-sm">
-//         <div className="flex items-center space-x-2">
-//           <CiLink className="text-blue-800" />
-//           <a
-//             href={webinar.displayVideoUrls[0] ?? '#'}
-//             target="_blank"
-//             rel="noopener noreferrer"
-//             className="text-blue-600 underline break-all"
-//           >
-//             {webinar.displayVideoUrls[0] ?? 'No link'}
-//           </a>
-//         </div>
-
-//         <div className="flex space-x-4 mt-4">
-//           <Button onClick={() => copyToClipboard(webinar.displayVideoUrls[0])}>Copy</Button>
-//           {/* just use anchor, Button doesn’t support asChild */}
-//           <a
-//             href={webinar.displayVideoUrls[0]}
-//             target="_blank"
-//             rel="noopener noreferrer"
-//             className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
-//           >
-//             Join
-//           </a>
-//         </div>
-
-//         <div className="mt-6 text-center">
-//           <p className="text-gray-700">Time Remaining</p>
-//           <p className="text-xl font-bold">
-//             {timeRemaining.hours}hr {timeRemaining.minutes}min
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* enrolled users */}
-//       <table className="min-w-full border border-gray-300 text-sm">
-//         <thead className="bg-gray-100">
-//           <tr>
-//             <th className="border px-3 py-2">S.No</th>
-//             <th className="border px-3 py-2">User ID</th>
-//             <th className="border px-3 py-2">Name</th>
-//             <th className="border px-3 py-2">Email</th>
-//             <th className="border px-3 py-2">Mobile</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {webinar.user.length ? (
-//             webinar.user.map((u, idx) => (
-//               <tr key={u._id}>
-//                 <td className="border px-3 py-2">{idx + 1}</td>
-//                 <td className="border px-3 py-2 break-all">{u._id}</td>
-//                 <td className="border px-3 py-2">{u.fullName}</td>
-//                 <td className="border px-3 py-2">{u.email}</td>
-//                 <td className="border px-3 py-2">{u.mobileNumber}</td>
-//               </tr>
-//             ))
-//           ) : (
-//             <tr>
-//               <td colSpan={5} className="text-center py-2">No users enrolled</td>
-//             </tr>
-//           )}
-//         </tbody>
-//       </table>
-
-//       {/* back */}
-//       <Link href="/academy/livewebinars" className="inline-block">
-//         <Button className="mt-4">Back</Button>
-//       </Link>
-//     </div>
-//   );
-// };
-
-// export default WebinarDetailPage;
-
-
-
-
-
-
-
-
 // src/app/(admin)/academy/livewebinars/[id]/page.tsx
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react'; // Import useRef
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -232,13 +11,13 @@ import { TrashBinIcon } from '@/icons';
 import { useLiveWebinars } from '@/context/LiveWebinarContext';
 
 /* ------------------------------------------------------------------ */
-/*  Types                                                             */
+/*  Types                                                             */
 /* ------------------------------------------------------------------ */
+
 type WebinarUser = {
   user: { _id: string; fullName: string; email: string; mobileNumber: string };
   status: boolean;
 };
-
 
 type Webinar = {
   _id: string;
@@ -252,65 +31,95 @@ type Webinar = {
   user: WebinarUser[];
 };
 
-
 const WebinarDetailPage: React.FC = () => {
-  /* --- path / router --- */
-  const { id: rawId } = useParams<{ id: string }>(); // ensures string
-  const id = rawId ?? '';                             // remove undefined
+  const { id: rawId } = useParams<{ id: string }>();
+  const id = rawId ?? '';
   const router = useRouter();
 
-  /* --- context --- */
   const { deleteTutorial, fetchWebinarById } = useLiveWebinars();
 
-  /* --- state --- */
   const [webinar, setWebinar] = useState<Webinar | null>(null);
   const [timeRemaining, setTimeRemaining] = useState({ hours: '00', minutes: '00' });
+
+  // Use useRef to store the interval ID so it persists across renders
+  const timerRef = useRef<NodeJS.Timeout | null>(null); // Explicitly type for NodeJS.Timeout
 
   const loadWebinar = useCallback(async () => {
     if (!id) return;
     const data = await fetchWebinarById(id);
+
     if (data) {
-      setWebinar(data as Webinar);
+      const transformedWebinar: Webinar = {
+        _id: data._id,
+        name: data.name,
+        description: data.description,
+        imageUrl: data.imageUrl,
+        displayVideoUrls: data.displayVideoUrls,
+        date: data.date,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        user: (data.user || []) as WebinarUser[],
+      };
+
+      setWebinar(transformedWebinar);
+      // Call calculateCountdown only if data is available
       calculateCountdown(data.date, data.startTime);
     }
   }, [id, fetchWebinarById]);
 
+  // Modified useEffect to correctly manage the countdown timer
   useEffect(() => {
     loadWebinar();
-  }, [loadWebinar]);
+
+    // Cleanup function for the effect to clear the interval
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [loadWebinar]); // Depend on loadWebinar to re-run when it changes
 
   const calculateCountdown = (date: string, startTime: string) => {
     const target = new Date(`${date} ${startTime}`).getTime();
+
+    // Clear any existing timer before starting a new one
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
     const tick = () => {
       const diff = target - Date.now();
       if (diff <= 0) {
         setTimeRemaining({ hours: '00', minutes: '00' });
-        clearInterval(timer);
+        if (timerRef.current) {
+          clearInterval(timerRef.current); // Clear using the ref
+          timerRef.current = null; // Reset the ref
+        }
         return;
       }
       const hrs = String(Math.floor(diff / 3_600_000)).padStart(2, '0');
       const mins = String(Math.floor((diff % 3_600_000) / 60_000)).padStart(2, '0');
       setTimeRemaining({ hours: hrs, minutes: mins });
     };
-    tick();
-    const timer = setInterval(tick, 1_000);
+
+    tick(); // Initial call
+    timerRef.current = setInterval(tick, 1_000); // Store interval ID in ref
   };
 
   /* ----------------------------------------------------------------
-     Handlers
+    Handlers
   ---------------------------------------------------------------- */
   const updateStatus = async (webinarId: string, userId: string, status: boolean) => {
     try {
-      const res = await fetch(`/api/academy/livewebinars/enroll/${webinarId}`, {
+      const result = await (await fetch(`/api/academy/livewebinars/enroll/${webinarId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, status }),
-      });
+        body: JSON.stringify({ users: [userId], status }),
+      })).json();
 
-      const result = await res.json();
       if (result.success) {
         alert("Status updated");
-        loadWebinar(); // refresh UI
+        loadWebinar(); // Refresh UI
       } else {
         alert("Error: " + result.message);
       }
@@ -334,12 +143,12 @@ const WebinarDetailPage: React.FC = () => {
   };
 
   /* ----------------------------------------------------------------
-     Loading
+    Loading
   ---------------------------------------------------------------- */
   if (!webinar) return <p className="p-4">Loading…</p>;
 
   /* ----------------------------------------------------------------
-     Render
+    Render
   ---------------------------------------------------------------- */
   return (
     <div className="p-4 space-y-6 bg-[#f5f7fa] min-h-screen">
@@ -370,10 +179,6 @@ const WebinarDetailPage: React.FC = () => {
           <p><strong>Date:</strong> {webinar.date}</p>
           <p><strong>Time:</strong> {webinar.startTime} – {webinar.endTime}</p>
         </div>
-
-        {/* <div className="mt-4 text-right">
-          <Button className="bg-blue-600 text-white px-4 py-2 rounded">Enroll Now</Button>
-        </div> */}
       </div>
 
       {/* video link */}
@@ -392,7 +197,6 @@ const WebinarDetailPage: React.FC = () => {
 
         <div className="flex space-x-4 mt-4">
           <Button onClick={() => copyToClipboard(webinar.displayVideoUrls[0])}>Copy</Button>
-          {/* just use anchor, Button doesn’t support asChild */}
           <a
             href={webinar.displayVideoUrls[0]}
             target="_blank"
@@ -406,7 +210,7 @@ const WebinarDetailPage: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-700">Time Remaining</p>
           <p className="text-xl font-bold">
-            {timeRemaining.hours}hr {timeRemaining.minutes}min
+            {timeRemaining.hours}hr {timeRemaining.minutes}min
           </p>
         </div>
       </div>
@@ -416,10 +220,11 @@ const WebinarDetailPage: React.FC = () => {
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-3 py-2">S.No</th>
-            <th className="border px-3 py-2">User ID</th>
+            <th className="border px-3 py-2">User ID</th>
             <th className="border px-3 py-2">Name</th>
             <th className="border px-3 py-2">Email</th>
             <th className="border px-3 py-2">Mobile</th>
+            <th className="border px-3 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -468,7 +273,6 @@ const WebinarDetailPage: React.FC = () => {
             </tr>
           )}
         </tbody>
-
       </table>
 
       {/* back */}

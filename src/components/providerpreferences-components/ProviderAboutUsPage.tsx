@@ -31,16 +31,25 @@ const ProviderAboutUsPage: React.FC<EditorFormProps> = ({
 }) => {
   const isContentEdited = useRef(false);
   const [content, setContent] = useState<string>(initialData?.content || '');
+  // 1. Add a mounted state variable
+  const [mounted, setMounted] = useState(false);
+
+  // 2. Update mounted in useEffect once the component mounts on client
+  useEffect(() => {
+    setMounted(true);
+  }, []); // Empty dependency array means this runs once after initial render/hydration
 
   useEffect(() => {
+    // Only update content if initialData changes AND the component is mounted to prevent initial hydration mismatches
     if (
+      mounted && // Ensure component is mounted before setting initial content
       initialData?.content !== undefined &&
       (initialData.content !== content || !isContentEdited.current)
     ) {
       setContent(initialData.content);
       isContentEdited.current = false;
     }
-  }, [initialData?.content, initialData?._id]);
+  }, [initialData?.content, initialData?._id, mounted]); // Add 'mounted' to dependencies
 
   const handleEditorChange = (data: string) => {
     setContent(data);
@@ -65,10 +74,16 @@ const ProviderAboutUsPage: React.FC<EditorFormProps> = ({
         <div className="mb-6">
           <Label htmlFor="privacyPolicyContent">Provider About Us Content</Label>
           <div className="my-editor mt-2">
-            <ClientSideCustomEditor
-              value={content}
-              onChange={handleEditorChange}
-            />
+            {/* 3. Conditionally render ClientSideCustomEditor */}
+            {mounted ? (
+              <ClientSideCustomEditor
+                value={content}
+                onChange={handleEditorChange}
+              />
+            ) : (
+              // Show loading state or a placeholder while waiting for mount
+              <p>Loading rich text editor...</p>
+            )}
           </div>
         </div>
 
