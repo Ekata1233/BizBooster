@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
         payment_currency,
         payment_time,
         bank_reference,
+        payment_method,
       },
       customer_details,
     } = body.data;
@@ -48,6 +49,8 @@ export async function POST(req: NextRequest) {
         name: customer_details?.customer_name,
         email: customer_details?.customer_email,
         phone: customer_details?.customer_phone,
+        payment_method: payment_method?.method,
+
       },
       { upsert: true, new: true }
     );

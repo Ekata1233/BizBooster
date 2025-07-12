@@ -11,6 +11,7 @@ export interface IPayment extends Document {
   phone?: string;
   payment_time?: Date;
   bank_reference?: string;
+  payment_method?: string;
 }
 
 const PaymentSchema = new Schema<IPayment>(
@@ -27,6 +28,7 @@ const PaymentSchema = new Schema<IPayment>(
 
     payment_time: { type: Date },
     bank_reference: { type: String },
+    payment_method: { type: String },
   },
   { timestamps: true }
 );
