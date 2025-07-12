@@ -61,7 +61,7 @@ const checkoutSchema = new Schema<ICheckout>({
     paymentMethod: {
         type: [String],
         required: true,
-        enum: ['credit_card', 'upi', 'pac', 'net_banking', 'wallet'],
+        enum: ['credit_card', 'upi', 'pac', 'net_banking', 'wallet','debit_card'],
     },
     walletAmount: { type: Number, default: 0, min: 0 },
     paidByOtherMethodAmount: { type: Number, default: 0, min: 0 },
