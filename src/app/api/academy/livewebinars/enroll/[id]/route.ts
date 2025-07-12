@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
-import LiveWebinars,  { ILiveWebinar } from '@/models/LiveWebinars';
+import LiveWebinars, { ILiveWebinar } from '@/models/LiveWebinars';
 import mongoose from 'mongoose';
 
 const corsHeaders = {
@@ -9,23 +9,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
-
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
 interface PutRequestBody {
-  users: string[]; // Array of user IDs (strings)
-  status: boolean; // The status to set for these users
+  users: string[];
+  status: boolean;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
-  // Use params.id directly
-  const webinarId = params.id;
+  // ✅ Extract the ID from the URL path
+  const url = new URL(req.url);
+  const webinarId = url.pathname.split('/').pop() as string;
 
   if (!webinarId || !mongoose.Types.ObjectId.isValid(webinarId)) {
     return NextResponse.json(
@@ -88,15 +86,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     if (updatedCount === 0 && errors.length > 0) {
-        return NextResponse.json(
-            { success: false, message: `Failed to process some user IDs: ${errors.join(', ')}` },
-            { status: 400, headers: corsHeaders }
-        );
+      return NextResponse.json(
+        { success: false, message: `Failed to process some user IDs: ${errors.join(', ')}` },
+        { status: 400, headers: corsHeaders }
+      );
     } else if (updatedCount === 0) {
-        return NextResponse.json(
-            { success: true, message: 'No changes needed or all statuses already matched.' },
-            { status: 200, headers: corsHeaders }
-        );
+      return NextResponse.json(
+        { success: true, message: 'No changes needed or all statuses already matched.' },
+        { status: 200, headers: corsHeaders }
+      );
     }
 
     await webinar.save();
