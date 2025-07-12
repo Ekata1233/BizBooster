@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("✅ Webhook Received:", body);
 
-        console.log("✅ Webhook Received:", body.data.order_tags);
+    console.log("✅ Webhook Received - order_tags:", JSON.stringify(body?.data?.order?.order_tags, null, 2));
 
 
     // ✅ Destructure from nested data
@@ -75,13 +75,14 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Updated Checkout for bookingId: ${checkoutId}`);
       } else {
         console.warn(`⚠️ No Checkout found for bookingId: ${checkoutId}`);
-      }}
-
-      console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
-
-      return NextResponse.json({ success: true }, { headers: corsHeaders });
-    } catch (error: any) {
-      console.error("❌ Webhook Error:", error.message);
-      return NextResponse.json({ error: "Webhook processing failed" }, { status: 500, headers: corsHeaders });
+      }
     }
+
+    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
+
+    return NextResponse.json({ success: true }, { headers: corsHeaders });
+  } catch (error: any) {
+    console.error("❌ Webhook Error:", error.message);
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500, headers: corsHeaders });
   }
+}
