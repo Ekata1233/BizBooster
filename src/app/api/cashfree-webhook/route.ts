@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Payment from "@/models/Payment";
 import Checkout from "@/models/Checkout";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,11 +69,10 @@ export async function POST(req: NextRequest) {
 
     if (payment_status === "SUCCESS" && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
-        { checkoutId },
-        {
-          paymentMethod: [payment_group],
-          paymentStatus: "paid",
-        },
+        new mongoose.Types.ObjectId(checkoutId), {
+        paymentMethod: [payment_group],
+        paymentStatus: "paid",
+      },
         { new: true }
       );
 
