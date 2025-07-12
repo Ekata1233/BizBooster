@@ -19,8 +19,7 @@ export async function POST(req: Request) {
     console.log("formdata : ", formData)
 
     const addType = formData.get("addType") as string;
-        const providerId = formData.get("providerId") as string;
-
+    const providerId = formData.get("providerId") as string;
     const category = formData.get("category") as string;
     const service = formData.get("service") as string;
     const startDate = formData.get("startDate") as string;
@@ -37,7 +36,6 @@ export async function POST(req: Request) {
 
     const fileUrl = formData.get("fileUrl") as string;
 
-
     const newAd = await Ad.create({
       addType,
       category,
@@ -47,7 +45,7 @@ export async function POST(req: Request) {
       title,
       description,
       fileUrl,
-      provider : providerId,
+      provider: providerId,
     });
 
     return NextResponse.json(
@@ -67,10 +65,32 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const ads = await Ad.find().populate('category service');
-    return NextResponse.json({ success: true, data: ads }, { headers: corsHeaders });
+    const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+    // Find all ads
+    const ads = await Ad.find().populate("category service");
+
+    // Check for expiry and update if needed
+    const updatePromises = ads.map(async (ad: any) => {
+      const adEndDate = new Date(ad.endDate).toISOString().split("T")[0];
+      if (adEndDate === today && !ad.isExpired) {
+        ad.isExpired = true;
+        await ad.save();
+      }
+      return ad;
+    });
+
+    const updatedAds = await Promise.all(updatePromises);
+
+    return NextResponse.json(
+      { success: true, data: updatedAds },
+      { headers: corsHeaders }
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
