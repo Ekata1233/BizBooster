@@ -1,12 +1,4 @@
 
-
-
-
-
-
-
-
-
 // src/app/(admin)/academy/livewebinars/[id]/page.tsx
 'use client';
 
@@ -54,14 +46,29 @@ const WebinarDetailPage: React.FC = () => {
   const [webinar, setWebinar] = useState<Webinar | null>(null);
   const [timeRemaining, setTimeRemaining] = useState({ hours: '00', minutes: '00' });
 
-  const loadWebinar = useCallback(async () => {
-    if (!id) return;
-    const data = await fetchWebinarById(id);
-    if (data) {
-      // setWebinar(data as Webinar);
-      calculateCountdown(data.date, data.startTime);
-    }
-  }, [id, fetchWebinarById]);
+ const loadWebinar = useCallback(async () => {
+  if (!id) return;
+
+  const data = await fetchWebinarById(id);
+  if (data) {
+    const transformedData: Webinar = {
+      ...data,
+      user: (data.user || []).map((u) => ({
+        user: {
+          _id: u._id,
+          fullName: u.fullName,
+          email: u.email,
+          mobileNumber: u.mobileNumber,
+        },
+        status: true, // or false, based on your business logic
+      })),
+    };
+
+    setWebinar(transformedData);
+    calculateCountdown(data.date, data.startTime);
+  }
+}, [id, fetchWebinarById]);
+
 
   useEffect(() => {
     loadWebinar();
