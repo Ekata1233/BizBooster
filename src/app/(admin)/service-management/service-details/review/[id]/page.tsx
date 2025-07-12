@@ -16,6 +16,8 @@ const getRatingLabel = (rating: number) => {
 
 const ratingLabels = ['Excellent', 'Good', 'Average', 'Below Average', 'Poor'];
 
+type RatingCountsType = Record<string, number>;
+
 const Page = () => {
   const { reviews, fetchReviews, loading, error } = useReview();
   const params = useParams();
@@ -28,10 +30,18 @@ const Page = () => {
   }, [serviceId]);
 
   const { averageRating, ratingCounts, totalRatings } = useMemo(() => {
-    if (!reviews.length)
-      return { averageRating: 0, ratingCounts: {}, totalRatings: 0 };
+    if (!reviews.length) {
+      const emptyCounts: RatingCountsType = {
+        Excellent: 0,
+        Good: 0,
+        Average: 0,
+        'Below Average': 0,
+        Poor: 0,
+      };
+      return { averageRating: 0, ratingCounts: emptyCounts, totalRatings: 0 };
+    }
 
-    const counts: Record<string, number> = {
+    const counts: RatingCountsType = {
       Excellent: 0,
       Good: 0,
       Average: 0,
@@ -48,7 +58,7 @@ const Page = () => {
     });
 
     return {
-      averageRating: (total / reviews.length).toFixed(2),
+      averageRating: parseFloat((total / reviews.length).toFixed(2)),
       ratingCounts: counts,
       totalRatings: reviews.length,
     };
@@ -58,22 +68,18 @@ const Page = () => {
     <div className="p-4 space-y-6">
       <PageBreadcrumb pageTitle="All Reviews" />
 
-      {/* Loading State */}
       {loading && (
         <div className="text-center text-blue-600 font-medium">Loading reviews...</div>
       )}
 
-      {/* Error State */}
       {error && (
         <div className="text-center text-red-500 font-medium">
           Error loading reviews: {error}
         </div>
       )}
 
-      {/* Render only when not loading and no error */}
       {!loading && !error && (
         <>
-          {/* Rating Overview */}
           <ComponentCard title="Review Summary">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Left: Rating Graph */}
@@ -109,7 +115,6 @@ const Page = () => {
             </div>
           </ComponentCard>
 
-          {/* Review Cards */}
           <ComponentCard title="All Reviews">
             <div className="space-y-4">
               {reviews.map((review) => (
@@ -118,7 +123,6 @@ const Page = () => {
                   className="rounded-lg border border-gray-200 p-4 shadow-sm bg-white"
                 >
                   <div className="flex items-start space-x-4">
-                    {/* Avatar Placeholder */}
                     <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-white text-lg">
                       {review.user?.email?.[0]?.toUpperCase() || 'U'}
                     </div>
@@ -137,7 +141,6 @@ const Page = () => {
                         </span>
                       </div>
 
-                      {/* Star rating using Unicode */}
                       <div className="flex items-center space-x-1 text-yellow-500">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <span key={i}>

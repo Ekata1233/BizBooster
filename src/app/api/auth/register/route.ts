@@ -31,38 +31,42 @@ export const POST = async (req: Request) => {
       existingUserByMobile.otp?.verified === true &&
       existingUserByMobile.isMobileVerified === true;
 
-    if (existingUserByEmail && isMobileBlocked) {
-      return NextResponse.json(
-        { error: 'Email and Mobile already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-    console.log("body ", body);
-    console.log("existingUserByEmail", existingUserByEmail);
-    console.log("existingUserByMobile",existingUserByMobile);
-    console.log("isMobileBlocked",isMobileBlocked);
+    // console.log("body ", body);
+    // console.log("parsedData ", parsedData);
+    // console.log("existingUserByEmail", existingUserByEmail);
+    // console.log("existingUserByMobile", existingUserByMobile);
+    // console.log("isMobileBlocked", isMobileBlocked);
 
-    if (existingUserByEmail) {
-      return NextResponse.json(
-        { error: 'Email already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+if (existingUserByEmail && isMobileBlocked) {
+  return NextResponse.json(
+    { error: 'Email and Mobile already exists' },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
-    if (isMobileBlocked) {
-      return NextResponse.json(
-        { error: 'Mobile already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    } else {
-      // Mobile exists but not verified
-      return NextResponse.json(
-        {
-          error: 'User with this mobile already exists but is not verified. Please complete verification.',
-        },
-        { status: 409, headers: corsHeaders } // 409 Conflict
-      );
-    }
+if (existingUserByEmail) {
+  return NextResponse.json(
+    { error: 'Email already exists' },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+if (existingUserByMobile) {
+  if (isMobileBlocked) {
+    return NextResponse.json(
+      { error: 'Mobile already exists' },
+      { status: 400, headers: corsHeaders }
+    );
+  } else {
+    return NextResponse.json(
+      {
+        error: 'User with this mobile already exists but is not verified. Please complete verification.',
+      },
+      { status: 409, headers: corsHeaders } // 409 Conflict
+    );
+  }
+}
+
 
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
