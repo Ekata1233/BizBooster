@@ -29,6 +29,8 @@ interface Service {
   tags?: string[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 type ServiceContextType = {

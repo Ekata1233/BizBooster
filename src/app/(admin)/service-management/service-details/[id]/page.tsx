@@ -9,6 +9,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import {
   ChevronDownIcon,
 } from "../../../../../icons/index";
+import Link from 'next/link';
 
 
 const ServiceDetailsPage = () => {
@@ -57,30 +58,41 @@ const ServiceDetailsPage = () => {
     : [];
 
 
-  console.log("serviec details :", service);
+  // console.log("serviec details :", service);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 ">
       <PageBreadcrumb pageTitle={`${service.serviceName}`} />
 
       {/* Meta Card */}
-      <div className="flex items-center gap-6">
-        <Image
-          src={service.thumbnailImage}
-          alt={service.serviceName}
-          width={150}
-          height={100}
-          className="rounded shadow"
-        />
-        <div>
-          <h2 className="text-2xl font-semibold">{service.serviceName}</h2>
-          <p className="text-gray-600">
-            {service.category?.name || "No category"} / {service.subcategory?.name || "No subcategory"}
-          </p>
-          <p className="text-lg font-medium mt-2">₹{service.price}</p>
+      <div className="flex items-center justify-between gap-6 ">
+        {/* Left side: Image + Service Details */}
+        <div className="flex items-center gap-6">
+          <Image
+            src={service.thumbnailImage}
+            alt={service.serviceName}
+            width={150}
+            height={100}
+            className="rounded shadow"
+          />
+          <div>
+            <h2 className="text-2xl font-semibold">{service.serviceName}</h2>
+            <p className="text-gray-600">
+              {service.category?.name || "No category"} / {service.subcategory?.name || "No subcategory"}
+            </p>
+            <p className="text-lg font-medium mt-2">₹{service.price}</p>
+          </div>
         </div>
 
+        {/* Right side: Rating */}
+        <Link href={`/service-management/service-details/review/${service._id}`}>
+          <div className="text-right cursor-pointer hover:underline">
+            <h1 className="text-lg font-semibold">⭐ {service.averageRating || 0} / 5</h1>
+            <p className="text-sm text-gray-500">{service.totalReviews || 0} Reviews</p>
+          </div>
+        </Link>
       </div>
+
 
       <div className="flex items-center gap-6">
         <div>

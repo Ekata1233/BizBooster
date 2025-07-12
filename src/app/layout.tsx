@@ -28,6 +28,7 @@ import { CertificationProvider } from '@/context/CertificationContext';
 import { LiveWebinarsProvider } from '@/context/LiveWebinarContext';
 import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext';
 import { PackageProvider } from '@/context/PackageContext';
+import { ReviewProvider } from '@/context/ReviewContext';
 
 
 const outfit = Outfit({
@@ -71,7 +72,9 @@ export default function RootLayout({
                                                         <LiveWebinarsProvider>
                                                           <PackagesCommissionProvider>
                                                             <PackageProvider>
+                                                              <ReviewProvider>
                                                               {children}
+                                                              </ReviewProvider>
                                                             </PackageProvider>
                                                           </PackagesCommissionProvider>
                                                         </LiveWebinarsProvider>
