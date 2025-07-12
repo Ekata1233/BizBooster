@@ -10,8 +10,47 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+// ✅ OPTIONS
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
+}
+
+// ✅ GET SPECIFIC AD
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const ad = await Ad.findById(id);
+
+    if (!ad) {
+      return NextResponse.json(
+        { success: false, message: "Ad not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: ad },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
 
 // ✅ UPDATE AD
