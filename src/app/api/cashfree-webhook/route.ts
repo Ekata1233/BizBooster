@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     );
 
-    const checkoutId = body?.data?.order?.order_tags?.checkoutId;
+    const checkoutId = body?.data?.order?.order_tags?.checkout_id;
 
     if (payment_status === "SUCCESS" && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
