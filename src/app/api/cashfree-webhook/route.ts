@@ -18,12 +18,12 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const body = await req.json();
-    console.log("✅ Webhook Received:", body);
+    // console.log("✅ Webhook Received:", body);
 
-    console.log("✅ Webhook Received - order_tags:", JSON.stringify(body?.data?.order?.order_tags, null, 2));
+    // console.log("✅ Webhook Received - order_tags:", JSON.stringify(body?.data?.order?.order_tags, null, 2));
 
 
-    console.log("✅ Webhook Received - link_notes:", JSON.stringify(body?.data?.order?.link_notes, null, 2));
+    // console.log("✅ Webhook Received - link_notes:", JSON.stringify(body?.data?.order?.link_notes, null, 2));
 
 
     // ✅ Destructure from nested data
@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
 
     const checkoutId = body?.data?.order?.order_tags?.checkout_id;
 
+    console.log("checout I d : ", checkoutId)
+
     if (payment_status === "SUCCESS" && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
         { checkoutId },
@@ -74,10 +76,12 @@ export async function POST(req: NextRequest) {
         { new: true }
       );
 
+      console.log("updated checout OUt : ", updatedCheckout)
+
       if (updatedCheckout) {
-        console.log(`✅ Updated Checkout for bookingId: ${checkoutId}`);
+        console.log(`✅ Updated Checkout for checkoutId: ${checkoutId}`);
       } else {
-        console.warn(`⚠️ No Checkout found for bookingId: ${checkoutId}`);
+        console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
     }
 
