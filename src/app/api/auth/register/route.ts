@@ -37,6 +37,10 @@ export const POST = async (req: Request) => {
         { status: 400, headers: corsHeaders }
       );
     }
+    console.log("body ", body);
+    console.log("existingUserByEmail", existingUserByEmail);
+    console.log("existingUserByMobile",existingUserByMobile);
+    console.log("isMobileBlocked",isMobileBlocked);
 
     if (existingUserByEmail) {
       return NextResponse.json(

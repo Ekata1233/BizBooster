@@ -136,7 +136,7 @@ const privacyItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Preferences",
     subItems: [
-      { name: "About Us", path: "/about-us-management/about-us" },
+      // { name: "About Us", path: "/about-us-management/about-us" },
       { name: "Privacy & Policy", path: "/preferences/privacy-policy" },
       { name: "Refund Policy", path: "/preferences/refund-policy" },
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },

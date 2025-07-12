@@ -28,9 +28,11 @@ type PrivacyEntry = {
     _id: string;
     content: string;
     module: Module | string;
+    documentUrls?: string[];
     createdAt?: string;
     updatedAt?: string;
 };
+
 
 const AdminProviderPrivacyPolicyPage: React.FC = () => {
     const [entries, setEntries] = useState<PrivacyEntry[]>([]);
@@ -43,7 +45,7 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const fetchModules = async () => {
-        const res = await axios.get('/api/modules'); // Adjust this to your actual module fetch API
+        const res = await axios.get('/api/modules');
         if (res.data.success) setModules(res.data.data);
     };
 
@@ -64,7 +66,39 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
         fetchModules();
     }, []);
 
-    const handleSave = async (data: { _id?: string; content: string; module: string }) => {
+    // const handleSave = async (data: { _id?: string; content: string; module: string }) => {
+    //     if (!selectedModule) {
+    //         alert('Please select a module.');
+    //         return;
+    //     }
+
+    //     try {
+    //         setIsSaving(true);
+    //         const payload = { content: data.content, module: selectedModule };
+
+    //         const res = data._id
+    //             ? await axios.put(`/api/providerprivacypolicy/${data._id}`, payload)
+    //             : await axios.post(`/api/providerprivacypolicy`, payload);
+
+    //         if (res.data.success) {
+    //             setSaveSuccess(true);
+    //             setEditingEntry(null);
+    //             fetchPolicies();
+    //             setTimeout(() => setSaveSuccess(false), 3000);
+    //         }
+    //     } catch {
+    //         setError('Failed to save.');
+    //     } finally {
+    //         setIsSaving(false);
+    //     }
+    // };
+
+    const handleSave = async (data: {
+        _id?: string;
+        content: string;
+        module: string;
+        documentFiles?: File[];
+    }) => {
         if (!selectedModule) {
             alert('Please select a module.');
             return;
@@ -72,11 +106,27 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
 
         try {
             setIsSaving(true);
-            const payload = { content: data.content, module: selectedModule };
 
-            const res = data._id
-                ? await axios.put(`/api/providerprivacypolicy/${data._id}`, payload)
-                : await axios.post(`/api/providerprivacypolicy`, payload);
+            const formData = new FormData();
+            formData.append('content', data.content);
+            formData.append('module', selectedModule);
+
+            // Append each document file
+            data.documentFiles?.forEach((file) => {
+                formData.append('documentFiles', file); // ✅ Match exactly what backend reads
+
+            });
+
+            let res;
+            if (data._id) {
+                res = await axios.put(`/api/providerprivacypolicy/${data._id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+            } else {
+                res = await axios.post('/api/providerprivacypolicy', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+            }
 
             if (res.data.success) {
                 setSaveSuccess(true);
@@ -84,12 +134,14 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
                 fetchPolicies();
                 setTimeout(() => setSaveSuccess(false), 3000);
             }
-        } catch {
+        } catch (err) {
+            console.log("Error message:", err)
             setError('Failed to save.');
         } finally {
             setIsSaving(false);
         }
     };
+
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Delete this entry?')) return;
@@ -149,7 +201,7 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
                 </div>
             )}
 
-            
+
 
             <h2 className="text-2xl font-bold mb-4">Existing Entries</h2>
             <div className="overflow-x-auto">
@@ -159,9 +211,11 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
                             <th className="p-3 border">Name</th>
                             <th className="p-3 border">Image</th>
                             <th className="p-3 border">Content</th>
+                            <th className="p-3 border">Documents</th> {/* ✅ NEW */}
                             <th className="p-3 border text-center">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {entries.map((entry) => {
                             const moduleData = typeof entry.module === 'object' && entry.module !== null ? entry.module : null;
@@ -185,12 +239,37 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
                                         )}
                                     </td>
 
+
+
+
+
                                     {/* Content */}
                                     <td className="p-3 border max-w-xs">
                                         <div
                                             className="prose text-gray-700 max-h-48 overflow-y-auto"
                                             dangerouslySetInnerHTML={{ __html: entry.content }}
                                         />
+                                    </td>
+
+                                    <td className="p-3 border text-blue-600">
+                                        {entry.documentUrls && entry.documentUrls.length > 0 ? (
+                                            <ul className="list-disc list-inside space-y-1">
+                                                {entry.documentUrls.map((url, index) => (
+                                                    <li key={index}>
+                                                        <a
+                                                            href={url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="underline hover:text-blue-800"
+                                                        >
+                                                            Document {index + 1}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <span className="text-gray-500 italic">No Documents</span>
+                                        )}
                                     </td>
 
                                     {/* Actions */}
