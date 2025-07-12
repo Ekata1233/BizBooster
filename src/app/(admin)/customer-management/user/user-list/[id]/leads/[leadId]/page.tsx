@@ -51,6 +51,7 @@ const UserDetails = () => {
           role={singleUser.email}
           location="Amanora Chember, Hadapsar, Pune"
           isCommissionDistribute={singleUser.isCommissionDistribute}
+          isToggleButton={false}
         />
 
         {/* Tabs */}
