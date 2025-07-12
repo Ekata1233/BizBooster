@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Payment from "@/models/Payment";
+import Checkout from "@/models/Checkout";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
         payment_currency,
         payment_time,
         bank_reference,
-        payment_method,
+        payment_group,
       },
       customer_details,
     } = body.data;
@@ -49,17 +50,35 @@ export async function POST(req: NextRequest) {
         name: customer_details?.customer_name,
         email: customer_details?.customer_email,
         phone: customer_details?.customer_phone,
-        payment_method: payment_method?.method,
+        payment_method: payment_group,
 
       },
       { upsert: true, new: true }
     );
 
-    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
+    const checkoutId = body?.data?.order?.order_tags?.checkoutId;
 
-    return NextResponse.json({ success: true }, { headers: corsHeaders });
-  } catch (error: any) {
-    console.error("❌ Webhook Error:", error.message);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500, headers: corsHeaders });
+    if (payment_status === "SUCCESS" && checkoutId) {
+      const updatedCheckout = await Checkout.findOneAndUpdate(
+        { checkoutId },
+        {
+          paymentMethod: [payment_group],
+          paymentStatus: "paid",
+        },
+        { new: true }
+      );
+
+      if (updatedCheckout) {
+        console.log(`✅ Updated Checkout for bookingId: ${checkoutId}`);
+      } else {
+        console.warn(`⚠️ No Checkout found for bookingId: ${checkoutId}`);
+      }}
+
+      console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
+
+      return NextResponse.json({ success: true }, { headers: corsHeaders });
+    } catch (error: any) {
+      console.error("❌ Webhook Error:", error.message);
+      return NextResponse.json({ error: "Webhook processing failed" }, { status: 500, headers: corsHeaders });
+    }
   }
-}

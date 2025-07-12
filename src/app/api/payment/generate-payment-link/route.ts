@@ -17,7 +17,7 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { amount, customerId, customerName, customerEmail, customerPhone } = body;
+  const { amount, customerId, customerName, customerEmail, customerPhone, checkoutId } = body;
 
   try {
     console.log("Generating Cashfree payment link using /pg/links for:", {
@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
         link_notify: {
           send_email: true,
           send_sms: false,
+        },
+        order_tags: {
+          checkoutId: checkoutId, 
         },
       },
       {
