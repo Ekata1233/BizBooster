@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import LiveWebinars from '@/models/LiveWebinars';
 import mongoose from 'mongoose';
@@ -10,17 +10,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
-
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
+  const id = url.pathname.split('/').pop() as string;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json(
       { success: false, message: 'Invalid Webinar ID format.' },
       { status: 400, headers: corsHeaders }
@@ -62,9 +58,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    const usersData = await User.find({ _id: { $in: validUserIds } }).select(
-      'fullName email mobileNumber'
-    );
+    const usersData = await User.find({ _id: { $in: validUserIds } }).select('fullName email mobileNumber');
 
     return NextResponse.json(
       { success: true, data: { webinar: updatedWebinar, users: usersData } },
@@ -72,22 +66,19 @@ export async function PUT(req: Request) {
     );
   } catch (error: unknown) {
     return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || 'Failed to update webinar.',
-      },
+      { success: false, message: (error as Error).message || 'Failed to update webinar.' },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
+  const id = url.pathname.split('/').pop() as string;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json(
       { success: false, message: 'Invalid webinar ID.' },
       { status: 400, headers: corsHeaders }
@@ -121,4 +112,8 @@ export async function GET(req: Request) {
       { status: 500, headers: corsHeaders }
     );
   }
+}
+
+export function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
 }
