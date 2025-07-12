@@ -41,8 +41,11 @@ export async function POST(req: NextRequest) {
           send_sms: false,
         },
         order_tags: {
-          checkout_id: checkoutId, 
+          checkout_id: checkoutId,
         },
+        link_notes: {
+          checkout_id: checkoutId,
+        }
       },
       {
         headers: {

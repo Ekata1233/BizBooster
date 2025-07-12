@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
     console.log("✅ Webhook Received - order_tags:", JSON.stringify(body?.data?.order?.order_tags, null, 2));
 
 
+    console.log("✅ Webhook Received - link_notes:", JSON.stringify(body?.data?.order?.link_notes, null, 2));
+
+
     // ✅ Destructure from nested data
     const {
       order: { order_id, order_amount, order_currency },
