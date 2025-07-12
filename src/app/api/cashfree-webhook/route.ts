@@ -19,40 +19,40 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("✅ Webhook Received:", body);
 
+    // ✅ Destructure from nested data
     const {
-      link_id,
-      link_status,
-      payment_id,
-      payment_amount,
-      payment_currency,
+      order: { order_id, order_amount, order_currency },
+      payment: {
+        cf_payment_id,
+        payment_status,
+        payment_amount,
+        payment_currency,
+        payment_time,
+        bank_reference,
+      },
       customer_details,
-    } = body;
+    } = body.data;
 
-    if (!link_id || !link_status) {
-      return NextResponse.json({ error: "Missing link data" }, { status: 400, headers: corsHeaders });
+    if (!order_id || !payment_status) {
+      return NextResponse.json({ error: "Missing order_id or payment_status" }, { status: 400, headers: corsHeaders });
     }
 
-    // ✅ Update or Insert payment record in DB
+    // ✅ Update or create the payment record in your DB
     const updated = await Payment.findOneAndUpdate(
-      { link_id },
+      { order_id },
       {
-        status: link_status,
-        payment_id,
+        payment_id: cf_payment_id,
         amount: payment_amount,
         currency: payment_currency,
-        customer_id: customer_details?.customer_id,
-        customer_name: customer_details?.customer_name,
-        customer_email: customer_details?.customer_email,
-        customer_phone: customer_details?.customer_phone,
+        status: payment_status,
+        name: customer_details?.customer_name,
+        email: customer_details?.customer_email,
+        phone: customer_details?.customer_phone,
       },
-      { upsert: true, new: true } // Creates if not found
+      { upsert: true, new: true }
     );
 
-    if (link_status === "PAID") {
-      console.log(`✅ Payment successful for link: ${link_id}`);
-    } else if (link_status === "EXPIRED" || link_status === "CANCELLED") {
-      console.log(`❌ Payment failed or cancelled for link: ${link_id}`);
-    }
+    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
 
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
