@@ -17,18 +17,20 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
     try {
-        const id = params.id;
+        const url = new URL(req.url);
+        const id = url.pathname.split('/').pop() as string;
+
         if (!Types.ObjectId.isValid(id)) {
             return NextResponse.json({ success: false, message: 'Invalid ID' }, { status: 400 });
         }
 
         const formData = await req.formData();
         const content = formData.get('content')?.toString();
-        const moduleId = formData.get('module')?.toString(); // ✅ CORRECT VARIABLE
+        const moduleId = formData.get('module')?.toString();
         const files = formData.getAll('documentFiles') as File[];
 
         if (!content || !moduleId) {
@@ -61,8 +63,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             module: string;
             documentUrls?: string[];
         } = {
-            content: content as string,
-            module: moduleId as string,
+            content,
+            module: moduleId,
         };
 
         if (documentUrls.length > 0) {
@@ -87,13 +89,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-
-// ✅ DELETE – simple removal
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
     await connectToDatabase();
 
     try {
-        const id = params.id;
+        const url = new URL(req.url);
+        const id = url.pathname.split('/').pop() as string;
 
         if (!Types.ObjectId.isValid(id)) {
             return NextResponse.json({ success: false, message: 'Invalid ID' }, { status: 400 });
