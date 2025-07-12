@@ -20,6 +20,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("✅ Webhook Received:", body);
 
+        console.log("✅ Webhook Received:", body.data.order_tags);
+
+
     // ✅ Destructure from nested data
     const {
       order: { order_id, order_amount, order_currency },
