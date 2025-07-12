@@ -9,10 +9,13 @@ const corsHeaders = {
 };
 
 // GET single policy by ID
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
   try {
-    const policy = await ProviderPolicy.findById(params.id).populate('module');
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
+    const policy = await ProviderPolicy.findById(id).populate('module');
 
     if (!policy) {
       return NextResponse.json({ success: false, message: 'Policy not found' }, { status: 404, headers: corsHeaders });
@@ -29,13 +32,16 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 }
 
 // PUT (update) a policy
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
   try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
     const { module, content } = await req.json();
 
     const updated = await ProviderPolicy.findByIdAndUpdate(
-      params.id,
+      id,
       { module, content },
       { new: true }
     );
@@ -55,10 +61,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE a policy
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
   try {
-    const deleted = await ProviderPolicy.findByIdAndDelete(params.id);
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
+    const deleted = await ProviderPolicy.findByIdAndDelete(id);
 
     if (!deleted) {
       return NextResponse.json({ success: false, message: 'Policy not found' }, { status: 404, headers: corsHeaders });

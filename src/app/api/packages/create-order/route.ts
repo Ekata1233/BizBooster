@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
@@ -8,44 +7,42 @@ const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY!;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+// Handle preflight request
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+  return NextResponse.json({}, { status: 204, headers: corsHeaders });
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { amount, customerId, customerName, customerEmail, customerPhone, checkoutId } = body;
-
   try {
-    console.log("Generating Cashfree payment link using /pg/links for:", {
-      amount, customerName, customerEmail, customerPhone
-    });
+    const body = await req.json();
+    const { name, email, phone, amount } = body;
 
+    // Create a unique customer ID
+    const customerId = `CUS_${Date.now()}`;
+
+    // Create payment link with Cashfree
     const response = await axios.post(
       "https://sandbox.cashfree.com/pg/links",
       {
-        link_amount: amount,
+        link_amount: Number(amount),
         link_currency: "INR",
-        link_purpose: "Advance payment for home service booking",
+        link_purpose: "Payment for your booking",
         customer_details: {
           customer_id: customerId,
-          customer_name: customerName,
-          customer_email: customerEmail,
-          customer_phone: customerPhone,
+          customer_name: name,
+          customer_email: email,
+          customer_phone: phone,
         },
         link_notify: {
           send_email: true,
           send_sms: false,
         },
-        order_tags: {
-          checkout_id: checkoutId,
+        link_meta: {
+          return_url: `https://biz-booster.vercel.app/payment-success?customer_id=${customerId}`,
         },
-        link_notes: {
-          checkout_id: checkoutId,
-        }
       },
       {
         headers: {
@@ -59,19 +56,19 @@ export async function POST(req: NextRequest) {
 
     const paymentLink = response.data.link_url;
 
-    return NextResponse.json({ paymentLink }, { headers: corsHeaders });
-
+    return NextResponse.json(
+      { success: true, paymentLink },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: any) {
-    console.error("Cashfree API Error:");
-    if (error.response) {
-      console.error("Status:", error.response.status);
-      console.error("Data:", error.response.data);
-    } else {
-      console.error("Message:", error.message);
-    }
+    console.error("Cashfree Error:", error?.response?.data || error.message);
 
     return NextResponse.json(
-      { error: "Failed to generate payment link" },
+      {
+        success: false,
+        message:
+          error?.response?.data?.message || "Failed to generate payment link",
+      },
       { status: 500, headers: corsHeaders }
     );
   }

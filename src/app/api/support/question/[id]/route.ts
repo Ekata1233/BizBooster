@@ -2,15 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import HelpAndSupport from '@/models/HelpandSupport';
 
-
-
-
-
-export async function GET(_: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
 
-    const { userId } = params;
+    const url = new URL(req.url);
+    const userId = url.pathname.split('/').pop() as string;
 
     const chats = await HelpAndSupport.find({ user: userId })
       .populate('user', 'fullName email')

@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import HelpAndSupport from '@/models/HelpandSupport';
 
-
-
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
 
-    const { id } = context.params;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string;
+
     const chats = await HelpAndSupport.find({ user: id }) // ⬅ correct field
       .populate('user', 'fullName email')
       .sort({ createdAt: 1 });

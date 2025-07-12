@@ -3,11 +3,14 @@ import { connectToDatabase } from '@/utils/db';
 import ProviderRefundPolicy from '@/models/ProviderRefundPolicy';
 import { Types } from 'mongoose';
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+// PUT
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string;
+
     const { content, module } = await req.json();
 
     if (!Types.ObjectId.isValid(id)) {
@@ -31,11 +34,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+// DELETE
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string;
 
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid ID' }, { status: 400 });

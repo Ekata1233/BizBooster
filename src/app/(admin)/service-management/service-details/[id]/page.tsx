@@ -74,7 +74,9 @@ const ServiceDetailsPage = () => {
         />
         <div>
           <h2 className="text-2xl font-semibold">{service.serviceName}</h2>
-          <p className="text-gray-600">{service.category.name} / {service.subcategory.name}</p>
+          <p className="text-gray-600">
+            {service.category?.name || "No category"} / {service.subcategory?.name || "No subcategory"}
+          </p>
           <p className="text-lg font-medium mt-2">₹{service.price}</p>
         </div>
 
@@ -214,7 +216,7 @@ const ServiceDetailsPage = () => {
       {activeTab === 'franchise' && (
         <ComponentCard title="Franchise Details">
           <div className="space-y-4">
-            <SectionCard title="Commission" content={service.franchiseDetails.commission.toString() } />
+            <SectionCard title="Commission" content={service.franchiseDetails.commission.toString()} />
             <SectionCard title="Overview" isHtml content={service.franchiseDetails.overview} />
             <SectionCard title="How It Works" isHtml content={service.franchiseDetails.howItWorks} />
             <SectionCard title="Terms & Conditions" isHtml content={service.franchiseDetails.termsAndConditions} />

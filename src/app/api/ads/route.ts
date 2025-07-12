@@ -35,21 +35,8 @@ export async function POST(req: Request) {
       );
     }
 
-    let fileUrl = "";
-    const file = formData.get("file") as File;
+    const fileUrl = formData.get("fileUrl") as string;
 
-    if (file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/ads",
-      });
-
-      fileUrl = uploadResponse.url;
-    }
 
     const newAd = await Ad.create({
       addType,

@@ -8,67 +8,72 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// GET single policy by ID
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
-  await connectToDatabase();
+// GET
+export async function GET(req: NextRequest) {
   try {
-    const policy = await ProviderAboutUs.findById(params.id).populate('module');
+    await connectToDatabase();
+
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
+    const policy = await ProviderAboutUs.findById(id).populate('module');
 
     if (!policy) {
       return NextResponse.json({ success: false, message: 'Policy not found' }, { status: 404, headers: corsHeaders });
     }
 
     return NextResponse.json({ success: true, data: policy }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal server error';
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: error.message || 'Internal server error' },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-// PUT (update) a policy
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  await connectToDatabase();
+// PUT
+export async function PUT(req: NextRequest) {
   try {
-    const { module, content } = await req.json();
+    await connectToDatabase();
 
-    const updated = await ProviderAboutUs.findByIdAndUpdate(
-      params.id,
-      { module, content },
-      { new: true }
-    );
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
+    const body = await req.json();
+
+    const updated = await ProviderAboutUs.findByIdAndUpdate(id, body, { new: true });
 
     if (!updated) {
       return NextResponse.json({ success: false, message: 'Policy not found' }, { status: 404, headers: corsHeaders });
     }
 
     return NextResponse.json({ success: true, data: updated }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal server error';
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: error.message || 'Internal server error' },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-// DELETE a policy
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  await connectToDatabase();
+// DELETE
+export async function DELETE(req: NextRequest) {
   try {
-    const deleted = await ProviderAboutUs.findByIdAndDelete(params.id);
+    await connectToDatabase();
+
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
+    const deleted = await ProviderAboutUs.findByIdAndDelete(id);
 
     if (!deleted) {
       return NextResponse.json({ success: false, message: 'Policy not found' }, { status: 404, headers: corsHeaders });
     }
 
     return NextResponse.json({ success: true, message: 'Policy deleted successfully' }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal server error';
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: error.message || 'Internal server error' },
       { status: 500, headers: corsHeaders }
     );
   }

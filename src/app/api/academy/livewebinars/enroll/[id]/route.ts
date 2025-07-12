@@ -24,7 +24,9 @@ interface PutRequestBody {
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   await connectToDatabase();
-  const webinarId = params.id;
+
+  const url = new URL(req.url);
+  const webinarId = url.pathname.split('/').pop() as string;
 
   if (!webinarId || !mongoose.Types.ObjectId.isValid(webinarId)) {
     return NextResponse.json(
@@ -121,4 +123,4 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       { status: 500, headers: corsHeaders }
     );
   }
-}
+}o
