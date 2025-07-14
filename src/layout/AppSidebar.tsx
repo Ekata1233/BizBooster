@@ -64,11 +64,11 @@ const customerItems: NavItem[] = [
     name: "Users",
     path: "/customer-management/user/user-list",
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Franchise",
-    path: "/customer-management/franchise/franchise-list",
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Franchise",
+  //   path: "/customer-management/franchise/franchise-list",
+  // },
 ];
 
 const providerItems: NavItem[] = [

@@ -69,6 +69,8 @@ const columnsSelfLead = [
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
 
+  console.log("checkout in self lead table : ", checkouts)
+
   useEffect(() => {
     fetchCheckoutByUser(userId);
   }, [userId]);
