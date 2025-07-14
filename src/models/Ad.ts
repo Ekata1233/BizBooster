@@ -11,6 +11,7 @@ export interface IAd extends Document {
   description: string;
   fileUrl: string;
   isExpired:boolean;
+  isApproved: boolean;
 }
 
 const AdSchema = new Schema<IAd>(
@@ -53,7 +54,8 @@ const AdSchema = new Schema<IAd>(
       type: String,
       required: true,
     },
-    isExpired: { type: Boolean, default: false }
+    isExpired: { type: Boolean, default: false },
+    isApproved: {type: Boolean, default: false }
   },
   { timestamps: true }
 );
