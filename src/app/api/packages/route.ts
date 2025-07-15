@@ -28,8 +28,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid input data' }, { status: 400 });
     }
 
+    const grandtotal = body.discountedPrice + body.deposit; // ✅ Calculate grandtotal
+
     const newPackage = new Package({
       ...body,
+      grandtotal, // ✅ Inject it
       description: {
         gp: body.description.gp,
         sgp: body.description.sgp || '',
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(newPackage, { status: 201 });
   } catch (error) {
-    console.error('POST /api/packages error:', error); // 👈 Add this
+    console.error('POST /api/packages error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

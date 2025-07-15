@@ -25,6 +25,7 @@ const PackageForm = () => {
     discount: 0,
     discountedPrice: 0,
     deposit: 0,
+    grandtotal: 0,
   });
 
   useEffect(() => {
@@ -42,6 +43,7 @@ const PackageForm = () => {
         discount: latest.discount || 0,
         discountedPrice: latest.discountedPrice || 0,
         deposit: latest.deposit || 0,
+        grandtotal: latest.grandtotal || 0,
       });
     }
   }, [packages]);
@@ -126,11 +128,10 @@ const PackageForm = () => {
                 key={type}
                 type="button"
                 onClick={() => setSelectedTab(type)}
-                className={`px-4 py-2 rounded-lg border ${
-                  selectedTab === type
+                className={`px-4 py-2 rounded-lg border ${selectedTab === type
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {type.toUpperCase()}
               </button>
@@ -168,6 +169,16 @@ const PackageForm = () => {
               <label className="block font-medium mb-1">Deposit (₹)</label>
               <input type="number" name="deposit" value={form.deposit} onChange={handleInputChange} className="w-full border p-2 rounded" min={0} />
             </div>
+           <div className="flex items-center justify-between border p-3 rounded bg-gray-50">
+  <span className="font-bold">Grand Total (₹):</span>
+  <span className="text-xl font-bold text-blue-700">
+    ₹{form.grandtotal?.toLocaleString() || 0}
+  </span>
+</div>
+
+
+
+
           </>
         )}
 
