@@ -19,11 +19,14 @@ export default function StatisticsChart() {
 
   // Process earnings data for chart
   const { categories, adminCommissionSeries, totalRevenueSeries } = useMemo(() => {
-    const sorted = [...earningsByDate].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    const sorted = [...earningsByDate]
+      .filter((entry) => entry.date !== undefined)
+      .sort(
+        (a, b) =>
+          new Date(a.date as string).getTime() - new Date(b.date as string).getTime()
+      );
 
-    const categories = sorted.map((entry) => entry.date);
+    const categories = sorted.map((entry) => entry.date as string);
     const adminCommissionSeries = sorted.map((entry) => entry.adminCommission || 0);
     const totalRevenueSeries = sorted.map((entry) => entry.totalRevenue || 0);
 
