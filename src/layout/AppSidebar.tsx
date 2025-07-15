@@ -102,7 +102,17 @@ const serviceItems: NavItem[] = [
     ],
   },
 ];
-
+const packageItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Package",
+    subItems: [
+      { name: "Add New package", path: "/package-management/add-package", pro: false },
+      // { name: "package List", path: "/service-management/service-list", pro: false },
+      // { name: "Add Why Choose FetchTrue", path: "/service-management/add-why-choose", pro: false },
+    ],
+  },
+];
 const subscribeItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -206,7 +216,7 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "subscribe" | "coupon" | "booking" | "system" | "preferences" | "academy" | "providerpreferences";
+    type: "main" | "customer" | "module" | "provider" | "service" |  "package" | "subscribe" | "coupon" | "booking" | "system" | "preferences" | "academy" | "providerpreferences";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
@@ -216,12 +226,13 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "booking", "subscribe", "coupon", "system", "preferences", "academy", "providerpreferences"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service","package", "booking", "subscribe", "coupon", "system", "preferences", "academy", "providerpreferences"].forEach((menuType) => {
       const items =
         menuType === "main" ? navItems :
         menuType === "module" ? moduleItems :
         menuType === "provider" ? providerItems :
         menuType === "service" ? serviceItems :
+        menuType === "package" ? packageItems :
         menuType === "booking" ? bookingItems :
         menuType === "subscribe" ? subscribeItems :
         menuType === "coupon" ? promotionItems :
@@ -265,7 +276,7 @@ const AppSidebar: React.FC = () => {
 
   const handleSubmenuToggle = (
     index: number, 
-    menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences"
+    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences"
   ) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
@@ -281,7 +292,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "customer" | "module" | "provider" | "service" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences"
+    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -508,7 +519,20 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(serviceItems, "service")}
             </div>
-
+<div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "PACKAGE MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(packageItems, "package")}
+            </div>
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
