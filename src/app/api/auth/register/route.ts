@@ -23,6 +23,7 @@ export const POST = async (req: Request) => {
 
     const body = await req.json();
     const parsedData = userValidationSchema.parse(body);
+    console.log("after validation data : ", parsedData)
 
     const existingUserByEmail = await User.findOne({ email: parsedData.email });
     const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
@@ -81,8 +82,8 @@ if (existingUserByMobile) {
       if (!existing) exists = false;
     }
 
-    const otp = generateOtp();
-    console.log(`OTP for ${parsedData.email}: ${otp}`);
+    // const otp = generateOtp();
+    // console.log(`OTP for ${parsedData.email}: ${otp}`);
 
     // let referredBy = null;
 
@@ -118,12 +119,8 @@ if (existingUserByMobile) {
       ...parsedData,
       referralCode,
       referredBy,
-      isMobileVerified: false,
-      otp: {
-        code: otp,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        verified: false,
-      },
+      isMobileVerified: true,
+     
     });
 
     await newUser.save();
@@ -134,7 +131,7 @@ if (existingUserByMobile) {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Please verify your OTP' },
+      { success: true, message: 'Register Successfull' },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

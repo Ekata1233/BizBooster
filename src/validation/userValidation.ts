@@ -12,7 +12,7 @@ export const userValidationSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/\d/, 'Password must contain at least one digit')
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-  confirmPassword: z.string().min(6).max(20),
+  // confirmPassword: z.string().min(6).max(20),
   // otp: z.string().min(6).max(6, 'OTP must be 6 digits'),
   isAgree: z.boolean().refine(val => val === true, 'You must agree to the terms'),
   referredBy: z.string().optional(),
