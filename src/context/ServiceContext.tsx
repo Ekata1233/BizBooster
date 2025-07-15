@@ -31,6 +31,7 @@ interface Service {
   franchiseDetails: FranchiseDetails;
   averageRating?: number;
   totalReviews?: number;
+  isDeleted?:boolean;
 }
 
 type ServiceContextType = {
