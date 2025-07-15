@@ -5,13 +5,19 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 export interface AdType {
   _id?: string;
   addType: 'image' | 'video';
-  category: string;
-  service: string;
   startDate: string;
   endDate: string;
   title: string;
   description: string;
   fileUrl: string;
+   isApproved: boolean; 
+   category: {
+    name: string;
+  };
+  service: {
+    serviceName: string;
+    
+  };
 }
 
 interface AdContextType {
