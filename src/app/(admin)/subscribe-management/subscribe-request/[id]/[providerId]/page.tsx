@@ -7,7 +7,6 @@ import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import { useService } from '@/context/ServiceContext';
 import { useParams, useRouter } from 'next/navigation';
-import { format } from 'date-fns';
 import { useSubscribe } from '@/context/SubscribeContext';
 
 const Page = () => {
@@ -31,7 +30,8 @@ const Page = () => {
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
         const router = useRouter();
-
+    console.log(isApproving);
+    
     console.log("service single : ", singleService)
 
     useEffect(() => {

@@ -2,7 +2,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import axios from "axios";
 import { ServiceDetails } from "@/components/service-component/ServiceDetailsForm";
-
+type ProviderPrice = {
+  provider: string; // or ObjectId if using mongoose
+  price: number;
+  providerPrice:number;
+};
 interface ExtraSection {
   title: string;
   description: string;
@@ -32,6 +36,7 @@ interface Service {
   averageRating?: number;
   totalReviews?: number;
   isDeleted?:boolean;
+    providerPrices?: ProviderPrice[]; 
 }
 
 type ServiceContextType = {
