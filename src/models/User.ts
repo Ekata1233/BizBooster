@@ -46,15 +46,15 @@ const userSchema = new mongoose.Schema({
   otp: {
     code: String,
     expiresAt: Date,
-    verified: { type: Boolean, default: false }
+    verified: { type: Boolean, default: true }
   },
   isEmailVerified: {
     type: Boolean,
-    default: false
+    default: true
   },
   isMobileVerified: {
     type: Boolean,
-    default: false
+    default: true
   },
   serviceCustomers: [{
     type: mongoose.Schema.Types.ObjectId,
