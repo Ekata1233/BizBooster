@@ -3,7 +3,7 @@ import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface AdType {
-  _id?: string;
+  _id: string;
   addType: 'image' | 'video';
   startDate: string;
   endDate: string;
