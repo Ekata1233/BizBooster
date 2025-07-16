@@ -14,7 +14,7 @@ const serviceSchema = new mongoose.Schema({
   subcategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subcategory',
-    
+
   },
   price: {
     type: Number,
@@ -116,6 +116,10 @@ const serviceSchema = new mongoose.Schema({
   totalReviews: {
     type: Number,
     default: 0
+  },
+  recommendedServices: {
+    type: Boolean,
+    default: false
   },
   isDeleted: {
     type: Boolean,
