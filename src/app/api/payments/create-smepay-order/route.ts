@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
         const smepayRes = await axios.post("https://typof.co/smepay/api/checkout", payload, {
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.SMEPAY_API_KEY}`, // Keep in .env
+                "Client-ID": process.env.SMEPAY_CLIENT_ID,
             },
         });
 
