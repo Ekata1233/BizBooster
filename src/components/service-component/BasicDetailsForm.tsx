@@ -6,6 +6,7 @@ import { ChevronDownIcon, TrashBinIcon } from '@/icons'
 import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
+import Switch from '../form/switch/Switch'
 
 interface BasicDetailsData {
     name?: string;
@@ -17,6 +18,7 @@ interface BasicDetailsData {
     covers?: FileList | File[] | null;
     tags?: string[];
     keyValues?: KeyValue[];
+    recommendedServices?: boolean;
 }
 
 interface KeyValue {
@@ -157,6 +159,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         const newTags = tags.filter((_, i) => i !== indexToRemove);
         setData({ tags: newTags }); // Update tags array after removal
     };
+
+    const handleSwitchChange = (checked: boolean) => {
+        setData({ recommendedServices: checked });
+    };
+
     return (
         <div>
             <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
@@ -304,6 +311,8 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     </div>
 
 
+
+
                     <div className="my-3">
                         <Label>Enter Key Value</Label>
                         {rows.map((row, index) => (
@@ -355,6 +364,18 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             + Add New Key-Value
                         </button>
 
+                    </div>
+
+                    <div className='py-3'>
+                        <Label>Recommended Service</Label>
+                        <div className="px-3 py-1 flex flex-wrap items-center gap-2">
+                            <Switch
+                                label="Recommended"
+                                checked={!!data.recommendedServices} // Fallback to false if undefined
+                                onChange={handleSwitchChange}
+                            />
+
+                        </div>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { ServiceDetails } from "@/components/service-component/ServiceDetailsFor
 type ProviderPrice = {
   provider: string; // or ObjectId if using mongoose
   price: number;
-  providerPrice:number;
+  providerPrice: number;
 };
 interface ExtraSection {
   title: string;
@@ -15,7 +15,7 @@ interface ExtraSection {
 
 interface FranchiseDetails {
   overview: string;
-  commission: string ;
+  commission: string;
   howItWorks: string;
   termsAndConditions: string;
   extraSections?: ExtraSection[];
@@ -35,8 +35,9 @@ interface Service {
   franchiseDetails: FranchiseDetails;
   averageRating?: number;
   totalReviews?: number;
-  isDeleted?:boolean;
-    providerPrices?: ProviderPrice[]; 
+  isDeleted?: boolean;
+  recommendedServices?: boolean;
+  providerPrices?: ProviderPrice[];
 }
 
 type ServiceContextType = {
