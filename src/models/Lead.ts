@@ -14,7 +14,7 @@ export interface IStatus {
   description?: string;
   zoomLink?: string;
   paymentLink?: string;
-  paymentType?: "partial" | "full";
+  paymentType?: "partial" | "full" |"remaining";
   document?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -79,7 +79,7 @@ const StatusSchema = new Schema<IStatus>(
     paymentLink: String,
     paymentType: {
       type: String,
-      enum: ["partial", "full"],
+      enum: ["partial", "full","remaining"],
     },
     document: String,
   },
