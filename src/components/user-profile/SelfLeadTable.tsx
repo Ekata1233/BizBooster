@@ -76,7 +76,23 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   }, [userId]);
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+
+  if (error) {
+    return (
+      <ComponentCard title="Self Lead Table">
+        <div className="p-4 text-red-600">Error: {error}</div>
+      </ComponentCard>
+    );
+  }
+
+  if (!checkouts || checkouts.length === 0) {
+    return (
+      <ComponentCard title="Self Lead Table">
+        <div className="p-4 text-gray-600 text-sm">No self leads found.</div>
+      </ComponentCard>
+    );
+  }
+
 
   const mappedData = checkouts.map((checkout, index) => {
     const customer = checkout?.serviceCustomer || {};

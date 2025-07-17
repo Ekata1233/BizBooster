@@ -59,6 +59,7 @@ const StatusSchema = new Schema<IStatus>(
       type: String,
       required: true,
       enum: [
+        "Accepted",
         "Lead request",
         "Initial contact",
         "Need understand requirement",
