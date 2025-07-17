@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import { string } from 'zod';
 
 const userSchema = new mongoose.Schema({
   fullName: {
@@ -23,6 +24,21 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     match: [/^\+?\d{10,15}$/, 'Mobile number format is invalid']
+  },
+  address: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  profilePhoto: {
+    type: String,
   },
   password: {
     type: String,
@@ -74,7 +90,7 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   favoriteServices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
-  favoriteProviders : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' }],
+  favoriteProviders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' }],
   isDeleted: {
     type: Boolean,
     default: false
