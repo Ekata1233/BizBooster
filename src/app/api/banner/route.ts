@@ -4,7 +4,7 @@ import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 import { connectToDatabase } from '@/utils/db';
 import '@/models/Category'; // ✅ Register model
-import '@/models/Subcategory'; 
+import '@/models/Subcategory';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,19 +20,24 @@ export async function POST(req: Request) {
   await connectToDatabase();
   try {
     const formData = await req.formData();
+
+    console.log("banner formdata : ", formData);
     const file: File = formData.get('file') as File;
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileName = `banner_${uuidv4()}`;
-
-    console.log("Formdata : ", formData);
 
     const uploadRes = await imagekit.upload({
       file: buffer,
       fileName,
     });
 
+    const getIdOrUndefined = (value: FormDataEntryValue | null) => {
+      return value && value !== '' ? value : undefined;
+    };
+
     const data = {
       page: formData.get('page'),
+      screenCategory: getIdOrUndefined(formData.get('whichCategory')),
       selectionType: formData.get('selectionType'),
       module: formData.get('module') || undefined,
       category: formData.get('category') || undefined,
@@ -66,7 +71,7 @@ export async function GET(req: NextRequest) {
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
 
- const filter: Record<string, unknown> = { isDeleted: false };
+    const filter: Record<string, unknown> = { isDeleted: false };
     if (search) {
       filter.$or = [
         { page: { $regex: search, $options: 'i' } }

@@ -27,7 +27,7 @@ interface Service {
   thumbnailImage: string;
   bannerImages: string[];
   category: { name: string };
-  subcategory: { name: string };
+  subcategory: {_id: string, name: string };
   price: number;
   discountedPrice: number;
   tags?: string[];

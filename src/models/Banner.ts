@@ -6,6 +6,7 @@ export type PageType = 'home' | 'category';
 export interface IBanner extends Document {
   page: PageType;
   selectionType: SelectionType;
+  screenCategory? : mongoose.Types.ObjectId;
   module?: mongoose.Types.ObjectId;
   category?: mongoose.Types.ObjectId;
   subcategory?: mongoose.Types.ObjectId;
@@ -23,6 +24,10 @@ const BannerSchema = new Schema<IBanner>(
       type: String,
       enum: ['home', 'category'],
       required: true,
+    },
+    screenCategory:{
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
     },
     selectionType: {
       type: String,
