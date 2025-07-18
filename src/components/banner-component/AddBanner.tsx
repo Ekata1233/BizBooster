@@ -13,7 +13,7 @@ import { useBanner } from '@/context/BannerContext'
 import { useModule } from '@/context/ModuleContext'
 import { useService } from '@/context/ServiceContext'
 
-export type PageType = 'home' | 'category';
+export type PageType = 'home' | 'category' | 'academy';
 
 interface ModuleType {
   _id: string;
@@ -140,7 +140,8 @@ const AddBanner = () => {
 
   const pageTypeOptions = [
     { value: 'home', label: 'Home' },
-    { value: 'category', label: 'Category' }
+    { value: 'category', label: 'Category' },
+    { value: 'academy', label: 'Academy' }
   ];
 
   const options = modules.map((mod: ModuleType) => ({

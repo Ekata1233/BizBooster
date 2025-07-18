@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export type SelectionType = 'category' | 'subcategory' | 'service' | 'referralUrl';
-export type PageType = 'home' | 'category';
+export type PageType = 'home' | 'category'|'academy';
 
 export interface IBanner extends Document {
   page: PageType;
@@ -22,7 +22,7 @@ const BannerSchema = new Schema<IBanner>(
   {
     page: {
       type: String,
-      enum: ['home', 'category'],
+      enum: ['home', 'category','academy'],
       required: true,
     },
     screenCategory:{

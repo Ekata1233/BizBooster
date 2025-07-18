@@ -162,7 +162,7 @@ const Banner = () => {
         return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
         if (typeof banner.service === 'object') {
-          // return banner.service?.name || '-';
+          return banner.service?.name || '-';
         }
         return banner.service ? serviceMap[banner.service] || banner.service : '-';
       case 'referralUrl':
