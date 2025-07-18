@@ -31,7 +31,7 @@ interface BannerType {
   createdAt?: string;
   updatedAt?: string;
 }
-
+type ServiceType = { name?: string };
 interface TableData {
   id: string;
 
@@ -161,9 +161,10 @@ const Banner = () => {
         }
         return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
-        if (typeof banner.service === 'object') {
-          return banner.service?.name || '-';
-        }
+        if (typeof banner.service === 'object' && banner.service !== null) {
+  return (banner.service as { name?: string })?.name || '-';
+}
+
         return banner.service ? serviceMap[banner.service] || banner.service : '-';
       case 'referralUrl':
         return banner.referralUrl ? 'External Link' : '-';
