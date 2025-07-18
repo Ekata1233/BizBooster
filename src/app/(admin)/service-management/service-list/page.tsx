@@ -221,7 +221,7 @@ const ServiceList = () => {
     {
       header: 'Price',
       accessor: 'price',
-      render: (row: ServiceData) => <span>${row.price}</span>,
+      render: (row: ServiceData) => <span>₹{row.price}</span>,
     },
     {
       header: 'Status',
@@ -378,7 +378,7 @@ const ServiceList = () => {
               >
                 All
               </li>
-              <li
+              {/* <li
                 className={`px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''
                   }`}
                 onClick={() => setActiveTab('active')}
@@ -391,7 +391,7 @@ const ServiceList = () => {
                 onClick={() => setActiveTab('inactive')}
               >
                 Inactive
-              </li>
+              </li> */}
             </ul>
           </div>
 
