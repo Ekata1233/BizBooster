@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import  Offer  from '@/models/Offer';
-import { mkdir, writeFile, unlink } from 'fs/promises';
+import {  unlink } from 'fs/promises';
 import path from 'path';
 
 const corsHeaders = {
@@ -14,77 +14,134 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// ✅ PUT update offer
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+// // ✅ PUT update offer
+// export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+//   await connectToDatabase();
+
+//   try {
+//     const id = params.id;
+//     const offer = await Offer.findById(id);
+//     if (!offer) {
+//       return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
+//     }
+
+//     const formData = await req.formData();
+//     const bannerImageFile = formData.get('bannerImage') as File | null;
+//     const offerStartTime = formData.get('offerStartTime') as string | null;
+//     const offerEndTime = formData.get('offerEndTime') as string | null;
+//     const eligibilityCriteria = formData.get('eligibilityCriteria') as string | null;
+//     const howToParticipate = formData.get('howToParticipate') as string | null;
+//     const faq = formData.get('faq') as string | null;
+//     const termsAndConditions = formData.get('termsAndConditions') as string | null;
+
+//     const galleryFiles = formData.getAll('galleryImages') as File[];
+
+//     const uploadDir = path.join(process.cwd(), 'public/uploads');
+//     await mkdir(uploadDir, { recursive: true });
+
+//     // ✅ Update banner image if new provided
+//     if (bannerImageFile) {
+//       if (offer.bannerImage?.startsWith('/uploads/')) {
+//         await unlink(path.join(process.cwd(), 'public', offer.bannerImage)).catch(() => {});
+//       }
+//       const buffer = Buffer.from(await bannerImageFile.arrayBuffer());
+//       const filename = `${Date.now()}-${bannerImageFile.name}`;
+//       const filePath = path.join(uploadDir, filename);
+//       await writeFile(filePath, buffer);
+//       offer.bannerImage = `/uploads/${filename}`;
+//     }
+
+//     // ✅ Replace gallery images if provided
+//     if (galleryFiles.length > 0) {
+//       for (const img of offer.galleryImages) {
+//         if (img.startsWith('/uploads/')) {
+//           await unlink(path.join(process.cwd(), 'public', img)).catch(() => {});
+//         }
+//       }
+//       const galleryPaths: string[] = [];
+//       for (const file of galleryFiles) {
+//         const buffer = Buffer.from(await file.arrayBuffer());
+//         const filename = `${Date.now()}-${file.name}`;
+//         const filePath = path.join(uploadDir, filename);
+//         await writeFile(filePath, buffer);
+//         galleryPaths.push(`/uploads/${filename}`);
+//       }
+//       offer.galleryImages = galleryPaths;
+//     }
+
+//     if (offerStartTime) offer.offerStartTime = new Date(offerStartTime);
+//     if (offerEndTime) offer.offerEndTime = new Date(offerEndTime);
+//     if (eligibilityCriteria) offer.eligibilityCriteria = eligibilityCriteria;
+//     if (howToParticipate) offer.howToParticipate = howToParticipate;
+//     if (faq) offer.faq = faq;
+//     if (termsAndConditions) offer.termsAndConditions = termsAndConditions;
+
+//     await offer.save();
+
+//     return NextResponse.json({ success: true, data: offer }, { status: 200 });
+//   } catch (error) {
+//     console.error('PUT Error:', error);
+//     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
+//   }
+// }
+
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+function parseFAQFlexible(raw: unknown): FAQItem[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw as FAQItem[];
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectToDatabase();
 
   try {
-    const id = params.id;
-    const offer = await Offer.findById(id);
-    if (!offer) {
+    const { id } = await params;
+    const existingOffer = await Offer.findById(id);
+    if (!existingOffer) {
       return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
     }
 
     const formData = await req.formData();
-    const bannerImageFile = formData.get('bannerImage') as File | null;
-    const offerStartTime = formData.get('offerStartTime') as string | null;
-    const offerEndTime = formData.get('offerEndTime') as string | null;
-    const eligibilityCriteria = formData.get('eligibilityCriteria') as string | null;
-    const howToParticipate = formData.get('howToParticipate') as string | null;
-    const faq = formData.get('faq') as string | null;
-    const termsAndConditions = formData.get('termsAndConditions') as string | null;
 
-    const galleryFiles = formData.getAll('galleryImages') as File[];
+    const bannerImage = formData.get('bannerImage') as string;
+    const offerStartTime = formData.get('offerStartTime') as string;
+    const offerEndTime = formData.get('offerEndTime') as string;
+    const eligibilityCriteria = formData.get('eligibilityCriteria') as string;
+    const howToParticipate = formData.get('howToParticipate') as string;
+    const faqRaw = formData.get('faq');
+    const faq = parseFAQFlexible(faqRaw);
+    const termsAndConditions = formData.get('termsAndConditions') as string;
 
-    const uploadDir = path.join(process.cwd(), 'public/uploads');
-    await mkdir(uploadDir, { recursive: true });
+    // Update offer
+    existingOffer.bannerImage = bannerImage || existingOffer.bannerImage;
+    existingOffer.offerStartTime = offerStartTime || existingOffer.offerStartTime;
+    existingOffer.offerEndTime = offerEndTime || existingOffer.offerEndTime;
+    existingOffer.eligibilityCriteria = eligibilityCriteria || existingOffer.eligibilityCriteria;
+    existingOffer.howToParticipate = howToParticipate || existingOffer.howToParticipate;
+    existingOffer.faq = faq || existingOffer.faq;
+    existingOffer.termsAndConditions = termsAndConditions || existingOffer.termsAndConditions;
 
-    // ✅ Update banner image if new provided
-    if (bannerImageFile) {
-      if (offer.bannerImage?.startsWith('/uploads/')) {
-        await unlink(path.join(process.cwd(), 'public', offer.bannerImage)).catch(() => {});
-      }
-      const buffer = Buffer.from(await bannerImageFile.arrayBuffer());
-      const filename = `${Date.now()}-${bannerImageFile.name}`;
-      const filePath = path.join(uploadDir, filename);
-      await writeFile(filePath, buffer);
-      offer.bannerImage = `/uploads/${filename}`;
-    }
+    await existingOffer.save();
 
-    // ✅ Replace gallery images if provided
-    if (galleryFiles.length > 0) {
-      for (const img of offer.galleryImages) {
-        if (img.startsWith('/uploads/')) {
-          await unlink(path.join(process.cwd(), 'public', img)).catch(() => {});
-        }
-      }
-      const galleryPaths: string[] = [];
-      for (const file of galleryFiles) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const filename = `${Date.now()}-${file.name}`;
-        const filePath = path.join(uploadDir, filename);
-        await writeFile(filePath, buffer);
-        galleryPaths.push(`/uploads/${filename}`);
-      }
-      offer.galleryImages = galleryPaths;
-    }
-
-    if (offerStartTime) offer.offerStartTime = new Date(offerStartTime);
-    if (offerEndTime) offer.offerEndTime = new Date(offerEndTime);
-    if (eligibilityCriteria) offer.eligibilityCriteria = eligibilityCriteria;
-    if (howToParticipate) offer.howToParticipate = howToParticipate;
-    if (faq) offer.faq = faq;
-    if (termsAndConditions) offer.termsAndConditions = termsAndConditions;
-
-    await offer.save();
-
-    return NextResponse.json({ success: true, data: offer }, { status: 200 });
-  } catch (error) {
+    return NextResponse.json({ success: true, data: existingOffer }, { status: 200 });
+  } catch (error: unknown) {
     console.error('PUT Error:', error);
     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
   }
 }
-
 // ✅ DELETE offer
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   await connectToDatabase();
