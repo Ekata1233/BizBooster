@@ -58,6 +58,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [benefits, setBenefits] = useState('');
   const [overview, setOverview] = useState('');
   const [highlight, setHighlight] = useState<FileList | File[] | null>(null);
+  const [highlightPreviews, setHighlightPreviews] = useState<string[]>([]);
   const [document, setDocument] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
@@ -71,22 +72,32 @@ const ServiceDetailsForm = ({ data, setData }: {
 
   const whyChooseContext = useWhyChoose();
 
+  console.log("data of service : ", data)
+
 
   useEffect(() => {
     if (data) {
       setBenefits(data.benefits || '');
       setOverview(data.overview || '');
-      setHighlight(
-        typeof data.highlight === 'string'
-          ? [] // or parse if it's JSON string of file names
-          : (data.highlight as File[]) || []
-      );
+
       setDocument(data.document || '');
       setHowItWorks(data.howItWorks || '');
       setTerms(data.terms || '');
       setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
       setRows(data.rows?.length ? data.rows : []);
       setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
+      if (data.highlight?.length) {
+        // If it's an uploaded file (File object), set directly
+        if (data.highlight[0] instanceof File) {
+          setHighlight(data.highlight);
+        }
+        // If it's coming as a string (like image URL from DB), wrap in array
+        else if (typeof data.highlight[0] === 'string') {
+          setHighlight(data.highlight); // or [data.highlight[0]]
+        }
+      } else {
+        setHighlight([]); // fallback
+      }
     }
   }, []);
 
@@ -183,7 +194,12 @@ const ServiceDetailsForm = ({ data, setData }: {
     if (files && files.length > 0) {
       const fileArray = Array.from(files);
       setHighlight(fileArray);
+
+      const previews = fileArray.map((file) => URL.createObjectURL(file));
+      setHighlightPreviews(previews);
     }
+
+
   };
 
 
@@ -241,6 +257,16 @@ const ServiceDetailsForm = ({ data, setData }: {
               />
             ))} */}
 
+        </div>
+        <div className="flex flex-wrap gap-4 mt-2">
+          {highlightPreviews.map((src, index) => (
+            <img
+              key={index}
+              src={src}
+              alt={`highlight-${index}`}
+              className="w-24 h-24 object-cover rounded"
+            />
+          ))}
         </div>
       </div>
 
