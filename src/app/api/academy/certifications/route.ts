@@ -165,6 +165,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET ALL Certifications
+
 export async function GET() {
   await connectToDatabase();
   try {
@@ -193,3 +194,33 @@ export async function GET() {
     );
   }
 }
+
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const search = searchParams.get("search");
+
+//     const filter = search
+//       ? { name: { $regex: search, $options: "i" } } // case-insensitive name match
+//       : {};
+
+//     const certificationEntry = await Certifications.find(filter);
+
+//     return NextResponse.json(
+//       { success: true, data: certificationEntry },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     console.error("GET /api/certifications error:", error);
+
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: (error as Error).message || "Internal Server Error",
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }

@@ -16,7 +16,7 @@ interface AddWebinarProps {
 
 const AddWebinar: React.FC<AddWebinarProps> = ({ webinarIdToEdit }) => {
 
-    const { addWebinar, updateWebinar } = useWebinars();
+    const { addWebinar, } = useWebinars();
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -24,9 +24,9 @@ const AddWebinar: React.FC<AddWebinarProps> = ({ webinarIdToEdit }) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     
     // Simpler state for videos: an array of File objects and single text fields
-    const [videoFiles, setVideoFiles] = useState<File[]>([]); // To hold multiple video File objects
-    const [videoName, setVideoName] = useState(''); // Single name for all videos
-    const [videoDescription, setVideoDescription] = useState(''); // Single description for all videos
+    const [, setVideoFiles] = useState<File[]>([]); // To hold multiple video File objects
+    const [, setVideoName] = useState(''); // Single name for all videos
+    const [, setVideoDescription] = useState(''); // Single description for all videos
     const [videoData, setVideoData] = useState<Array<{ file: File; name: string; description: string }>>([]);
 
     const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]); // For existing video URLs on edit
@@ -192,11 +192,35 @@ const AddWebinar: React.FC<AddWebinarProps> = ({ webinarIdToEdit }) => {
             (input as HTMLInputElement).value = '';
         });
 
-    } catch (err: unknown) {
-        console.error('Submission error:', (err as any).response?.data || err);
-        setError((err as any).response?.data?.message || 'Error processing certificate.');
-        alert((err as any).response?.data?.message || 'Error processing certificate.');
-    } finally {
+    }
+    //  catch (err: unknown) {
+    //     console.error('Submission error:', (err as any).response?.data || err);
+    //     setError((err as any).response?.data?.message || 'Error processing webinar.');
+    //     alert((err as any).response?.data?.message || 'Error processing webinar.');
+    // } 
+    catch (err: unknown) { // 'err' is of type 'unknown' here
+  // Use axios.isAxiosError as a type guard
+  if (axios.isAxiosError(err)) {
+    // Now TypeScript knows 'err' is an AxiosError
+    console.error('Submission error:', err.response?.data || err);
+    setError(err.response?.data?.message || 'Error processing webinar.');
+    // IMPORTANT: Do NOT use alert() in production React apps.
+    // Use a custom modal or toast notification system instead.
+    // For now, keeping it as is per your original code.
+    alert(err.response?.data?.message || 'Error processing webinar.');
+  } else if (err instanceof Error) {
+    // Handle generic JavaScript Errors
+    console.error('Submission error:', err.message);
+    setError(err.message || 'Error processing webinar.');
+    alert(err.message || 'Error processing webinar.');
+  } else {
+    // Handle other unknown error types
+    console.error('Submission error: An unknown error occurred', err);
+    setError('An unknown error occurred.');
+    alert('An unknown error occurred.');
+  }
+}
+finally {
         setLoading(false);
     }
 };
@@ -204,7 +228,7 @@ const AddWebinar: React.FC<AddWebinarProps> = ({ webinarIdToEdit }) => {
 
     return (
         <div>
-            <ComponentCard title={webinarIdToEdit ? "Edit Webinar" : "Add New Webinar"}>
+            <ComponentCard title={webinarIdToEdit ? "Edit Webinars" : "Add New Record Webinars"}>
                 {loading && <p className="text-blue-500">Loading...</p>}
                 {error && <p className="text-red-500">{error}</p>}
 

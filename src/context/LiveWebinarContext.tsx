@@ -17,6 +17,7 @@ export type User = {
 // This type defines how an enrolled user appears in the 'user' array
 // when populated in the LiveWebinar document.
 export type EnrolledUserEntry = {
+  id: string;
   user: User; // The actual populated User document
   status: boolean; // The status associated with this enrollment
 };

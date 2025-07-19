@@ -66,6 +66,42 @@ export async function POST(req: NextRequest) {
 
 
 
+// export async function GET() {
+//   await connectToDatabase();
+
+//   try {
+//     const entries: IUnderstandingFetchTrue[] = await UnderStandingFetchTrue.find({}).sort({ createdAt: -1 });
+
+//     const formattedData = entries.map((entry) => ({
+//       _id: entry._id,
+//       fullName: entry.fullName,
+//       videos: (entry.videoUrl || []).map((vid: VideoItem) => ({
+//         fileName: vid.fileName || 'Untitled',
+//         filePath: vid.filePath.startsWith('/')
+//           ? `${process.env.NEXT_PUBLIC_BASE_URL || ''}${vid.filePath}`
+//           : vid.filePath,
+//       })),
+//       createdAt: entry.createdAt,
+//     }));
+
+//     return NextResponse.json(
+//       { success: true, data: formattedData },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     console.error('GET /api/academy/understandingfetchtrue error:', error);
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: error instanceof Error ? error.message : 'Internal Server Error',
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
+
 export async function GET() {
   await connectToDatabase();
 
@@ -75,7 +111,8 @@ export async function GET() {
     const formattedData = entries.map((entry) => ({
       _id: entry._id,
       fullName: entry.fullName,
-      videos: (entry.videoUrl || []).map((vid: VideoItem) => ({
+      // Added .filter(Boolean) here to remove any null/undefined video items
+      videos: (entry.videoUrl || []).filter(Boolean).map((vid: VideoItem) => ({
         fileName: vid.fileName || 'Untitled',
         filePath: vid.filePath.startsWith('/')
           ? `${process.env.NEXT_PUBLIC_BASE_URL || ''}${vid.filePath}`

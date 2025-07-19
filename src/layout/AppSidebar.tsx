@@ -41,7 +41,12 @@ const moduleItems: NavItem[] = [
 
 const customerItems: NavItem[] = [
   { icon: <PieChartIcon />, name: "Users", path: "/customer-management/user/user-list" },
+   { icon: <PieChartIcon />, name: "UsersSupport", path: "/customer-management/user/user-list/681c72b9062be714d7037840" },
 ];
+
+
+
+
 
 const providerItems: NavItem[] = [
   {
@@ -142,6 +147,8 @@ const privacyItems: NavItem[] = [
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
       { name: "About Us", path: "/preferences/aboutus" },
+      { name: "Partner Review", path: "/preferences/partner-review" },
+      { name: "Offer", path: "/preferences/offer-management/offer" },
     ],
   },
 ];
@@ -156,6 +163,7 @@ const providerpreferenceItems: NavItem[] = [
       { name: "Provider Terms and Conditions", path: "/providerpreferences/provider-termsandconditions" },
       { name: "Provider Cancellation Policy", path: "/providerpreferences/provider-cancellationpolicy" },
       { name: "Provider About Us", path: "/providerpreferences/provider-aboutus" },
+      { name: "Provider Help and Support", path: "/providerpreferences/provider-helpandsupport" },
     ],
   },
 ];
@@ -208,6 +216,7 @@ const menuMap: Record<MenuType, NavItem[]> = {
   academy: academyItems,
   providerpreferences: providerpreferenceItems,
   menu: menuItems,
+  
 };
 
 const AppSidebar: React.FC = () => {

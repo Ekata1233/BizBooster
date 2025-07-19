@@ -15,31 +15,17 @@ import { Modal } from '@/components/ui/modal';
 import { useLiveWebinars } from '@/context/LiveWebinarContext';
 import { useModal } from '@/hooks/useModal';
 import { EyeIcon, TrashBinIcon } from '@/icons';
-import { PlusCircle } from 'lucide-react';
-import axios from 'axios';
+import {  PencilIcon} from 'lucide-react';
+// import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import AddLiveWebinar from '@/components/livewebinars-component/LiveWebinarComponent';
+import { useRouter } from 'next/navigation';
 // import { setDate } from 'date-fns';
 
-// Define types
-interface LiveWebinar {
-    _id: string;
-    user: string[];
-    name: string;
-    imageUrl: string;
-    description: string;
-    displayVideoUrls: string[] | string | null;
-    date: string;
-    startTime: string;
-    endTime: string;
-    categoryCount: number;
-    isDeleted: boolean;
-    createdAt: string;
-    updatedAt?: string;
-    __v?: number;
-}
+// Import types from context to ensure compatibility
+// import type { EnrolledUserEntry, LiveWebinar } from '@/context/LiveWebinarContext';
 
 interface TableData {
     id: string;
@@ -51,15 +37,16 @@ interface TableData {
     date: string;
     startTime: string;
     endTime: string;
-    categoryCount: number;
+    categoryCount?: number;
     status: string;
 }
 
 
 
 const LiveWebinar = () => {
+    const router = useRouter();
     const { webinars, updateWebinar, deleteWebinar } = useLiveWebinars();
-    const { isOpen, openModal, closeModal } = useModal();
+    const { isOpen, closeModal } = useModal();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -78,46 +65,72 @@ const LiveWebinar = () => {
 
 
 
-    const fetchFilteredWebinars = async () => {
-        try {
-            const params = {
-                ...(searchQuery && { search: searchQuery }),
-            };
+    // const fetchFilteredWebinars = async () => {
+    //     try {
+    //         const params = {
+    //             ...(searchQuery && { search: searchQuery }),
+    //         };
 
-            const response = await axios.get('/api/academy/livewebinars', { params });
-            const data = response.data.data;
+    //         const response = await axios.get('/api/academy/livewebinars', { params });
+    //         const data = response.data.data;
 
-            if (data.length === 0) {
-                setFilteredCertificates([]);
-            } else {
-                const tableData: TableData[] = data.map((mod: LiveWebinar) => ({
-                    id: mod._id,
-                    user: mod.user || [],
-                    name: mod.name,
-                    imageUrl: mod.imageUrl,
-                    description: mod.description || 'N/A',
-                    displayVideoUrls: Array.isArray(mod.displayVideoUrls)
-                        ? mod.displayVideoUrls
-                        : (mod.displayVideoUrls ? mod.displayVideoUrls.split(',') : []),
-                    date: mod.date || 'N/A',
-                    startTime: mod.startTime || 'N/A',
-                    endTime: mod.endTime || 'N/A',
-                    categoryCount: mod.categoryCount || 0,
-                    status: mod.isDeleted ? 'Deleted' : 'Active',
-                }));
+    //         if (data.length === 0) {
+    //             setFilteredCertificates([]);
+    //         } else {
+    //             const tableData: TableData[] = data.map((mod: LiveWebinar) => ({
+    //                 id: mod._id,
+    //                 user: mod.user || [],
+    //                 name: mod.name,
+    //                 imageUrl: mod.imageUrl,
+    //                 description: mod.description || 'N/A',
+    //                 displayVideoUrls: Array.isArray(mod.displayVideoUrls)
+    //                     ? mod.displayVideoUrls
+    //                     : (mod.displayVideoUrls ? mod.displayVideoUrls.split(',') : []),
+    //                 date: mod.date || 'N/A',
+    //                 startTime: mod.startTime || 'N/A',
+    //                 endTime: mod.endTime || 'N/A',
+    //                 categoryCount: mod.categoryCount || 0,
+    //                 status: mod.isDeleted ? 'Deleted' : 'Active',
+    //             }));
 
-                setFilteredCertificates(tableData);
-            }
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            setFilteredCertificates([]);
-        }
-    }
+    //             setFilteredCertificates(tableData);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching users:', error);
+    //         setFilteredCertificates([]);
+    //     }
+    // }
 
-    useEffect(() => {
-        fetchFilteredWebinars();
-    }, [searchQuery, webinars]);
+    // useEffect(() => {
+    //     fetchFilteredWebinars();
+    // }, [searchQuery, webinars]);
 
+useEffect(() => {
+  const filteredData = webinars
+    .filter((webinar) =>
+      webinar.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .map((mod) => ({
+      id: mod._id,
+    //   user: mod.user || [],
+      user: mod.user?.map((u) => u.id) || [],
+      name: mod.name,
+      imageUrl: mod.imageUrl,
+      description: mod.description || 'N/A',
+      displayVideoUrls: Array.isArray(mod.displayVideoUrls)
+        ? mod.displayVideoUrls
+        : (typeof mod.displayVideoUrls === 'string'
+            ? (mod.displayVideoUrls as string ? (mod.displayVideoUrls as string).split(',') : [])
+            : []),
+      date: mod.date || 'N/A',
+      startTime: mod.startTime || 'N/A',
+      endTime: mod.endTime || 'N/A',
+        // categoryCount: mod.categoryCount || 0,
+      status: mod.isDeleted ? 'Deleted' : 'Active',
+    }));
+
+  setFilteredCertificates(filteredData);
+}, [searchQuery, webinars]);
 
 
 
@@ -239,31 +252,31 @@ const LiveWebinar = () => {
                 );
             },
         },
-        {
-            header: 'Status',
-            accessor: 'status',
-            render: (row: TableData) => {
-                const status = row.status;
-                let colorClass = '';
+        // {
+        //     header: 'Status',
+        //     accessor: 'status',
+        //     render: (row: TableData) => {
+        //         const status = row.status;
+        //         let colorClass = '';
 
-                switch (status) {
-                    case 'Deleted':
-                        colorClass = 'text-red-500 bg-red-100 border border-red-300';
-                        break;
-                    case 'Active':
-                        colorClass = 'text-green-600 bg-green-100 border border-green-300';
-                        break;
-                    default:
-                        colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-                }
+        //         switch (status) {
+        //             case 'Deleted':
+        //                 colorClass = 'text-red-500 bg-red-100 border border-red-300';
+        //                 break;
+        //             case 'Active':
+        //                 colorClass = 'text-green-600 bg-green-100 border border-green-300';
+        //                 break;
+        //             default:
+        //                 colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
+        //         }
 
-                return (
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-                        {status}
-                    </span>
-                );
-            },
-        },
+        //         return (
+        //             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+        //                 {status}
+        //             </span>
+        //         );
+        //     },
+        // },
         {
             header: 'Action',
             accessor: 'action',
@@ -274,7 +287,8 @@ const LiveWebinar = () => {
                             onClick={() => handleEdit(row.id)}
                             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
 
-                            <PlusCircle className="ml-1" />
+                            {/* <PlusCircle className="ml-1" /> */}
+                            <PencilIcon />
                         </button>
 
                         <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
@@ -293,23 +307,23 @@ const LiveWebinar = () => {
 
     const handleEdit = (id: string) => {
 
-        const selectedWebinar = webinars.find(item => item._id === id);
-        if (selectedWebinar) {
-            setEditingCertificationId(selectedWebinar._id);
-            setName(selectedWebinar.name);
-            setDescription(selectedWebinar.description || '');
-            setImageUrl(selectedWebinar.imageUrl);
-            setVideoUrl(selectedWebinar.displayVideoUrls?.[0] || '');
-            setDate(selectedWebinar.date || '');
-            setStartTime(selectedWebinar.startTime || '');
-            setEndTime(selectedWebinar.endTime || '');
-            //   setCurrentVideoUrls(Array.isArray(selectedWebinar.displayVideoUrls) ? selectedWebinar.displayVideoUrls : []);
+        // const selectedWebinar = webinars.find(item => item._id === id);
+        // if (selectedWebinar) {
+        //     setEditingCertificationId(selectedWebinar._id);
+        //     setName(selectedWebinar.name);
+        //     setDescription(selectedWebinar.description || '');
+        //     setImageUrl(selectedWebinar.imageUrl);
+        //     setVideoUrl(selectedWebinar.displayVideoUrls?.[0] || '');
+        //     setDate(selectedWebinar.date || '');
+        //     setStartTime(selectedWebinar.startTime || '');
+        //     setEndTime(selectedWebinar.endTime || '');
+        //     //   setCurrentVideoUrls(Array.isArray(selectedWebinar.displayVideoUrls) ? selectedWebinar.displayVideoUrls : []);
 
-            //   setNewVideos([{ name: '', description: '', file: null }]);
+        //     //   setNewVideos([{ name: '', description: '', file: null }]);
 
-            openModal();
-        }
-
+        //     openModal();
+     router.push(`/academy/livewebinars/modals/${id}`);
+    //  Router.push(`/academy/livewebinars/modals/${id}`);
     };
     const handleUpdateData = async () => {
         if (!editingCertificationId) return;
@@ -331,7 +345,7 @@ const LiveWebinar = () => {
             alert('Webinar updated successfully');
             closeModal();
             resetForm();
-            fetchFilteredWebinars();
+            // fetchFilteredWebinars();
         } catch (error) {
             console.error('Error updating webinar:', error);
         }
@@ -347,8 +361,6 @@ const LiveWebinar = () => {
         setStartTime('');
         setEndTime('');
         setSelectedFile(null);
-        // setVideoFiles([]);
-        // setCurrentVideoUrls([]);
         setImageUrl(null);
     };
 
@@ -366,7 +378,7 @@ const LiveWebinar = () => {
         try {
             await deleteWebinar(id);
             alert('Webinar deleted successfully');
-            fetchFilteredWebinars();
+            // fetchFilteredWebinars();
         } catch (error) {
             console.error('Error deleting webinar:', error);
         }
@@ -388,16 +400,18 @@ const LiveWebinar = () => {
     return (
         <div>
             <PageBreadcrumb pageTitle="Webinar" />
-            <div className="my-5">
-                <AddLiveWebinar />
-            </div>
 
             <div>
                 <ModuleStatCard />
             </div>
 
             <div className="my-5">
-                <ComponentCard title="All Certificates">
+                <AddLiveWebinar />
+            </div>
+
+
+            <div className="my-5">
+                <ComponentCard title="All Live Webinars">
                     <div>
                         <Input
                             type="text"
@@ -415,7 +429,7 @@ const LiveWebinar = () => {
                             >
                                 All
                             </li>
-                            <li
+                            {/* <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
                                 onClick={() => setActiveTab('active')}
                             >
@@ -426,7 +440,7 @@ const LiveWebinar = () => {
                                 onClick={() => setActiveTab('inactive')}
                             >
                                 Inactive
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                     <div>
@@ -436,120 +450,157 @@ const LiveWebinar = () => {
             </div>
 
 
-            {/* Edit Modal */}
-            <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-                <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                    <div className="px-2 pr-14">
-                        <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
+
+            <Modal
+                isOpen={isOpen}
+                onClose={closeModal}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+            >
+                <div className="relative w-screen h-screen bg-white overflow-hidden">
+                    {/* Close Button */}
+                    <button
+                        onClick={closeModal}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-200 text-3xl font-bold z-10"
+                        aria-label="Close modal"
+                    >
+                        &times;
+                    </button>
+
+                    {/* Scrollable Content */}
+                    <div className="w-full h-full overflow-y-auto p-6 sm:p-8 md:p-10 pt-20">
+                        <h4 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-8 text-center">
                             Edit Live Webinar Information
                         </h4>
-                    </div>
 
-                    <form className="flex flex-col">
-                        <div className="custom-scrollbar h-[400px] overflow-y-auto px-2 pb-3">
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-5">
+                        <form className="space-y-8">
+                            {/* Webinar Name */}
+                            <div>
+                                <Label htmlFor="webinarName" className="text-gray-800 font-bold text-lg mb-3 block">
+                                    Live Webinar Name
+                                </Label>
+                                <Input
+                                    id="webinarName"
+                                    type="text"
+                                    value={name}
+                                    placeholder="Enter Webinar Name"
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                />
+                            </div>
 
-                                <div>
-                                    <Label>Live Webinar Name</Label>
-                                    <Input
-                                        type="text"
-                                        value={name}
-                                        placeholder="Enter Webinar Name"
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label>Select Image</Label>
-                                    <FileInput onChange={handleFileChange} />
-                                    {(selectedFile || imageUrl) && (
-                                        <div className="mt-2">
-                                            <Image
-                                                width={100}
-                                                height={100}
-                                                src={selectedFile ? URL.createObjectURL(selectedFile) : imageUrl!}
-                                                alt="Selected certificate image"
-                                                className="object-cover rounded"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <Label>Webinar Description</Label>
-                                    <Input
-                                        type="text"
-                                        value={description}
-                                        placeholder="Enter Webinar Description"
-                                        onChange={(e) => setDescription(e.target.value)}
-                                    />
-                                </div>
-
-
-                                <div>
-                                    <Label>Live Webinar Link</Label>
-                                    <Input
-                                        type="text"
-                                        value={videoUrl}
-                                        placeholder="Enter Live Webinar Link"
-                                        onChange={(e) => setVideoUrl(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Webinar Date</Label>
-                                        <Input
-                                            type="date"
-                                            value={date}
-                                            onChange={(e) => setDate(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label>Webinar Start Time</Label>
-                                        <Input
-                                            type="time"
-                                            value={startTime}
-                                            onChange={(e) => setStartTime(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label>Webinar End Time</Label>
-                                        <Input
-                                            type="time"
-                                            value={endTime}
-                                            onChange={(e) => setEndTime(e.target.value)}
-                                        />
-                                    </div>
-
-                                </div>
-                                {selectedFile && (
-                                    <div className="col-span-2">
-                                        <Label>Selected Image</Label>
+                            {/* Image Upload */}
+                            <div>
+                                <Label htmlFor="webinarImage" className="text-gray-800 font-bold text-lg mb-4 block">
+                                    Select Image
+                                </Label>
+                                <FileInput
+                                    id="webinarImage"
+                                    onChange={handleFileChange}
+                                    className="w-full p-1 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 mt-4"
+                                />
+                                {(selectedFile || imageUrl) && (
+                                    <div className="mt-6 relative w-40 h-40 rounded-lg overflow-hidden shadow-md border border-gray-200">
                                         <Image
-                                            width={100}
-                                            height={100}
-                                            src={URL.createObjectURL(selectedFile)}
-                                            alt="Selected certificate image"
-                                            className="object-cover rounded mt-2"
+                                            width={160}
+                                            height={160}
+                                            src={selectedFile ? URL.createObjectURL(selectedFile) : imageUrl!}
+                                            alt="Selected webinar image"
+                                            className="object-fit w-full h-full"
                                         />
                                     </div>
                                 )}
                             </div>
 
+                            {/* Description */}
+                            <div>
+                                <Label htmlFor="webinarDescription" className="text-gray-800 font-bold text-lg mb-3 block">
+                                    Webinar Description
+                                </Label>
+                                <Input
+                                    id="webinarDescription"
+                                    type="text"
+                                    value={description}
+                                    placeholder="Enter Webinar Description"
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                />
+                            </div>
 
-                            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                                <Button size="sm" variant="outline" onClick={closeModal}>
+                            {/* Video Link */}
+                            <div>
+                                <Label htmlFor="liveWebinarLink" className="text-gray-800 font-bold text-lg mb-3 block">
+                                    Live Webinar Link
+                                </Label>
+                                <Input
+                                    id="liveWebinarLink"
+                                    type="text"
+                                    value={videoUrl}
+                                    placeholder="Enter Live Webinar Link"
+                                    onChange={(e) => setVideoUrl(e.target.value)}
+                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                />
+                            </div>
+
+                            {/* Date & Time */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <Label htmlFor="webinarDate" className="text-gray-800 font-bold text-lg mb-3 block">
+                                        Webinar Date
+                                    </Label>
+                                    <Input
+                                        id="webinarDate"
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                    />
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="startTime" className="text-gray-800 font-bold text-lg mb-3 block">
+                                        Start Time
+                                    </Label>
+                                    <Input
+                                        id="startTime"
+                                        type="time"
+                                        value={startTime}
+                                        onChange={(e) => setStartTime(e.target.value)}
+                                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                    />
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="endTime" className="text-gray-800 font-bold text-lg mb-3 block">
+                                        End Time
+                                    </Label>
+                                    <Input
+                                        id="endTime"
+                                        type="time"
+                                        value={endTime}
+                                        onChange={(e) => setEndTime(e.target.value)}
+                                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-5 mt-10 pt-6 border-t-2 border-gray-100">
+                                <Button
+                                    variant="outline"
+                                    onClick={closeModal}
+                                    className="px-6 py-3 rounded-full text-gray-700 border border-gray-300 hover:bg-gray-100 text-lg font-semibold"
+                                >
                                     Cancel
                                 </Button>
-                                <Button size="sm" onClick={handleUpdateData}>
+                                <Button
+                                    onClick={handleUpdateData}
+                                    className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-full hover:from-blue-700 hover:to-blue-900 text-lg font-semibold"
+                                >
                                     Save Changes
                                 </Button>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </Modal>
 
@@ -559,3 +610,8 @@ const LiveWebinar = () => {
 };
 
 export default LiveWebinar;
+
+
+
+
+

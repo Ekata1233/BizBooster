@@ -65,6 +65,7 @@ export const WebinarsProvider = ({ children }: { children: React.ReactNode }) =>
   const updateWebinar = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/academy/webinars/${id}`, formData);
+      console.log("Webinar updated successfully");
       fetchWebinars();  // Re-fetch webinars after updating one
     } catch (error) {
       console.error("Error updating webinars:", error);
@@ -74,11 +75,13 @@ export const WebinarsProvider = ({ children }: { children: React.ReactNode }) =>
   const updateTutorial = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/academy/webinar-tutorials/${id}`, formData);
+      console.log("Webinar tutorial updated successfully");
        fetchWebinars(); // Re-fetch webinars after updating one
     } catch (error) {
       console.error("Error updating webinars:", error);
     }
   };
+
 
    const deleteTutorial = async (id: string, videoIndex: number) => {
     try {

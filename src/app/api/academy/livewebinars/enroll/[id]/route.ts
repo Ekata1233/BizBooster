@@ -25,8 +25,8 @@ interface PutRequestBody {
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const webinarId = url.pathname.split('/').pop() as string;
+  // Use params.id directly
+  const webinarId = params.id;
 
   if (!webinarId || !mongoose.Types.ObjectId.isValid(webinarId)) {
     return NextResponse.json(
@@ -37,10 +37,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const contentType = req.headers.get('content-type') || '';
-    let requestBody: PutRequestBody; // Use the specific interface here
+    let requestBody: PutRequestBody;
 
     if (contentType.includes('application/json')) {
-      requestBody = await req.json() as PutRequestBody; // Cast to the interface
+      requestBody = await req.json() as PutRequestBody;
     } else {
       return NextResponse.json(
         { success: false, message: 'Unsupported Content-Type. Expected application/json.' },
@@ -58,7 +58,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
-    // Use ILiveWebinar for the webinar document type
     const webinar = await LiveWebinars.findById(webinarId) as (ILiveWebinar & mongoose.Document) | null;
     if (!webinar) {
       return NextResponse.json({ success: false, message: 'Webinar not found.' }, { status: 404, headers: corsHeaders });
@@ -74,20 +73,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
 
       const objectId = new mongoose.Types.ObjectId(userId);
-      // Find the index of the user entry in the 'user' array
-      // Use ILiveWebinar['user'][number] to correctly type the array element
       const existingIndex = webinar.user.findIndex(
         (uEntry: ILiveWebinar['user'][number]) => uEntry.user && uEntry.user.equals(objectId)
       );
 
       if (existingIndex !== -1) {
-        // User found, update their status
         if (webinar.user[existingIndex].status !== status) {
           webinar.user[existingIndex].status = status;
           updatedCount++;
         }
       } else {
-        // User not found in the enrollment list, add them
         webinar.user.push({ user: objectId, status: status });
         updatedCount++;
       }
@@ -123,4 +118,4 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       { status: 500, headers: corsHeaders }
     );
   }
-}o
+}
