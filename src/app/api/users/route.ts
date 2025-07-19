@@ -80,13 +80,13 @@ export const GET = async (req: NextRequest) => {
         sortOption = { createdAt: -1 };
     }
 
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const skip = (page - 1) * limit;
+    // const limit = parseInt(searchParams.get('limit') || '10', 10);
+    // const page = parseInt(searchParams.get('page') || '1', 10);
+    // const skip = (page - 1) * limit;
 
     console.log("Final Filter:", JSON.stringify(filter, null, 2));
 
-    const users = await User.find(filter).sort(sortOption).skip(skip).limit(limit);
+    const users = await User.find(filter).sort(sortOption);
 
     return NextResponse.json(
       users.length > 0 ? { users } : { users, message: 'No users found' },
