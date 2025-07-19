@@ -176,7 +176,19 @@ const privacyItems: NavItem[] = [
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
       { name: "About Us", path: "/preferences/aboutus" },
       { name: "Partner Review", path: "/preferences/partner-review" },
-      { name: "Offer", path: "/preferences/offer-management/offer" },
+    ],
+  },
+];
+
+
+const offerItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Offer Management",
+    subItems: [
+      { name: "Add Offer", path: "/offer-management/Add-Offer" },
+      { name: "Offer List", path: "/offer-management/Offer-List" },
+
     ],
   },
 ];
@@ -230,7 +242,7 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "customer" | "module" | "provider" | "service" | "package" | "subscribe" | "coupon" | "booking" | "system" | "preferences" | "academy" | "providerpreferences" | "report";
+    type: "main" | "customer" | "module" | "provider" | "service" | "package" | "subscribe" | "coupon" | "booking" | "system" | "preferences" | "academy" | "providerpreferences" | "report" | "offer";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
@@ -240,7 +252,7 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "customer", "module", "provider", "service", "package", "booking", "subscribe", "coupon", "system", "preferences", "academy", "providerpreferences", "report"].forEach((menuType) => {
+    ["main", "customer", "module", "provider", "service", "package", "booking", "subscribe", "coupon", "system", "preferences", "academy", "providerpreferences", "report", "offer"].forEach((menuType) => {
       const items =
         menuType === "main" ? navItems :
           menuType === "module" ? moduleItems :
@@ -252,6 +264,7 @@ const AppSidebar: React.FC = () => {
                       menuType === "coupon" ? promotionItems :
                         menuType === "system" ? systemItems :
                           menuType === "preferences" ? privacyItems :
+                            menuType === "offer" ? offerItems :
                             menuType === "academy" ? academyItems :
                               menuType === "providerpreferences" ? providerpreferenceItems :
                                 menuType === "report" ? reportItems :
@@ -277,6 +290,7 @@ const AppSidebar: React.FC = () => {
                   | "academy"
                   | "providerpreferences"
                   | "report"
+                  | "offer"
                 ),
                 index,
               });
@@ -306,7 +320,7 @@ const AppSidebar: React.FC = () => {
 
   const handleSubmenuToggle = (
     index: number,
-    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences" | "report"
+    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences" | "report" | "offer"
   ) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
@@ -322,7 +336,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences" | "report"
+    menuType: "main" | "customer" | "module" | "provider" | "service" | "package" | "booking" | "subscribe" | "coupon" | "system" | "preferences" | "academy" | "providerpreferences" | "report" | "offer"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -618,6 +632,21 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(privacyItems, "preferences")}
             </div>
+
+              <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "OFFER MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(offerItems, "offer")}
+            </div>
+
 
             <div>
               <h2

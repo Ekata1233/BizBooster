@@ -9,7 +9,7 @@ import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import ComponentCard from '@/components/common/ComponentCard';
 
-// If you have a CKEditor wrapper component, import it:
+
 const ClientSideCustomEditor = dynamic(
     () => import('@/components/custom-editor/CustomEditor'),
     {
@@ -17,18 +17,12 @@ const ClientSideCustomEditor = dynamic(
         loading: () => <p>Loading rich text editor...</p>,
     }
 );
-// ^ Replace with your actual CKEditor import. See "CKEditor Notes" below.
 
-// ------------------------------------------------------------
-// Props
-// ------------------------------------------------------------
 interface AddOfferProps {
     offerIdToEdit?: string;
 }
 
-// ------------------------------------------------------------
-// Types matching Offer schema
-// ------------------------------------------------------------
+
 interface OfferResponse {
     _id: string;
     bannerImage: string;
@@ -46,12 +40,6 @@ interface FAQItem {
     answer: string;
 }
 
-// ------------------------------------------------------------
-// Helpers
-// ------------------------------------------------------------
-
-// Convert ISO date (or any parseable date string) -> value for <input type="datetime-local">
-// If invalid, return '' so the input shows empty.
 function toDatetimeLocalValue(dateStr?: string | null): string {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -66,8 +54,8 @@ function toDatetimeLocalValue(dateStr?: string | null): string {
     return `${yyyy}-${mm}-${dd}T${HH}:${MM}`;
 }
 
-// If user gives datetime-local value (YYYY-MM-DDTHH:mm) we send as-is; backend can parse ISO.
-// If user gives plain date input, we append T00:00.
+
+
 function normalizeDateForSubmit(v: string): string {
     if (!v) return '';
     // If already has 'T' assume complete
@@ -75,7 +63,7 @@ function normalizeDateForSubmit(v: string): string {
     return `${v}T00:00`;
 }
 
-// Optional: parse fallback dd-mm-yyyy into iso before sending (handles manual typed input)
+
 function tryFormatDMYtoISO(v: string): string {
     const dmy = v.match(/^(\d{2})-(\d{2})-(\d{4})$/);
     if (!dmy) return v;
@@ -83,9 +71,6 @@ function tryFormatDMYtoISO(v: string): string {
     return `${yyyy}-${mm}-${dd}T00:00`;
 }
 
-// ------------------------------------------------------------
-// Component
-// ------------------------------------------------------------
 const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     const API_BASE = '/api/offer';
 
@@ -156,9 +141,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
         fetchOffer();
     }, [fetchOffer]);
 
-    // ----------------------------------------------------------
-    // Handlers
-    // ----------------------------------------------------------
     const resetForm = () => {
         setBannerImageFile(null);
         setExistingBannerUrl(null);
@@ -221,7 +203,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
 
         try {
             if (offerIdToEdit) {
-                await axios.put(`${API_BASE}/${offerIdToEdit}`, fd, {
+                await axios.put(`/api/offer/${offerIdToEdit}`, fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 alert('Offer updated successfully!');
@@ -250,9 +232,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
         }
     };
 
-    // ----------------------------------------------------------
-    // UI
-    // ----------------------------------------------------------
+  
     return (
         <div>
             <ComponentCard title={offerIdToEdit ? 'Edit Offer' : 'Add New Offer'}>
