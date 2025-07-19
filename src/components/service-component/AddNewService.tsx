@@ -37,6 +37,7 @@ type BasicDetailsData = {
   covers?: FileList | File[] | null;
   tags?: string[];
   keyValues?: KeyValue[];
+  recommendedServices?: boolean;
 };
 
 type FormDataType = {
@@ -58,6 +59,7 @@ const AddNewService = () => {
       covers: [],
       tags: [],
       keyValues: [{ key: '', value: '' }],
+      recommendedServices: false,
     },
     service: {
       benefits: '',

@@ -65,6 +65,7 @@ const UserDetails = () => {
           location="Amanora Chember, Hadapsar, Pune"
           userId={singleUser._id}
           isCommissionDistribute={singleUser.isCommissionDistribute}
+          isToggleButton={true}
         />
 
         {/* Tabs */}

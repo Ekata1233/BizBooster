@@ -23,15 +23,15 @@ const LeadRequestDetails = () => {
   const router = useRouter();
   const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [extraCommissionValue, setExtraCommissionValue] = useState<string>('');
   const [newCommissionValue, setNewCommissionValue] = useState<string>('');
   const [isCommissionSet, setIsCommissionSet] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
-  const { fetchSingleService, singleService, singleServiceLoading, singleServiceError } = useService();
+  const [checkoutDetails] = useState<any>(null);
+  const { fetchSingleService, singleService, } = useService();
   const [extraCommissionType, setExtraCommissionType] = useState<'percentage' | 'amount'>('percentage');
   const [newCommissionType, setNewCommissionType] = useState<'percentage' | 'amount'>('percentage');
+console.log(isCommissionSet);
 
 
   const serviceId = lead?.checkout?.service;

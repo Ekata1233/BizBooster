@@ -245,7 +245,7 @@ const OfferDetailPage: React.FC = () => {
     if (Array.isArray(raw)) {
       return raw.map((it, idx) =>
         typeof it === 'object' && it !== null
-          ? { question: (it as any).question || `Question ${idx + 1}`, answer: (it as any).answer || '' }
+          ? { question: (it as FAQItem).question || `Question ${idx + 1}`, answer: (it as FAQItem).answer || '' }
           : { question: String(it), answer: '' }
       );
     }

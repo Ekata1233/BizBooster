@@ -30,7 +30,7 @@ const SubscribeRequestPage = () => {
     const { isOpen, openModal, closeModal } = useModal();
     const { approveService, deleteService } = useSubscribe();
     const [tableData, setTableData] = useState<TableData[]>([]);
-    const [providerCommission, setProviderCommission] = useState(0);
+    const [providerCommission, setProviderCommission] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedService, setSelectedService] = useState<TableData | null>(null);
 
@@ -193,7 +193,7 @@ const SubscribeRequestPage = () => {
                                                 min="0"
                                                 value={providerCommission}
                                                 placeholder="Enter Provider Commission"
-                                                onChange={(e) => setProviderCommission(Number(e.target.value))}
+                                                onChange={(e) => setProviderCommission((e.target.value))}
                                             />
 
                                         </div>

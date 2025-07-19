@@ -25,6 +25,7 @@ export default function Profile() {
             role="Admin"
             location="Amanora Chember, Hadapsar, Pune"
             isCommissionDistribute={false}
+            isToggleButton={false}
           />
           <UserInfoCard
             fullName="BizBooster Admin"

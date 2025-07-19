@@ -23,6 +23,7 @@ export const POST = async (req: Request) => {
 
     const body = await req.json();
     const parsedData = userValidationSchema.parse(body);
+    console.log("after validation data : ", parsedData)
 
     const existingUserByEmail = await User.findOne({ email: parsedData.email });
     const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
@@ -31,34 +32,42 @@ export const POST = async (req: Request) => {
       existingUserByMobile.otp?.verified === true &&
       existingUserByMobile.isMobileVerified === true;
 
-    if (existingUserByEmail && isMobileBlocked) {
-      return NextResponse.json(
-        { error: 'Email and Mobile already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // console.log("body ", body);
+    // console.log("parsedData ", parsedData);
+    // console.log("existingUserByEmail", existingUserByEmail);
+    // console.log("existingUserByMobile", existingUserByMobile);
+    // console.log("isMobileBlocked", isMobileBlocked);
 
-    if (existingUserByEmail) {
-      return NextResponse.json(
-        { error: 'Email already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+if (existingUserByEmail && isMobileBlocked) {
+  return NextResponse.json(
+    { error: 'Email and Mobile already exists' },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
-    if (isMobileBlocked) {
-      return NextResponse.json(
-        { error: 'Mobile already exists' },
-        { status: 400, headers: corsHeaders }
-      );
-    } else {
-      // Mobile exists but not verified
-      return NextResponse.json(
-        {
-          error: 'User with this mobile already exists but is not verified. Please complete verification.',
-        },
-        { status: 409, headers: corsHeaders } // 409 Conflict
-      );
-    }
+if (existingUserByEmail) {
+  return NextResponse.json(
+    { error: 'Email already exists' },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+if (existingUserByMobile) {
+  if (isMobileBlocked) {
+    return NextResponse.json(
+      { error: 'Mobile already exists' },
+      { status: 400, headers: corsHeaders }
+    );
+  } else {
+    return NextResponse.json(
+      {
+        error: 'User with this mobile already exists but is not verified. Please complete verification.',
+      },
+      { status: 409, headers: corsHeaders } // 409 Conflict
+    );
+  }
+}
+
 
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
@@ -73,8 +82,8 @@ export const POST = async (req: Request) => {
       if (!existing) exists = false;
     }
 
-    const otp = generateOtp();
-    console.log(`OTP for ${parsedData.email}: ${otp}`);
+    // const otp = generateOtp();
+    // console.log(`OTP for ${parsedData.email}: ${otp}`);
 
     // let referredBy = null;
 
@@ -110,12 +119,8 @@ export const POST = async (req: Request) => {
       ...parsedData,
       referralCode,
       referredBy,
-      isMobileVerified: false,
-      otp: {
-        code: otp,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        verified: false,
-      },
+      isMobileVerified: true,
+     
     });
 
     await newUser.save();
@@ -126,7 +131,7 @@ export const POST = async (req: Request) => {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Please verify your OTP' },
+      { success: true, message: 'Register Successfull' },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

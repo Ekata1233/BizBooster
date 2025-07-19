@@ -25,26 +25,35 @@ const PackageForm = () => {
     discount: 0,
     discountedPrice: 0,
     deposit: 0,
+    grandtotal: 0,
   });
 
-  useEffect(() => {
-    setHasMounted(true);
-    if (packages.length > 0) {
-      const latest = packages[0];
-      setForm({
-        _id: latest._id,
-        description: {
-          gp: latest.description?.gp || '',
-          sgp: latest.description?.sgp || '',
-          pgp: latest.description?.pgp || '',
-        },
-        price: latest.price || 0,
-        discount: latest.discount || 0,
-        discountedPrice: latest.discountedPrice || 0,
-        deposit: latest.deposit || 0,
-      });
-    }
-  }, [packages]);
+ useEffect(() => {
+  let isMounted = true;
+  setHasMounted(true);
+
+  if (packages.length > 0 && isMounted) {
+    const latest = packages[0];
+    setForm({
+      _id: latest._id,
+      description: {
+        gp: latest.description?.gp || '',
+        sgp: latest.description?.sgp || '',
+        pgp: latest.description?.pgp || '',
+      },
+      price: latest.price || 0,
+      discount: latest.discount || 0,
+      discountedPrice: latest.discountedPrice || 0,
+      deposit: latest.deposit || 0,
+      grandtotal: latest.grandtotal || 0,
+    });
+  }
+
+  return () => {
+    isMounted = false;
+  };
+}, [packages]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -126,11 +135,10 @@ const PackageForm = () => {
                 key={type}
                 type="button"
                 onClick={() => setSelectedTab(type)}
-                className={`px-4 py-2 rounded-lg border ${
-                  selectedTab === type
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg border ${selectedTab === type
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {type.toUpperCase()}
               </button>
@@ -168,9 +176,14 @@ const PackageForm = () => {
               <label className="block font-medium mb-1">Deposit (₹)</label>
               <input type="number" name="deposit" value={form.deposit} onChange={handleInputChange} className="w-full border p-2 rounded" min={0} />
             </div>
+            <div className="flex items-center justify-between border p-3 rounded bg-gray-50">
+              <span className="font-bold">Grand Total (₹):</span>
+              <span className="text-xl font-bold text-blue-700">
+                ₹{form.grandtotal?.toLocaleString() || 0}
+              </span>
+            </div>
           </>
         )}
-
         <div className="text-center">
           <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg">
             Save {selectedTab.toUpperCase()}

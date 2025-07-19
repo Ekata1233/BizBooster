@@ -41,9 +41,10 @@ interface AdminEarningsContextType {
   loading: boolean;
   fetchSummary: () => Promise<void>;
   createOrUpdateEarnings: (data: Partial<AdminEarningsType>) => Promise<void>;
-
   transactions: TransactionType[];
   fetchTransactions: () => Promise<void>;
+  fetchEarningsByDates: () => Promise<void>;
+  earningsByDate: AdminEarningsType[];
 }
 
 const AdminEarningsContext = createContext<AdminEarningsContextType | undefined>(undefined);
@@ -51,6 +52,7 @@ const AdminEarningsContext = createContext<AdminEarningsContextType | undefined>
 export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => {
   const [summary, setSummary] = useState<AdminEarningsType | null>(null);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
+  const [earningsByDate, setEarningsByDate] = useState<AdminEarningsType[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchSummary = async () => {
@@ -64,7 +66,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         setSummary(res.data.data);
       }
     } catch (error) {
-      console.error('❌ Failed to fetch admin earnings summary:', error);
+      console.error('Failed to fetch admin earnings summary:', error);
     } finally {
       setLoading(false);
     }
@@ -79,7 +81,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         console.error(res.data.message || 'Unknown error');
       }
     } catch (error) {
-      console.error('❌ Failed to create or update admin earnings:', error);
+      console.error('Failed to create or update admin earnings:', error);
     }
   };
 
@@ -91,14 +93,32 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         setTransactions(res.data);
       }
     } catch (error) {
-      console.error('❌ Failed to fetch transactions:', error);
+      console.error('Failed to fetch transactions:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchEarningsByDates = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/admin/earnings-by-date');
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        setEarningsByDate(res.data.data);
+      } else {
+        console.error(res.data.message || 'Invalid earnings data format');
+      }
+    } catch (error) {
+      console.error('Failed to fetch earnings by dates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchTransactions();
+    fetchEarningsByDates();
   }, []);
 
   return (
@@ -110,6 +130,8 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         createOrUpdateEarnings,
         transactions,
         fetchTransactions,
+        fetchEarningsByDates,    // ✅
+        earningsByDate,
       }}
     >
       {children}

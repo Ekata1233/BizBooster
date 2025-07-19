@@ -16,6 +16,7 @@ import Select from '@/components/form/Select';
 import Input from '@/components/form/input/InputField';
 import StatCard from '@/components/common/StatCard';
 import axios from 'axios';
+import { useService } from '@/context/ServiceContext';
 
 interface BannerType {
   _id: string;
@@ -30,7 +31,7 @@ interface BannerType {
   createdAt?: string;
   updatedAt?: string;
 }
-
+type ServiceType = { name?: string };
 interface TableData {
   id: string;
 
@@ -53,12 +54,18 @@ const Banner = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { categories: categoryData } = useCategory();
   const { subcategories: subcategoryData } = useSubcategory();
+  const { services: serviceData } = useService();
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
+  const serviceMap = Object.fromEntries(serviceData.map((cat) => [cat._id, cat.serviceName]));
+
+  console.log("service map : ", serviceMap)
+
   const [sort, setSort] = useState<string>('oldest');
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedFile, setUpdatedFile] = useState<string>('');
@@ -69,7 +76,7 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
- useEffect(() => {
+  useEffect(() => {
     fetchFilteredBanners();
   }, [searchQuery, selectedSubcategory, sort])
   const handleDelete = async (id: string) => {
@@ -154,7 +161,11 @@ const Banner = () => {
         }
         return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
-        return banner.service || '-';
+        if (typeof banner.service === 'object' && banner.service !== null) {
+  return (banner.service as { name?: string })?.name || '-';
+}
+
+        return banner.service ? serviceMap[banner.service] || banner.service : '-';
       case 'referralUrl':
         return banner.referralUrl ? 'External Link' : '-';
       default:
@@ -196,9 +207,9 @@ const Banner = () => {
     }
   }
 
- 
 
-  
+
+
 
   const columns = [
     {

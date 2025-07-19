@@ -3,15 +3,21 @@ import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface AdType {
-  _id?: string;
+  _id: string;
   addType: 'image' | 'video';
-  category: string;
-  service: string;
   startDate: string;
   endDate: string;
   title: string;
   description: string;
   fileUrl: string;
+   isApproved: boolean; 
+   category: {
+    name: string;
+  };
+  service: {
+    serviceName: string;
+    
+  };
 }
 
 interface AdContextType {
@@ -20,6 +26,7 @@ interface AdContextType {
   createAd: (data: FormData) => Promise<void>;
   deleteAd: (id: string) => Promise<void>;
   updateAd: (id: string, body: Partial<AdType>) => Promise<void>;
+  approveAd: (id: string) => Promise<void>;
 }
 
 const AdContext = createContext<AdContextType | null>(null);
@@ -28,25 +35,34 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
   const [ads, setAds] = useState<AdType[]>([]);
 
   const fetchAds = async () => {
-    const res = await axios.get('/ads');
+    const res = await axios.get('/api/ads');
     setAds(res.data.data);
   };
 
   const createAd = async (formData: FormData) => {
-    const res = await axios.post('/ads', formData, {
+    const res = await axios.post('/api/ads', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     fetchAds();
   };
 
   const deleteAd = async (id: string) => {
-    await axios.delete(`/ads/${id}`);
+    await axios.delete(`/api/ads/${id}`);
     setAds(prev => prev.filter(ad => ad._id !== id));
   };
 
   const updateAd = async (id: string, data: Partial<AdType>) => {
-    const res = await axios.put(`/ads/${id}`, data);
+    const res = await axios.put(`/api/ads/${id}`, data);
     fetchAds();
+  };
+
+  const approveAd = async (id: string) => {
+    try {
+      await axios.put(`/api/ads/approve/${id}`);
+      fetchAds();
+    } catch (err) {
+      console.error('Error approving ad:', err);
+    }
   };
 
   useEffect(() => {
@@ -54,7 +70,7 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AdContext.Provider value={{ ads, fetchAds, createAd, deleteAd, updateAd }}>
+    <AdContext.Provider value={{ ads, fetchAds, createAd, deleteAd, updateAd, approveAd  }}>
       {children}
     </AdContext.Provider>
   );

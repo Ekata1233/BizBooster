@@ -2,7 +2,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import axios from "axios";
 import { ServiceDetails } from "@/components/service-component/ServiceDetailsForm";
-
+type ProviderPrice = {
+  provider: string; // or ObjectId if using mongoose
+  price: number;
+  providerPrice: number;
+};
 interface ExtraSection {
   title: string;
   description: string;
@@ -11,7 +15,7 @@ interface ExtraSection {
 
 interface FranchiseDetails {
   overview: string;
-  commission: string ;
+  commission: string;
   howItWorks: string;
   termsAndConditions: string;
   extraSections?: ExtraSection[];
@@ -23,12 +27,17 @@ interface Service {
   thumbnailImage: string;
   bannerImages: string[];
   category: { name: string };
-  subcategory: { name: string };
+  subcategory: {_id: string, name: string };
   price: number;
   discountedPrice: number;
   tags?: string[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
+  averageRating?: number;
+  totalReviews?: number;
+  isDeleted?: boolean;
+  recommendedServices?: boolean;
+  providerPrices?: ProviderPrice[];
 }
 
 type ServiceContextType = {

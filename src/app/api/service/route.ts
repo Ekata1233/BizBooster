@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
     const priceStr = formData.get("basic[price]");
     const discount = formData.get("basic[discount]");
     const tags: string[] = [];
+    const recommendedServicesStr = formData.get("basic[recommendedServices]") as string;
+    const recommendedServices = recommendedServicesStr === "true";
 
     console.log("sibcategory in servce : ", subcategory);
 
@@ -200,6 +202,7 @@ export async function POST(req: NextRequest) {
       serviceDetails,
       franchiseDetails,
       isDeleted: false,
+      recommendedServices,
     });
 
     return NextResponse.json(

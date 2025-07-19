@@ -10,7 +10,7 @@ export type Service = {
     providerPrices: Array<{
         provider: { _id: string; fullName: string };
         providerPrice: number;
-        providerCommission?: number;
+        providerCommission?: string;
         status: string;
     }>;
 };
@@ -18,7 +18,7 @@ export type Service = {
 interface SubscribeContextType {
     services: Service[];
     fetchServices: () => Promise<void>;
-    approveService: (serviceId: string, providerId: string, providerCommission?: number) => Promise<void>;
+    approveService: (serviceId: string, providerId: string, providerCommission?: string) => Promise<void>;
     deleteService: (serviceId: string) => Promise<void>;
 }
 
@@ -38,10 +38,10 @@ export const SubscribeProvider = ({ children }: { children: React.ReactNode }) =
 
     useEffect(() => { fetchServices(); }, []);
 
-    const approveService = async (id: string, providerId: string, providerCommission?: number) => {
+    const approveService = async (id: string, providerId: string, providerCommission?: string) => {
         try {
             // Build request body dynamically to only send providerCommission if defined
-            const body: { providerId: string; providerCommission?: number } = { providerId };
+            const body: { providerId: string; providerCommission?: string } = { providerId };
             if (providerCommission !== undefined) {
                 body.providerCommission = providerCommission;
             }

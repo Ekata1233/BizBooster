@@ -15,6 +15,7 @@ export interface PackageType {
   discount: number;
   discountedPrice: number;
   deposit: number;
+grandtotal: number;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -11,10 +11,9 @@ import { ChevronDownIcon } from '@/icons'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import { useBanner } from '@/context/BannerContext'
 import { useModule } from '@/context/ModuleContext'
+import { useService } from '@/context/ServiceContext'
 
-export type PageType = 'home' | 'category';
-
-
+export type PageType = 'home' | 'category' | 'academy';
 
 interface ModuleType {
   _id: string;
@@ -28,15 +27,23 @@ const AddBanner = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedCat, setSelectedCat] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
+  const [whichCategory, setWhichCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [referralUrl, setReferralUrl] = useState<string>('');
   const [pageType, setPageType] = useState<PageType>('home');
+    const [selectedService, setSelectedService] = useState('');
+
+
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const { modules } = useModule();
+  const { services } = useService();
 
   const handleRadioChange = (value: string) => {
     setSelectedValue(value);
     setSelectedCategory('');
+    setSelectedCat('');
+    setSelectedSubcategory('');
     setReferralUrl('');
   };
 
@@ -56,8 +63,8 @@ const AddBanner = () => {
 
     const formData = new FormData();
     formData.append('page', pageType);
+    formData.append('whichCategory', whichCategory);
     formData.append('file', selectedFile);
-
     formData.append('selectionType', selectedValue);
     formData.append('module', selectedModule);
 
@@ -80,6 +87,8 @@ const AddBanner = () => {
       setSelectedValue('category');
       setReferralUrl('');
       setSelectedCategory('');
+      setSelectedCat('');
+      setSelectedSubcategory('');
       console.log("page reset");
     } catch (error) {
       alert('Error adding module.');
@@ -87,48 +96,62 @@ const AddBanner = () => {
     }
   };
 
-const filteredCategories = categories.filter(
-  (cat) => cat.module?._id === selectedModule
-);
+  const filteredCategories = categories.filter(cat => cat.module?._id === selectedModule);
 
-const categoryOptions = filteredCategories.map((cat: Category) => ({
-  value: cat._id ?? '',
-  label: cat.name,
-}));
+  const filteredSubcategories = subcategories.filter(sub => sub.category?._id === selectedCat);
 
+  const filteredServices = services.filter(serv => serv.subcategory?._id === selectedSubcategory);
 
-  const filteredSubcategories = subcategories.filter(
-    (sub) => sub.category?._id === selectedCat
-  );
+  const categoryOptions = filteredCategories.map(cat => ({
+    value: cat._id ?? '',
+    label: cat.name,
+  }));
 
-  const subcategoryOptions = filteredSubcategories.map((sub) => ({
+  const subcategoryOptions = filteredSubcategories.map(sub => ({
     value: sub._id ?? '',
     label: sub.name,
   }));
 
-    const handleSelectCat = (value: string) => {
-    console.log("Selected value:", value);
+  const serviceOptions = filteredServices.map(serv => ({
+    value: serv._id ?? '',
+    label: serv.serviceName,
+  }));
+
+  const handleSelectCat = (value: string) => {
     setSelectedCat(value);
+    setSelectedCategory('');
   };
 
   const handleSelectChange = (value: string) => {
-    console.log("Selected value:", value);
     setSelectedCategory(value);
   };
 
   const handleSelectModule = (value: string) => {
-    console.log("Selected value:", value);
     setSelectedModule(value);
+    setSelectedCat('');
+    setSelectedCategory('');
+    setSelectedSubcategory('');
+  };
+
+  const handleSelectSubcategory = (value: string) => {
+    setSelectedSubcategory(value);
+    setSelectedCategory('');
   };
 
   const pageTypeOptions = [
     { value: 'home', label: 'Home' },
-    { value: 'category', label: 'Category' }
+    { value: 'category', label: 'Category' },
+    { value: 'academy', label: 'Academy' }
   ];
 
   const options = modules.map((mod: ModuleType) => ({
     value: mod._id,
     label: mod.name,
+  }));
+
+  const onlyCategoryOptions = categories.map((cat: Category) => ({
+    value: cat._id?? '',
+    label: cat.name,
   }));
 
   return (
@@ -145,22 +168,30 @@ const categoryOptions = filteredCategories.map((cat: Category) => ({
                 onChange={(value: string) => setPageType(value as PageType)}
                 className="dark:bg-dark-900"
               />
-              <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+              <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
                 <ChevronDownIcon />
               </span>
             </div>
           </div>
 
-          <div className='col-span-2 flex flex-wrap items-center gap-4 mt-4'>
-            {/* <Label>Select navigation option</Label> */}
-            {/* <Radio
-              id="category"
-              name="linkType"
-              value="category"
-              checked={selectedValue === "category"}
-              onChange={handleRadioChange}
-              label="Category"
-            /> */}
+          {pageType === 'category' && (
+            <div className="col-span-1">
+              <Label>Category Name</Label>
+              <div className="relative">
+                <Select
+                  options={onlyCategoryOptions}
+                  placeholder="Select Category Name"
+                  onChange={(value: string) => setWhichCategory(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="col-span-2 flex flex-wrap items-center gap-4 mt-4">
             <Radio
               id="subcategory"
               name="linkType"
@@ -188,87 +219,106 @@ const categoryOptions = filteredCategories.map((cat: Category) => ({
           </div>
         </div>
 
-
-        <div >
+        {/* Dropdowns & Inputs */}
+        {(selectedValue !== 'referralUrl') && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-          <div>
-            <Label>Select Module</Label>
-            <div className="relative">
-              <Select
-                options={options}
-                placeholder="Select Module"
-                onChange={handleSelectModule}
-                className="dark:bg-dark-900"
-              />
-              <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                <ChevronDownIcon />
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <Label>Select Category</Label>
-            <div className="relative">
-              <Select
-                options={categoryOptions}
-                placeholder="Select Category"
-                onChange={handleSelectCat}
-                className="dark:bg-dark-900"
-              />
-              <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                <ChevronDownIcon />
-              </span>
-            </div>
-          </div>
-
-          {(selectedValue === 'category' || selectedValue === 'subcategory' || selectedValue === 'service') && (
-            <div>
-              <Label>
-                {selectedValue === 'category'
-                  ? 'Select Category'
-                  : selectedValue === 'subcategory'
-                    ? 'Select Subcategory'
-                    : 'Select Service'}
-              </Label>
-              <div className="relative">
-                <Select
-                  options={
-                    selectedValue === 'category'
-                      ? categoryOptions
-                      : subcategoryOptions
-                  }
-                  placeholder={`Select ${selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1)}`}
-                  onChange={handleSelectChange}
-                  className="dark:bg-dark-900"
-                />
-                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                  <ChevronDownIcon />
-                </span>
+            {(selectedValue === 'service' || selectedValue === 'subcategory') && (
+              <div>
+                <Label>Select Module</Label>
+                <div className="relative">
+                  <Select
+                    options={options}
+                    placeholder="Select Module"
+                    onChange={handleSelectModule}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {selectedValue === 'referralUrl' && (
-            <div>
-              <Label>Enter Referral URL</Label>
-              <Input
-                type="text"
-                placeholder="https://example.com"
-                value={referralUrl}
-                onChange={(e) => setReferralUrl(e.target.value)}
-              />
-            </div>
-          )}
+            {(selectedValue === 'service' || selectedValue === 'subcategory') && (
+              <div>
+                <Label>Select Category</Label>
+                <div className="relative">
+                  <Select
+                    options={categoryOptions}
+                    placeholder="Select Category"
+                    onChange={handleSelectCat}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+            )}
 
+            {selectedValue === 'service' && (
+              <div>
+                <Label>Select Subcategory</Label>
+                <div className="relative">
+                  <Select
+                    options={subcategoryOptions}
+                    placeholder="Select Subcategory"
+                    onChange={handleSelectSubcategory}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+            )}
 
-        </div>
-        <div>
+            {(selectedValue === 'category' || selectedValue === 'subcategory' || selectedValue === 'service') && (
+              <div>
+                <Label>
+                  {selectedValue === 'category' ? 'Select Category' :
+                    selectedValue === 'subcategory' ? 'Select Subcategory' :
+                      'Select Service'}
+                </Label>
+                <div className="relative">
+                  <Select
+                    options={
+                      selectedValue === 'category' ? categoryOptions :
+                        selectedValue === 'subcategory' ? subcategoryOptions :
+                          serviceOptions
+                    }
+                    placeholder={`Select ${selectedValue}`}
+                    onChange={handleSelectChange}
+                    className="dark:bg-dark-900"
+                  />
+                  <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-gray-400">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedValue === 'referralUrl' && (
+          <div className="mb-6">
+            <Label>Enter Referral URL</Label>
+            <Input
+              type="text"
+              placeholder="https://example.com"
+              value={referralUrl}
+              onChange={(e) => setReferralUrl(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* File Upload */}
+        <div className="mb-6">
           <Label>Select Image</Label>
           <FileInput onChange={handleFileChange} className="custom-class" />
         </div>
-        </div>
 
-        {/* Row 4: Add Button */}
+        {/* Submit Button */}
         <div className="flex justify-start">
           <Button size="sm" variant="primary" onClick={handleSubmit}>
             Add Banner

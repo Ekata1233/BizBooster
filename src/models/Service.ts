@@ -14,7 +14,7 @@ const serviceSchema = new mongoose.Schema({
   subcategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subcategory',
-    
+
   },
   price: {
     type: Number,
@@ -37,7 +37,7 @@ const serviceSchema = new mongoose.Schema({
       type: Number,
     },
     providerCommission: {
-      type: Number,
+      type: String,
     },
     status: {
       type: String,
@@ -109,36 +109,18 @@ const serviceSchema = new mongoose.Schema({
       description: { type: String }
     }]
   },
-
-  // reviews: [{
-  //   user: {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'User',
-  //     required: true
-  //   },
-  //   rating: {
-  //     type: Number,
-  //     required: true,
-  //     min: 1,
-  //     max: 5
-  //   },
-  //   comment: {
-  //     type: String,
-  //     trim: true
-  //   },
-  //   createdAt: {
-  //     type: Date,
-  //     default: Date.now
-  //   }
-  // }],
-  // averageRating: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // totalReviews: {
-  //   type: Number,
-  //   default: 0
-  // },
+  averageRating: {
+    type: Number,
+    default: 0
+  },
+  totalReviews: {
+    type: Number,
+    default: 0
+  },
+  recommendedServices: {
+    type: Boolean,
+    default: false
+  },
   isDeleted: {
     type: Boolean,
     default: false
