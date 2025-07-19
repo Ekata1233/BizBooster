@@ -19,6 +19,8 @@ interface BasicDetailsData {
     tags?: string[];
     keyValues?: KeyValue[];
     recommendedServices?: boolean;
+    thumbnailPreview?: string;
+    bannerPreviews?: string[];
 }
 
 interface KeyValue {
@@ -39,6 +41,8 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const [rows, setRows] = useState<KeyValue[]>([]);
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
+
+    console.log("data of basic details form : ", data)
 
     useEffect(() => {
         if (data) {
@@ -254,13 +258,21 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     <div>
                         <Label>Thumbnail Image</Label>
                         <FileInput onChange={handleFileChange} className="custom-class" />
-                        {selectedFile && (
+                        {selectedFile ? (
                             <img
                                 src={URL.createObjectURL(selectedFile)}
                                 alt="Thumbnail Preview"
                                 className="mt-2 w-20 h-20 object-cover rounded border"
                             />
-                        )}
+                        ) : data.thumbnailPreview ? (
+                            <img
+                                src={data.thumbnailPreview}
+                                alt="Thumbnail Preview"
+                                className="mt-2 w-20 h-20 object-cover rounded border"
+                            />
+                        ) : null}
+
+
                     </div>
 
                     <div>
@@ -276,6 +288,16 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                         className="w-42 h-24 object-cover rounded border"
                                     />
                                 ))}
+
+                            {!selectedMultiFiles && (data.bannerPreviews ?? []).map((url: string, index: number) => (
+                                <img
+                                    key={`existing-${index}`}
+                                    src={url}
+                                    alt={`Existing Cover ${index}`}
+                                    className="w-42 h-24 object-cover rounded border"
+                                />
+                            ))}
+
                         </div>
                     </div>
 
