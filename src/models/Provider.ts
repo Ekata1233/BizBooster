@@ -42,6 +42,7 @@ export interface ProviderDocument extends Document {
   confirmPassword?: string;
   referralCode?: string;
   referredBy?: mongoose.Schema.Types.ObjectId;
+  galleryImages?: string[];
 
   /* step-2 */
   storeInfo?: StoreInfo;
@@ -135,6 +136,7 @@ const providerSchema = new Schema<ProviderDocument>(
 
     referralCode: { type: String, unique: true, sparse: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    galleryImages: { type: [String], default: [] },
 
     /* ––– Step-2 – Store Info ––– */
     storeInfo: storeInfoSchema,

@@ -83,7 +83,7 @@ const columns = [
   header: "Contact Info",
   accessor: "contactInfo", // dummy accessor, not used
   render: (row: TableData) => {
-    console.log("dfdffd",row); // 👈 Console the entire row object
+    // console.log("dfdffd",row); 
     return (
       <div className="text-sm text-gray-700">
         <div>{row?.email || 'N/A'}</div>
@@ -141,7 +141,7 @@ const columns = [
         header: "Action",
         accessor: "action",
         render: (row: TableData) => {
-            console.log("row id ", row.id)
+            // console.log("row id ", row.id)
             return (<div className="flex gap-2">
                 <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                     <PencilIcon />
