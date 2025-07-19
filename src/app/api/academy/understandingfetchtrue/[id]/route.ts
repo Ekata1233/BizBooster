@@ -8,90 +8,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// export async function PUT(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const url = new URL(req.url);
-//     const id = url.pathname.split('/').pop();
-//     const videoIndex = parseInt(url.searchParams.get('videoIndex') || '');
-
-//     if (!id || isNaN(videoIndex)) {
-//       return NextResponse.json(
-//         { success: false, message: 'Invalid ID or videoIndex.' },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
-
-//     const formData = await req.formData();
-//     const fullName = formData.get('fullName') as string | null;
-//     const videoFile = formData.get('videoUrl') as File | null;
-
-//     const doc = await UnderStandingFetchTrue.findById(id);
-//     if (!doc) {
-//       return NextResponse.json(
-//         { success: false, message: 'Entry not found.' },
-//         { status: 404, headers: corsHeaders }
-//       );
-//     }
-
-//     if (fullName && fullName.trim() !== '') {
-//       doc.fullName = fullName;
-//     }
-
-// if (videoFile instanceof File && videoFile.size > 0) {
-//   const buffer = Buffer.from(await videoFile.arrayBuffer());
-
-//   const { default: imagekit } = await import('@/utils/imagekit');
-
-//   const uploadResponse = await imagekit.upload({
-//     file: buffer,
-//     fileName: `${Date.now()}-${videoFile.name}`,
-//     folder: '/webinars/videos',
-//   });
-
-//   doc.videoUrl[videoIndex] = {
-//     fileName: videoFile.name,
-//     filePath: uploadResponse.url,
-//     fileId: uploadResponse.fileId,
-//   };
-// }
-
-
-//     const updated = await doc.save();
-
-//     return NextResponse.json(
-//       { success: true, data: updated },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error) {
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: error instanceof Error ? error.message : 'Internal Server Error',
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
-
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const id = params.id;
-
-    // Try to read videoIndex from query param first
     const url = new URL(req.url);
-    let videoIndexRaw = url.searchParams.get('videoIndex');
+    const id = url.pathname.split('/').pop();
 
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: 'Missing ID in URL.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    let videoIndexRaw = url.searchParams.get('videoIndex');
     const formData = await req.formData();
 
-    // Fallback: if not in query, read from formData
     if (videoIndexRaw === null) {
       const fromForm = formData.get('videoIndex');
       if (typeof fromForm === 'string') {
@@ -100,18 +33,16 @@ export async function PUT(
     }
 
     const videoIndex = Number(videoIndexRaw);
-    if (!id || Number.isNaN(videoIndex) || videoIndex < 0) {
+    if (Number.isNaN(videoIndex) || videoIndex < 0) {
       return NextResponse.json(
-        { success: false, message: 'Invalid ID or videoIndex.' },
+        { success: false, message: 'Invalid videoIndex.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Fields
     const fullName = formData.get('fullName') as string | null;
-    const rawVideo = formData.get('videoUrl'); // File (optional)
+    const rawVideo = formData.get('videoUrl'); // Optional file
 
-    // Load doc
     const doc = await UnderStandingFetchTrue.findById(id);
     if (!doc) {
       return NextResponse.json(
@@ -120,9 +51,7 @@ export async function PUT(
       );
     }
 
-    // Validate index range against schema field
-    // Adjust this field name if your schema differs!
-    const videoArray = doc.videos || doc.videoUrl; // try both for safety
+    const videoArray = doc.videos || doc.videoUrl;
     if (
       !Array.isArray(videoArray) ||
       videoIndex < 0 ||
@@ -134,15 +63,14 @@ export async function PUT(
       );
     }
 
-    // Update name
+    // Update fullName if provided
     if (fullName && fullName.trim() !== '') {
       doc.fullName = fullName.trim();
     }
 
-    // Replace video file if supplied
+    // Upload new video if provided
     if (rawVideo instanceof File && rawVideo.size > 0) {
       const buffer = Buffer.from(await rawVideo.arrayBuffer());
-
       const { default: imagekit } = await import('@/utils/imagekit');
 
       const uploadResponse = await imagekit.upload({
@@ -151,7 +79,6 @@ export async function PUT(
         folder: '/webinars/videos',
       });
 
-      // Update the correct array
       const newVideoData = {
         fileName: rawVideo.name,
         filePath: uploadResponse.url,
@@ -161,7 +88,6 @@ export async function PUT(
       if (doc.videos) {
         doc.videos[videoIndex] = newVideoData;
       } else {
-        // legacy field name support
         doc.videoUrl[videoIndex] = newVideoData;
       }
     }
@@ -173,11 +99,12 @@ export async function PUT(
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    console.error('PUT /api/academy/understandingfetchtrue/[id] error:', error);
+    console.error('PUT error:', error);
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Internal Server Error',
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
       },
       { status: 500, headers: corsHeaders }
     );
@@ -216,16 +143,15 @@ export async function DELETE(req: NextRequest) {
 
     const video = doc.videoUrl[idx];
 
-    // Optional: Delete from ImageKit if fileId exists
-if (video.fileId) {
-  try {
-    const { default: imagekit } = await import('@/utils/imagekit');
-    await imagekit.deleteFile(video.fileId);
-  } catch (err) {
-    console.warn('Could not delete file from ImageKit:', err);
-  }
-}
-
+    // Optional: Delete from ImageKit
+    if (video.fileId) {
+      try {
+        const { default: imagekit } = await import('@/utils/imagekit');
+        await imagekit.deleteFile(video.fileId);
+      } catch (err) {
+        console.warn('Could not delete file from ImageKit:', err);
+      }
+    }
 
     doc.videoUrl.splice(idx, 1);
     const updated = await doc.save();
