@@ -41,7 +41,9 @@ type FormDataType = {
         price: number;
         discount?: number;
         thumbnail: File | null;
+        thumbnailPreview?: string;
         bannerImages: File[];
+        bannerPreviews?: string[];
         tags?: string[];
         keyValues?: KeyValue[];
     };
@@ -112,7 +114,12 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
 
     useEffect(() => {
         if (isOpen && service && !hasInitialized) {
-            console.log("service : ", service)
+            console.log("service in edit modal : ", service)
+
+            const mappedKeyValues = Array.isArray(service.keyValues) && service.keyValues.length > 0
+                ? service.keyValues.map(({ key, value }) => ({ key, value }))
+                : [{ key: '', value: '' }];
+            console.log("Mapped keyValues:", mappedKeyValues);
             setFormData({
                 basic: {
                     name: service.name || '',
@@ -121,12 +128,14 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     price: service.price,
                     discount: service.discount || 0,
                     thumbnail: null,
+                    thumbnailPreview: service.thumbnailImage || '',
                     bannerImages: [],
+                    bannerPreviews: service.bannerImages || [],
                     tags: service.tags || [],
-                    keyValues:
-                        Array.isArray(service.keyValues) && service.keyValues.length > 0
-                            ? service.keyValues.map(({ key, value }) => ({ key, value }))
-                            : [{ key: '', value: '' }],
+                    keyValues: Array.isArray(service.keyValues) && service.keyValues.length > 0
+                        ? service.keyValues.map(({ key, value }) => ({ key, value }))
+                        : [{ key: '', value: '' }],
+
                 },
                 service: {
                     overview: service.serviceDetails.overview,
