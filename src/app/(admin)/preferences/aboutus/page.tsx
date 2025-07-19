@@ -204,7 +204,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
               <h3 className="text-xl font-semibold text-gray-800">
                 About Us Entry (ID: {entry._id.substring(0, 6)}...)
               </h3>
-              <div className="flex space-x-2">
+              {/* <div className="flex space-x-2">
                 <button
                   onClick={() => handleEditClick(entry)}
                   className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -217,7 +217,24 @@ const AdminAboutUsManagementPage: React.FC = () => {
                 >
                 <TrashBinIcon />
                 </button>
-              </div>
+              </div> */}
+
+              <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditClick(entry)}
+                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                    aria-label="Edit"
+                        >
+                          <PlusCircle size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(entry._id)}
+                          className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                          aria-label="Delete"
+                        >
+                          <TrashBinIcon />
+                        </button>
+                        </div>  
             </div>
             {/* Where else to show the data: a read-only preview of the content */}
             <div

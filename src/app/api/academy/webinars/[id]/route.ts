@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest,NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 import Webinars from "@/models/Webinars";
+// import mongoose from "mongoose";  
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,7 @@ interface MongooseValidationError {
   errors: Record<string, ValidationErrorItem>;
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   const url = new URL(req.url);
@@ -168,6 +169,8 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

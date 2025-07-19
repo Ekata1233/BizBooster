@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
-import { PlusCircle } from 'lucide-react';
+import { PencilIcon, } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
 
 const PrivacyAboutUsPage = dynamic(
@@ -149,11 +149,11 @@ const AdminProviderAboutUsPage: React.FC = () => {
                 </div>
             )}
 
-            
+
 
             <h2 className="text-2xl font-bold mb-4">Existing Entries</h2>
             <div className="overflow-x-auto">
-                <table className="min-w-full table-auto border border-gray-300 text-sm">
+                {/* <table className="min-w-full table-auto border border-gray-300 text-sm">
                     <thead className="bg-gray-100 text-left">
                         <tr>
                             <th className="p-3 border">Name</th>
@@ -167,12 +167,12 @@ const AdminProviderAboutUsPage: React.FC = () => {
                             const moduleData = typeof entry.module === 'object' && entry.module !== null ? entry.module : null;
                             return (
                                 <tr key={entry._id} className="border-t">
-                                    {/* Name */}
+                                    
                                     <td className="p-3 border font-medium">
                                         {moduleData && 'name' in moduleData ? moduleData.name : 'N/A'}
                                     </td>
 
-                                    {/* Image */}
+                                    
                                     <td className="p-3 border">
                                         {moduleData?.image ? (
                                             <img
@@ -185,7 +185,7 @@ const AdminProviderAboutUsPage: React.FC = () => {
                                         )}
                                     </td>
 
-                                    {/* Content */}
+                                    
                                     <td className="p-3 border max-w-xs">
                                         <div
                                             className="prose text-gray-700 max-h-48 overflow-y-auto"
@@ -193,21 +193,93 @@ const AdminProviderAboutUsPage: React.FC = () => {
                                         />
                                     </td>
 
-                                    {/* Actions */}
+                                    
                                     <td className="p-3 border text-center">
                                         <div className="flex justify-center space-x-2">
+                                           
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingEntry(entry);
+                                                        setSelectedModule(moduleData?._id || '');
+                                                    }}
+                                                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                                                    aria-label="Edit"
+                                                >
+                                                    <PencilIcon size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(entry._id)}
+                                                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                                                    aria-label="Delete"
+                                                >
+                                                    <TrashBinIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody> */}
+                {/* </table>  */}
+
+
+
+
+                <table className="min-w-full table-auto text-sm">
+                    <thead className="bg-gray-100 text-left">
+                        <tr>
+                            <th className="p-3">Name</th>
+                            <th className="p-3">Image</th>
+                            <th className="p-3">Content</th>
+                            <th className="p-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {entries.map((entry) => {
+                            const moduleData =
+                                typeof entry.module === "object" && entry.module !== null
+                                    ? entry.module
+                                    : null;
+                            return (
+                                <tr key={entry._id} className="hover:bg-gray-50">
+                                    <td className="p-3 font-medium">
+                                        {moduleData && "name" in moduleData ? moduleData.name : "N/A"}
+                                    </td>
+                                    <td className="p-3">
+                                        {moduleData?.image ? (
+                                            <img
+                                                src={moduleData.image}
+                                                alt="Module"
+                                                className="w-12 h-12 object-cover rounded-full"
+                                            />
+                                        ) : (
+                                            <span className="text-gray-500 italic">No Image</span>
+                                        )}
+                                    </td>
+                                    <td className="p-3 max-w-xs">
+                                        <div
+                                            className="prose text-gray-700 max-h-48 overflow-y-auto"
+                                            dangerouslySetInnerHTML={{ __html: entry.content }}
+                                        />
+                                    </td>
+                                    <td className="p-3 text-center">
+                                        <div className="flex justify-center gap-2">
                                             <button
                                                 onClick={() => {
                                                     setEditingEntry(entry);
-                                                    setSelectedModule(moduleData?._id || '');
+                                                    setSelectedModule(moduleData?._id || "");
                                                 }}
-                                                className="bg-yellow-500 text-white px-3 py-1 rounded"
+                                                className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                                                aria-label="Edit"
                                             >
-                                                <PlusCircle size={16} />
+                                                <PencilIcon size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(entry._id)}
-                                                className="bg-red-500 text-white px-3 py-1 rounded"
+                                                className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                                                aria-label="Delete"
                                             >
                                                 <TrashBinIcon />
                                             </button>
@@ -218,6 +290,7 @@ const AdminProviderAboutUsPage: React.FC = () => {
                         })}
                     </tbody>
                 </table>
+
             </div>
 
         </div>

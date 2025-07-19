@@ -8,25 +8,110 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export async function PUT(req: NextRequest) {
+// export async function PUT(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const url = new URL(req.url);
+//     const id = url.pathname.split('/').pop();
+//     const videoIndex = parseInt(url.searchParams.get('videoIndex') || '');
+
+//     if (!id || isNaN(videoIndex)) {
+//       return NextResponse.json(
+//         { success: false, message: 'Invalid ID or videoIndex.' },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     const formData = await req.formData();
+//     const fullName = formData.get('fullName') as string | null;
+//     const videoFile = formData.get('videoUrl') as File | null;
+
+//     const doc = await UnderStandingFetchTrue.findById(id);
+//     if (!doc) {
+//       return NextResponse.json(
+//         { success: false, message: 'Entry not found.' },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     if (fullName && fullName.trim() !== '') {
+//       doc.fullName = fullName;
+//     }
+
+// if (videoFile instanceof File && videoFile.size > 0) {
+//   const buffer = Buffer.from(await videoFile.arrayBuffer());
+
+//   const { default: imagekit } = await import('@/utils/imagekit');
+
+//   const uploadResponse = await imagekit.upload({
+//     file: buffer,
+//     fileName: `${Date.now()}-${videoFile.name}`,
+//     folder: '/webinars/videos',
+//   });
+
+//   doc.videoUrl[videoIndex] = {
+//     fileName: videoFile.name,
+//     filePath: uploadResponse.url,
+//     fileId: uploadResponse.fileId,
+//   };
+// }
+
+
+//     const updated = await doc.save();
+
+//     return NextResponse.json(
+//       { success: true, data: updated },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error) {
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: error instanceof Error ? error.message : 'Internal Server Error',
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectToDatabase();
 
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
-    const videoIndex = parseInt(url.searchParams.get('videoIndex') || '');
+    const id = params.id;
 
-    if (!id || isNaN(videoIndex)) {
+    // Try to read videoIndex from query param first
+    const url = new URL(req.url);
+    let videoIndexRaw = url.searchParams.get('videoIndex');
+
+    const formData = await req.formData();
+
+    // Fallback: if not in query, read from formData
+    if (videoIndexRaw === null) {
+      const fromForm = formData.get('videoIndex');
+      if (typeof fromForm === 'string') {
+        videoIndexRaw = fromForm;
+      }
+    }
+
+    const videoIndex = Number(videoIndexRaw);
+    if (!id || Number.isNaN(videoIndex) || videoIndex < 0) {
       return NextResponse.json(
         { success: false, message: 'Invalid ID or videoIndex.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const formData = await req.formData();
+    // Fields
     const fullName = formData.get('fullName') as string | null;
-    const videoFile = formData.get('videoUrl') as File | null;
+    const rawVideo = formData.get('videoUrl'); // File (optional)
 
+    // Load doc
     const doc = await UnderStandingFetchTrue.findById(id);
     if (!doc) {
       return NextResponse.json(
@@ -35,28 +120,51 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    if (fullName && fullName.trim() !== '') {
-      doc.fullName = fullName;
+    // Validate index range against schema field
+    // Adjust this field name if your schema differs!
+    const videoArray = doc.videos || doc.videoUrl; // try both for safety
+    if (
+      !Array.isArray(videoArray) ||
+      videoIndex < 0 ||
+      videoIndex >= videoArray.length
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'videoIndex out of range.' },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-if (videoFile instanceof File && videoFile.size > 0) {
-  const buffer = Buffer.from(await videoFile.arrayBuffer());
+    // Update name
+    if (fullName && fullName.trim() !== '') {
+      doc.fullName = fullName.trim();
+    }
 
-  const { default: imagekit } = await import('@/utils/imagekit');
+    // Replace video file if supplied
+    if (rawVideo instanceof File && rawVideo.size > 0) {
+      const buffer = Buffer.from(await rawVideo.arrayBuffer());
 
-  const uploadResponse = await imagekit.upload({
-    file: buffer,
-    fileName: `${Date.now()}-${videoFile.name}`,
-    folder: '/webinars/videos',
-  });
+      const { default: imagekit } = await import('@/utils/imagekit');
 
-  doc.videoUrl[videoIndex] = {
-    fileName: videoFile.name,
-    filePath: uploadResponse.url,
-    fileId: uploadResponse.fileId,
-  };
-}
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${Date.now()}-${rawVideo.name}`,
+        folder: '/webinars/videos',
+      });
 
+      // Update the correct array
+      const newVideoData = {
+        fileName: rawVideo.name,
+        filePath: uploadResponse.url,
+        fileId: uploadResponse.fileId,
+      };
+
+      if (doc.videos) {
+        doc.videos[videoIndex] = newVideoData;
+      } else {
+        // legacy field name support
+        doc.videoUrl[videoIndex] = newVideoData;
+      }
+    }
 
     const updated = await doc.save();
 
@@ -64,7 +172,8 @@ if (videoFile instanceof File && videoFile.size > 0) {
       { success: true, data: updated },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('PUT /api/academy/understandingfetchtrue/[id] error:', error);
     return NextResponse.json(
       {
         success: false,

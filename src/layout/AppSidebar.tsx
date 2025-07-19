@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
+ 
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
-  UserCircleIcon,
+  
   FolderIcon,
   BoxIcon
 } from "../icons/index";
@@ -70,6 +70,10 @@ const customerItems: NavItem[] = [
   //   path: "/customer-management/franchise/franchise-list",
   // },
 ];
+
+
+
+
 
 const providerItems: NavItem[] = [
   {
@@ -171,6 +175,8 @@ const privacyItems: NavItem[] = [
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
       { name: "About Us", path: "/preferences/aboutus" },
+      { name: "Partner Review", path: "/preferences/partner-review" },
+      { name: "Offer", path: "/preferences/offer-management/offer" },
     ],
   },
 ];
@@ -185,6 +191,8 @@ const providerpreferenceItems: NavItem[] = [
       { name: "Provider Terms and Conditions", path: "/providerpreferences/provider-termsandconditions" },
       { name: "Provider Cancellation Policy", path: "/providerpreferences/provider-cancellationpolicy" },
       { name: "Provider About Us", path: "/providerpreferences/provider-aboutus" },
+      { name: "Provider Help and Support", path: "/providerpreferences/provider-helpandsupport" },
+   
     ],
   },
 ];
@@ -254,7 +262,22 @@ const AppSidebar: React.FC = () => {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as any,
+                type: menuType as (
+                  | "main"
+                  | "customer"
+                  | "module"
+                  | "provider"
+                  | "service"
+                  | "package"
+                  | "booking"
+                  | "subscribe"
+                  | "coupon"
+                  | "system"
+                  | "preferences"
+                  | "academy"
+                  | "providerpreferences"
+                  | "report"
+                ),
                 index,
               });
               submenuMatched = true;

@@ -210,13 +210,13 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
    catch (err: unknown) {
   let errorMessage = 'Error processing certificate.';
 
-  // ── Narrow the unknown to an AxiosError ────────────────────────────────
+
   if (
     axios.isAxiosError(err) &&
     err.response?.data &&
     typeof err.response.data === 'object'
   ) {
-    // If your backend always returns { message: string }:
+
     const data = err.response.data as { message?: string };
     if (data.message) errorMessage = data.message;
   }
@@ -241,7 +241,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
                 <form onSubmit={handleSubmit} encType="multipart/form-data">
                     <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
-                        {/* Certificate Name */}
+                       
                         <div>
                             <Label htmlFor="certificateName">Certificate Name</Label>
                             <Input
@@ -253,7 +253,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                             />
                         </div>
 
-                        {/* Main Image */}
+                  
                         <div>
                             <Label htmlFor="mainImage">Select Main Image</Label>
                             <FileInput
@@ -268,7 +268,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                             )}
                         </div>
 
-                        {/* Certificate Description */}
+                      
                         <div>
                             <Label htmlFor="certificateDescription">Certificate Description</Label>
                             <Input
@@ -291,7 +291,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                         />
                     </div>
 
-                        {/* Render inputs for each selected video file */}
+                     
 
                                 {videoData.map((video, index) => (
                                 <div key={index} className="border p-4 rounded-md my-2 col-span-2">
