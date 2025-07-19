@@ -67,3 +67,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders });
   }
 }
+
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    await connectToDatabase();
+    const provider = await Provider.findById(params.id).select('galleryImages');
+  
+    if (!provider) {
+      return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+    }
+  
+    return NextResponse.json({ galleryImages: provider.galleryImages });
+  }
