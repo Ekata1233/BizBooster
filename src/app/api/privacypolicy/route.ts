@@ -13,28 +13,20 @@ const corsHeaders = {
 
 
 
-
-
-
-
-export async function GET() { // Changed Request to NextRequest for consistency
-  
+export async function GET() {
   await connectToDatabase();
   try {
-    const aboutUsEntries = await PrivacyPolicy.find({}); // This correctly returns an array
+    const doc = await PrivacyPolicy.findOne().sort({ createdAt: 1 });
 
-    // If no entries, return an empty array with success true
-    if (!aboutUsEntries || aboutUsEntries.length === 0) {
-      return NextResponse.json({ success: true, data: [] }, { status: 200, headers: corsHeaders });
-    }
+    // For backward compat with existing frontend that expects an array
+    const dataArray = doc ? [doc] : [];
 
     return NextResponse.json(
-      { success: true, data: aboutUsEntries }, // THIS IS THE KEY: it returns aboutUsEntries (an array)
+      { success: true, data: dataArray },
       { status: 200, headers: corsHeaders }
     );
-  }
-  catch (error: unknown) {
-    const message = (error as Error).message || "Unknown error";
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { success: false, message },
       { status: 500, headers: corsHeaders }
@@ -43,30 +35,42 @@ export async function GET() { // Changed Request to NextRequest for consistency
 }
 
 
-
-
-
-
 export async function POST(req: NextRequest) {
   await connectToDatabase();
+
   try {
     const { content } = await req.json();
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json(
-        { success: false, message: "About us content is required and must be a string." },
+        { success: false, message: 'Privacy Policy content is required and must be a string.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const newAboutUsEntry = await PrivacyPolicy.create({ content }); // Create a new document
+    // Check if there's an existing document
+    const existing = await PrivacyPolicy.findOne();
+
+    if (existing) {
+      // Replace the existing content
+      existing.content = content;
+      await existing.save();
+
+      return NextResponse.json(
+        { success: true, data: existing, message: 'Privacy Policy content replaced successfully.' },
+        { status: 200, headers: corsHeaders }
+      );
+    }
+
+    // If no document exists, create a new one
+    const newEntry = await PrivacyPolicy.create({ content });
 
     return NextResponse.json(
-      { success: true, data: newAboutUsEntry },
+      { success: true, data: newEntry, message: 'Privacy Policy content created successfully.' },
       { status: 201, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    console.error('Backend POST /api/aboutus error:', error);
+    console.error('POST /api/privacypolicy error:', error);
     return NextResponse.json(
       { success: false, message: (error as Error).message || 'Internal Server Error' },
       { status: 500, headers: corsHeaders }

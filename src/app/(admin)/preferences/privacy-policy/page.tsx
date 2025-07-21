@@ -257,7 +257,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
-import { PlusCircle } from 'lucide-react';
+import { PencilIcon, } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
 
 // Import the renamed component
@@ -280,6 +280,8 @@ type AboutUsEntry = {
   createdAt?: string; // Optional, good for display
   updatedAt?: string; // Optional, good for display
 };
+
+const BLANK_ENTRY: AboutUsEntry = { _id: '', content: '' };
 
 const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarity
   const [aboutUsList, setAboutUsList] = useState<AboutUsEntry[]>([]);
@@ -401,6 +403,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
     );
   }
 
+   const currentFormEntry = editingEntry ?? BLANK_ENTRY;
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
@@ -423,7 +426,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
         </div>
       )}
 
-      {!editingEntry && (
+      {/* {!editingEntry && (
         <div className="mb-6 text-right">
           <button
             onClick={() => setEditingEntry({ _id: '', content: '' })}
@@ -445,7 +448,20 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
             onCancel={() => setEditingEntry(null)}
           />
         </div>
-      )}
+      )} */}
+
+      <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          {currentFormEntry._id ? 'Edit Privacy Policy Section' : 'Add New Privacy Policy Section'}
+        </h2>
+        <PrivacyPolicyEditorForm
+          /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
+          initialData={currentFormEntry}
+          onSave={handleSaveAboutUs}
+          onCancel={() => setEditingEntry(null)}
+        />
+      </div>
+
 
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Privacy Policy Sections</h2>
       {aboutUsList.length === 0 && !isLoading && !error && (
@@ -480,7 +496,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
                   className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                   aria-label="Edit"
                 >
-                  <PlusCircle size={16} />
+                  <PencilIcon size={16} />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry._id)}
