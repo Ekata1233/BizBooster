@@ -3,11 +3,7 @@ import fs from 'fs/promises'; // use promises version for async/await
 import { NextApiRequest, NextApiResponse } from 'next';
 import imagekit from '../../utils/imagekit'; // make sure this is properly configured
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const form = new IncomingForm();
