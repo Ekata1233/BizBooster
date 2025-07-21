@@ -1,14 +1,9 @@
-// src/app/api/provider/[id]/gallery/route.ts
-
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db';
-import Provider from '@/models/Provider';
-import imagekit from '@/utils/imagekit';
-import { v4 as uuidv4 } from 'uuid';
-
-// ✅ Use this instead:
-
-
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { connectToDatabase } from "@/utils/db";
+import Provider from "@/models/Provider";
+import imagekit from "@/utils/imagekit";
+import { v4 as uuidv4 } from "uuid";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,20 +15,27 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// PATCH: Upload/append images to galleryImages
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PATCH - Append new gallery images
+export async function PATCH(req: Request) {
   await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").at(-2); // Get [id] from /provider/[id]/gallery
+
   try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid provider ID." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const formData = await req.formData();
-    const files = formData.getAll('galleryImages') as File[];
+    const files = formData.getAll("galleryImages") as File[];
 
     if (!files || files.length === 0) {
       return NextResponse.json(
-        { error: 'No files uploaded' },
+        { success: false, message: "No files uploaded." },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -54,14 +56,14 @@ export async function PATCH(
     }
 
     const updated = await Provider.findByIdAndUpdate(
-      params.id,
+      id,
       { $push: { galleryImages: { $each: uploadedUrls } } },
       { new: true }
     );
 
     if (!updated) {
       return NextResponse.json(
-        { error: 'Provider not found' },
+        { success: false, message: "Provider not found." },
         { status: 404, headers: corsHeaders }
       );
     }
@@ -70,33 +72,54 @@ export async function PATCH(
       { success: true, data: updated.galleryImages },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error) {
-    console.error('PATCH /provider/[id]/gallery error:', error);
+  } catch (error: unknown) {
+    console.error("PATCH /provider/[id]/gallery error:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Internal Server Error",
+      },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-// GET: All gallery images
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// GET - Fetch all gallery images
+export async function GET(req: Request) {
   await connectToDatabase();
 
-  const provider = await Provider.findById(params.id).select('galleryImages');
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").at(-2); // Get [id] from /provider/[id]/gallery
 
-  if (!provider) {
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid provider ID." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const provider = await Provider.findById(id).select("galleryImages");
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Provider not found' },
-      { status: 404, headers: corsHeaders }
+      { success: true, galleryImages: provider.galleryImages },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    console.error("GET /provider/[id]/gallery error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500, headers: corsHeaders }
     );
   }
-
-  return NextResponse.json(
-    { galleryImages: provider.galleryImages },
-    { headers: corsHeaders }
-  );
 }
