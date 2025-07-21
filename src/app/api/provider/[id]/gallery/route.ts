@@ -7,9 +7,7 @@ import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 
 // ✅ Use this instead:
-export const segmentConfig = {
-  runtime: 'edge',
-};
+
 
 
 const corsHeaders = {
