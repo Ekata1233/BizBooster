@@ -1,22 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import mongoose from "mongoose";
 // import { v4 as uuidv4 } from "uuid";
 import CancellationPolicy from "@/models/CancellationPolicy";
 import { connectToDatabase } from "@/utils/db";
-import mongoose from "mongoose";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
 function sanitizeContent(raw: string): string {
   if (!raw) return '';
   // Example: strip <script> tags (non-exhaustive!)
   return raw.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
 }
-
 
 export async function PUT(
   req: NextRequest,
@@ -83,9 +81,6 @@ export async function PUT(
     );
   }
 }
-
-
-
 
 export async function DELETE(
   req: NextRequest,
