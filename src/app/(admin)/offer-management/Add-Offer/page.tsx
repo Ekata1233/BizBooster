@@ -1,29 +1,38 @@
-'use client';
-export const dynamic = "force-dynamic";
+// 'use client';
+// export const dynamic = "force-dynamic";
 
-import React from 'react';
-import { useSearchParams } from 'next/navigation';
-import OfferComponent from '@/components/offer-component/OfferComponent';
+// import React from 'react';
+// import { useSearchParams } from 'next/navigation';
+// import OfferComponent from '@/components/offer-component/OfferComponent';
 
-const AddFormPage: React.FC = () => {
-  const searchParams = useSearchParams();
+// const AddFormPage: React.FC = () => {
+//   const searchParams = useSearchParams();
 
-  const offerId =
-    searchParams.get('id') ||
-    searchParams.get('offerId') ||
-    undefined;
+//   const offerId =
+//     searchParams.get('id') ||
+//     searchParams.get('offerId') ||
+//     undefined;
 
+//   return (
+//     <div className="container mx-auto px-4 py-8">
+//       <h1 className="text-3xl font-bold mb-6 text-center">
+//         {offerId ? 'Edit Offer' : 'Add New Offer'}
+//       </h1>
+
+//       <div className="bg-white p-6 rounded shadow mb-10">
+//         <OfferComponent offerIdToEdit={offerId} />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AddFormPage;
+import React from 'react'
+
+function page() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {offerId ? 'Edit Offer' : 'Add New Offer'}
-      </h1>
+    <div>page</div>
+  )
+}
 
-      <div className="bg-white p-6 rounded shadow mb-10">
-        <OfferComponent offerIdToEdit={offerId} />
-      </div>
-    </div>
-  );
-};
-
-export default AddFormPage;
+export default page
