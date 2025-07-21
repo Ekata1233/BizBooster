@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = "force-dynamic";
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -7,7 +8,6 @@ import OfferComponent from '@/components/offer-component/OfferComponent';
 const AddFormPage: React.FC = () => {
   const searchParams = useSearchParams();
 
-  // Accept both ?id= and ?offerId=
   const offerId =
     searchParams.get('id') ||
     searchParams.get('offerId') ||
