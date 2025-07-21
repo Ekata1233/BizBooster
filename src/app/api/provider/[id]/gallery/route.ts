@@ -6,11 +6,11 @@ import Provider from '@/models/Provider';
 import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
+// ✅ Use this instead:
+export const segmentConfig = {
+  runtime: 'edge',
 };
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
