@@ -1,16 +1,3 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    domains: ['ik.imagekit.io'],
-  },
-  output: 'standalone',
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ['@svgr/webpack'],
-    });
-    return config;
-  },
-};
-
-module.exports = nextConfig;
+// next.config.js
+require('ts-node').register({ transpileOnly: true });
+module.exports = require('./next.config.ts').default;
