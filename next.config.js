@@ -1,10 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     domains: ["ik.imagekit.io"],
-    unoptimized: true, 
-
+    unoptimized: true,
   },
   output: 'standalone',
   webpack(config) {
@@ -16,4 +14,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

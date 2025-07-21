@@ -6,15 +6,13 @@ import Provider from '@/models/Provider';
 import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// ✅ Use this instead:
+
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "PATCH, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
@@ -22,8 +20,11 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// Handle PATCH request to upload gallery images
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+// PATCH: Upload/append images to galleryImages
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectToDatabase();
 
   try {
@@ -31,7 +32,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const files = formData.getAll('galleryImages') as File[];
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'No files uploaded' }, { status: 400, headers: corsHeaders });
+      return NextResponse.json(
+        { error: 'No files uploaded' },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const uploadedUrls: string[] = [];
@@ -43,7 +47,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       const uploadRes = await imagekit.upload({
         file: buffer,
         fileName,
-        folder: "/providers/gallery"
+        folder: "/providers/gallery",
       });
 
       uploadedUrls.push(uploadRes.url);
@@ -51,30 +55,48 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const updated = await Provider.findByIdAndUpdate(
       params.id,
-      { $set: { galleryImages: uploadedUrls } },
+      { $push: { galleryImages: { $each: uploadedUrls } } },
       { new: true }
     );
 
     if (!updated) {
-      return NextResponse.json({ error: 'Provider not found' }, { status: 404, headers: corsHeaders });
+      return NextResponse.json(
+        { error: 'Provider not found' },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return NextResponse.json({ success: true, data: updated }, { status: 200, headers: corsHeaders });
-
+    return NextResponse.json(
+      { success: true, data: updated.galleryImages },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error) {
     console.error('PATCH /provider/[id]/gallery error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
+// GET: All gallery images
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  await connectToDatabase();
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    await connectToDatabase();
-    const provider = await Provider.findById(params.id).select('galleryImages');
-  
-    if (!provider) {
-      return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
-    }
-  
-    return NextResponse.json({ galleryImages: provider.galleryImages });
+  const provider = await Provider.findById(params.id).select('galleryImages');
+
+  if (!provider) {
+    return NextResponse.json(
+      { error: 'Provider not found' },
+      { status: 404, headers: corsHeaders }
+    );
   }
+
+  return NextResponse.json(
+    { galleryImages: provider.galleryImages },
+    { headers: corsHeaders }
+  );
+}

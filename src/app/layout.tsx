@@ -1,6 +1,6 @@
-import { Outfit } from 'next/font/google';
-import './globals.css';
 
+import './globals.css';
+import { Outfit } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -34,6 +34,7 @@ import { AdProvider } from '@/context/AdContext';
 
 const outfit = Outfit({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -49,7 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.className} dark:bg-gray-900`}>
+      <body>
         <RouteLoader />
 
         <ThemeProvider>

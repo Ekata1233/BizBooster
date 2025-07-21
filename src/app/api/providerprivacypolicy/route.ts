@@ -4,11 +4,8 @@ import { connectToDatabase } from '@/utils/db';
 import ProviderPrivacyPolicy from '@/models/ProviderPrivacyPolicy';
 import imagekit from '@/utils/imagekit';
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+
+
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',

@@ -5,11 +5,7 @@ import imagekit from '@/utils/imagekit';
 import { v4 as uuidv4 } from 'uuid';
 import { Types } from 'mongoose';
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',

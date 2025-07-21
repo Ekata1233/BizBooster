@@ -97,7 +97,6 @@ const PackageForm = () => {
         [selectedTab]: form.description[selectedTab],
       };
     } else {
-      // On GP tab also update price, discount, deposit
       updatePayload.price = form.price;
       updatePayload.discount = form.discount;
       updatePayload.discountedPrice = form.discountedPrice;
