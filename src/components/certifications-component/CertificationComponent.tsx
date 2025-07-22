@@ -197,7 +197,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
     }
     
    catch (err: unknown) {
-  let errorMessage = 'Error processing certificate.';
+  let errorMessage = 'Error processing tutorial.';
 
 
   if (
@@ -224,7 +224,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
     return (
         <div>
-            <ComponentCard title={certificationIdToEdit ? "Edit Certificate" : "Add New Certificate"}>
+            <ComponentCard title={certificationIdToEdit ? "Edit Tutorial" : "Add New Tutorial"}>
                 {loading && <p className="text-blue-500">Loading...</p>}
                 {error && <p className="text-red-500">{error}</p>}
 
@@ -232,11 +232,11 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                     <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
                        
                         <div>
-                            <Label htmlFor="certificateName">Certificate Name</Label>
+                            <Label htmlFor="certificateName">Tutorial Name</Label>
                             <Input
                                 id="certificateName"
                                 type="text"
-                                placeholder="Enter Certificate Name"
+                                placeholder="Enter Tutorial Name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
@@ -259,11 +259,11 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
                       
                         <div>
-                            <Label htmlFor="certificateDescription">Certificate Description</Label>
+                            <Label htmlFor="tutorialDescription">Tutorial Description</Label>
                             <Input
-                                id="certificateDescription"
+                                id="tutorialDescription"
                                 type="text"
-                                placeholder="Enter Certificate Description"
+                                placeholder="Enter Tutorial Description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
@@ -321,7 +321,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
                         <div className='mt-35 '>
                             <Button size="sm" variant="primary" type="submit" disabled={loading}>
-                                {certificationIdToEdit ? "Update Certificate" : "Add Certificate"}
+                                {certificationIdToEdit ? "Update Tutorial" : "Add Tutorial"}
                             </Button>
                         </div>
                     </div>
