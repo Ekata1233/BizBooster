@@ -15,19 +15,19 @@ export async function OPTIONS() {
 }
 
 // GET a specific image
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index);
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -45,19 +45,19 @@ export async function GET(req: NextRequest) {
 }
 
 // PATCH (replace image at index)
-export async function PATCH(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index);
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -98,19 +98,19 @@ export async function PATCH(req: NextRequest) {
 }
 
 // DELETE a specific image
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index);
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
