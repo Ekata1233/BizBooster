@@ -10,18 +10,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+type RouteContext = {
+  params: {
+    id: string;
+    index: string;
+  };
+};
+
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
 // GET a specific image
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+export async function GET(req: NextRequest, context: RouteContext) {
   await connectToDatabase();
 
-  const { id, index } = params;
+  const { id, index } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
@@ -45,13 +49,10 @@ export async function GET(
 }
 
 // PATCH (replace image at index)
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+export async function PATCH(req: NextRequest, context: RouteContext) {
   await connectToDatabase();
 
-  const { id, index } = params;
+  const { id, index } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
@@ -98,13 +99,10 @@ export async function PATCH(
 }
 
 // DELETE a specific image
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+export async function DELETE(req: NextRequest, context: RouteContext) {
   await connectToDatabase();
 
-  const { id, index } = params;
+  const { id, index } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
