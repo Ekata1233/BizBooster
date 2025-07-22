@@ -15,15 +15,15 @@ export async function OPTIONS() {
 }
 
 // GET a specific image
-export async function GET(req: Request) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const parts = url.pathname.split("/");
-  const index = parts.pop()!;
-  const id = parts.pop()!;
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
@@ -45,15 +45,15 @@ export async function GET(req: Request) {
 }
 
 // PATCH (replace image at index)
-export async function PATCH(req: Request) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const parts = url.pathname.split("/");
-  const index = parts.pop()!;
-  const id = parts.pop()!;
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
@@ -98,15 +98,15 @@ export async function PATCH(req: Request) {
 }
 
 // DELETE a specific image
-export async function DELETE(req: Request) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string; index: string } }
+) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const parts = url.pathname.split("/");
-  const index = parts.pop()!;
-  const id = parts.pop()!;
+  const { id, index } = params;
 
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
