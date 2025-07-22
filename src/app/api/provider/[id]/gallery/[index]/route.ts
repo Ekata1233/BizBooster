@@ -14,14 +14,13 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// GET specific image by index
+// GET a specific image
 export async function GET(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const segments = url.pathname.split("/");
-  const id = segments.at(-2);
-  const index = segments.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
@@ -44,14 +43,13 @@ export async function GET(req: Request) {
   return NextResponse.json({ image: provider.galleryImages[idx] }, { headers: corsHeaders });
 }
 
-// PATCH - Replace image at specific index
+// PATCH - Replace image at index
 export async function PATCH(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const segments = url.pathname.split("/");
-  const id = segments.at(-2);
-  const index = segments.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
@@ -97,14 +95,13 @@ export async function PATCH(req: Request) {
   }
 }
 
-// DELETE image at specific index
+// DELETE a specific image
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const segments = url.pathname.split("/");
-  const id = segments.at(-2);
-  const index = segments.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
