@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import PrivacyPolicy from "@/models/PrivacyPolicy";
 import { connectToDatabase } from "@/utils/db";
@@ -9,12 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   const url = new URL(req.url);
