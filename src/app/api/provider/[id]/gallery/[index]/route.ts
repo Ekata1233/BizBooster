@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/utils/db";
 import Provider from "@/models/Provider";
@@ -15,19 +15,18 @@ export async function OPTIONS() {
 }
 
 // GET a specific image
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -44,20 +43,19 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ image: provider.galleryImages[idx] }, { headers: corsHeaders });
 }
 
-// PATCH (replace image at index)
-export async function PATCH(req: NextRequest) {
+// PATCH - Replace image at index
+export async function PATCH(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -98,19 +96,18 @@ export async function PATCH(req: NextRequest) {
 }
 
 // DELETE a specific image
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const paths = url.pathname.split("/");
-  const id = paths.at(-2);
-  const index = paths.at(-1);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index || "");
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
