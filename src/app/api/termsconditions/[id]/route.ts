@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// import { v4 as uuidv4 } from "uuid";
-import TermsConditions from "@/models/TermsConditions";
 import { connectToDatabase } from "@/utils/db";
+import TermsConditions from "@/models/TermsConditions";
 import mongoose from "mongoose";
 
 const corsHeaders = {
@@ -11,53 +9,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
-
+// Sanitize content to prevent script injection
 function sanitizeContent(raw: string): string {
   if (!raw) return '';
-
   return raw.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
 }
 
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  await connectToDatabase();
-
+// ✅ PUT handler for updating TermsConditions
+export async function PUT(req: NextRequest) {
   try {
-    const id = params?.id;
-    if (!id) {
+    await connectToDatabase();
+
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop(); // Extract ID from URL
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: 'Refund Policy id is required in the route.' },
+        { success: false, message: 'Invalid or missing TermsConditions ID.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Validate ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid Terms and Conditions id.' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // Parse body
-    const body = await req.json().catch(() => null);
+    const body = await req.json();
     const content = typeof body?.content === 'string' ? body.content.trim() : '';
 
     if (!content) {
       return NextResponse.json(
-        { success: false, message: 'Terms and Conditions section content is required.' },
+        { success: false, message: 'Terms and Conditions content is required.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // (Optional) sanitize
     const cleanContent = sanitizeContent(content);
 
-    // Update
     const updated = await TermsConditions.findByIdAndUpdate(
       id,
       { content: cleanContent },
@@ -66,44 +50,43 @@ export async function PUT(
 
     if (!updated) {
       return NextResponse.json(
-        { success: false, message: 'Terms and Conditions content not found to update.' },
+        { success: false, message: 'Terms and Conditions content not found.' },
         { status: 404, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, data: updated },
+      { success: true, message: 'Updated successfully.', data: updated },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unknown error updating Terms and Conditions.';
-    console.error('PUT Terms and Conditions Error:', error);
     return NextResponse.json(
-      { success: false, message },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'Unknown error occurred.',
+      },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  await connectToDatabase();
-  const { id } = params;
-
-  // Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { success: false, message: 'Invalid Terms and Conditions ID.' },
-      { status: 400, headers: corsHeaders }
-    );
-  }
-
+// ✅ DELETE handler for removing TermsConditions
+export async function DELETE(req: NextRequest) {
   try {
+    await connectToDatabase();
+
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop(); // Extract ID from URL
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or missing TermsConditions ID.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const deleted = await TermsConditions.findByIdAndDelete(id);
+
     if (!deleted) {
       return NextResponse.json(
         { success: false, message: 'Terms and Conditions content not found.' },
@@ -112,13 +95,15 @@ export async function DELETE(
     }
 
     return NextResponse.json(
-      { success: true, message: 'Terms and Conditions content deleted successfully.', data: { id } },
+      { success: true, message: 'Deleted successfully.', data: deleted },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, message },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'Unknown error occurred.',
+      },
       { status: 500, headers: corsHeaders }
     );
   }

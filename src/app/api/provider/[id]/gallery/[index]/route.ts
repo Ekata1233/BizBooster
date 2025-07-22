@@ -1,9 +1,8 @@
-// src/app/api/provider/[id]/gallery/[index]/route.ts
-
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db';
-import Provider from '@/models/Provider';
-import imagekit from '@/utils/imagekit';
+import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { connectToDatabase } from "@/utils/db";
+import Provider from "@/models/Provider";
+import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,57 +15,76 @@ export async function OPTIONS() {
 }
 
 // GET a specific image
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
-  const { id, index } = params;
-  const idx = parseInt(index);
+
+  const url = new URL(req.url);
+  const paths = url.pathname.split("/");
+  const id = paths.at(-2);
+  const index = paths.at(-1);
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
+  }
+
+  const idx = parseInt(index || "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
 
   const provider = await Provider.findById(id);
   if (!provider) {
-    return NextResponse.json({ error: 'Provider not found' }, { status: 404, headers: corsHeaders });
+    return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
   }
 
-  if (isNaN(idx) || idx < 0 || idx >= provider.galleryImages.length) {
-    return NextResponse.json({ error: 'Invalid image index' }, { status: 400, headers: corsHeaders });
+  if (idx < 0 || idx >= provider.galleryImages.length) {
+    return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
   }
 
   return NextResponse.json({ image: provider.galleryImages[idx] }, { headers: corsHeaders });
 }
 
-// PATCH (replace) specific image
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+// PATCH (replace image at index)
+export async function PATCH(req: NextRequest) {
   await connectToDatabase();
-  const { id, index } = params;
-  const idx = parseInt(index);
+
+  const url = new URL(req.url);
+  const paths = url.pathname.split("/");
+  const id = paths.at(-2);
+  const index = paths.at(-1);
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
+  }
+
+  const idx = parseInt(index || "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
 
   try {
     const formData = await req.formData();
-    const file = formData.get('newImage') as File;
+    const file = formData.get("newImage") as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'Image file missing' }, { status: 400, headers: corsHeaders });
+      return NextResponse.json({ error: "Image file missing" }, { status: 400, headers: corsHeaders });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+
     const uploadRes = await imagekit.upload({
       file: buffer,
       fileName: `gallery_image_${Date.now()}`,
-      folder: '/providers/gallery',
+      folder: "/providers/gallery",
     });
 
     const provider = await Provider.findById(id);
     if (!provider) {
-      return NextResponse.json({ error: 'Provider not found' }, { status: 404, headers: corsHeaders });
+      return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
     }
 
-    if (isNaN(idx) || idx < 0 || idx >= provider.galleryImages.length) {
-      return NextResponse.json({ error: 'Invalid image index' }, { status: 400, headers: corsHeaders });
+    if (idx < 0 || idx >= provider.galleryImages.length) {
+      return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
     }
 
     provider.galleryImages[idx] = uploadRes.url;
@@ -74,27 +92,36 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, updatedImages: provider.galleryImages }, { headers: corsHeaders });
   } catch (error) {
-    console.error('Error replacing gallery image:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders });
+    console.error("PATCH error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }
 
-// DELETE specific image
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string; index: string } }
-) {
+// DELETE a specific image
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
-  const { id, index } = params;
-  const idx = parseInt(index);
+
+  const url = new URL(req.url);
+  const paths = url.pathname.split("/");
+  const id = paths.at(-2);
+  const index = paths.at(-1);
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
+  }
+
+  const idx = parseInt(index || "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
 
   const provider = await Provider.findById(id);
   if (!provider) {
-    return NextResponse.json({ error: 'Provider not found' }, { status: 404, headers: corsHeaders });
+    return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
   }
 
-  if (isNaN(idx) || idx < 0 || idx >= provider.galleryImages.length) {
-    return NextResponse.json({ error: 'Invalid image index' }, { status: 400, headers: corsHeaders });
+  if (idx < 0 || idx >= provider.galleryImages.length) {
+    return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
   }
 
   provider.galleryImages.splice(idx, 1);

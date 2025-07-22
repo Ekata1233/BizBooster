@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { writeFile, unlink, mkdir } from "fs/promises";
 import path from "path";
-import { connectToDatabase } from "@/utils/db";
 import PartnerReview from "@/models/PartnerReview";
+import { connectToDatabase } from "@/utils/db";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,131 +15,124 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// ✅ PUT - Update Partner Review
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    const id = params.id;
-    if (!id) {
-      return NextResponse.json({ success: false, message: "ID is required" }, { status: 400 });
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid PartnerReview ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const formData = await req.formData();
-    const title = formData.get("title") as string | undefined;
-    const videoUrl = formData.get("videoUrl") as string | undefined;
+
+    const title = formData.get("title") as string | null;
+    const videoUrl = formData.get("videoUrl") as string | null;
     const imageFile = formData.get("imageUrl") as File | null;
 
-    interface PartnerReviewUpdateData {
+    interface PartnerReviewUpdate {
       title?: string;
       videoUrl?: string;
       imageUrl?: string;
     }
-    const updateData: PartnerReviewUpdateData = {};
+
+    const updateData: PartnerReviewUpdate = {};
     if (title) updateData.title = title;
     if (videoUrl) updateData.videoUrl = videoUrl;
 
     const uploadDir = path.join(process.cwd(), "public/uploads");
     await mkdir(uploadDir, { recursive: true });
 
-    // ✅ Handle new image upload
-    if (imageFile) {
+    if (imageFile && imageFile.name) {
       const existing = await PartnerReview.findById(id);
       if (existing?.imageUrl?.startsWith("/uploads/")) {
         const oldImagePath = path.join(process.cwd(), "public", existing.imageUrl);
         try {
           await unlink(oldImagePath);
         } catch (err) {
-          console.log(`Failed to delete old image: ${oldImagePath}`, err);
-          console.warn(`Failed to delete old image: ${oldImagePath}`);
+          console.warn("Failed to delete old image:", err);
         }
       }
 
-      const imageBytes = await imageFile.arrayBuffer();
-      const imageBuffer = Buffer.from(imageBytes);
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
       const imageFilename = `${Date.now()}-${imageFile.name}`;
-      const imagePath = path.join(uploadDir, imageFilename);
-      await writeFile(imagePath, imageBuffer);
+      const filePath = path.join(uploadDir, imageFilename);
+      await writeFile(filePath, buffer);
       updateData.imageUrl = `/uploads/${imageFilename}`;
     }
 
-    const updatedReview = await PartnerReview.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedReview) {
-      return NextResponse.json({ success: false, message: "Entry not found" }, { status: 404 });
-    }
+    const updated = await PartnerReview.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
-    return NextResponse.json({ success: true, data: updatedReview }, { status: 200 });
-  } catch (error) {
-    console.error("PUT Error:", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
-  }
-}
-
-// ✅ DELETE - Delete Partner Review
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  await connectToDatabase();
-
-  try {
-    const id = params.id;
-    const deletedReview = await PartnerReview.findByIdAndDelete(id);
-    if (!deletedReview) {
-      return NextResponse.json({ success: false, message: "Entry not found" }, { status: 404 });
-    }
-
-    // Remove image from uploads
-    if (deletedReview.imageUrl?.startsWith("/uploads/")) {
-      const imagePath = path.join(process.cwd(), "public", deletedReview.imageUrl);
-      try {
-        await unlink(imagePath);
-      } catch (err) {
-        console.error(`Failed to delete image: ${imagePath}`, err);
-        console.warn(`Failed to delete image: ${imagePath}`);
-      }
-    }
-
-    return NextResponse.json({ success: true, message: "Deleted successfully" }, { status: 200 });
-  } catch (error) {
-    console.error("DELETE Error:", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
-  }
-}
-
-
-// ✅ GET - Fetch a single Partner Review by ID
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  await connectToDatabase();
-
-  try {
-    const id = params.id;
-    if (!id) {
+    if (!updated) {
       return NextResponse.json(
-        { success: false, message: "ID is required." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const review = await PartnerReview.findById(id);
-    if (!review) {
-      return NextResponse.json(
-        { success: false, message: "Entry not found." },
+        { success: false, message: "PartnerReview not found to update." },
         { status: 404, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, data: review },
+      { success: true, data: updated },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error) {
-    console.error("GET /api/partnerreview/[id] error:", error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error updating PartnerReview.";
+    console.error("PUT PartnerReview Error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : "Internal Server Error",
-      },
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  await connectToDatabase();
+
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid PartnerReview ID." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const deleted = await PartnerReview.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "PartnerReview not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    if (deleted.imageUrl?.startsWith("/uploads/")) {
+      const imagePath = path.join(process.cwd(), "public", deleted.imageUrl);
+      try {
+        await unlink(imagePath);
+      } catch (err) {
+        console.warn("Failed to delete image:", err);
+      }
+    }
+
+    return NextResponse.json(
+      { success: true, message: "PartnerReview deleted successfully.", data: { id } },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error deleting PartnerReview.";
+    console.error("DELETE PartnerReview Error:", error);
+    return NextResponse.json(
+      { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }

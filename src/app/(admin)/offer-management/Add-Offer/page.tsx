@@ -1,49 +1,20 @@
-// 'use client';
 
-// import React from 'react';
-// import { useSearchParams } from 'next/navigation';
-// import OfferComponent from '@/components/offer-component/OfferComponent';
-
-// const AddFormPage: React.FC = () => {
-//   const searchParams = useSearchParams();
-
-//   // Accept both ?id= and ?offerId=
-//   const offerId =
-//     searchParams.get('id') ||
-//     searchParams.get('offerId') ||
-//     undefined;
-
-//   return (
-//     <div className="container mx-auto px-4 py-8">
-//       <h1 className="text-3xl font-bold mb-6 text-center">
-//         {offerId ? 'Edit Offer' : 'Add New Offer'}
-//       </h1>
-
-//       <div className="bg-white p-6 rounded shadow mb-10">
-//         <OfferComponent offerIdToEdit={offerId} />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AddFormPage;
 
 
 'use client';
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import dynamicImport from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import OfferComponent from '@/components/offer-component/OfferComponent';
+
+const OfferComponent = dynamicImport(() => import('@/components/offer-component/OfferComponent'), {
+  ssr: false,
+});
 
 const AddFormPage: React.FC = () => {
-  const [isClient, setIsClient] = useState(false);
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) return null; // Prevent SSR issues
 
   const offerId =
     searchParams.get('id') || searchParams.get('offerId') || undefined;

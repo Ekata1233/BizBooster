@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
-import ProviderHelpAndSupport, {IProviderHelpAndSupport} from '@/models/ProvidersHelpandSupport';
+import ProviderHelpAndSupport, { IProviderHelpAndSupport } from '@/models/ProvidersHelpandSupport';
 import mongoose from 'mongoose';
 
 const corsHeaders = {
@@ -9,15 +9,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
+// PUT handler
+export async function PUT(req: Request) {
+  await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await connectToDatabase();
-    const { id } = params;
-
-   
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: 'Invalid ID format.' },
@@ -28,7 +31,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const body = await req.json();
     const { email, call, whatsapp } = body;
 
-
     if (!email && !call && !whatsapp) {
       return NextResponse.json(
         { success: false, message: 'No fields provided for update.' },
@@ -36,7 +38,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
- 
     const updateData: Partial<IProviderHelpAndSupport> = {};
     if (email !== undefined) updateData.email = email;
     if (call !== undefined) updateData.call = call;
@@ -45,7 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updatedEntry = await ProviderHelpAndSupport.findByIdAndUpdate(
       id,
       updateData,
-      { new: true } 
+      { new: true }
     );
 
     if (!updatedEntry) {
@@ -68,13 +69,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
+// DELETE handler
+export async function DELETE(req: Request) {
+  await connectToDatabase();
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    await connectToDatabase();
-    const { id } = params;
-
-    
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: 'Invalid ID format.' },

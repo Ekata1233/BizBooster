@@ -1,198 +1,121 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db';
-import  Offer  from '@/models/Offer';
-import {  unlink } from 'fs/promises';
-import path from 'path';
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import Offer from "@/models/Offer";
+import { connectToDatabase } from "@/utils/db";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// // ✅ PUT update offer
-// export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-//   await connectToDatabase();
-
-//   try {
-//     const id = params.id;
-//     const offer = await Offer.findById(id);
-//     if (!offer) {
-//       return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
-//     }
-
-//     const formData = await req.formData();
-//     const bannerImageFile = formData.get('bannerImage') as File | null;
-//     const offerStartTime = formData.get('offerStartTime') as string | null;
-//     const offerEndTime = formData.get('offerEndTime') as string | null;
-//     const eligibilityCriteria = formData.get('eligibilityCriteria') as string | null;
-//     const howToParticipate = formData.get('howToParticipate') as string | null;
-//     const faq = formData.get('faq') as string | null;
-//     const termsAndConditions = formData.get('termsAndConditions') as string | null;
-
-//     const galleryFiles = formData.getAll('galleryImages') as File[];
-
-//     const uploadDir = path.join(process.cwd(), 'public/uploads');
-//     await mkdir(uploadDir, { recursive: true });
-
-//     // ✅ Update banner image if new provided
-//     if (bannerImageFile) {
-//       if (offer.bannerImage?.startsWith('/uploads/')) {
-//         await unlink(path.join(process.cwd(), 'public', offer.bannerImage)).catch(() => {});
-//       }
-//       const buffer = Buffer.from(await bannerImageFile.arrayBuffer());
-//       const filename = `${Date.now()}-${bannerImageFile.name}`;
-//       const filePath = path.join(uploadDir, filename);
-//       await writeFile(filePath, buffer);
-//       offer.bannerImage = `/uploads/${filename}`;
-//     }
-
-//     // ✅ Replace gallery images if provided
-//     if (galleryFiles.length > 0) {
-//       for (const img of offer.galleryImages) {
-//         if (img.startsWith('/uploads/')) {
-//           await unlink(path.join(process.cwd(), 'public', img)).catch(() => {});
-//         }
-//       }
-//       const galleryPaths: string[] = [];
-//       for (const file of galleryFiles) {
-//         const buffer = Buffer.from(await file.arrayBuffer());
-//         const filename = `${Date.now()}-${file.name}`;
-//         const filePath = path.join(uploadDir, filename);
-//         await writeFile(filePath, buffer);
-//         galleryPaths.push(`/uploads/${filename}`);
-//       }
-//       offer.galleryImages = galleryPaths;
-//     }
-
-//     if (offerStartTime) offer.offerStartTime = new Date(offerStartTime);
-//     if (offerEndTime) offer.offerEndTime = new Date(offerEndTime);
-//     if (eligibilityCriteria) offer.eligibilityCriteria = eligibilityCriteria;
-//     if (howToParticipate) offer.howToParticipate = howToParticipate;
-//     if (faq) offer.faq = faq;
-//     if (termsAndConditions) offer.termsAndConditions = termsAndConditions;
-
-//     await offer.save();
-
-//     return NextResponse.json({ success: true, data: offer }, { status: 200 });
-//   } catch (error) {
-//     console.error('PUT Error:', error);
-//     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
-//   }
-// }
-
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-function parseFAQFlexible(raw: unknown): FAQItem[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw as FAQItem[];
-  if (typeof raw === 'string') {
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
-  }
-  return [];
-}
-
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: Request) {
   await connectToDatabase();
 
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
   try {
-    const { id } = await params;
-    const existingOffer = await Offer.findById(id);
-    if (!existingOffer) {
-      return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Offer ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const formData = await req.formData();
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json(
+        { success: false, message: "Invalid JSON body." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-    const bannerImage = formData.get('bannerImage') as string;
-    const offerStartTime = formData.get('offerStartTime') as string;
-    const offerEndTime = formData.get('offerEndTime') as string;
-    const eligibilityCriteria = formData.get('eligibilityCriteria') as string;
-    const howToParticipate = formData.get('howToParticipate') as string;
-    const faqRaw = formData.get('faq');
-    const faq = parseFAQFlexible(faqRaw);
-    const termsAndConditions = formData.get('termsAndConditions') as string;
+    const {
+      bannerImage,
+      offerStartTime,
+      offerEndTime,
+      eligibilityCriteria,
+      howToParticipate,
+      faq,
+      termsAndConditions,
+    } = body;
 
-    // Update offer
-    existingOffer.bannerImage = bannerImage || existingOffer.bannerImage;
-    existingOffer.offerStartTime = offerStartTime || existingOffer.offerStartTime;
-    existingOffer.offerEndTime = offerEndTime || existingOffer.offerEndTime;
-    existingOffer.eligibilityCriteria = eligibilityCriteria || existingOffer.eligibilityCriteria;
-    existingOffer.howToParticipate = howToParticipate || existingOffer.howToParticipate;
-    existingOffer.faq = faq || existingOffer.faq;
-    existingOffer.termsAndConditions = termsAndConditions || existingOffer.termsAndConditions;
+    const updated = await Offer.findByIdAndUpdate(
+      id,
+      {
+        bannerImage,
+        offerStartTime,
+        offerEndTime,
+        eligibilityCriteria,
+        howToParticipate,
+        faq,
+        termsAndConditions,
+      },
+      { new: true, runValidators: true }
+    );
 
-    await existingOffer.save();
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, message: "Offer not found to update." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
-    return NextResponse.json({ success: true, data: existingOffer }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: updated },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    console.error('PUT Error:', error);
-    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
-  }
-}
-// ✅ DELETE offer
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  await connectToDatabase();
-
-  try {
-    const id = params.id;
-    const offer = await Offer.findByIdAndDelete(id);
-    if (!offer) {
-      return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
-    }
-
-    // Delete banner and gallery images
-    if (offer.bannerImage?.startsWith('/uploads/')) {
-      await unlink(path.join(process.cwd(), 'public', offer.bannerImage)).catch(() => {});
-    }
-    for (const img of offer.galleryImages) {
-      if (img.startsWith('/uploads/')) {
-        await unlink(path.join(process.cwd(), 'public', img)).catch(() => {});
-      }
-    }
-
-    return NextResponse.json({ success: true, message: 'Offer deleted successfully' }, { status: 200 });
-  } catch (error) {
-    console.error('DELETE Error:', error);
-    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error updating Offer.";
+    console.error("PUT Offer Error:", error);
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
-
-
-
-// GET /api/offer/[id]
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  try {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
-    const { id } = params;
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-    if (!id) {
-      return NextResponse.json({ success: false, message: 'ID is required' }, { status: 400 });
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Offer ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const offer = await Offer.findById(id);
-
-    if (!offer) {
-      return NextResponse.json({ success: false, message: 'Offer not found' }, { status: 404 });
+    const deleted = await Offer.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Offer not found." },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    return NextResponse.json({ success: true, data: offer }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching offer:', error);
-    return NextResponse.json({ success: false, message: 'Server Error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Offer deleted successfully.",
+        data: { id },
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error deleting Offer.";
+    console.error("DELETE Offer Error:", error);
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
