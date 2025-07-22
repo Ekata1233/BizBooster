@@ -87,14 +87,7 @@ const PartnerReviewPage = () => {
     // Navigate to edit page (modal route)
     router.push(`/preferences/partner-review/modals/${id}`);
   };
-    /** ✅ Open Edit Modal */
-    // const openEditModal = (review: PartnerReview) => {
-    //     setEditId(review._id);
-    //     setEditTitle(review.title);
-    //     setEditVideoUrl(review.videoUrl);
-    //     setEditImageFile(null);
-    //     setIsOpen(true);
-    // };
+   
 
     const closeModal = () => {
         setIsOpen(false);

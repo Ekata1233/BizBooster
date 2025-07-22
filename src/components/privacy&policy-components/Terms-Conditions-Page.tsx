@@ -28,7 +28,7 @@ interface AboutUsEditorFormProps {
   onCancel: () => void; // Added for cancelling the editor form
 }
 
-const TermsConditionsPage: React.FC<AboutUsEditorFormProps> = ({ initialData, onSave, onCancel }) => {
+const TermsConditionsPage: React.FC<AboutUsEditorFormProps> = ({ initialData, onSave,  }) => {
   const isContentEdited = useRef(false);
   const [content, setContent] = useState<string>(initialData?.content || '');
 
@@ -85,13 +85,13 @@ const TermsConditionsPage: React.FC<AboutUsEditorFormProps> = ({ initialData, on
           >
             Save Content
           </button>
-          <button
+          {/* <button
             type="button" // Important: type="button" to prevent form submission
             onClick={onCancel}
             className="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
           >
             Cancel
-          </button>
+          </button> */}
         </div>
       </form>
     </div>

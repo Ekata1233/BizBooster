@@ -1,4 +1,4 @@
-// src/components/about-us-component/AboutUsPage.tsx
+
 
 'use client';
 
@@ -16,9 +16,9 @@ const ClientSideCustomEditor = dynamic(
   }
 );
 
-// Update type to include optional _id
+
 type AboutUsFormData = {
-  _id?: string; // Optional for new entries, present for editing existing ones
+  _id?: string; 
   content: string;
 };
 
@@ -28,37 +28,31 @@ interface AboutUsEditorFormProps {
   onCancel: () => void; // Added for cancelling the editor form
 }
 
-const AboutUsEditorForm: React.FC<AboutUsEditorFormProps> = ({ initialData, onSave, onCancel }) => {
+const AboutUsEditorForm: React.FC<AboutUsEditorFormProps> = ({ initialData, onSave,  }) => {
   const isContentEdited = useRef(false);
   const [content, setContent] = useState<string>(initialData?.content || '');
 
-  // Log on initial render and when props change
-  // console.log('AboutUsEditorForm: Render - initialData prop:', initialData);
-  // console.log('AboutUsEditorForm: Render - content state (before useEffect):', content);
-
-  // Effect to sync initialData with content state ONLY if it hasn't been edited
+  
   useEffect(() => {
-    // Only update content if initialData is different from current content,
-    // AND it's a new edit session (isContentEdited.current is false),
-    // OR if the ID changes (meaning a different entry is now being edited).
+   
     if (initialData?.content !== undefined && (initialData.content !== content || !isContentEdited.current)) {
         setContent(initialData.content);
-        isContentEdited.current = false; // Reset edited flag when initialData changes for a new entry/edit
-        // console.log('AboutUsEditorForm: useEffect: Updated content state from initialData:', initialData.content);
+        isContentEdited.current = false; 
+      
     }
-  }, [initialData?.content, initialData?._id]); // Depend on specific initialData properties
+  }, [initialData?.content, initialData?._id]); 
 
-  // Custom onChange handler to update state and mark as edited
+  
   const handleEditorChange = (data: string) => {
-    // console.log('CKEditor provides data:', data);
+   
     setContent(data);
-    isContentEdited.current = true; // Mark content as having been edited by the user/editor
+    isContentEdited.current = true; 
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // console.log("AboutUsEditorForm: Sending content on submit:", { _id: initialData?._id, content });
-    onSave({ _id: initialData?._id, content }); // Pass _id back to parent for PUT/POST decision
+  
+    onSave({ _id: initialData?._id, content }); 
   };
 
   return (
@@ -71,8 +65,8 @@ const AboutUsEditorForm: React.FC<AboutUsEditorFormProps> = ({ initialData, onSa
           <Label htmlFor="aboutUsContent">About Us Content</Label>
           <div className="my-editor mt-2">
             <ClientSideCustomEditor
-              value={content} // Pass the current state to the editor
-              onChange={handleEditorChange} // Use the new handler
+              value={content} 
+              onChange={handleEditorChange} 
             />
           </div>
         </div>
@@ -84,13 +78,13 @@ const AboutUsEditorForm: React.FC<AboutUsEditorFormProps> = ({ initialData, onSa
           >
             Save Content
           </button>
-          <button
+          {/* <button
             type="button" // Important: type="button" to prevent form submission
             onClick={onCancel}
             className="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
           >
             Cancel
-          </button>
+          </button> */}
         </div>
       </form>
     </div>

@@ -72,6 +72,49 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   const url = new URL(req.url);
+//   const id = url.pathname.split('/').pop() as string;
+
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return NextResponse.json(
+//       { success: false, message: 'Invalid webinar ID.' },
+//       { status: 400, headers: corsHeaders }
+//     );
+//   }
+
+//   try {
+//     const webinar = await LiveWebinars.findById(id).populate({
+//       path: 'user',
+//       select: 'fullName email mobileNumber',
+//     });
+
+//     if (!webinar) {
+//       return NextResponse.json(
+//         { success: false, message: 'Webinar not found.' },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     return NextResponse.json(
+//       { success: true, data: webinar },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     console.error('GET /livewebinars/[id] error:', error);
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: (error as Error).message || 'Failed to fetch webinar data.',
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
@@ -86,10 +129,12 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const webinar = await LiveWebinars.findById(id).populate({
-      path: 'user',
-      select: 'fullName email mobileNumber',
-    });
+    const webinar = await LiveWebinars.findById(id)
+      .populate({
+        path: 'user.user',
+        model: 'User',
+        select: 'fullName email mobileNumber',
+      });
 
     if (!webinar) {
       return NextResponse.json(
@@ -113,6 +158,7 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
 
 export function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });

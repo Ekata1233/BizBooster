@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
-import LiveWebinars from "@/models/LiveWebinars";
+import LiveWebinars, { ILiveWebinar } from "@/models/LiveWebinars";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
@@ -168,6 +168,54 @@ export async function DELETE(req: Request) {
   }
 }
 
+// export async function GET(req: Request) {
+//   await connectToDatabase();
+
+//   const url = new URL(req.url);
+//   const id = url.pathname.split("/").pop();
+
+//   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+//     return NextResponse.json(
+//       { success: false, message: "Invalid webinar ID." },
+//       { status: 400, headers: corsHeaders }
+//     );
+//   }
+
+//   try {
+//     // const webinar = await LiveWebinars.findById(id).populate({
+//     //   path: "user",
+//     //   select: "fullName email mobileNumber",
+//     // });
+//     const webinar = await LiveWebinars.findById(id).populate({
+//       path: 'user.user',
+//       model: 'User',
+//       select: 'fullName email mobileNumber'
+//     });
+
+
+
+//     if (!webinar) {
+//       return NextResponse.json(
+//         { success: false, message: "Webinar not found." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     return NextResponse.json(
+//       { success: true, data: webinar },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (err: unknown) {
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: err instanceof Error ? err.message : "Internal Server Error",
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
 export async function GET(req: Request) {
   await connectToDatabase();
 
@@ -182,17 +230,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    // const webinar = await LiveWebinars.findById(id).populate({
-    //   path: "user",
-    //   select: "fullName email mobileNumber",
-    // });
-    const webinar = await LiveWebinars.findById(id).populate({
-      path: 'user.user',
-      model: 'User',
-      select: 'fullName email mobileNumber'
-    });
-
-
+    const webinar = await LiveWebinars.findById(id)
+      .populate({
+        path: "user.user",
+        model: "User",
+        select: "fullName email mobileNumber",
+      })
+      .lean<ILiveWebinar | null>(); // Ensure type matches interface
 
     if (!webinar) {
       return NextResponse.json(
@@ -201,11 +245,21 @@ export async function GET(req: Request) {
       );
     }
 
+    // Normalize user array to ensure proper structure
+    const normalizedUsers = webinar.user.map((entry) => ({
+      status: entry.status,
+      user:
+        entry.user && typeof entry.user === "object" && "_id" in entry.user
+          ? entry.user
+          : null,
+    }));
+
     return NextResponse.json(
-      { success: true, data: webinar },
+      { success: true, data: { ...webinar, user: normalizedUsers } },
       { status: 200, headers: corsHeaders }
     );
   } catch (err: unknown) {
+    console.error("GET /livewebinars/:id error:", err);
     return NextResponse.json(
       {
         success: false,

@@ -31,11 +31,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
     const [mainImageFile, setMainImageFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     
-    // Simpler state for videos: an array of File objects and single text fields
-    // const [videoFiles, setVideoFiles] = useState<File[]>([]); // To hold multiple video File objects
-    // const [videoName, setVideoName] = useState(''); // Single name for all videos
-    // const [videoDescription, setVideoDescription] = useState(''); // Single description for all videos
-    // const [videoData, setVideoData] = useState<Array<{ file: File; name: string; description: string }>>([]);
+    
     const [videoData, setVideoData] = useState<VideoMeta[]>([]);
 
     const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]); // For existing video URLs on edit
@@ -96,10 +92,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                 setName(data.name || '');
                 setDescription(data.description || '');
                 setImageUrl(data.imageUrl || null);
-                
-                // Assuming videoName and videoDescription are from the first video or are top-level
-                // setVideoName(data.video?.[0]?.videoName || ''); 
-                // setVideoDescription(data.video?.[0]?.videoDescription || ''); 
+              
 
                 if (data.video && Array.isArray(data.video) && data.video.length > 0) {
                     setCurrentVideoUrls(data.video.map((v: unknown) => (v as { videoUrl: string }).videoUrl));
@@ -202,11 +195,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
         });
 
     }
-    //  catch (err: unknown) {
-    //     console.error('Submission error:', (err as unknown).response?.data || err);
-    //     setError((err as unknown).response?.data?.message || 'Error processing certificate.');
-    //     alert((err as unknown).response?.data?.message || 'Error processing certificate.');
-    // } 
+    
    catch (err: unknown) {
   let errorMessage = 'Error processing certificate.';
 
@@ -330,7 +319,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                                 ))}
 
 
-                        <div className='mt-6 '>
+                        <div className='mt-35 '>
                             <Button size="sm" variant="primary" type="submit" disabled={loading}>
                                 {certificationIdToEdit ? "Update Certificate" : "Add Certificate"}
                             </Button>
