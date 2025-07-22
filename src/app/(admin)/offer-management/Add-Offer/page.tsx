@@ -1,9 +1,14 @@
 'use client';
 export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
 import React from 'react';
+import dynamicImport from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import OfferComponent from '@/components/offer-component/OfferComponent';
+
+const OfferComponent = dynamicImport(() => import('@/components/offer-component/OfferComponent'), {
+  ssr: false,
+});
 
 const AddFormPage: React.FC = () => {
   const searchParams = useSearchParams();
