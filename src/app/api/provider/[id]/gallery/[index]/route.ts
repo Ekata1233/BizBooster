@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/utils/db";
 import Provider from "@/models/Provider";
@@ -10,28 +10,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-type RouteContext = {
-  params: {
-    id: string;
-    index: string;
-  };
-};
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// GET a specific image
-export async function GET(req: NextRequest, context: RouteContext) {
+// GET specific image by index
+export async function GET(req: Request) {
   await connectToDatabase();
 
-  const { id, index } = context.params;
+  const url = new URL(req.url);
+  const segments = url.pathname.split("/");
+  const id = segments.at(-2);
+  const index = segments.at(-1);
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index);
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -48,17 +44,20 @@ export async function GET(req: NextRequest, context: RouteContext) {
   return NextResponse.json({ image: provider.galleryImages[idx] }, { headers: corsHeaders });
 }
 
-// PATCH (replace image at index)
-export async function PATCH(req: NextRequest, context: RouteContext) {
+// PATCH - Replace image at specific index
+export async function PATCH(req: Request) {
   await connectToDatabase();
 
-  const { id, index } = context.params;
+  const url = new URL(req.url);
+  const segments = url.pathname.split("/");
+  const id = segments.at(-2);
+  const index = segments.at(-1);
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index);
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
@@ -98,17 +97,20 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   }
 }
 
-// DELETE a specific image
-export async function DELETE(req: NextRequest, context: RouteContext) {
+// DELETE image at specific index
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
-  const { id, index } = context.params;
+  const url = new URL(req.url);
+  const segments = url.pathname.split("/");
+  const id = segments.at(-2);
+  const index = segments.at(-1);
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const idx = parseInt(index);
+  const idx = parseInt(index ?? "");
   if (isNaN(idx)) {
     return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
   }
