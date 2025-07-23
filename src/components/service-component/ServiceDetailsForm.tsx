@@ -8,8 +8,6 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 import { Editor } from '@ckeditor/ckeditor5-core';
-import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
-import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
 import dynamic from 'next/dynamic';
 
 const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
@@ -17,11 +15,11 @@ const ClientSideCustomEditor = dynamic(() => import('../../components/custom-edi
   loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
 });
 
-type EditorType = {
-  create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
-  EditorWatchdog: typeof EditorWatchdog;
-  ContextWatchdog: typeof ContextWatchdog;
-};
+// type EditorType = {
+//   create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
+//   EditorWatchdog: typeof EditorWatchdog;
+//   ContextWatchdog: typeof ContextWatchdog;
+// };
 
 interface RowData {
   title: string;

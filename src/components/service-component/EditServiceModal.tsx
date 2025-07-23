@@ -181,8 +181,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             case 1:
                 return (
                     !!formData.basic.name.trim() &&
-                    formData.basic.category !== '' &&  // Changed from !!formData.basic.category
-                    formData.basic.subcategory !== '' &&
+                    formData.basic.category !== '' &&
                     formData.basic.price >= 0
                 );
             case 2:
@@ -235,6 +234,10 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             formDataToSend.append('category', formData.basic.category);
             formDataToSend.append('subcategory', formData.basic.subcategory);
             formDataToSend.append('price', formData.basic.price.toString());
+            if (formData.basic.discount !== undefined) {
+                formDataToSend.append('discount', formData.basic.discount.toString());
+            }
+
             if (formData.basic.thumbnail) {
                 formDataToSend.append('thumbnailImage', formData.basic.thumbnail);
             }
