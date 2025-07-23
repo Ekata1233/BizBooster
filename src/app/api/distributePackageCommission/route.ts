@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
 
         const { userId } = body;
 
+        console.log("user id : ", userId)
+
         const pkg = await Package.findOne(); // or use Package.findById(packageId) if you know the package
         if (!pkg || typeof pkg.price !== "number") {
             return NextResponse.json(
@@ -64,18 +66,40 @@ export async function POST(req: NextRequest) {
 
         const pkgCommission = pkgCommissionList[0]; // pick the first one, or filter if needed
 
-        const level1Amount = pkgCommission.level1Commission || 0;
-        const level2Amount = pkgCommission.level2Commission || 0;
-
-
         // const level1Amount = pkgCommission.level1Commission || 0;
-        console.log("level1Amount : ", level1Amount)
         // const level2Amount = pkgCommission.level2Commission || 0;
-        console.log("level2Amount : ", level2Amount)
-        const totalCommission = level1Amount + level2Amount;
-        console.log("totalCommission : ", totalCommission)
-        const adminAmount = packagePrice - totalCommission;
-        console.log("adminAmount : ", adminAmount)
+
+
+        // // const level1Amount = pkgCommission.level1Commission || 0;
+        // console.log("level1Amount : ", level1Amount)
+        // // const level2Amount = pkgCommission.level2Commission || 0;
+        // console.log("level2Amount : ", level2Amount)
+        // const totalCommission = level1Amount + level2Amount;
+        // console.log("totalCommission : ", totalCommission)
+        // const adminAmount = packagePrice - totalCommission;
+        // console.log("adminAmount : ", adminAmount)
+
+        let level1Amount = 0;
+        let level2Amount = 0;
+        let adminAmount = 0;
+
+        const baseLevel1 = pkgCommission.level1Commission || 0;
+        const baseLevel2 = pkgCommission.level2Commission || 0;
+
+        if (userB) {
+            level1Amount = baseLevel1;
+        } else {
+            adminAmount += baseLevel1; // If no userB, give their share to admin
+        }
+
+        if (userA) {
+            level2Amount = baseLevel2;
+        } else {
+            adminAmount += baseLevel2; // If no userA, give their share to admin
+        }
+
+        adminAmount += packagePrice - (baseLevel1 + baseLevel2); // Add what's left after total commission
+
 
         const creditWallet = async (
             userId: Types.ObjectId,
@@ -131,7 +155,7 @@ export async function POST(req: NextRequest) {
 
         // B Level
         if (userB && level1Amount > 0) {
-            await creditWallet(userB._id, level1Amount, "Package Referral Commission - Level 1", userId, "B",userId,userC._id);
+            await creditWallet(userB._id, level1Amount, "Package Referral Commission - Level 1", userId, "B", userId, userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userB._id,
@@ -141,7 +165,7 @@ export async function POST(req: NextRequest) {
 
         // A Level
         if (userA && level2Amount > 0) {
-            await creditWallet(userA._id, level2Amount, "Package Referral Commission - Level 2", userId, "A",userId,userC._id);
+            await creditWallet(userA._id, level2Amount, "Package Referral Commission - Level 2", userId, "A", userId, userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userA._id,
@@ -151,7 +175,7 @@ export async function POST(req: NextRequest) {
 
         // Admin
         if (adminAmount > 0) {
-            await creditWallet(ADMIN_ID, adminAmount, "Package Referral Commission - Admin", userId,userC._id);
+            await creditWallet(ADMIN_ID, adminAmount, "Package Referral Commission - Admin", userId, userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: ADMIN_ID,
@@ -165,7 +189,7 @@ export async function POST(req: NextRequest) {
         const providerEarningsTotal = 0;
         const totalRevenue = adminCommissionTotal;
         const franchiseEarningsTotal =
-            level1Amount + level2Amount  ;
+            level1Amount + level2Amount;
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
@@ -184,8 +208,19 @@ export async function POST(req: NextRequest) {
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
+
+        console.log("Updated userC package details:");
+        userC.packageType = "full";
+        userC.packageActive = true;
         userC.isCommissionDistribute = true;
         await userC.save();
+
+        console.log("Updated userC package details:", {
+            packageType: userC.packageType,
+            packageActive: userC.packageActive,
+            isCommissionDistribute: userC.isCommissionDistribute,
+        });
+
 
 
         return NextResponse.json(
