@@ -156,11 +156,11 @@ const Module = () => {
                         <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                             <TrashBinIcon />
                         </button>
-                        <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+                        {/* <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
                             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
                                 <EyeIcon />
                             </button>
-                        </Link>
+                        </Link> */}
                     </div>
                 )
             },
