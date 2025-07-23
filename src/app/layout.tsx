@@ -30,13 +30,11 @@ import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext'
 import { PackageProvider } from '@/context/PackageContext';
 import { ReviewProvider } from '@/context/ReviewContext';
 import { AdProvider } from '@/context/AdContext';
+import { GalleryProvider } from '@/context/GalleryContext';
 import { OfferProvider } from '@/context/OfferContext';
 
-const outfit = Outfit({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-});
+
+
 
 export const metadata = {
   title: 'Fetch true',
@@ -83,7 +81,9 @@ export default function RootLayout({
                                                           <PackageProvider>
                                                             <ReviewProvider>
                                                               <AdProvider>
+                                                                <GalleryProvider>
                                                                 {children}
+                                                                </GalleryProvider>
                                                               </AdProvider>
                                                             </ReviewProvider>
                                                           </PackageProvider>

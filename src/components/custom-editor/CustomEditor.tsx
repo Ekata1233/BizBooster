@@ -1,4 +1,3 @@
-// components/custom-editor.js
 'use client'; // Required only in App Router.
 
 import React, { useEffect, useState } from 'react';
@@ -17,15 +16,10 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
     });
 
     useEffect(() => {
-        // Ensures we're in the browser and component is mounted
         setMounted(true);
     }, []);
 
     if (!mounted || cloud.status === 'loading') {
-        return <div>Loading...</div>;
-    }
-
-    if (cloud.status === 'loading') {
         return <div>Loading...</div>;
     }
 
@@ -48,7 +42,9 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
         MediaEmbed,
         List,
         Indent,
-        IndentBlock
+        IndentBlock,
+        FontColor,              // ✅ Added
+        FontBackgroundColor     // ✅ Added
     } = cloud.CKEditor;
 
     const { FormatPainter } = cloud.CKEditorPremiumFeatures;
@@ -57,15 +53,12 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
         <CKEditor
             editor={ClassicEditor}
             data={value}
-            onChange={(
-                event: Event,
-                editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
+            onChange={(event: Event, editor: import('@ckeditor/ckeditor5-core').Editor) => {
                 const data = editor.getData();
                 onChange(data);
             }}
             config={{
-                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NTMyMjg3OTksImp0aSI6IjFiNjJjZDhmLTViZmMtNDkzYy05Y2JjLTRiZmJmMjE5ODk2NCIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjQxOTEzMmVjIn0.fGJJ1zNgJvhgMZrIL5SmxixII3mbCAIl-ITKy-GZTLWKQyEWvHlSwifbj87GV6zeZRcPwdxSRvhNIOVkXrp-ng',
+                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NTQ1MjQ3OTksImp0aSI6ImIzYWI4YjkwLTVlMWEtNGM1Ny05NDI4LTg4YTkwMWY5NWQwZCIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjNmZTQzZDk4In0.nf3hZ2xHqYKxGc0AO7SAWOb72YHSiNkirPCBklTQotyXIcXh7jk-TlxZrOuZIBTB5ttnoIWu6Q6DEE3EcI1HXA',
                 plugins: [
                     Essentials,
                     Paragraph,
@@ -86,11 +79,14 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                     Indent,
                     IndentBlock,
                     FormatPainter,
+                    FontColor,              // ✅ Added
+                    FontBackgroundColor     // ✅ Added
                 ],
                 toolbar: [
                     'undo', 'redo', '|',
                     'heading', '|',
                     'bold', 'italic', 'link', '|',
+                    'fontColor', 'fontBackgroundColor', '|',   // ✅ Added
                     'bulletedList', 'numberedList', '|',
                     'outdent', 'indent', '|',
                     'blockQuote', 'insertTable', 'mediaEmbed', '|',
@@ -116,7 +112,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                     previewsInData: true
                 },
                 simpleUpload: {
-                    uploadUrl: '/api/upload', // 👈 your Next.js route to handle ImageKit upload
+                    uploadUrl: '/api/upload'
                 },
                 content: {
                     styles: [
@@ -125,9 +121,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                             css: 'body { color: #000000; }'
                         }
                     ]
-                    
                 }
-                
             }}
         />
     );

@@ -61,8 +61,8 @@ export async function PUT(req: Request) {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
 
-    console.log("id of service : ",id);
-    
+    console.log("id of service : ", id);
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing ID parameter." },
@@ -79,6 +79,8 @@ export async function PUT(req: Request) {
     const category = formData.get("category") as string;
     const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
+    const discountStr = formData.get("discount") as string | null;
+
 
     interface NestedFormData {
       [key: string]: string | NestedFormData | NestedFormData[];
@@ -118,7 +120,7 @@ export async function PUT(req: Request) {
     const serviceDetails = fullData.serviceDetails as NestedFormData || {};
     const franchiseDetails = fullData.franchiseDetails as NestedFormData || {};
 
-    if (!serviceName || !category || !subcategory || !priceStr) {
+    if (!serviceName || !category || !priceStr) {
       return NextResponse.json(
         { success: false, message: "Missing required fields." },
         { status: 400, headers: corsHeaders }
@@ -132,6 +134,17 @@ export async function PUT(req: Request) {
         { status: 400, headers: corsHeaders }
       );
     }
+
+     let discount: number = 0;
+    if (discountStr !== null && discountStr.trim() !== "") {
+      const parsedDiscount = parseFloat(discountStr);
+      if (!isNaN(parsedDiscount)) {
+        discount = parsedDiscount;
+      }
+    }
+
+    // Calculate discountedPrice
+    const discountedPrice = price - (price * discount / 100);
 
     // Handle thumbnail image upload (optional)
     let thumbnailImageUrl = "";
@@ -171,8 +184,10 @@ export async function PUT(req: Request) {
     interface UpdateData {
       serviceName: string;
       category: string;
-      subcategory: string;
+      subcategory?: string;
       price: number;
+       discount?: number;
+      discountedPrice?: number;
       serviceDetails: NestedFormData;
       franchiseDetails: NestedFormData;
       isDeleted: boolean;
@@ -183,12 +198,16 @@ export async function PUT(req: Request) {
     const updateData: UpdateData = {
       serviceName,
       category,
-      subcategory,
       price,
+      discount,
+      discountedPrice,
       serviceDetails,
       franchiseDetails,
       isDeleted: false,
     };
+    if (subcategory) {
+      updateData.subcategory = subcategory;
+    }
     if (thumbnailImageUrl) updateData.thumbnailImage = thumbnailImageUrl;
     if (bannerImagesUrls.length > 0) updateData.bannerImages = bannerImagesUrls;
 
