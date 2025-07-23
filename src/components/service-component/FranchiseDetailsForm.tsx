@@ -43,6 +43,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
   // const [commission, setCommission] = useState<string>('');
   const [commissionValue, setCommissionValue] = useState("");
 
+  console.log("franchise details edits : ", data);
 
   useEffect(() => {
     if (data) {
@@ -209,7 +210,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
                   </span>
                   <Input
                     type="text"
-                    value={commissionValue}
+                    value={data.commission || commissionValue} 
                     onChange={handleCommissionChange}
                     placeholder="Commission"
                     className="pl-8"

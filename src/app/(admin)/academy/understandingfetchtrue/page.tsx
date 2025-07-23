@@ -443,7 +443,7 @@ const UnderstandingPage = () => {
             accept="video/*"
             multiple
             onChange={(e) => e.target.files && setVideos(Array.from(e.target.files))}
-            className="w-full p-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="w-full p-0 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {videos.length > 0 && (
             <p className="text-sm text-gray-500 mt-2">Selected: {videos.map((f) => f.name).join(', ')}</p>

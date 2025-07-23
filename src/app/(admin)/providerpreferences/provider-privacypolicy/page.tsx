@@ -33,6 +33,7 @@ type PrivacyEntry = {
     updatedAt?: string;
 };
 
+const BLANK_ENTRY: PrivacyEntry = { _id: '', content: '', module: '' };
 
 const AdminProviderPrivacyPolicyPage: React.FC = () => {
     const [entries, setEntries] = useState<PrivacyEntry[]>([]);
@@ -128,6 +129,7 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
         }
     };
 
+     const currentFormEntry = editingEntry ?? BLANK_ENTRY;
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-bold mb-6 text-center">Manage Provider Privacy Policy</h1>
@@ -136,22 +138,11 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
             {isSaving && <p className="bg-blue-100 text-blue-700 px-4 py-2 mb-4 rounded">Processing...</p>}
             {error && <p className="bg-red-100 text-red-700 px-4 py-2 mb-4 rounded">{error}</p>}
 
-            {!editingEntry && (
-                <button
-                    onClick={() => {
-                        setEditingEntry({ _id: '', content: '', module: '' });
-                        setSelectedModule('');
-                    }}
-                    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-6"
-                >
-                    Add New
-                </button>
-            )}
-
-            {editingEntry && (
+            
+          
                 <div className="bg-white p-6 rounded shadow mb-10">
                     <h2 className="text-2xl font-semibold mb-4">
-                        {editingEntry._id ? 'Edit Entry' : 'Add New Entry'}
+                       {currentFormEntry._id ? 'Edit Privacy Policy Section' : 'Add New Privacy Policy Section'}
                     </h2>
 
                     <div className="mb-4">
@@ -169,12 +160,12 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
                     </div>
 
                     <PrivacyPolicyPage
-                        initialData={{ ...editingEntry, module: selectedModule }}
+                        initialData={{ ...currentFormEntry, module: selectedModule }}
                         onSave={handleSave}
                         onCancel={() => setEditingEntry(null)}
                     />
                 </div>
-            )}
+            
 
 
 

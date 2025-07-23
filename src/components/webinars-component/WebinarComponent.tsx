@@ -234,13 +234,13 @@ finally {
 
                 <form onSubmit={handleSubmit} encType="multipart/form-data">
                     <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
-                        {/* Certificate Name */}
+                        {/* Webinar Name */}
                         <div>
-                            <Label htmlFor="certificateName">Certificate Name</Label>
+                            <Label htmlFor="webinarName">Webinar Name</Label>
                             <Input
-                                id="certificateName"
+                                id="webinarName"
                                 type="text"
-                                placeholder="Enter Certificate Name"
+                                placeholder="Enter Webinar Name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
@@ -261,13 +261,13 @@ finally {
                             )}
                         </div>
 
-                        {/* Certificate Description */}
+                        {/* Webinar Description */}
                         <div>
-                            <Label htmlFor="certificateDescription">Certificate Description</Label>
+                            <Label htmlFor="webinarDescription">Webinar Description</Label>
                             <Input
-                                id="certificateDescription"
+                                id="webinarDescription"
                                 type="text"
-                                placeholder="Enter Certificate Description"
+                                placeholder="Enter Webinar Description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />

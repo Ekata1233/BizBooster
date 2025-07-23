@@ -252,31 +252,7 @@ useEffect(() => {
                 );
             },
         },
-        // {
-        //     header: 'Status',
-        //     accessor: 'status',
-        //     render: (row: TableData) => {
-        //         const status = row.status;
-        //         let colorClass = '';
-
-        //         switch (status) {
-        //             case 'Deleted':
-        //                 colorClass = 'text-red-500 bg-red-100 border border-red-300';
-        //                 break;
-        //             case 'Active':
-        //                 colorClass = 'text-green-600 bg-green-100 border border-green-300';
-        //                 break;
-        //             default:
-        //                 colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-        //         }
-
-        //         return (
-        //             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-        //                 {status}
-        //             </span>
-        //         );
-        //     },
-        // },
+     
         {
             header: 'Action',
             accessor: 'action',
@@ -415,7 +391,7 @@ useEffect(() => {
                     <div>
                         <Input
                             type="text"
-                            placeholder="Search by certificate name"
+                            placeholder="Search by webinar name"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />

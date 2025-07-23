@@ -8,7 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
 export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
@@ -16,23 +15,43 @@ export async function POST(req: NextRequest) {
     const { email, call, whatsapp } = body;
 
     if (!email || !call || !whatsapp) {
-      return NextResponse.json({ success: false, message: 'Missing email or call or whatsapp' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Missing email, call, or whatsapp' },
+        { status: 400, headers: corsHeaders }
+      );
     }
-  
-    const supportEntry = await ProviderHelpAndSupport.create({
-      email,
-      call,
-      whatsapp,
-      
-    });
 
-    return NextResponse.json({ success: true, message: 'Help and Support data submitted', data: supportEntry });
+    // **Check if a Help and Support entry already exists**
+    const existingEntry = await ProviderHelpAndSupport.findOne();
+
+    if (existingEntry) {
+      // Update the existing entry
+      existingEntry.email = email;
+      existingEntry.call = call;
+      existingEntry.whatsapp = whatsapp;
+      await existingEntry.save();
+
+      return NextResponse.json(
+        { success: true, message: 'Help and Support data updated successfully', data: existingEntry },
+        { status: 200, headers: corsHeaders }
+      );
+    }
+
+    // Create a new entry if none exists
+    const supportEntry = await ProviderHelpAndSupport.create({ email, call, whatsapp });
+
+    return NextResponse.json(
+      { success: true, message: 'Help and Support data created successfully', data: supportEntry },
+      { status: 201, headers: corsHeaders }
+    );
   } catch (err) {
     console.error('Error submitting Help and Support data:', err);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
-
 
 export async function GET() {
   try {
