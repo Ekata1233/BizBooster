@@ -13,6 +13,7 @@ export interface Provider {
 
   storeInfo?: Record<string, any>;
   kyc?: Record<string, any>;
+  galleryImages?: string[];
   step1Completed?: boolean;
   storeInfoCompleted?: boolean;
   kycCompleted?: boolean;
@@ -34,6 +35,7 @@ type ProviderContextType = {
   getAllProviders: () => Promise<Provider[]>;
   getProvidersByServiceId: (serviceId: string) => Promise<Provider[]>;
   fetchWalletByProvider: (providerId: string) => Promise<void>;
+   getGalleryImages: (providerId: string) => Promise<string[]>;
 };
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
@@ -219,6 +221,18 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     }
   };
+    const getGalleryImages = async (providerId: string): Promise<string[]> => {
+    try {
+      const response = await axios.get(`/api/provider/${providerId}/gallery`);
+      return response.data.galleryImages || [];
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || err?.message || "Failed to fetch gallery images";
+      setError(message);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const fetchProviders = async () => {
       const allProviders = await getAllProviders();
@@ -243,6 +257,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
         getAllProviders,
         getProvidersByServiceId,
         fetchWalletByProvider,
+        getGalleryImages,
       }}
     >
       {children}

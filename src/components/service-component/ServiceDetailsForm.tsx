@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
-import Input from '../form/input/InputField';
+import Input from '../form/input/InputField';              
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';

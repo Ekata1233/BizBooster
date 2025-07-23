@@ -30,6 +30,7 @@ import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext'
 import { PackageProvider } from '@/context/PackageContext';
 import { ReviewProvider } from '@/context/ReviewContext';
 import { AdProvider } from '@/context/AdContext';
+import { GalleryProvider } from '@/context/GalleryContext';
 
 
 const outfit = Outfit({
@@ -82,7 +83,9 @@ export default function RootLayout({
                                                           <PackageProvider>
                                                             <ReviewProvider>
                                                               <AdProvider>
+                                                                <GalleryProvider>
                                                                 {children}
+                                                                </GalleryProvider>
                                                               </AdProvider>
                                                             </ReviewProvider>
                                                           </PackageProvider>
