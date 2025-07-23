@@ -97,10 +97,10 @@ export interface OfferDoc extends Document {
   offerStartTime: Date;
   offerEndTime: Date;
   galleryImages: string[];
-  eligibilityCriteria?: string;
-  howToParticipate?: string;
-  faq?: { question: string; answer: string }[];  // reflect subdoc shape
-  termsAndConditions?: string;
+  eligibilityCriteria: string;
+  howToParticipate: string;
+  faq: { question: string; answer: string }[];
+  termsAndConditions: string;
   service: mongoose.Types.ObjectId;
   isActive: boolean;
   createdAt: Date;
@@ -109,8 +109,8 @@ export interface OfferDoc extends Document {
 
 const FAQSubSchema = new Schema(
   {
-    question: { type: String, default: '' },  // <-- not required
-    answer:   { type: String, default: '' },  // <-- not required
+    question: { type: String, required: true },
+    answer:   { type: String, required: true },
   },
   { _id: false } // no per-FAQ _ids unless you need them
 );
@@ -122,10 +122,10 @@ const OfferSchema = new Schema<OfferDoc>(
     offerEndTime:   { type: Date, required: true, index: true },
     galleryImages:  { type: [String], default: [] },
 
-    eligibilityCriteria:   { type: String, default: '' },
-    howToParticipate:      { type: String, default: '' },
-    faq:                   { type: [FAQSubSchema], default: [] },  // <-- use sub-schema
-    termsAndConditions:    { type: String, default: '' },
+    eligibilityCriteria:   { type: String, required: true },
+    howToParticipate:      { type: String, required: true, },
+    faq:                   { type: [FAQSubSchema], required: true, },  // <-- use sub-schema
+    termsAndConditions:    { type: String, required: true },
 
     service: {
       type: mongoose.Schema.Types.ObjectId,
