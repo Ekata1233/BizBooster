@@ -119,3 +119,40 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
+
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Offer ID." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const offer = await Offer.findById(id);
+    if (!offer) {
+      return NextResponse.json(
+        { success: false, message: "Offer not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: offer },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error fetching Offer.";
+    console.error("GET Offer Error:", error);
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

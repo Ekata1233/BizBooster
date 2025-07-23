@@ -30,7 +30,7 @@ import { PackagesCommissionProvider } from '@/context/PackagesCommissionContext'
 import { PackageProvider } from '@/context/PackageContext';
 import { ReviewProvider } from '@/context/ReviewContext';
 import { AdProvider } from '@/context/AdContext';
-
+import { OfferProvider } from '@/context/OfferContext';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -55,6 +55,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <SidebarProvider>
+            <OfferProvider>
             <AuthProvider>
               <UserProvider>
                 <ModuleProvider>
@@ -109,6 +110,7 @@ export default function RootLayout({
                 </ModuleProvider>
               </UserProvider>
             </AuthProvider>
+            </OfferProvider>
           </SidebarProvider>
         </ThemeProvider>
 

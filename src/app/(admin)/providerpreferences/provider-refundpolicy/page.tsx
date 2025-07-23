@@ -152,8 +152,8 @@ const AdminProviderRefundPolicyPage: React.FC = () => {
                 <table className="min-w-full table-auto text-sm bg-white shadow-md rounded-lg overflow-hidden">
                     <thead className="bg-gray-100 text-left">
                         <tr>
-                            <th className="p-3 font-semibold text-gray-700">Name</th>
-                            <th className="p-3 font-semibold text-gray-700">Image</th>
+                            <th className="p-3 font-semibold text-gray-700">Module Name</th>
+                            <th className="p-3 font-semibold text-gray-700">Module Image</th>
                             <th className="p-3 font-semibold text-gray-700">Content</th>
                             <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
                         </tr>

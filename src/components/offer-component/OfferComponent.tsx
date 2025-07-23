@@ -1,420 +1,3 @@
-// 'use client';
-
-// import React, { useEffect, useState, useCallback } from 'react';
-// import axios from 'axios';
-// import dynamic from 'next/dynamic';
-// import FileInput from '@/components/form/input/FileInput';
-// import Input from '@/components/form/input/InputField';
-// import Label from '@/components/form/Label';
-// import Button from '@/components/ui/button/Button';
-// import ComponentCard from '@/components/common/ComponentCard';
-
-
-// const ClientSideCustomEditor = dynamic(
-//     () => import('@/components/custom-editor/CustomEditor'),
-//     {
-//         ssr: false,
-//         loading: () => <p>Loading rich text editor...</p>,
-//     }
-// );
-
-// interface AddOfferProps {
-//     offerIdToEdit?: string;
-// }
-
-
-// interface OfferResponse {
-//     _id: string;
-//     bannerImage: string;
-//     offerStartTime: string; // ISO string from backend
-//     offerEndTime: string;
-//     galleryImages: string[];
-//     eligibilityCriteria: string;
-//     howToParticipate: string;
-//     faq: string;
-//     termsAndConditions: string;
-// }
-
-// interface FAQItem {
-//     question: string;
-//     answer: string;
-// }
-
-// function toDatetimeLocalValue(dateStr?: string | null): string {
-//     if (!dateStr) return '';
-//     const d = new Date(dateStr);
-//     if (isNaN(d.getTime())) return '';
-//     // Format YYYY-MM-DDTHH:MM (drop seconds)
-//     const pad = (n: number) => String(n).padStart(2, '0');
-//     const yyyy = d.getFullYear();
-//     const mm = pad(d.getMonth() + 1);
-//     const dd = pad(d.getDate());
-//     const HH = pad(d.getHours());
-//     const MM = pad(d.getMinutes());
-//     return `${yyyy}-${mm}-${dd}T${HH}:${MM}`;
-// }
-
-
-
-// function normalizeDateForSubmit(v: string): string {
-//     if (!v) return '';
-//     // If already has 'T' assume complete
-//     if (v.includes('T')) return v;
-//     return `${v}T00:00`;
-// }
-
-
-// function tryFormatDMYtoISO(v: string): string {
-//     const dmy = v.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-//     if (!dmy) return v;
-//     const [, dd, mm, yyyy] = dmy;
-//     return `${yyyy}-${mm}-${dd}T00:00`;
-// }
-
-// const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
-//     const API_BASE = '/api/offer';
-
-//     // Basic fields
-//     const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
-//     const [existingBannerUrl, setExistingBannerUrl] = useState<string | null>(null);
-
-//     const [offerStartTime, setOfferStartTime] = useState<string>(''); // datetime-local value
-//     const [offerEndTime, setOfferEndTime] = useState<string>('');
-
-//     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
-//     const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
-
-//     // Rich text HTML
-//     const [eligibilityCriteria, setEligibilityCriteria] = useState<string>('');
-//     const [howToParticipate, setHowToParticipate] = useState<string>('');
-
-//     const [faqList, setFaqList] = useState<FAQItem[]>([{ question: '', answer: '' }]);
-
-//     const [termsAndConditions, setTermsAndConditions] = useState<string>('');
-
-//     // UI state
-//     const [loading, setLoading] = useState(false);
-//     const [error, setError] = useState<string | null>(null);
-
-//     // ----------------------------------------------------------
-//     // Fetch existing offer (edit mode)
-//     // ----------------------------------------------------------
-//     const fetchOffer = useCallback(async () => {
-//         if (!offerIdToEdit) {
-//             // Reset form when switching from edit -> add mode
-//             resetForm();
-//             return;
-//         }
-
-//         setLoading(true);
-//         setError(null);
-
-//         try {
-//             const res = await axios.get<{
-//                 success: boolean;
-//                 data: OfferResponse;
-//             }>(`${API_BASE}/${offerIdToEdit}`);
-
-//             const data = res.data.data;
-//             setExistingBannerUrl(data.bannerImage || null);
-//             setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
-//             setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
-//             setExistingGalleryUrls(data.galleryImages || []);
-//             setEligibilityCriteria(data.eligibilityCriteria || '');
-//             setHowToParticipate(data.howToParticipate || '');
-//             setFaqList(Array.isArray(data.faq) ? data.faq : [{ question: '', answer: '' }]);
-
-//             setTermsAndConditions(data.termsAndConditions || '');
-//         } catch (err: unknown) {
-//             console.error('Error fetching offer:', err);
-//             if (axios.isAxiosError(err)) {
-//                 setError(err.response?.data?.message || 'Failed to fetch offer.');
-//             } else {
-//                 setError('An unexpected error occurred.');
-//             }
-//         } finally {
-//             setLoading(false);
-//         }
-//     }, [offerIdToEdit]);
-
-//     useEffect(() => {
-//         fetchOffer();
-//     }, [fetchOffer]);
-
-//     const resetForm = () => {
-//         setBannerImageFile(null);
-//         setExistingBannerUrl(null);
-//         setOfferStartTime('');
-//         setOfferEndTime('');
-//         setGalleryFiles([]);
-//         setExistingGalleryUrls([]);
-//         setEligibilityCriteria('');
-//         setHowToParticipate('');
-//         setFaqList([{ question: '', answer: '' }]);
-//         setTermsAndConditions('');
-//     };
-
-//     const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//         const file = e.target.files?.[0] || null;
-//         setBannerImageFile(file);
-//         if (file) setExistingBannerUrl(null); // hide existing preview when replacing
-//     };
-
-//     const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//         const files = Array.from(e.target.files || []);
-//         setGalleryFiles(files);
-//     };
-
-//     const handleSubmit = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         setLoading(true);
-//         setError(null);
-
-//         // Validate dates
-//         let startVal = offerStartTime.trim();
-//         let endVal = offerEndTime.trim();
-//         startVal = tryFormatDMYtoISO(normalizeDateForSubmit(startVal));
-//         endVal = tryFormatDMYtoISO(normalizeDateForSubmit(endVal));
-
-//         if (!startVal || !endVal) {
-//             alert('Start and End times are required.');
-//             setLoading(false);
-//             return;
-//         }
-
-//         const fd = new FormData();
-//         // Banner
-//         if (bannerImageFile) {
-//             fd.append('bannerImage', bannerImageFile);
-//         }
-//         // Dates
-//         fd.append('offerStartTime', startVal);
-//         fd.append('offerEndTime', endVal);
-
-//         // Gallery images
-//         galleryFiles.forEach((f) => fd.append('galleryImages', f));
-
-//         // Rich text sections
-//         fd.append('eligibilityCriteria', eligibilityCriteria);
-//         fd.append('howToParticipate', howToParticipate);
-//        fd.append('faq', JSON.stringify(faqList));
-
-//         fd.append('termsAndConditions', termsAndConditions);
-
-//         try {
-//             if (offerIdToEdit) {
-//                 await axios.put(`/api/offer/${offerIdToEdit}`, fd, {
-//                     headers: { 'Content-Type': 'multipart/form-data' },
-//                 });
-//                 alert('Offer updated successfully!');
-//             } else {
-//                 await axios.post(API_BASE, fd, {
-//                     headers: { 'Content-Type': 'multipart/form-data' },
-//                 });
-//                 alert('Offer created successfully!');
-//                 resetForm();
-//                 // Clear file inputs manually
-//                 document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((el) => {
-//                     el.value = '';
-//                 });
-//             }
-//         } catch (err: unknown) {
-//             console.error('Offer submit error:', err);
-//             let msg = 'Error saving offer.';
-//             if (axios.isAxiosError(err)) {
-//                 const data = err.response?.data as { message?: string };
-//                 if (data?.message) msg = data.message;
-//             }
-//             setError(msg);
-//             alert(msg);
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-  
-//     return (
-//         <div>
-//             <ComponentCard title={offerIdToEdit ? 'Edit Offer' : 'Add New Offer'}>
-//                 {loading && <p className="text-blue-500 text-sm mb-4">Loading...</p>}
-//                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-//                 <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-//                     {/* Banner + Dates */}
-//                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-//                         {/* Banner Image */}
-//                         <div>
-//                             <Label htmlFor="bannerImage">Banner Image</Label>
-//                             <FileInput
-//                                 id="bannerImage"
-//                                 accept="image/*"
-//                                 onChange={handleBannerImageChange}
-//                             />
-//                             {bannerImageFile && (
-//                                 <p className="text-xs text-gray-500 mt-1">New: {bannerImageFile.name}</p>
-//                             )}
-//                             {existingBannerUrl && !bannerImageFile && (
-//                                 <p className="text-xs text-gray-500 mt-1">
-//                                     Current:{" "}
-//                                     <a
-//                                         href={existingBannerUrl}
-//                                         target="_blank"
-//                                         rel="noopener noreferrer"
-//                                         className="underline text-blue-600"
-//                                     >
-//                                         View Banner
-//                                     </a>
-//                                 </p>
-//                             )}
-//                         </div>
-
-//                         {/* Offer Start */}
-//                         <div>
-//                             <Label htmlFor="offerStart">Offer Start</Label>
-//                             <Input
-//                                 id="offerStart"
-//                                 type="datetime-local"
-//                                 value={offerStartTime}
-//                                 onChange={(e) => setOfferStartTime(e.target.value)}
-//                             />
-//                         </div>
-
-//                         {/* Offer End */}
-//                         <div>
-//                             <Label htmlFor="offerEnd">Offer End</Label>
-//                             <Input
-//                                 id="offerEnd"
-//                                 type="datetime-local"
-//                                 value={offerEndTime}
-//                                 onChange={(e) => setOfferEndTime(e.target.value)}
-//                             />
-//                         </div>
-//                     </div>
-
-//                     {/* Gallery Images */}
-//                     <div>
-//                         <Label htmlFor="galleryImages">Gallery Images (you can select multiple)</Label>
-//                         <FileInput
-//                             id="galleryImages"
-//                             multiple
-//                             accept="image/*"
-//                             onChange={handleGalleryChange}
-//                         />
-//                         {galleryFiles.length > 0 && (
-//                             <p className="text-xs text-gray-500 mt-1">
-//                                 Selected: {galleryFiles.map((f) => f.name).join(', ')}
-//                             </p>
-//                         )}
-//                         {existingGalleryUrls.length > 0 && galleryFiles.length === 0 && (
-//                             <div className="mt-2 space-y-1">
-//                                 <Label className="text-xs text-gray-600">Current Gallery:</Label>
-//                                 <ul className="text-xs space-y-1">
-//                                     {existingGalleryUrls.map((u, i) => (
-//                                         <li key={i}>
-//                                             <a
-//                                                 href={u}
-//                                                 target="_blank"
-//                                                 rel="noopener noreferrer"
-//                                                 className="underline text-blue-600"
-//                                             >
-//                                                 Image {i + 1}
-//                                             </a>
-//                                         </li>
-//                                     ))}
-//                                 </ul>
-//                             </div>
-//                         )}
-//                     </div>
-
-//                     {/* Rich Text Sections */}
-//                     <div className="space-y-10">
-//                         <div>
-//                             <Label>Eligibility Criteria</Label>
-//                             <ClientSideCustomEditor
-//                                 value={eligibilityCriteria}
-//                                 onChange={setEligibilityCriteria}
-//                             />
-//                         </div>
-
-//                         <div>
-//                             <Label>How to Participate</Label>
-//                             <ClientSideCustomEditor
-//                                 value={howToParticipate}
-//                                 onChange={setHowToParticipate}
-//                             />
-//                         </div>
-
-//                         <div>
-//                             <Label>Frequently Asked Questions</Label>
-//                             {faqList.map((item, index) => (
-//                                 <div key={index} className="border rounded-md p-4 mb-4">
-//                                     <Input
-//                                         type="text"
-//                                         placeholder="Enter question"
-//                                         value={item.question}
-//                                         onChange={(e) => {
-//                                             const newFaq = [...faqList];
-//                                             newFaq[index].question = e.target.value;
-//                                             setFaqList(newFaq);
-//                                         }}
-//                                         className="mb-3"
-//                                     />
-//                                     <ClientSideCustomEditor
-//                                         value={item.answer}
-//                                         onChange={(value) => {
-//                                             const newFaq = [...faqList];
-//                                             newFaq[index].answer = value;
-//                                             setFaqList(newFaq);
-//                                         }}
-//                                     />
-//                                     <button
-//                                         type="button"
-//                                         className="mt-2 text-red-600"
-//                                         onClick={() => {
-//                                             const newFaq = faqList.filter((_, i) => i !== index);
-//                                             setFaqList(newFaq);
-//                                         }}
-//                                     >
-//                                         Remove
-//                                     </button>
-//                                 </div>
-//                             ))}
-
-//                             <button
-//                                 type="button"
-//                                 className="text-blue-600 mt-2"
-//                                 onClick={() => setFaqList([...faqList, { question: '', answer: '' }])}
-//                             >
-//                                 + Add FAQ
-//                             </button>
-//                         </div>
-
-
-//                         <div>
-//                             <Label>Terms & Conditions</Label>
-//                             <ClientSideCustomEditor
-//                                 value={termsAndConditions}
-//                                 onChange={setTermsAndConditions}
-//                             />
-//                         </div>
-//                     </div>
-
-//                     <div className="pt-6">
-//                         <Button size="sm" variant="primary" type="submit" disabled={loading}>
-//                             {offerIdToEdit ? 'Update Offer' : 'Add Offer'}
-//                         </Button>
-//                     </div>
-//                 </form>
-//             </ComponentCard>
-//         </div>
-//     );
-// };
-
-// export default AddOffer;
-
-
-
-
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -425,13 +8,17 @@ import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import ComponentCard from '@/components/common/ComponentCard';
+import Select from '@/components/form/Select';
+import { ChevronDownIcon } from '@/icons';
+
+import { useModule } from '@/context/ModuleContext';
+import { useCategory } from '@/context/CategoryContext';
+import { useSubcategory } from '@/context/SubcategoryContext';
+import { useService } from '@/context/ServiceContext';
 
 const ClientSideCustomEditor = dynamic(
   () => import('@/components/custom-editor/CustomEditor'),
-  {
-    ssr: false,
-    loading: () => <p>Loading rich text editor...</p>,
-  }
+  { ssr: false, loading: () => <p>Loading rich text editor...</p> }
 );
 
 interface AddOfferProps {
@@ -441,7 +28,6 @@ interface AddOfferProps {
 interface FAQItem {
   question: string;
   answer: string;
-  // (optional) keep any backend id if you later want to update individual FAQ entries
   _id?: string;
 }
 
@@ -453,8 +39,9 @@ interface OfferResponse {
   galleryImages: string[];
   eligibilityCriteria: string;
   howToParticipate: string;
-  faq: string | FAQItem[];     // ✅ allow both
+  faq: string | FAQItem[];
   termsAndConditions: string;
+  service?: string | { _id: string }; // may be populated or just id
 }
 
 function toDatetimeLocalValue(dateStr?: string | null): string {
@@ -480,11 +67,10 @@ function tryFormatDMYtoISO(v: string): string {
   return `${yyyy}-${mm}-${dd}T00:00`;
 }
 
-// ---- FAQ Parsing / Normalization ----
+// Parse FAQ from API
 function parseFaq(raw: string | FAQItem[] | undefined | null): FAQItem[] {
   if (!raw) return [];
   if (Array.isArray(raw)) {
-    // Ensure each item has question/answer strings
     return raw
       .map((r: FAQItem) => ({
         question: r.question ?? '',
@@ -494,59 +80,111 @@ function parseFaq(raw: string | FAQItem[] | undefined | null): FAQItem[] {
       .filter((r) => r.question || r.answer);
   }
   if (typeof raw === 'string') {
-    // Try JSON parse first
     try {
       const parsed = JSON.parse(raw);
       return parseFaq(parsed);
     } catch {
-      // If it's not JSON, treat as a single FAQ answer blob
-      return [
-        {
-          question: 'FAQ',
-          answer: raw,
-        },
-      ];
+      return [{ question: 'FAQ', answer: raw }];
     }
   }
   return [];
 }
 
+/* ------------------------------------------------------------------ */
+/*  ID extraction helper: supports string or populated {_id} object   */
+/* ------------------------------------------------------------------ */
+function extractId(v: unknown): string {
+  if (!v) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object' && v !== null) {
+    // @ts-expect-error dynamic access
+    return v._id ?? v.id ?? '';
+  }
+  return '';
+}
+
 const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   const API_BASE = '/api/offer';
 
-  // Basic fields
+  /* ---------------- Context Data ---------------- */
+  const { modules } = useModule();
+  const { categories } = useCategory();
+  const { subcategories } = useSubcategory();
+  const { services } = useService();
+
+  /* ---------------- Dropdown State ---------------- */
+  const [selectedModule, setSelectedModule] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [selectedService, setSelectedService] = useState('');
+
+  /* ---------------- Offer Form State ---------------- */
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   const [existingBannerUrl, setExistingBannerUrl] = useState<string | null>(null);
 
-  const [offerStartTime, setOfferStartTime] = useState<string>('');
-  const [offerEndTime, setOfferEndTime] = useState<string>('');
+  const [offerStartTime, setOfferStartTime] = useState('');
+  const [offerEndTime, setOfferEndTime] = useState('');
 
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
 
-  // Rich text
-  const [eligibilityCriteria, setEligibilityCriteria] = useState<string>('');
-  const [howToParticipate, setHowToParticipate] = useState<string>('');
+  const [eligibilityCriteria, setEligibilityCriteria] = useState('');
+  const [howToParticipate, setHowToParticipate] = useState('');
   const [faqList, setFaqList] = useState<FAQItem[]>([{ question: '', answer: '' }]);
-  const [termsAndConditions, setTermsAndConditions] = useState<string>('');
+  const [termsAndConditions, setTermsAndConditions] = useState('');
 
-  // UI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const resetForm = () => {
-    setBannerImageFile(null);
-    setExistingBannerUrl(null);
-    setOfferStartTime('');
-    setOfferEndTime('');
-    setGalleryFiles([]);
-    setExistingGalleryUrls([]);
-    setEligibilityCriteria('');
-    setHowToParticipate('');
-    setFaqList([{ question: '', answer: '' }]);
-    setTermsAndConditions('');
-  };
+  /* ---------------- Filtering Chains ---------------- */
+  const filteredCategories = categories.filter(
+    (cat) => extractId(cat.module) === selectedModule
+  );
 
+  const filteredSubcategories = subcategories.filter(
+    (sub) => extractId(sub.category) === selectedCategory
+  );
+
+  // If subcategory picked: require match on subcategory
+  // Else: show all services under the selectedCategory
+  const filteredServices = services.filter((serv) => {
+    const servCatId = extractId(serv.category);
+    const servSubId = extractId(serv.subcategory);
+    if (!selectedCategory) return false;
+    if (selectedSubcategory) return servSubId === selectedSubcategory;
+    return servCatId === selectedCategory;
+  });
+
+  /* ---------------- Options ---------------- */
+  const moduleOptions = modules.map((mod) => ({
+    value: extractId(mod._id ?? mod),
+    label: mod.name,
+  }));
+
+  const categoryOptions = filteredCategories.map((cat) => ({
+    value: extractId(cat._id ?? cat),
+    label: cat.name,
+  }));
+
+  const subcategoryOptions = filteredSubcategories.map((sub) => ({
+    value: extractId(sub._id ?? sub),
+    label: sub.name,
+  }));
+
+  const serviceOptions = filteredServices.map((serv) => ({
+    value: extractId(serv._id ?? serv),
+    label: serv.serviceName ?? 'Unnamed Service',
+  }));
+
+  /* ---------------- Debug Logs (remove in prod) ---------------- */
+  useEffect(() => {
+    console.log('Selected -> module:', selectedModule, 'category:', selectedCategory, 'subcategory:', selectedSubcategory);
+    console.log('Services (all):', services);
+    console.log('Filtered Services:', filteredServices);
+    console.log('Service Options:', serviceOptions);
+  }, [services, filteredServices, serviceOptions, selectedModule, selectedCategory, selectedSubcategory]);
+
+  /* ---------------- Fetch Offer for Edit ---------------- */
   const fetchOffer = useCallback(async () => {
     if (!offerIdToEdit) {
       resetForm();
@@ -560,33 +198,63 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
       );
       const data = res.data.data;
 
+      // Basic fields
       setExistingBannerUrl(data.bannerImage || null);
       setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
       setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
       setExistingGalleryUrls(data.galleryImages || []);
       setEligibilityCriteria(data.eligibilityCriteria || '');
       setHowToParticipate(data.howToParticipate || '');
-
-      const parsedFaq = parseFaq(data.faq);
-      setFaqList(parsedFaq.length ? parsedFaq : [{ question: '', answer: '' }]);
-
+      setFaqList(parseFaq(data.faq));
       setTermsAndConditions(data.termsAndConditions || '');
+
+      // Service is the only relational field in Offer.
+      const servId = extractId(data.service);
+      if (servId) {
+        setSelectedService(servId);
+        // Try to "auto-walk" back up to subcategory / category / module if we can find this service in context
+        const servDoc = services.find((s) => extractId(s._id) === servId);
+        if (servDoc) {
+          const catId = extractId(servDoc.category);
+          const subId = extractId(servDoc.subcategory);
+          setSelectedCategory(catId);
+          setSelectedSubcategory(subId);
+          // find which module owns that category
+          const catDoc = categories.find((c) => extractId(c._id) === catId);
+          if (catDoc) setSelectedModule(extractId(catDoc.module));
+        }
+      }
     } catch (err: unknown) {
       console.error('Error fetching offer:', err);
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Failed to fetch offer.');
-      } else {
-        setError('An unexpected error occurred.');
-      }
+      setError('Failed to fetch offer.');
     } finally {
       setLoading(false);
     }
-  }, [offerIdToEdit]);
+  }, [offerIdToEdit, services, categories]);
 
   useEffect(() => {
     fetchOffer();
   }, [fetchOffer]);
 
+  /* ---------------- Reset ---------------- */
+  const resetForm = () => {
+    setBannerImageFile(null);
+    setExistingBannerUrl(null);
+    setOfferStartTime('');
+    setOfferEndTime('');
+    setGalleryFiles([]);
+    setExistingGalleryUrls([]);
+    setEligibilityCriteria('');
+    setHowToParticipate('');
+    setFaqList([{ question: '', answer: '' }]);
+    setTermsAndConditions('');
+    setSelectedModule('');
+    setSelectedCategory('');
+    setSelectedSubcategory('');
+    setSelectedService('');
+  };
+
+  /* ---------------- Handlers ---------------- */
   const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setBannerImageFile(file);
@@ -619,8 +287,17 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     galleryFiles.forEach((f) => fd.append('galleryImages', f));
     fd.append('eligibilityCriteria', eligibilityCriteria);
     fd.append('howToParticipate', howToParticipate);
-    fd.append('faq', JSON.stringify(faqList)); // always send array
+    fd.append('faq', JSON.stringify(faqList));
     fd.append('termsAndConditions', termsAndConditions);
+
+    // Required field in Offer model
+    if (selectedService) {
+      fd.append('service', selectedService);
+    } else {
+      alert('Please select a Service.');
+      setLoading(false);
+      return;
+    }
 
     try {
       if (offerIdToEdit) {
@@ -651,6 +328,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     }
   };
 
+  /* ---------------- Render ---------------- */
   return (
     <div>
       <ComponentCard title={offerIdToEdit ? 'Edit Offer' : 'Add New Offer'}>
@@ -658,53 +336,138 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-          {/* Banner + Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <Label htmlFor="bannerImage">Banner Image</Label>
-                <FileInput id="bannerImage" accept="image/*" onChange={handleBannerImageChange} />
-                {bannerImageFile && (
-                  <p className="text-xs text-gray-500 mt-1">New: {bannerImageFile.name}</p>
-                )}
-                {existingBannerUrl && !bannerImageFile && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current:{' '}
-                    <a
-                      href={existingBannerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline text-blue-600"
-                    >
-                      View Banner
-                    </a>
-                  </p>
-                )}
-              </div>
 
-              <div>
-                <Label htmlFor="offerStart">Offer Start</Label>
-                <Input
-                  id="offerStart"
-                  type="datetime-local"
-                  value={offerStartTime}
-                  onChange={(e) => setOfferStartTime(e.target.value)}
+          {/* --- MODULE, CATEGORY, SUBCATEGORY, SERVICE --- */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Module */}
+            <div>
+              <Label>Select Module</Label>
+              <div className="relative">
+                <Select
+                  options={moduleOptions}
+                  value={selectedModule}
+                  placeholder="Select Module"
+                  onChange={(value: string) => {
+                    setSelectedModule(value);
+                    setSelectedCategory('');
+                    setSelectedSubcategory('');
+                    setSelectedService('');
+                  }}
+                  className="dark:bg-dark-900"
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="offerEnd">Offer End</Label>
-                <Input
-                  id="offerEnd"
-                  type="datetime-local"
-                  value={offerEndTime}
-                  onChange={(e) => setOfferEndTime(e.target.value)}
-                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                  <ChevronDownIcon />
+                </span>
               </div>
             </div>
 
+            {/* Category */}
+            <div>
+              <Label>Select Category</Label>
+              <Select
+                options={categoryOptions}
+                value={selectedCategory}
+                placeholder="Select Category"
+                onChange={(value: string) => {
+                  setSelectedCategory(value);
+                  setSelectedSubcategory('');
+                  setSelectedService('');
+                }}
+              />
+            </div>
+
+            {/* Subcategory */}
+            {/* <div>
+              <Label>Select Subcategory</Label>
+              <Select
+                options={subcategoryOptions}
+                value={selectedSubcategory}
+                placeholder="Select Subcategory"
+                onChange={(value: string) => {
+                  setSelectedSubcategory(value);
+                  setSelectedService('');
+                }}
+              />
+            </div> */}
+
+            {/* Subcategory */}
+            <div>
+              <Label>Select Subcategory</Label>
+              <Select
+                options={subcategoryOptions}
+                value={selectedSubcategory}
+                placeholder="Select Subcategory"
+                onChange={(value: string) => {
+                  setSelectedSubcategory(value);
+                  setSelectedService('');
+                }}
+                // disabled prop removed because Select does not support it
+              />
+              {subcategoryOptions.length === 0 && (
+                <p className="text-xs text-gray-400 mt-1">No subcategories available.</p>
+              )}
+            </div>
+
+
+            {/* Service */}
+            <div>
+              <Label>Select Service</Label>
+              <Select
+                options={serviceOptions}
+                value={selectedService}
+                placeholder="Select Service"
+                onChange={(value: string) => setSelectedService(value)}
+              />
+            </div>
+          </div>
+
+          {/* Banner + Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <Label htmlFor="bannerImage">Banner Image</Label>
+              <FileInput id="bannerImage" accept="image/*" onChange={handleBannerImageChange} />
+              {bannerImageFile && (
+                <p className="text-xs text-gray-500 mt-1">New: {bannerImageFile.name}</p>
+              )}
+              {existingBannerUrl && !bannerImageFile && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Current:&nbsp;
+                  <a
+                    href={existingBannerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-600"
+                  >
+                    View Banner
+                  </a>
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="offerStart">Offer Start</Label>
+              <Input
+                id="offerStart"
+                type="datetime-local"
+                value={offerStartTime}
+                onChange={(e) => setOfferStartTime(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="offerEnd">Offer End</Label>
+              <Input
+                id="offerEnd"
+                type="datetime-local"
+                value={offerEndTime}
+                onChange={(e) => setOfferEndTime(e.target.value)}
+              />
+            </div>
+          </div>
+
           {/* Gallery */}
           <div>
-            <Label htmlFor="galleryImages">Gallery Images (you can select multiple)</Label>
+            <Label htmlFor="galleryImages">Gallery Images (multiple)</Label>
             <FileInput
               id="galleryImages"
               multiple
@@ -737,7 +500,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
             )}
           </div>
 
-          {/* Rich Text Areas */}
+          {/* Rich Text Sections */}
           <div className="space-y-10">
             <div>
               <Label>Eligibility Criteria</Label>
@@ -755,7 +518,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
               />
             </div>
 
-            {/* FAQ List */}
+            {/* FAQ */}
             <div>
               <Label>Frequently Asked Questions</Label>
               {faqList.map((item, index) => (
@@ -803,7 +566,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
             </div>
 
             <div>
-              <Label>Terms & Conditions</Label>
+              <Label>Terms &amp; Conditions</Label>
               <ClientSideCustomEditor
                 value={termsAndConditions}
                 onChange={setTermsAndConditions}

@@ -38,25 +38,7 @@ const ProviderAboutUsPage: React.FC<EditorFormProps> = ({
   // Use a ref to track if content has been set from initialData to avoid infinite loops
   const hasInitialContentBeenSet = useRef(false);
 
-  // useEffect(() => {
-  //   // This useEffect will now handle setting the initial content
-  //   // and also resetting it if initialData changes (e.g., when switching edit entries)
-  //   if (initialData?.content !== undefined && !hasInitialContentBeenSet.current) {
-  //     setContent(initialData.content);
-  //     hasInitialContentBeenSet.current = true;
-  //     isContentEdited.current = false; // Reset edited flag
-  //   }
-  //   // If initialData changes to a different entry, reset content and flag
-  //   // Check if initialData._id is different from the current content's implied ID
-  //   // or if initialData._id exists and content is empty (for new entries)
-  //   if (initialData?._id && initialData._id !== content) { // Simplified check for new entry
-  //       setContent(initialData.content);
-  //       isContentEdited.current = false;
-  //   } else if (!initialData?._id && content !== '') { // For new entry creation, clear content if no initialData
-  //       setContent('');
-  //       isContentEdited.current = false;
-  //   }
-  // }, [initialData?.content, initialData?._id]); 
+ 
 
   useEffect(() => {
   if (initialData) {
@@ -90,18 +72,18 @@ const ProviderAboutUsPage: React.FC<EditorFormProps> = ({
   const editorKey = initialData?._id || 'new-provider-about-us-entry'; // Unique key for new entries
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md max-w-4xl mx-auto my-8">
+   <div className="p-6 bg-white rounded-lg shadow-md w-full my-8">
+
       <h2 className="text-3xl font-bold text-gray-800 dark:text-white/90 text-center mb-6">
         {initialData?._id ? 'Edit About Us' : 'Add New About Us'}
       </h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
           <Label htmlFor="privacyPolicyContent">Provider About Us Content</Label>
-          <div className="my-editor mt-2 ">
-            {/* Conditionally render ClientSideCustomEditor */}
-            {/* Pass a key to force remount when initialData changes */}
+          <div className="my-editor mt-2 w-full ">
+          
             <ClientSideCustomEditor
-              key={editorKey} // <--- THE CRUCIAL CHANGE IS HERE
+              key={editorKey} 
               value={content}
               onChange={handleEditorChange}
             />
