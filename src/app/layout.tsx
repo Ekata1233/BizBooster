@@ -1,6 +1,6 @@
 
 import './globals.css';
-import { Outfit } from 'next/font/google';
+
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -31,13 +31,10 @@ import { PackageProvider } from '@/context/PackageContext';
 import { ReviewProvider } from '@/context/ReviewContext';
 import { AdProvider } from '@/context/AdContext';
 import { GalleryProvider } from '@/context/GalleryContext';
+import { OfferProvider } from '@/context/OfferContext';
 
 
-const outfit = Outfit({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-});
+
 
 export const metadata = {
   title: 'Fetch true',
@@ -56,6 +53,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <SidebarProvider>
+            <OfferProvider>
             <AuthProvider>
               <UserProvider>
                 <ModuleProvider>
@@ -112,6 +110,7 @@ export default function RootLayout({
                 </ModuleProvider>
               </UserProvider>
             </AuthProvider>
+            </OfferProvider>
           </SidebarProvider>
         </ThemeProvider>
 

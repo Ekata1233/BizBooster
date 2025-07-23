@@ -171,110 +171,13 @@ const AdminProviderPrivacyPolicyPage: React.FC = () => {
 
             <h2 className="text-2xl font-bold mb-4">Existing Entries</h2>
             <div className="overflow-x-auto">
-                {/* <table className="min-w-full table-auto border border-gray-300 text-sm">
-                    <thead className="bg-gray-100 text-left">
-                        <tr>
-                            <th className="p-3 border">Name</th>
-                            <th className="p-3 border">Image</th>
-                            <th className="p-3 border">Content</th>
-                            <th className="p-3 border">Documents</th> 
-                            <th className="p-3 border text-center">Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {entries.map((entry) => {
-                            const moduleData = typeof entry.module === 'object' && entry.module !== null ? entry.module : null;
-                            return (
-                                <tr key={entry._id} className="border-t">
-                                 
-                                    <td className="p-3 border font-medium">
-                                        {moduleData && 'name' in moduleData ? moduleData.name : 'N/A'}
-                                    </td>
-
-                                    
-                                    <td className="p-3 border">
-                                        {moduleData?.image ? (
-                                            <img
-                                                src={moduleData.image}
-                                                alt="Module"
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        ) : (
-                                            <span className="text-gray-500 italic">No Image</span>
-                                        )}
-                                    </td>
-
-
-
-
-
-                                   
-                                    <td className="p-3 border max-w-xs">
-                                        <div
-                                            className="prose text-gray-700 max-h-48 overflow-y-auto"
-                                            dangerouslySetInnerHTML={{ __html: entry.content }}
-                                        />
-                                    </td>
-
-                                    <td className="p-3 border text-blue-600">
-                                        {entry.documentUrls && entry.documentUrls.length > 0 ? (
-                                            <ul className="list-disc list-inside space-y-1">
-                                                {entry.documentUrls.map((url, index) => (
-                                                    <li key={index}>
-                                                        <a
-                                                            href={url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="underline hover:text-blue-800"
-                                                        >
-                                                            Document {index + 1}
-                                                        </a>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <span className="text-gray-500 italic">No Documents</span>
-                                        )}
-                                    </td>
-
-                                    
-                                    <td className="p-3 border text-center">
-                                        <div className="flex justify-center space-x-2">
-                                           
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingEntry(entry);
-                                                        setSelectedModule(moduleData?._id || '');
-                                                    }}
-                                                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                                                    aria-label="Edit"
-                                                >
-                                                    <PencilIcon size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(entry._id)}
-                                                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                                                    aria-label="Delete"
-                                                >
-                                                    <TrashBinIcon />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table> */}
-
+              
 
                 <table className="min-w-full table-auto text-sm bg-white shadow-md rounded-lg overflow-hidden">
                     <thead className="bg-gray-100 text-left">
                         <tr>
-                            <th className="p-3 font-semibold text-gray-700">Name</th>
-                            <th className="p-3 font-semibold text-gray-700">Image</th>
+                            <th className="p-3 font-semibold text-gray-700">Module Name</th>
+                            <th className="p-3 font-semibold text-gray-700">Module Image</th>
                             <th className="p-3 font-semibold text-gray-700">Content</th>
                             <th className="p-3 font-semibold text-gray-700">Documents</th>
                             <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
