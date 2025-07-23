@@ -84,11 +84,11 @@ const UserWallet = ({ userId }: UserWalletProps) => {
   const summaryWallet = isWalletAvailable
     ? wallet
     : {
-        balance: 0,
-        totalCredits: 0,
-        totalDebits: 0,
-        transactions: [],
-      };
+      balance: 0,
+      totalCredits: 0,
+      totalDebits: 0,
+      transactions: [],
+    };
 
   const transactions = summaryWallet.transactions || [];
 
@@ -105,12 +105,19 @@ const UserWallet = ({ userId }: UserWalletProps) => {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  const enrichedTransactions = filteredTransactions.map((txn, index) => {
-    const balance = filteredTransactions
-      .slice(0, index + 1)
-      .reduce((acc, t) => acc + (t.type === 'credit' ? t.amount : -t.amount), 0);
-    return { ...txn, runningBalance: balance };
+  const sortedByDateAsc = [...filteredTransactions].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+
+  let runningBalance = 0;
+  const enrichedAscending = sortedByDateAsc.map((txn) => {
+    runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
+    return { ...txn, runningBalance };
   });
+
+  // Now reverse it back to show newest first
+  const enrichedTransactions = enrichedAscending;
+
 
   const summaryCards = [
     {
@@ -173,11 +180,10 @@ const UserWallet = ({ userId }: UserWalletProps) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
-                className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
-                  activeTab === tab
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
-                }`}
+                className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${activeTab === tab
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-100 hover:bg-blue-50'
+                  }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>

@@ -4,15 +4,15 @@ import axios from "axios";
 
 export interface CommissionType {
   _id: string;
-  adminCommission: number;
-  platformFee: number;
+  assurityfee: number; 
+    platformFee: number;
 }
 
 interface CommissionContextType {
   commissions: CommissionType[];
   fetchCommissions: () => void;
-  createCommission: (adminCommission: number, platformFee: number) => void;
-  updateCommission: (id: string, adminCommission: number, platformFee: number) => void;
+  createCommission: (assurityfee: number, platformFee: number) => void;
+  updateCommission: (id: string, assurityfee: number, platformFee: number) => void;
   deleteCommission: (id: string) => void;
 }
 
@@ -30,19 +30,20 @@ export const CommissionProvider = ({ children }: { children: React.ReactNode }) 
     fetchCommissions();
   }, []);
 
-  const createCommission = async (adminCommission: number, platformFee: number) => {
-    await axios.post("/api/commission", { adminCommission, platformFee });
-    fetchCommissions();
-  };
+  const createCommission = async (assurityfee: number, platformFee: number) => {
+  await axios.post("/api/commission", { assurityfee, platformFee });
+  fetchCommissions();
+};
 
-  const updateCommission = async (
-    id: string,
-    adminCommission: number,
-    platformFee: number
-  ) => {
-    await axios.put(`/api/commission/${id}`, { adminCommission, platformFee });
-    fetchCommissions();
-  };
+const updateCommission = async (
+  id: string,
+  assurityfee: number,
+  platformFee: number
+) => {
+  await axios.put(`/api/commission/${id}`, { assurityfee, platformFee });
+  fetchCommissions();
+};
+
 
   const deleteCommission = async (id: string) => {
     await axios.delete(`/api/commission/${id}`);

@@ -16,6 +16,7 @@ export async function OPTIONS() {
 }
 
 // PATCH - Append new gallery images
+// PATCH - Append new gallery images with 25 image limit
 export async function PATCH(req: Request) {
   await connectToDatabase();
 
@@ -36,6 +37,27 @@ export async function PATCH(req: Request) {
     if (!files || files.length === 0) {
       return NextResponse.json(
         { success: false, message: "No files uploaded." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const provider = await Provider.findById(id).select("galleryImages");
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    const existingCount = provider.galleryImages?.length || 0;
+    const totalAfterUpload = existingCount + files.length;
+
+    if (totalAfterUpload > 25) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Upload limit exceeded. You can only add ${25 - existingCount} more image(s).`,
+        },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -61,13 +83,6 @@ export async function PATCH(req: Request) {
       { new: true }
     );
 
-    if (!updated) {
-      return NextResponse.json(
-        { success: false, message: "Provider not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
     return NextResponse.json(
       { success: true, data: updated.galleryImages },
       { status: 200, headers: corsHeaders }
@@ -83,6 +98,7 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
 
 // GET - Fetch all gallery images
 export async function GET(req: Request) {

@@ -15,8 +15,8 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
-    const { adminCommission, platformFee } = await req.json();
-    const created = await Commission.create({ adminCommission, platformFee });
+    const { assurityfee, platformFee } = await req.json(); // ✅ fixed
+    const created = await Commission.create({ assurityfee, platformFee });
     return NextResponse.json(created, {
       status: 201,
       headers: corsHeaders,
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
 
 export async function GET() {
   try {
