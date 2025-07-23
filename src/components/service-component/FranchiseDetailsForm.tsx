@@ -210,7 +210,9 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
                   </span>
                   <Input
                     type="text"
-                    value={data.commission || commissionValue} 
+                    // value={data.commission || commissionValue} 
+                    value={commissionValue}
+
                     onChange={handleCommissionChange}
                     placeholder="Commission"
                     className="pl-8"
