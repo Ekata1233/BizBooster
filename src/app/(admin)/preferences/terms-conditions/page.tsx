@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios'; // Ensure axios is imported
-import { PlusCircle } from 'lucide-react';
+import { PencilIcon,  } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
 
 // Assuming AboutUsPage is the component with the CKEditor form
@@ -26,6 +26,8 @@ type AboutUsEntry = {
   updatedAt?: string; // Optional, good for display
 };
 
+const BLANK_ENTRY: AboutUsEntry = { _id: '', content: '' };
+
 const AdminAboutUsManagementPage: React.FC = () => {
   const [aboutUsList, setAboutUsList] = useState<AboutUsEntry[]>([]); // State to hold ALL about us entries
   const [editingEntry, setEditingEntry] = useState<AboutUsEntry | null>(null); // State to hold the entry being edited
@@ -43,13 +45,13 @@ const AdminAboutUsManagementPage: React.FC = () => {
       if (response.data.success) {
         setAboutUsList(response.data.data); // Set the list of entries
       } else {
-        setError(response.data.message || 'Failed to fetch About Us content.');
+        setError(response.data.message || 'Failed to fetch Terms and Conditions content.');
         setAboutUsList([]); // Fallback to empty array
       }
     } catch (err: unknown) {
-      console.error('Failed to fetch About Us content:', err);
+      console.error('Failed to fetch Terms and Conditions content:', err);
       if (err instanceof Error) {
-        setError(err.message || 'Failed to load About Us content.');
+        setError(err.message || 'Failed to load Terms and Conditions content.');
       } else {
         setError('An unknown error occurred.');
       }
@@ -76,18 +78,18 @@ const AdminAboutUsManagementPage: React.FC = () => {
 
       if (response.data.success) {
         setSaveSuccess(true);
-        console.log('About Us content saved successfully:', response.data.data);
+        console.log('Terms and Conditions content saved successfully:', response.data.data);
         setEditingEntry(null); // Clear editing state after save
         fetchAboutUsContent(); // Re-fetch the list to update the UI
       } else {
-        throw new Error(response.data.message || 'Failed to save About Us content.');
+        throw new Error(response.data.message || 'Failed to save Terms and Conditions content.');
       }
 
       setTimeout(() => setSaveSuccess(false), 3000); // Hide success message
     } catch (err: unknown) {
-      console.error('Error saving About Us content:', err);
+      console.error('Error saving Terms and Conditions content:', err);
       if (err instanceof Error) {
-        setError(err.message || 'Failed to save About Us content.');
+        setError(err.message || 'Failed to save Terms and Conditions content.');
       } else {
         setError('An unknown error occurred.');
       }
@@ -114,12 +116,12 @@ const AdminAboutUsManagementPage: React.FC = () => {
         console.log('About Us content deleted successfully.');
         fetchAboutUsContent(); // Re-fetch the list
       } else {
-        throw new Error(response.data.message || 'Failed to delete About Us content.');
+        throw new Error(response.data.message || 'Failed to delete Terms and Conditions content.');
       }
     } catch (err: unknown) {
-      console.error('Error deleting About Us content:', err);
+      console.error('Error deleting Terms and Conditions content:', err);
       if (err instanceof Error) {
-        setError(err.message || 'Failed to delete About Us content.');
+        setError(err.message || 'Failed to delete Terms and Conditions content.');
       } else {
         setError('An unknown error occurred.');
       }
@@ -151,6 +153,8 @@ const AdminAboutUsManagementPage: React.FC = () => {
     );
   }
 
+    const currentFormEntry = editingEntry ?? BLANK_ENTRY;
+
   // Main render
   return (
     <div className="container mx-auto px-4 py-8">
@@ -176,7 +180,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
       )}
 
       {/* Add New Button */}
-      {!editingEntry && (
+      {/* {!editingEntry && (
         <div className="mb-6 text-right">
           <button
             onClick={() => setEditingEntry({ _id: '', content: '' })} // Set empty entry for new creation
@@ -187,7 +191,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* Conditional Editor Form */}
+     
       {editingEntry && (
         <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -199,12 +203,25 @@ const AdminAboutUsManagementPage: React.FC = () => {
             onCancel={() => setEditingEntry(null)} // Allow cancelling edit/add
           />
         </div>
-      )}
+      )} */}
+
+       <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          {currentFormEntry._id ? 'Edit Terms and Conditions Section' : 'Add New Terms and Conditions Section'}
+        </h2>
+        <TermsConditionsPage
+          /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
+          initialData={currentFormEntry}
+          onSave={handleSaveAboutUs}
+          onCancel={() => setEditingEntry(null)}
+        />
+      </div>
+
 
       {/* Display List of About Us Entries */}
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Terms and Conditions Sections</h2>
       {aboutUsList.length === 0 && !isLoading && !error && (
-        <p className="text-gray-600">No About Us sections found. Click &quot;Add New&quot; to create one.</p>
+        <p className="text-gray-600">No Terms and Conditions sections found. Click &quot;Add New&quot; to create one.</p>
       )}
 
       <div className="space-y-6">
@@ -236,7 +253,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
                   className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                   aria-label="Edit"
                 >
-                  <PlusCircle size={16} />
+                  <PencilIcon size={16} />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry._id)}

@@ -32,6 +32,8 @@ type CancellationEntry = {
     updatedAt?: string;
 };
 
+const BLANK_ENTRY: CancellationEntry = { _id: '', content: '', module: '' };
+
 const AdminProviderCancellationPolicyPage: React.FC = () => {
     const [entries, setEntries] = useState<CancellationEntry[]>([]);
     const [editingEntry, setEditingEntry] = useState<CancellationEntry | null>(null);
@@ -101,6 +103,8 @@ const AdminProviderCancellationPolicyPage: React.FC = () => {
         }
     };
 
+      const currentFormEntry = editingEntry ?? BLANK_ENTRY;
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-bold mb-6 text-center">Manage Cancellation Policy</h1>
@@ -109,7 +113,7 @@ const AdminProviderCancellationPolicyPage: React.FC = () => {
             {isSaving && <p className="bg-blue-100 text-blue-700 px-4 py-2 mb-4 rounded">Processing...</p>}
             {error && <p className="bg-red-100 text-red-700 px-4 py-2 mb-4 rounded">{error}</p>}
 
-            {!editingEntry && (
+            {/* {!editingEntry && (
                 <button
                     onClick={() => {
                         setEditingEntry({ _id: '', content: '', module: '' });
@@ -119,12 +123,12 @@ const AdminProviderCancellationPolicyPage: React.FC = () => {
                 >
                     Add New
                 </button>
-            )}
+            )} */}
 
-            {editingEntry && (
+          
                 <div className="bg-white p-6 rounded shadow mb-10">
                     <h2 className="text-2xl font-semibold mb-4">
-                        {editingEntry._id ? 'Edit Entry' : 'Add New Entry'}
+                        {currentFormEntry._id ? 'Edit Cancellation Policy Section' : 'Add New Cancellation Policy Section'}
                     </h2>
 
                     <div className="mb-4">
@@ -142,87 +146,18 @@ const AdminProviderCancellationPolicyPage: React.FC = () => {
                     </div>
 
                     <CancellationPolicyPage
-                        initialData={{ ...editingEntry, module: selectedModule }}
+                        initialData={{ ...currentFormEntry, module: selectedModule }}
                         onSave={handleSave}
                         onCancel={() => setEditingEntry(null)}
                     />
                 </div>
-            )}
+          
 
 
 
             <h2 className="text-2xl font-bold mb-4">Existing Entries</h2>
             <div className="overflow-x-auto">
-                {/* <table className="min-w-full table-auto border border-gray-300 text-sm">
-                    <thead className="bg-gray-100 text-left">
-                        <tr>
-                            <th className="p-3 border">Name</th>
-                            <th className="p-3 border">Image</th>
-                            <th className="p-3 border">Content</th>
-                            <th className="p-3 border text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {entries.map((entry) => {
-                            const moduleData = typeof entry.module === 'object' && entry.module !== null ? entry.module : null;
-                            return (
-                                <tr key={entry._id} className="border-t">
-                                   
-                                    <td className="p-3 border font-medium">
-                                        {moduleData && 'name' in moduleData ? moduleData.name : 'N/A'}
-                                    </td>
 
-                                
-                                    <td className="p-3 border">
-                                        {moduleData?.image ? (
-                                            <img
-                                                src={moduleData.image}
-                                                alt="Module"
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        ) : (
-                                            <span className="text-gray-500 italic">No Image</span>
-                                        )}
-                                    </td>
-
-                                
-                                    <td className="p-3 border max-w-xs">
-                                        <div
-                                            className="prose text-gray-700 max-h-48 overflow-y-auto"
-                                            dangerouslySetInnerHTML={{ __html: entry.content }}
-                                        />
-                                    </td>
-
-                                 
-                                    <td className="p-3 border text-center">
-                                        <div className="flex justify-center space-x-2">
-                                           
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingEntry(entry);
-                                                        setSelectedModule(moduleData?._id || '');
-                                                    }}
-                                                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                                                    aria-label="Edit"
-                                                >
-                                                    <PencilIcon size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(entry._id)}
-                                                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                                                    aria-label="Delete"
-                                                >
-                                                    <TrashBinIcon />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table> */}
 
 
                 <table className="min-w-full table-auto text-sm bg-white shadow-md rounded-lg overflow-hidden">

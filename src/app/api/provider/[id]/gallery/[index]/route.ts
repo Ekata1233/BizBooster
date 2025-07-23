@@ -1,50 +1,128 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db';
-import Provider from '@/models/Provider';
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { connectToDatabase } from "@/utils/db";
+import Provider from "@/models/Provider";
+import imagekit from "@/utils/imagekit";
 
-/** PATCH: Update a specific image at given index */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string; index: string } }) {
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+// GET a specific image
+export async function GET(req: Request) {
   await connectToDatabase();
 
-  const formData = await req.formData();
-  const newImageUrl = formData.get("newImageUrl") as string;
-  const idx = parseInt(params.index);
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
 
-  if (!newImageUrl || isNaN(idx)) {
-    return NextResponse.json({ error: 'Missing or invalid input' }, { status: 400 });
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  const provider = await Provider.findById(params.id);
+  const idx = parseInt(index ?? "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
+
+  const provider = await Provider.findById(id);
   if (!provider) {
-    return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+    return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
   }
 
   if (idx < 0 || idx >= provider.galleryImages.length) {
-    return NextResponse.json({ error: 'Invalid image index' }, { status: 400 });
+    return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
   }
 
-  provider.galleryImages[idx] = newImageUrl;
-  await provider.save();
-
-  return NextResponse.json({ success: true, updatedImages: provider.galleryImages });
+  return NextResponse.json({ image: provider.galleryImages[idx] }, { headers: corsHeaders });
 }
 
-/** DELETE: Delete image by index */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string; index: string } }) {
+// PATCH - Replace image at index
+export async function PATCH(req: Request) {
   await connectToDatabase();
 
-  const idx = parseInt(params.index);
-  const provider = await Provider.findById(params.id);
-  if (!provider) {
-    return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
   }
 
-  if (isNaN(idx) || idx < 0 || idx >= provider.galleryImages.length) {
-    return NextResponse.json({ error: 'Invalid image index' }, { status: 400 });
+  const idx = parseInt(index ?? "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get("newImage") as File;
+
+    if (!file) {
+      return NextResponse.json({ error: "Image file missing" }, { status: 400, headers: corsHeaders });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    const uploadRes = await imagekit.upload({
+      file: buffer,
+      fileName: `gallery_image_${Date.now()}`,
+      folder: "/providers/gallery",
+    });
+
+    const provider = await Provider.findById(id);
+    if (!provider) {
+      return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
+    }
+
+    if (idx < 0 || idx >= provider.galleryImages.length) {
+      return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
+    }
+
+    provider.galleryImages[idx] = uploadRes.url;
+    await provider.save();
+
+    return NextResponse.json({ success: true, updatedImages: provider.galleryImages }, { headers: corsHeaders });
+  } catch (error) {
+    console.error("PATCH error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
+  }
+}
+
+// DELETE a specific image
+export async function DELETE(req: Request) {
+  await connectToDatabase();
+
+  const match = req.url.match(/\/provider\/([^/]+)\/gallery\/(\d+)/);
+  const id = match?.[1];
+  const index = match?.[2];
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid provider ID" }, { status: 400, headers: corsHeaders });
+  }
+
+  const idx = parseInt(index ?? "");
+  if (isNaN(idx)) {
+    return NextResponse.json({ error: "Invalid index" }, { status: 400, headers: corsHeaders });
+  }
+
+  const provider = await Provider.findById(id);
+  if (!provider) {
+    return NextResponse.json({ error: "Provider not found" }, { status: 404, headers: corsHeaders });
+  }
+
+  if (idx < 0 || idx >= provider.galleryImages.length) {
+    return NextResponse.json({ error: "Index out of bounds" }, { status: 400, headers: corsHeaders });
   }
 
   provider.galleryImages.splice(idx, 1);
   await provider.save();
 
-  return NextResponse.json({ success: true, updatedImages: provider.galleryImages });
+  return NextResponse.json({ success: true, updatedImages: provider.galleryImages }, { headers: corsHeaders });
 }

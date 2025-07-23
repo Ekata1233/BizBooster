@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// import { v4 as uuidv4 } from "uuid";
+import mongoose from "mongoose";
 import PrivacyPolicy from "@/models/PrivacyPolicy";
 import { connectToDatabase } from "@/utils/db";
 
@@ -10,69 +9,93 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+export async function PUT(req: NextRequest) {
+  await connectToDatabase();
 
-export async function PUT(req:NextRequest) {
-    
-    await connectToDatabase()
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-    try{
-         const {content} = await req.json()
-          if(!content) {
-                    return NextResponse.json(
-                     {success:false, message: "Abouts us section content is required"},
-                     {status:400, headers:corsHeaders}
-                 )
-                 }
-                 const aboutusEntry = await PrivacyPolicy.findOne()
-
-                 if(!aboutusEntry){
-                      return NextResponse.json(
-                     {success:false, message: "Abouts Us content not found to update"},
-                     {status:404, headers:corsHeaders}
-                 )
-                 }
-
-                 aboutusEntry.content = content
-                 await aboutusEntry.save()
-
-                 return NextResponse.json(
-                        {success:true, data: aboutusEntry},
-                        {status:200, headers:corsHeaders}
-                       );
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Privacy Policy ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
-     catch (error: unknown) {
-             const message = error instanceof Error ? error.message : "Unknown error";
-             return NextResponse.json(
-               { success: false, message },
-               { status: 400, headers: corsHeaders }
-             );
-           }
+
+    const body = await req.json().catch(() => null);
+    const content = typeof body?.content === "string" ? body.content.trim() : "";
+
+    if (!content) {
+      return NextResponse.json(
+        { success: false, message: "Privacy Policy content is required." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const updated = await PrivacyPolicy.findByIdAndUpdate(
+      id,
+      { content },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, message: "Privacy Policy not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: updated },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error updating Privacy Policy.";
+    console.error("PUT PrivacyPolicy Error:", error);
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
 
+export async function DELETE(req: Request) {
+  await connectToDatabase();
 
-export async function DELETE() {
-    
-    await connectToDatabase()
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-    try{
-     const result = await PrivacyPolicy.deleteOne({})
-          if(result.deletedCount === 0){
-            return NextResponse.json(
-                     {success:false, message: "Abouts Us content not found to delete"},
-                     {status:404, headers:corsHeaders}
-                 )
-          }
-          
-            return NextResponse.json(
-                     {success:true, message: "Abouts Us content deleted successfully"},
-                     {status:200, headers:corsHeaders}
-                 )
+  try {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid Privacy Policy ID." },
+        { status: 400, headers: corsHeaders }
+      );
     }
-      catch (error: unknown) {
-             const message = error instanceof Error ? error.message : "Unknown error";
-             return NextResponse.json(
-               { success: false, message },
-               { status: 400, headers: corsHeaders }
-             );
-           }
+
+    const deleted = await PrivacyPolicy.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Privacy Policy not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Privacy Policy deleted successfully.",
+        data: { id },
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error deleting Privacy Policy.";
+    console.error("DELETE PrivacyPolicy Error:", error);
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }

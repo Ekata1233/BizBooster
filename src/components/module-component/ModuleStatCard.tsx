@@ -237,7 +237,7 @@ const ModuleStatCard: React.FC = () => {
           <>
 
             <StatCard
-              title="Total Certificates"
+              title="Total Tutorials"
               value={totalMainItems}
               icon={CalenderIcon}
               badgeColor="success"

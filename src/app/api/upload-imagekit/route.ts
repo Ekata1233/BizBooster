@@ -4,11 +4,7 @@ import fs from 'fs/promises';
 import imagekit from '@/utils/imagekit';
 
 // Disable Next.js default body parsing
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 export async function POST(req: Request) {
   const data = await req.formData();

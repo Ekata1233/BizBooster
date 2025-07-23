@@ -30,7 +30,7 @@ interface EditorFormProps {
 const PrivacyPolicyEditorForm: React.FC<EditorFormProps> = ({
   initialData,
   onSave,
-  onCancel,
+ 
 }) => {
   const isContentEdited = useRef(false);
   // Initialize content directly from initialData, as it will be re-synced in useEffect
@@ -99,13 +99,13 @@ const PrivacyPolicyEditorForm: React.FC<EditorFormProps> = ({
           >
             Save Content
           </button>
-          <button
+          {/* <button
             type="button"
             onClick={onCancel}
             className="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
           >
             Cancel
-          </button>
+          </button> */}
         </div>
       </form>
     </div>

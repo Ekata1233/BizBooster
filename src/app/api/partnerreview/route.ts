@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile,  mkdir } from "fs/promises";
-import path from "path";
+// import { writeFile,  mkdir } from "fs/promises";
+// import path from "path";
+import imagekit from "@/utils/imagekit";
 import { connectToDatabase } from "@/utils/db";
 import PartnerReview, { IPartnerReview } from '@/models/PartnerReview'; // Adjust path if necessary
 
@@ -15,77 +16,20 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// POST (Create) - Add a new ClickableVideo entry
-
-// export async function POST(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const formData = await req.formData();
-//     const title = formData.get("title") as string | undefined;
-//     const description = formData.get("description") as string | undefined;
-//     const imageFile = formData.get("imageUrl") as File; // Expecting a file for imageUrl
-//     const videoFile = formData.get("videoUrl") as File; // Expecting a file for videoUrl
-
-//     if (!imageFile || !videoFile) {
-//       return NextResponse.json(
-//         { success: false, message: "Image file and video file are required." },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
-
-//     const uploadDir = path.join(process.cwd(), "public/uploads");
-//     await mkdir(uploadDir, { recursive: true });
-
-//     // Save image file
-//     const imageBytes = await imageFile.arrayBuffer();
-//     const imageBuffer = Buffer.from(imageBytes);
-//     const imageFilename = `${Date.now()}-image-${imageFile.name}`;
-//     const imageFilePath = path.join(uploadDir, imageFilename);
-//     await writeFile(imageFilePath, imageBuffer);
-//     const imageUrl = `/uploads/${imageFilename}`;
-
-//     // Save video file
-//     const videoBytes = await videoFile.arrayBuffer();
-//     const videoBuffer = Buffer.from(videoBytes);
-//     const videoFilename = `${Date.now()}-video-${videoFile.name}`;
-//     const videoFilePath = path.join(uploadDir, videoFilename);
-//     await writeFile(videoFilePath, videoBuffer);
-//     const videoUrl = `/uploads/${videoFilename}`;
-
-//     const newPartnerReview = await PartnerReview.create({
-//       title,
-//       description,
-//       imageUrl,
-//       videoUrl,
-//     });
-
-//     return NextResponse.json(
-//       { success: true, data: newPartnerReview },
-//       { status: 201, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     console.error("POST /api/partner-review error:", error);
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: (error as Error).message || "Internal Server Error",
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
 
 
-// POST /api/partnerreview
+const isNonEmptyFile = (v: unknown): v is File =>
+  typeof v === 'object' && v instanceof File && v.size > 0;
+
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const formData = await req.formData();
-    const title = formData.get('title') as string | undefined;
-    const rawImage = formData.get('imageUrl'); // File (required)
-    const rawVideo = formData.get('videoUrl'); // File OR string (YouTube)
+
+    const title = (formData.get('title') ?? '').toString().trim();
+    const rawImage = formData.get('imageUrl'); // required
+    const rawVideo = formData.get('videoUrl'); // optional (string or file)
 
     if (!title) {
       return NextResponse.json(
@@ -93,33 +37,39 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: corsHeaders },
       );
     }
-    if (!(rawImage instanceof File) || rawImage.size === 0) {
+
+    // --- Upload Image to ImageKit ---
+    let imageUrl = '';
+    if (isNonEmptyFile(rawImage)) {
+      const imageBuffer = Buffer.from(await rawImage.arrayBuffer());
+      const uploadedImage = await imagekit.upload({
+        file: imageBuffer, // Buffer
+        fileName: `${Date.now()}-${rawImage.name}`,
+        folder: 'partnerreview/images', // Optional folder in ImageKit
+      });
+      imageUrl = uploadedImage.url;
+    } else {
       return NextResponse.json(
         { success: false, message: 'Image file is required.' },
         { status: 400, headers: corsHeaders },
       );
     }
 
-    // --- save image file ---
-    const uploadDir = path.join(process.cwd(), 'public/uploads');
-    await mkdir(uploadDir, { recursive: true });
-    const imgBuf = Buffer.from(await rawImage.arrayBuffer());
-    const imageFilename = `${Date.now()}-image-${rawImage.name}`;
-    await writeFile(path.join(uploadDir, imageFilename), imgBuf);
-    const imageUrl = `/uploads/${imageFilename}`;
-
-    // --- handle video (url OR file) ---
-    let videoUrl: string = '';
-    if (rawVideo instanceof File && rawVideo.size > 0) {
-      // legacy support: actual video upload
-      const vidBuf = Buffer.from(await rawVideo.arrayBuffer());
-      const videoFilename = `${Date.now()}-video-${rawVideo.name}`;
-      await writeFile(path.join(uploadDir, videoFilename), vidBuf);
-      videoUrl = `/uploads/${videoFilename}`;
+    // --- Handle Video ---
+    let videoUrl = '';
+    if (isNonEmptyFile(rawVideo)) {
+      const videoBuffer = Buffer.from(await rawVideo.arrayBuffer());
+      const uploadedVideo = await imagekit.upload({
+        file: videoBuffer,
+        fileName: `${Date.now()}-${rawVideo.name}`,
+        folder: 'partnerreview/videos',
+      });
+      videoUrl = uploadedVideo.url;
     } else if (typeof rawVideo === 'string') {
       videoUrl = rawVideo.trim();
     }
 
+    // --- Save to DB ---
     const created = await PartnerReview.create({
       title,
       imageUrl,

@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios'; // Ensure axios is imported
-import { PlusCircle } from 'lucide-react';
+import { PencilIcon,  } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
 
 // Assuming AboutUsPage is the component with the CKEditor form
@@ -25,6 +25,8 @@ type AboutUsEntry = {
   createdAt?: string; // Optional, good for display
   updatedAt?: string; // Optional, good for display
 };
+
+const BLANK_ENTRY: AboutUsEntry = { _id: '', content: '' };
 
 const AdminAboutUsManagementPage: React.FC = () => {
   const [aboutUsList, setAboutUsList] = useState<AboutUsEntry[]>([]); // State to hold ALL about us entries
@@ -151,6 +153,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
     );
   }
 
+   const currentFormEntry = editingEntry ?? BLANK_ENTRY;
   // Main render
   return (
     <div className="container mx-auto px-4 py-8">
@@ -176,7 +179,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
       )}
 
       {/* Add New Button */}
-      {!editingEntry && (
+      {/* {!editingEntry && (
         <div className="mb-6 text-right">
           <button
             onClick={() => setEditingEntry({ _id: '', content: '' })} // Set empty entry for new creation
@@ -187,7 +190,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* Conditional Editor Form */}
+      
       {editingEntry && (
         <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -199,7 +202,20 @@ const AdminAboutUsManagementPage: React.FC = () => {
             onCancel={() => setEditingEntry(null)} // Allow cancelling edit/add
           />
         </div>
-      )}
+      )} */}
+
+
+       <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          {currentFormEntry._id ? 'Edit Refund Policy Section' : 'Add New Refund Policy Section'}
+        </h2>
+        <RefundPolicyPage
+          /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
+          initialData={currentFormEntry}
+          onSave={handleSaveAboutUs}
+          onCancel={() => setEditingEntry(null)}
+        />
+      </div>
 
       {/* Display List of About Us Entries */}
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Refund Policy Sections</h2>
@@ -236,7 +252,7 @@ const AdminAboutUsManagementPage: React.FC = () => {
                   className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                   aria-label="Edit"
                 >
-                  <PlusCircle size={16} />
+                  <PencilIcon size={16} />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry._id)}

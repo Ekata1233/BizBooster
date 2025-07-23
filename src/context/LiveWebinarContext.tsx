@@ -70,6 +70,7 @@ export const LiveWebinarsProvider = ({ children }: { children: React.ReactNode }
   const fetchWebinarById = async (id: string) => {
     try {
       const res = await axios.get(`/api/academy/livewebinars/${id}`);
+      // const res = await axios.get(`/api/academy/enroll/${id}`);
       console.log("Fetched webinar data:", res.data);
       // Assuming your API returns { success: true, data: LiveWebinarsObject }
       return res.data.data;
