@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
 
         const userC = await User.findById(userId);
 
-        // console.log("user c : ", userC)
+        console.log("user c : ", userC)
         if (!userC) throw new Error("User not found");
 
         const userB = userC.referredBy ? await User.findById(userC.referredBy) : null;
-        // console.log("user b : ", userB)
+        console.log("user b : ", userB)
         const userA = userB?.referredBy ? await User.findById(userB.referredBy) : null;
-        // console.log("user a : ", userA)
+        console.log("user a : ", userA)
 
         const pkgCommissionList = await PackagesCommission.find();
         if (!pkgCommissionList || pkgCommissionList.length === 0)
@@ -88,18 +88,20 @@ export async function POST(req: NextRequest) {
 
         if (userB) {
             level1Amount = baseLevel1;
+            console.log("level1Amount : ", level1Amount)
         } else {
             adminAmount += baseLevel1; // If no userB, give their share to admin
         }
 
         if (userA) {
             level2Amount = baseLevel2;
+            console.log("level2Amount : ", level2Amount)
         } else {
             adminAmount += baseLevel2; // If no userA, give their share to admin
         }
 
         adminAmount += packagePrice - (baseLevel1 + baseLevel2); // Add what's left after total commission
-
+        console.log("adminAmount : ", adminAmount)
 
         const creditWallet = async (
             userId: Types.ObjectId,

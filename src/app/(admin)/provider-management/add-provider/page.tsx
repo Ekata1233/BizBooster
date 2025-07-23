@@ -33,7 +33,7 @@ function Stepper({
       {items.map(({ step, label, done }) => {
         const isActive = step === activeStep;
         const isCompleted = done;
-        
+
         return (
           <div key={step} className="flex-1 text-center">
             <div
@@ -66,9 +66,9 @@ export default function ProviderOnboardingPage() {
     updateKycInfo,
   } = useProvider();
   console.log("Register Provider :", provider);
-  
 
-   const [providerId, setProviderId] = useState<string | null>(null);
+
+  const [providerId, setProviderId] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -77,7 +77,7 @@ export default function ProviderOnboardingPage() {
   // const searchParams = useSearchParams();
   // const providerId = searchParams.get('id');
 
-  
+
   const regForm = useForm();
   const storeForm = useForm();
   const kycForm = useForm();
@@ -163,48 +163,104 @@ export default function ProviderOnboardingPage() {
             <h2 className="text-xl font-semibold text-blue-700 mb-4">Step 1 • Registration</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Full Name */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Full Name</label>
                 <input
-                  {...regForm.register('fullName')}
-                  required
+                  {...regForm.register('fullName', {
+                    required: 'Full Name is required',
+                    minLength: { value: 3, message: 'Full Name must be at least 3 characters' },
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                {typeof regForm.formState.errors.fullName?.message === 'string' && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {regForm.formState.errors.fullName.message}
+                  </p>
+                )}
+
               </div>
+
+              {/* Email */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Email</label>
                 <input
-                  {...regForm.register('email')}
-                  required
+                  {...regForm.register('email', {
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Invalid email format',
+                    },
+                  })}
                   type="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                {typeof regForm.formState.errors.email?.message === 'string' && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {regForm.formState.errors.email.message}
+                  </p>
+                )}
+
               </div>
+
+              {/* Phone No */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Phone No</label>
                 <input
-                  {...regForm.register('phoneNo')}
-                  required
+                  {...regForm.register('phoneNo', {
+                    required: 'Phone number is required',
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: 'Invalid Indian phone number',
+                    },
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                {typeof regForm.formState.errors.phoneNo?.message === 'string' && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {regForm.formState.errors.phoneNo.message}
+                  </p>
+                )}
+
               </div>
+
+              {/* Password */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Password</label>
                 <input
-                  {...regForm.register('password')}
-                  required
+                  {...regForm.register('password', {
+                    required: 'Password is required',
+                    minLength: { value: 6, message: 'Password must be at least 6 characters' },
+                  })}
                   type="password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                {typeof regForm.formState.errors.password?.message === 'string' && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {regForm.formState.errors.password.message}
+                  </p>
+                )}
+
               </div>
+
+              {/* Confirm Password */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Confirm Password</label>
                 <input
-                  {...regForm.register('confirmPassword')}
-                  required
+                  {...regForm.register('confirmPassword', {
+                    required: 'Confirm password is required',
+                    validate: (value) =>
+                      value === regForm.watch('password') || 'Passwords do not match',
+                  })}
                   type="password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                {typeof regForm.formState.errors.confirmPassword?.message === 'string' && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {regForm.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+
               </div>
             </div>
 
@@ -220,6 +276,7 @@ export default function ProviderOnboardingPage() {
               </button>
             </div>
           </form>
+
         )}
 
         {/* ---------------- STEP 2 ---------------- */}
@@ -337,7 +394,7 @@ export default function ProviderOnboardingPage() {
                 ✅ Store information completed. Please upload your KYC documents.
               </div>
             )}
-            
+
             {!kycDone ? (
               <form onSubmit={kycForm.handleSubmit(onKycSave)} className="space-y-6">
                 <h2 className="text-xl font-semibold text-blue-700 mb-4">Step 3 • KYC Documents</h2>
