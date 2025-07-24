@@ -161,7 +161,7 @@ interface ICheckout extends Document {
     totalAmount: number;
 
 
-    paymentMethod?: ('wallet' | 'pac' | 'cashfree')[];
+    paymentMethod: ('wallet' | 'pac' | 'cashfree')[];
     walletAmount: number;
     otherAmount: number;
     paidAmount: number;
@@ -208,8 +208,8 @@ const checkoutSchema = new Schema<ICheckout>({
 
     paymentMethod: {
         type: [String],
+        required: true,
         enum: ['wallet', 'pac', 'cashfree'],
-        default: null,
     },
 
     walletAmount: { type: Number, default: 0, min: 0 },
