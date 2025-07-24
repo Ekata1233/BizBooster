@@ -161,7 +161,7 @@ interface ICheckout extends Document {
     totalAmount: number;
 
 
-    paymentMethod: ('wallet' | 'pac' | 'cashfree')[];
+    paymentMethod?: ('wallet' | 'pac' | 'cashfree')[];
     walletAmount: number;
     otherAmount: number;
     paidAmount: number;
@@ -169,7 +169,7 @@ interface ICheckout extends Document {
     isPartialPayment: boolean;
 
     cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card';
-    paymentStatus: 'pending' | 'paid' | 'failed';
+    paymentStatus: 'pending' | 'paid' | 'failed' | 'partial';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
     termsCondition: boolean;
@@ -208,8 +208,8 @@ const checkoutSchema = new Schema<ICheckout>({
 
     paymentMethod: {
         type: [String],
-        required: true,
         enum: ['wallet', 'pac', 'cashfree'],
+        default: null,
     },
 
     walletAmount: { type: Number, default: 0, min: 0 },

@@ -1,42 +1,17 @@
-// 'use client';
-// export const dynamic = 'force-dynamic';
-// export const dynamicParams = true;
+import { Suspense } from 'react';
+import AddOfferForm from './AddOfferForm'; // We will create this component next
 
-// import React from 'react';
-// import dynamicImport from 'next/dynamic';
-// import { useSearchParams } from 'next/navigation';
+// A simple loading UI to show while the form is loading
+const Loading = () => (
+  <div className="container mx-auto px-4 py-8 text-center">
+    <h1 className="text-3xl font-bold mb-6">Loading Form...</h1>
+  </div>
+);
 
-// const OfferComponent = dynamicImport(() => import('@/components/offer-component/OfferComponent'), {
-//   ssr: false,
-// });
-
-// const AddFormPage: React.FC = () => {
-//   const searchParams = useSearchParams();
-
-//   const offerId =
-//     searchParams.get('id') || searchParams.get('offerId') || undefined;
-
-//   return (
-//     <div className="container mx-auto px-4 py-8">
-//       <h1 className="text-3xl font-bold mb-6 text-center">
-//         {offerId ? 'Edit Offer' : 'Add New Offer'}
-//       </h1>
-
-//       <div className="bg-white p-6 rounded shadow mb-10">
-//         <OfferComponent offerIdToEdit={offerId} />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AddFormPage;
-
-import React from 'react'
-
-function page() {
+export default function AddOfferPage() {
   return (
-    <div>page</div>
-  )
+    <Suspense fallback={<Loading />}>
+      <AddOfferForm />
+    </Suspense>
+  );
 }
-
-export default page

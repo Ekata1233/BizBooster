@@ -169,7 +169,7 @@ const ModuleStatCard: React.FC = () => {
           </>
         )}
 
-         {isWebinarsPath && (
+        {isWebinarsPath && (
           <>
 
 
@@ -183,7 +183,7 @@ const ModuleStatCard: React.FC = () => {
             />
 
             <StatCard
-              title="Total Tutorial Videos"
+              title="Total Webinar Videos"
               value={totalTutorialVideos}
               icon={BoxCubeIcon}
               badgeColor="success"
