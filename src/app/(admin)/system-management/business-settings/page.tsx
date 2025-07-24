@@ -26,8 +26,8 @@ function VendorDashboardPage() {
     fetchCommissions,
   } = useCommission();
 
-  console.log("assurity:",commissions);
-  
+  console.log("assurity:", commissions);
+
   useEffect(() => {
     fetchCommissions();
   }, []);
@@ -35,10 +35,12 @@ function VendorDashboardPage() {
   useEffect(() => {
     if (commissions.length > 0) {
       const current = commissions[0];
-      setAdminCommission(current.adminCommission.toString());
-      setPlatformFee(current.platformFee.toString());
-      setCommissionId(current._id);
+
+      setAdminCommission((current.adminCommission ?? 0).toString());
+      setPlatformFee((current.platformFee ?? 0).toString());
+      setCommissionId(current._id ?? '');
     }
+
   }, [commissions]);
 
   const handleSave = async () => {
@@ -74,11 +76,10 @@ function VendorDashboardPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 px-4 font-medium ${
-              activeTab === tab
+            className={`pb-2 px-4 font-medium ${activeTab === tab
                 ? "border-b-2 border-blue-500 text-blue-600"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             {tab}
           </button>
@@ -87,13 +88,13 @@ function VendorDashboardPage() {
 
       {/* Tab Content */}
       <div className="mt-4">
-        
+
         {activeTab === "Business Info" && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold mb-6"> Commission Setup</h2>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-              Assurity Fee (%)
+                Assurity Fee (%)
               </label>
               <input
                 type="number"
@@ -127,10 +128,10 @@ function VendorDashboardPage() {
         )}
 
         {activeTab === "Package Commision" && (
-  <div className="space-y-4">
-    <PackagesCommissionPage />
-  </div>
-)}
+          <div className="space-y-4">
+            <PackagesCommissionPage />
+          </div>
+        )}
 
         {activeTab === "Promotions" && <div>Promotions Content</div>}
         {activeTab === "Bookings" && <div>Bookings Content</div>}

@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
     );
 
     const checkoutId = body?.data?.order?.order_tags?.checkout_id;
-
     console.log("checout I d : ", checkoutId)
 
     if (payment_status === "SUCCESS" && checkoutId) {
@@ -75,18 +74,14 @@ export async function POST(req: NextRequest) {
       },
         { new: true }
       );
-
       console.log("updated checout OUt : ", updatedCheckout)
-
       if (updatedCheckout) {
         console.log(`✅ Updated Checkout for checkoutId: ${checkoutId}`);
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
     }
-
     console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
-
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);
