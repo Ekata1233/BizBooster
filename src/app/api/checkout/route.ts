@@ -136,10 +136,9 @@ export async function POST(req: NextRequest) {
       serviceDiscount,
       couponDiscount,
       champaignDiscount,
-      vat,
+      gst,
       platformFee,
       assurityfee,
-      tax,
       totalAmount,
 
       termsCondition ,
@@ -192,10 +191,9 @@ export async function POST(req: NextRequest) {
       serviceDiscount,
       couponDiscount,
       champaignDiscount,
-      vat,
+      gst,
       platformFee,
       assurityfee,
-      tax,
       totalAmount,
 
       termsCondition,
