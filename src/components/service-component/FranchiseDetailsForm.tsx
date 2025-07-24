@@ -27,11 +27,10 @@ interface FranchiseData {
 interface FranchiseDetailsFormProps {
   data: FranchiseData;
   setData: (newData: Partial<FranchiseData>) => void;
-   basicPrice?: number;
-   
+  price?: number;
 }
 
-const FranchiseDetailsForm = ({ data, setData, basicPrice }: FranchiseDetailsFormProps) => {
+const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProps) => {
   const [overview, setOverview] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [termsAndConditions, setTermsAndConditions] = useState('');
@@ -57,8 +56,6 @@ const FranchiseDetailsForm = ({ data, setData, basicPrice }: FranchiseDetailsFor
   }
 }, []);
 
- console.log("franchise details : ",data);
- 
 
   useEffect(() => {
     const newData: FranchiseData = {
@@ -124,7 +121,7 @@ const FranchiseDetailsForm = ({ data, setData, basicPrice }: FranchiseDetailsFor
               Basic Price
             </Label>
             <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
-              ₹{basicPrice || 0}
+              ₹{price || 0}
             </div>
           </div>
 
@@ -175,7 +172,7 @@ const FranchiseDetailsForm = ({ data, setData, basicPrice }: FranchiseDetailsFor
           {(() => {
             const totalCommission =
               commissionType === "percentage"
-                ? (Number(basicPrice || 0) * Number(commissionValue || 0)) / 100
+                ? (Number(price || 0) * Number(commissionValue || 0)) / 100
                 : Number(commissionValue || 0);
 
             const distributionPercents = [0.5, 0.2, 0.1, 0.2];
