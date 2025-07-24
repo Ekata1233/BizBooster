@@ -171,6 +171,8 @@ interface ICheckout extends Document {
     cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card';
     paymentStatus: 'pending' | 'paid' | 'failed' | 'partial';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
+    cashInHand?: boolean;
+    cashInHandAmount?: number;
     notes?: string;
     termsCondition: boolean;
     isVerified: boolean;
@@ -232,6 +234,8 @@ const checkoutSchema = new Schema<ICheckout>({
         enum: ['processing', 'in_progress', 'completed', 'cancelled'],
         default: 'processing',
     },
+    cashInHand: { type: Boolean, default: false },
+    cashInHandAmount: {type: Number, default: 0},
     notes: { type: String, trim: true, default: '' },
     termsCondition: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
