@@ -161,17 +161,14 @@ interface ICheckout extends Document {
     totalAmount: number;
 
 
-    paymentMethod: ('credit_card' | 'upi' | 'pac' | 'net_banking' | 'wallet' | 'debit_card')[];
+    paymentMethod: ('wallet' | 'pac' | 'cashfree')[];
     walletAmount: number;
     otherAmount: number;
     paidAmount: number;
     remainingAmount: number;
     isPartialPayment: boolean;
-    // paidByOtherMethodAmount: number;
-    // partialPaymentNow: number;
-    // partialPaymentLater: number;
-    // remainingPaymentStatus: 'pending' | 'paid' | 'failed';
 
+    cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card';
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     notes?: string;
@@ -212,7 +209,7 @@ const checkoutSchema = new Schema<ICheckout>({
     paymentMethod: {
         type: [String],
         required: true,
-        enum: ['credit_card', 'upi', 'pac', 'net_banking', 'wallet', 'debit_card'],
+        enum: ['wallet', 'pac', 'cashfree'],
     },
 
     walletAmount: { type: Number, default: 0, min: 0 },
@@ -220,15 +217,11 @@ const checkoutSchema = new Schema<ICheckout>({
     paidAmount: { type: Number, default: 0 },
     isPartialPayment: { type: Boolean, default: false },
     remainingAmount: { type: Number, default: 0 },
-
-    // paidByOtherMethodAmount: { type: Number, default: 0, min: 0 },
-    // partialPaymentNow: { type: Number, default: 0, min: 0 },
-    // partialPaymentLater: { type: Number, default: 0, min: 0 },
-    // remainingPaymentStatus: {
-    //     type: String,
-    //     enum: ['pending', 'paid', 'failed'],
-    //     default: 'pending'
-    // },
+    cashfreeMethod: {
+        type: String,
+        enum: ['credit_card', 'upi', 'net_banking', 'debit_card'],
+        default: null,
+    },
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
