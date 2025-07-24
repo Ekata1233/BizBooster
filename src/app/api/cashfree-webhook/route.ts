@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/utils/db";
 import Payment from "@/models/Payment";
 import Checkout from "@/models/Checkout";
 import mongoose from "mongoose";
+import axios from "axios";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,10 +77,21 @@ export async function POST(req: NextRequest) {
 
     const myOrderId = body?.data?.order?.order_tags?.my_order_id;
     const myCustomerId = body?.data?.order?.order_tags?.customer_id;
+    if (payment_status === "SUCCESS" && myOrderId?.startsWith("package_") && myCustomerId) {
+      try {
+        const distRes = await axios.post(
+          "https://biz-booster.vercel.app/api/distributePackageCommission",
+          { userId: myCustomerId }
+        );
+        console.log("📤 Commission distribution triggered:", distRes.data);
+      } catch (err: any) {
+        console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
+      }
+    }
 
 
-    console.log("myOrderId : ",myOrderId)
-    console.log("myCustomerId : ",myCustomerId)
+    console.log("myOrderId : ", myOrderId)
+    console.log("myCustomerId : ", myCustomerId)
 
 
     console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
