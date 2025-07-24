@@ -83,7 +83,7 @@ const OfferDetailPage: React.FC = () => {
           <PhotoIcon className="w-5 h-5 text-gray-700" /> Banner
         </h2>
         {offer.bannerImage ? (
-          <img src={offer.bannerImage} alt="Banner" className="w-full h-64 object-cover rounded shadow-md" />
+          <img src={offer.bannerImage} alt="Banner" className="w-full h-64 object-fit rounded shadow-md" />
         ) : (
           <p>No banner image</p>
         )}
@@ -99,7 +99,7 @@ const OfferDetailPage: React.FC = () => {
             <img
               src={offer.galleryImages[currentImage]}
               alt={`Gallery ${currentImage + 1}`}
-              className="w-full h-64 object-cover rounded border"
+              className="w-full h-64 object-fit rounded border"
             />
             <button
               onClick={handlePrev}

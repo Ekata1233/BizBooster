@@ -214,34 +214,34 @@ export function OPTIONS() {
 /* ------------------------------------------------------------------
  * Utilities
  * ------------------------------------------------------------------ */
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null;
+// const isRecord = (v: unknown): v is Record<string, unknown> =>
+//   typeof v === 'object' && v !== null;
 
 
 
 
 
-function normalizeFAQItem(raw: unknown, idx: number): FAQItem | null {
-  if (typeof raw === 'string') {
-    const trimmed = raw.trim();
-    if (!trimmed) return null;
-    return { question: `Question ${idx + 1}`, answer: trimmed };
-  }
-  if (isRecord(raw)) {
-    const answer =
-      (typeof raw.answer === 'string' && raw.answer) ||
-      (typeof raw.a === 'string' && raw.a) ||
-      (typeof raw.content === 'string' && raw.content) ||
-      '';
-    const question =
-      (typeof raw.question === 'string' && raw.question) ||
-      (typeof raw.q === 'string' && raw.q) ||
-      (typeof raw.title === 'string' && raw.title) ||
-      (answer ? stripHTML(answer).slice(0, 60) : `Question ${idx + 1}`);
-    return { question, answer };
-  }
-  return null;
-}
+// function normalizeFAQItem(raw: unknown, idx: number): FAQItem | null {
+//   if (typeof raw === 'string') {
+//     const trimmed = raw.trim();
+//     if (!trimmed) return null;
+//     return { question: `Question ${idx + 1}`, answer: trimmed };
+//   }
+//   if (isRecord(raw)) {
+//     const answer =
+//       (typeof raw.answer === 'string' && raw.answer) ||
+//       (typeof raw.a === 'string' && raw.a) ||
+//       (typeof raw.content === 'string' && raw.content) ||
+//       '';
+//     const question =
+//       (typeof raw.question === 'string' && raw.question) ||
+//       (typeof raw.q === 'string' && raw.q) ||
+//       (typeof raw.title === 'string' && raw.title) ||
+//       (answer ? stripHTML(answer).slice(0, 60) : `Question ${idx + 1}`);
+//     return { question, answer };
+//   }
+//   return null;
+// }
 
 
 
@@ -440,7 +440,7 @@ const fileToBuffer = async (file: File) => Buffer.from(await file.arrayBuffer())
 function parseFAQFlexible(raw: unknown): FAQItem[] {
   if (raw == null) return [];
   if (Array.isArray(raw)) {
-    return raw.flatMap((v, i) => parseFAQFlexible(v));
+    return raw.flatMap((v, ) => parseFAQFlexible(v));
   }
   if (typeof raw === 'string') {
     const trimmed = raw.trim();
@@ -457,16 +457,16 @@ function parseFAQFlexible(raw: unknown): FAQItem[] {
     }
   }
   if (typeof raw === 'object') {
-    const anyRaw = raw as any;
+    const objRaw = raw as Record<string, unknown>;
     const answer =
-      typeof anyRaw.answer === 'string' ? anyRaw.answer :
-      typeof anyRaw.a === 'string'      ? anyRaw.a :
-      typeof anyRaw.content === 'string'? anyRaw.content : '';
+      typeof objRaw.answer === 'string' ? objRaw.answer :
+      typeof objRaw.a === 'string'      ? objRaw.a :
+      typeof objRaw.content === 'string'? objRaw.content : '';
 
     const question =
-      typeof anyRaw.question === 'string' ? anyRaw.question :
-      typeof anyRaw.q === 'string'        ? anyRaw.q :
-      typeof anyRaw.title === 'string'    ? anyRaw.title :
+      typeof objRaw.question === 'string' ? objRaw.question :
+      typeof objRaw.q === 'string'        ? objRaw.q :
+      typeof objRaw.title === 'string'    ? objRaw.title :
       (answer ? stripHTML(answer).slice(0, 60) : 'FAQ');
 
     return [{ question, answer }];

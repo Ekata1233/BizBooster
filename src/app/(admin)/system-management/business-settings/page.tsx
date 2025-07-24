@@ -15,7 +15,7 @@ const tabs = [
 
 function VendorDashboardPage() {
   const [activeTab, setActiveTab] = useState("Business Info");
-  const [adminCommission, setAdminCommission] = useState("");
+const [assurityfee, setAssurityFee] = useState("");
   const [platformFee, setPlatformFee] = useState("");
   const [commissionId, setCommissionId] = useState<string | null>(null);
 
@@ -32,6 +32,7 @@ function VendorDashboardPage() {
     fetchCommissions();
   }, []);
 
+<<<<<<< HEAD
   useEffect(() => {
     if (commissions.length > 0) {
       const current = commissions[0];
@@ -42,29 +43,41 @@ function VendorDashboardPage() {
     }
 
   }, [commissions]);
+=======
+ useEffect(() => {
+  if (commissions.length > 0) {
+    const current = commissions[0];
+    setAssurityFee(current.assurityfee?.toString() || ""); // ✅ safe access
+    setPlatformFee(current.platformFee?.toString() || "");
+    setCommissionId(current._id);
+  }
+}, [commissions]);
+
+>>>>>>> a7fe7297b9fc64e28cabfa32469bc3c6e9826351
 
   const handleSave = async () => {
-    const admin = parseFloat(adminCommission);
-    const platform = parseFloat(platformFee);
+  const assurity = parseFloat(assurityfee);
+  const platform = parseFloat(platformFee);
 
-    if (isNaN(admin) || isNaN(platform)) {
-      alert("Please enter valid numbers for both fields.");
-      return;
-    }
+  if (isNaN(assurity) || isNaN(platform)) {
+    alert("Please enter valid numbers for both fields.");
+    return;
+  }
 
-    try {
-      if (commissionId) {
-        await updateCommission(commissionId, admin, platform);
-        alert("Commission updated successfully!");
-      } else {
-        await createCommission(admin, platform);
-        alert("Commission created successfully!");
-      }
-    } catch (error) {
-      console.error("Error saving commission:", error);
-      alert("Failed to save commission.");
+  try {
+    if (commissionId) {
+      await updateCommission(commissionId, assurity, platform);
+      alert("Commission updated successfully!");
+    } else {
+      await createCommission(assurity, platform);
+      alert("Commission created successfully!");
     }
-  };
+  } catch (error) {
+    console.error("Error saving commission:", error);
+    alert("Failed to save commission.");
+  }
+};
+
 
   return (
     <div className="p-4">
@@ -96,13 +109,14 @@ function VendorDashboardPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Assurity Fee (%)
               </label>
-              <input
-                type="number"
-                value={adminCommission}
-                onChange={(e) => setAdminCommission(e.target.value)}
-                placeholder="Enter default admin commission"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
+             <input
+  type="number"
+  value={assurityfee}
+  onChange={(e) => setAssurityFee(e.target.value)}
+  placeholder="Enter assurity fee"
+  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+/>
+
             </div>
 
             <div>
