@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const body = await req.json();
-    console.log("✅ Webhook Received:", body);
+    // console.log("✅ Webhook Received:", body);
 
     const {
       order: { order_id },
@@ -72,6 +72,16 @@ export async function POST(req: NextRequest) {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
     }
+
+
+    const myOrderId = body?.data?.order?.order_tags?.my_order_id;
+    const myCustomerId = body?.data?.order?.order_tags?.customer_id;
+
+
+    console.log("myOrderId : ",myOrderId)
+    console.log("myCustomerId : ",myCustomerId)
+
+
     console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
