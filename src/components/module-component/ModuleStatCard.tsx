@@ -1,92 +1,3 @@
-// 'use client';
-
-// import React from 'react';
-// import StatCard from '../common/StatCard';
-// import {
-//   ArrowUpIcon,
-//   UserIcon,
-//   CalenderIcon,
-// } from "../../icons/index";
-// import { useModule } from '@/context/ModuleContext';
-// import { useCategory } from '@/context/CategoryContext';
-// import { useSubcategory } from '@/context/SubcategoryContext';
-// import { useService } from '@/context/ServiceContext';
-// import { useLiveWebinars } from '@/context/LiveWebinarContext';
-// import RouteLoader from '../RouteLoader';
-
-
-// const ModuleStatCard = () => {
-//   const { modules } = useModule();
-//   const { categories } = useCategory();
-//   const { subcategories } = useSubcategory();
-//   const { services } = useService();
-//   const { webinars } = useLiveWebinars(); // Access webinars from LiveWebinarContext
-//   const {certificates} = useCertification(); // Assuming you have a CertificationContext
-//   // Calculate total unique user IDs (already implemented)
-//   const allWebinarUsers = webinars?.flatMap(webinar => webinar.user || []) || [];
-//   const allUserIds = webinars?.flatMap(webinar => webinar.user || []) || [];
-//   const uniqueUserIds = new Set(allUserIds);
-//   const totalUniqueUserIds = uniqueUserIds.size;
-
-//   // Calculate Approved Enrolled Users
-//   const approvedUsersCount = allWebinarUsers.filter(entry => entry.status === true).length;
-
-//   // Calculate Pending Enrolled Users
-//   const pendingUsersCount = allWebinarUsers.filter(entry => entry.status === false).length;
-
-
-//   const isLoading =
-//     !modules || !categories || !subcategories || !services || !webinars; // Include webinars in loading check
-
-//   if (isLoading) {
-//     return <RouteLoader />;
-//   }
-
-//   return (
-//     <div>
-//       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
-//         <StatCard
-//           title="Total Live Webinars"
-//           value={webinars.length} // Total count of live webinars
-//           icon={CalenderIcon}
-//           badgeColor="success"
-//           badgeValue="0.00%"
-//           badgeIcon={ArrowUpIcon}
-//         />
-//         <StatCard
-//           title="Total Unique Users" // Renamed for clarity, as this counts unique individuals across all webinars
-//           value={totalUniqueUserIds}
-//           icon={UserIcon}
-//           badgeColor="success"
-//           badgeValue="0.00%"
-//           badgeIcon={ArrowUpIcon}
-//         />
-//         <StatCard
-//           title="Approved Enrolled Users"
-//           value={approvedUsersCount} // Use the calculated approved users count
-//           icon={UserIcon} // Using UserIcon for user-related stats
-//           badgeColor="success"
-//           badgeValue="0.00%"
-//           badgeIcon={ArrowUpIcon}
-//         />
-//         <StatCard
-//           title="Pending Enrolled Users"
-//           value={pendingUsersCount} // Use the calculated pending users count
-//           icon={UserIcon} // Using UserIcon for user-related stats
-//           badgeColor="success"
-//           badgeValue="0.00%"
-//           badgeIcon={ArrowUpIcon}
-//         />
-
-
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default ModuleStatCard;
-
-
 
 
 
@@ -262,7 +173,7 @@ const ModuleStatCard: React.FC = () => {
           <>
 
             <StatCard
-              title="Total Certificates"
+              title="Total Webinars"
               value={totalMainItems}
               icon={CalenderIcon}
               badgeColor="success"
