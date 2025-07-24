@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
   try {
     console.log("Generating Cashfree payment link using /pg/links for:", {
-      orderId,amount, customerName, customerEmail, customerPhone
+      orderId, amount, customerName, customerEmail, customerPhone
     });
 
     const response = await axios.post(
@@ -43,9 +43,13 @@ export async function POST(req: NextRequest) {
         },
         order_tags: {
           checkout_id: checkoutId,
+          my_order_id: orderId,
+          customer_id: customerId,
         },
         link_notes: {
           checkout_id: checkoutId,
+          my_order_id: orderId,
+          customer_id: customerId,
         }
       },
       {
