@@ -38,37 +38,35 @@ export const POST = async (req: Request) => {
     // console.log("existingUserByMobile", existingUserByMobile);
     // console.log("isMobileBlocked", isMobileBlocked);
 
-if (existingUserByEmail && isMobileBlocked) {
-  return NextResponse.json(
-    { error: 'Email and Mobile already exists' },
-    { status: 400, headers: corsHeaders }
-  );
-}
+    if (existingUserByEmail && isMobileBlocked) {
+      return NextResponse.json(
+        { error: 'Email and Mobile already exists' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-if (existingUserByEmail) {
-  return NextResponse.json(
-    { error: 'Email already exists' },
-    { status: 400, headers: corsHeaders }
-  );
-}
+    if (existingUserByEmail) {
+      return NextResponse.json(
+        { error: 'Email already exists' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-if (existingUserByMobile) {
-  if (isMobileBlocked) {
-    return NextResponse.json(
-      { error: 'Mobile already exists' },
-      { status: 400, headers: corsHeaders }
-    );
-  } else {
-    return NextResponse.json(
-      {
-        error: 'User with this mobile already exists but is not verified. Please complete verification.',
-      },
-      { status: 409, headers: corsHeaders } // 409 Conflict
-    );
-  }
-}
-
-
+    if (existingUserByMobile) {
+      if (isMobileBlocked) {
+        return NextResponse.json(
+          { error: 'Mobile already exists' },
+          { status: 400, headers: corsHeaders }
+        );
+      } else {
+        return NextResponse.json(
+          {
+            error: 'User with this mobile already exists but is not verified. Please complete verification.',
+          },
+          { status: 409, headers: corsHeaders } // 409 Conflict
+        );
+      }
+    }
     function generateReferralCode(length = 6) {
       return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
     }
@@ -120,7 +118,7 @@ if (existingUserByMobile) {
       referralCode,
       referredBy,
       isMobileVerified: true,
-     
+
     });
 
     await newUser.save();
