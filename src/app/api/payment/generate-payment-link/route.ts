@@ -17,16 +17,17 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { amount, customerId, customerName, customerEmail, customerPhone, checkoutId } = body;
+  const { orderId,amount, customerId, customerName, customerEmail, customerPhone, checkoutId } = body;
 
   try {
     console.log("Generating Cashfree payment link using /pg/links for:", {
-      amount, customerName, customerEmail, customerPhone
+      orderId, amount, customerName, customerEmail, customerPhone
     });
 
     const response = await axios.post(
       "https://sandbox.cashfree.com/pg/links",
       {
+        order_id: orderId,
         link_amount: amount,
         link_currency: "INR",
         link_purpose: "Advance payment for home service booking",
@@ -42,9 +43,13 @@ export async function POST(req: NextRequest) {
         },
         order_tags: {
           checkout_id: checkoutId,
+          my_order_id: orderId,
+          customer_id: customerId,
         },
         link_notes: {
           checkout_id: checkoutId,
+          my_order_id: orderId,
+          customer_id: customerId,
         }
       },
       {

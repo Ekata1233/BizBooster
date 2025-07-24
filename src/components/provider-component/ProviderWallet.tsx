@@ -16,8 +16,19 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
     }, [providerId]);
 
     if (loading) return <p>Loading wallet...</p>;
-    if (error) return <p>Error: {error}</p>;
-    if (!wallet) return <p>No wallet found.</p>;
+
+    // If wallet not found or error, show default 0-values
+    const defaultWallet = {
+        receivableBalance: 0,
+        cashInHand: 0,
+        balance: 0,
+        pendingWithdraw: 0,
+        alreadyWithdrawn: 0,
+        totalEarning: 0,
+    };
+
+    const finalWallet = wallet || defaultWallet;
+
 
     console.log("wallet : ", wallet)
     return (
@@ -25,12 +36,12 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
             <ComponentCard title="Wallet ">
                 <WalletStats
                     wallet={{
-                        receivableBalance: wallet.receivableBalance,
-                        cashInHand: wallet.cashInHand,
-                        withdrawableBalance: wallet.balance,
-                        pendingWithdraw: wallet.balance,
-                        alreadyWithdrawn: wallet.alreadyWithdrawn,
-                        totalEarning: wallet.totalEarning,
+                        receivableBalance: finalWallet.receivableBalance,
+                        cashInHand: finalWallet.cashInHand,
+                        withdrawableBalance: finalWallet.balance,
+                        pendingWithdraw: finalWallet.balance,
+                        alreadyWithdrawn: finalWallet.alreadyWithdrawn,
+                        totalEarning: finalWallet.totalEarning,
                     }}
                 />
             </ComponentCard>

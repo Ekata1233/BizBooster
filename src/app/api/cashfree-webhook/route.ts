@@ -21,22 +21,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // console.log("✅ Webhook Received:", body);
 
-    // console.log("✅ Webhook Received - order_tags:", JSON.stringify(body?.data?.order?.order_tags, null, 2));
-
-
-    // console.log("✅ Webhook Received - link_notes:", JSON.stringify(body?.data?.order?.link_notes, null, 2));
-
-
-    // ✅ Destructure from nested data
     const {
-      order: { order_id, order_amount, order_currency },
+      order: { order_id },
       payment: {
         cf_payment_id,
         payment_status,
         payment_amount,
         payment_currency,
-        payment_time,
-        bank_reference,
         payment_group,
       },
       customer_details,
@@ -64,20 +55,17 @@ export async function POST(req: NextRequest) {
     );
 
     const checkoutId = body?.data?.order?.order_tags?.checkout_id;
-
     console.log("checout I d : ", checkoutId)
 
     if (payment_status === "SUCCESS" && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
         new mongoose.Types.ObjectId(checkoutId), {
-        paymentMethod: [payment_group],
+        cashfreeMethod: [payment_group],
         paymentStatus: "paid",
       },
         { new: true }
       );
-
       console.log("updated checout OUt : ", updatedCheckout)
-
       if (updatedCheckout) {
         console.log(`✅ Updated Checkout for checkoutId: ${checkoutId}`);
       } else {
@@ -85,8 +73,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
 
+    const myOrderId = body?.data?.order?.order_tags?.my_order_id;
+    const myCustomerId = body?.data?.order?.order_tags?.customer_id;
+
+
+    console.log("myOrderId : ",myOrderId)
+    console.log("myCustomerId : ",myCustomerId)
+
+
+    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);

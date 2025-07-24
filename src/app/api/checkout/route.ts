@@ -14,39 +14,147 @@ const corsHeaders = {
 };
 
 // ✅ POST: Create a new Checkout
-export async function POST(req: Request) {
+// export async function POST(req: Request) {
+//   await connectToDatabase();
+
+//   try {
+//     const body = await req.json();
+//     console.log("Body of the checkout : ", body);
+//     const {
+//       user,
+//       service,
+//       serviceCustomer,
+//       provider,
+//       coupon,
+//       subtotal,
+//       serviceDiscount,
+//       couponDiscount,
+//       champaignDiscount ,
+//       vat ,
+//       platformFee ,
+//       assurityfee,
+//       tax ,
+//       totalAmount,
+//       termsCondition = false,
+//       paymentMethod,
+//       walletAmount ,
+//       paidByOtherMethodAmount ,
+//       partialPaymentNow ,
+//       partialPaymentLater ,
+//       remainingPaymentStatus, 
+//       paymentStatus ,
+//       orderStatus ,
+//       notes = '',
+//     } = body;
+
+//     const requiredFields = {
+//       user,
+//       service,
+//       serviceCustomer,
+//       totalAmount,
+//       paymentMethod,
+//     };
+
+//     if (!termsCondition) {
+//       return NextResponse.json(
+//         { success: false, message: 'You must agree to the terms and conditions to proceed.' },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+
+//     for (const [field, value] of Object.entries(requiredFields)) {
+//       if (!value) {
+//         return NextResponse.json(
+//           { success: false, message: `Missing ${field} field.` },
+//           { status: 400, headers: corsHeaders }
+//         );
+//       }
+//     }
+
+
+//     const checkout = new Checkout({
+//       user,
+//       service,
+//       serviceCustomer,
+//       provider,
+//       coupon,
+//       subtotal,
+//       serviceDiscount,
+//       couponDiscount,
+//       champaignDiscount,
+//       vat,
+//       platformFee,
+//       assurityfee,
+//       tax,
+//       totalAmount,
+//       termsCondition,
+//       paymentMethod,
+//       walletAmount,
+//       paidByOtherMethodAmount,
+//       partialPaymentNow,
+//       partialPaymentLater,
+//       remainingPaymentStatus,
+//       paymentStatus,
+//       orderStatus,
+//       notes,
+//     });
+
+//     console.log("checkout before save: ", checkout)
+
+//     await checkout.save();
+
+//     return NextResponse.json(
+//       { success: true, data: checkout },
+//       { status: 201, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : 'Unknown error';
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const body = await req.json();
-    console.log("Body of the checkout : ", body);
+    console.log("Body of the checkout:", body);
+
     const {
       user,
       service,
       serviceCustomer,
       provider,
+      serviceMan,
       coupon,
+
       subtotal,
       serviceDiscount,
       couponDiscount,
-      champaignDiscount = 0,
-      vat = 0,
-      platformFee = 0,
+      champaignDiscount,
+      gst,
+      platformFee,
       assurityfee,
-      tax = 0,
       totalAmount,
-      termsCondition = false,
+
+      termsCondition ,
       paymentMethod,
-      walletAmount = 0,
-      paidByOtherMethodAmount = 0,
-      partialPaymentNow = 0,
-      partialPaymentLater = 0,
-      remainingPaymentStatus, 
+      walletAmount ,
+      otherAmount ,
+      paidAmount ,
+      remainingAmount ,
+      isPartialPayment ,
+
       paymentStatus ,
-      orderStatus ,
-      notes = '',
+      orderStatus,
+      notes ,
     } = body;
 
+    // Required field validation
     const requiredFields = {
       user,
       service,
@@ -62,7 +170,6 @@ export async function POST(req: Request) {
       );
     }
 
-
     for (const [field, value] of Object.entries(requiredFields)) {
       if (!value) {
         return NextResponse.json(
@@ -72,35 +179,37 @@ export async function POST(req: Request) {
       }
     }
 
-
     const checkout = new Checkout({
       user,
       service,
       serviceCustomer,
       provider,
+      serviceMan,
       coupon,
+
       subtotal,
       serviceDiscount,
       couponDiscount,
       champaignDiscount,
-      vat,
+      gst,
       platformFee,
       assurityfee,
-      tax,
       totalAmount,
+
       termsCondition,
       paymentMethod,
       walletAmount,
-      paidByOtherMethodAmount,
-      partialPaymentNow,
-      partialPaymentLater,
-      remainingPaymentStatus,
+      otherAmount,
+      paidAmount,
+      remainingAmount,
+      isPartialPayment,
+
       paymentStatus,
       orderStatus,
       notes,
     });
 
-    console.log("checkout before save: ", checkout)
+    console.log('Checkout before save:', checkout);
 
     await checkout.save();
 
@@ -116,6 +225,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
 
 // ✅ GET: Get all Checkout entries (with optional filters)
 export async function GET(req: NextRequest) {
