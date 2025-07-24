@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (payment_status === "SUCCESS" && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
         new mongoose.Types.ObjectId(checkoutId), {
-        paymentMethod: [payment_group],
+        cashfreeMethod: [payment_group],
         paymentStatus: "paid",
       },
         { new: true }
