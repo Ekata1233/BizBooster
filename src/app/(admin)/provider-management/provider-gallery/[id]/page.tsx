@@ -2,22 +2,28 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useProvider } from '@/context/ProviderContext';
+import { Provider, useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
+
+// TEMPORARY fallback type
+
 
 const ViewProviderGalleryPage = () => {
   const { id } = useParams();
   const { providerDetails } = useProvider();
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
 useEffect(() => {
-  if (id && providerDetails!.length > 0) {
-    const provider = providerDetails!.find((p) => p._id === id);
+  const providers = providerDetails as unknown as Provider[];
+
+  if (id && providers.length > 0) {
+    const provider = providers.find((p) => p._id === id);
     if (provider) {
       setGalleryImages(provider.galleryImages || []);
     }
   }
 }, [id, providerDetails]);
+
 
 
   return (
