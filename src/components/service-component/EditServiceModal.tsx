@@ -393,6 +393,8 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                     setData={(newData) =>
                                         setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
                                     }
+                                       basicPrice={formData.basic?.price}
+                                       
                                 />
                             )}
 
