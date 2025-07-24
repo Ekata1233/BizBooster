@@ -13,8 +13,6 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-
-
 export const GET = async (req: NextRequest) => {
   try {
     await connectToDatabase();

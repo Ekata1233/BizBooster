@@ -56,9 +56,10 @@ export async function POST(req: NextRequest) {
     );
 
     const checkoutId = body?.data?.order?.order_tags?.checkout_id;
+    const myOrderId = body?.data?.order?.order_tags?.my_order_id;
     console.log("checout I d : ", checkoutId)
 
-    if (payment_status === "SUCCESS" && checkoutId) {
+    if (payment_status === "SUCCESS" && myOrderId?.startsWith("checkout_") && checkoutId) {
       const updatedCheckout = await Checkout.findOneAndUpdate(
         new mongoose.Types.ObjectId(checkoutId), {
         cashfreeMethod: [payment_group],
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
 
-    const myOrderId = body?.data?.order?.order_tags?.my_order_id;
+
     const myCustomerId = body?.data?.order?.order_tags?.customer_id;
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("package_") && myCustomerId) {
       try {
