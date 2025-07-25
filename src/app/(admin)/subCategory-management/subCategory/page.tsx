@@ -64,6 +64,7 @@ const Subcategory = () => {
     const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
     console.log("data in categories : ", categories)
     useEffect(() => {
@@ -118,6 +119,7 @@ const Subcategory = () => {
             setSubcategoryName(subcat.name);
             setSelectedCategoryId((subcat.category as Category)?._id || '');
             setSelectedFile(null);
+            setExistingImageUrl(subcat.image || null);
             openModal();
         }
     };
@@ -141,6 +143,7 @@ const Subcategory = () => {
             setEditingId(null);
             setSubcategoryName('');
             setSelectedFile(null);
+            setExistingImageUrl(null);
             fetchFilteredSubcategory();
         } catch (error) {
             console.error('Error updating subcategory:', error);
@@ -365,6 +368,22 @@ const Subcategory = () => {
                                 <Label>Upload Image</Label>
                                 <FileInput onChange={handleFileChange} />
                             </div>
+                            {(selectedFile || existingImageUrl) && (
+                                <div className="mt-2">
+                                    <Image
+                                        src={
+                                            selectedFile
+                                                ? URL.createObjectURL(selectedFile)
+                                                : existingImageUrl ?? ''
+                                        }
+                                        width={120}
+                                        height={120}
+                                        alt="Category Image"
+                                        className="rounded object-cover"
+                                    />
+                                </div>
+                            )}
+
                         </div>
 
                         <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">

@@ -53,6 +53,7 @@ interface TableData {
 type CategoryItem = {
   _id: string;
   name: string;
+  image?: string;
   module?: {
     _id: string;
   };
@@ -69,7 +70,7 @@ const Category = () => {
   const [filteredCategory, setFilteredCategory] = useState<TableData[]>([]);
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [activeTab, setActiveTab] = useState('all');
-
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   const moduleOptions = modules.map((module) => ({
     value: module._id, // or value: module if you want full object
@@ -212,6 +213,7 @@ const Category = () => {
       setCategoryName(category.name);
       setSelectedModuleId(category.module?._id || '');
       setSelectedFile(null);
+      setExistingImageUrl(category.image || null);
       openModal();
     }
   };
@@ -233,7 +235,9 @@ const Category = () => {
       setEditingCategoryId(null);
       setCategoryName('');
       setSelectedFile(null);
+      setExistingImageUrl(null);
       fetchFilteredCategory();
+
     } catch (error) {
       console.error('Error updating Category:', error);
     }
@@ -392,6 +396,24 @@ const Category = () => {
                       <FileInput onChange={handleFileChange} className="custom-class" />
 
                     </div>
+                    {(selectedFile || existingImageUrl) && (
+                      <div className="mt-2">
+                        <Image
+                          src={
+                            selectedFile
+                              ? URL.createObjectURL(selectedFile)
+                              : existingImageUrl ?? ''
+                          }
+                          width={120}
+                          height={120}
+                          alt="Category Image"
+                          className="rounded object-cover"
+                        />
+                      </div>
+                    )}
+
+
+
 
                   </div>
                 </div>
