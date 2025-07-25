@@ -38,6 +38,8 @@ export async function PUT(req: NextRequest) {
     // Update the fields
     checkout.paymentStatus = "paid";
     checkout.cashInHand = true;
+    checkout.orderStatus = "completed";
+    checkout.isCompleted = true;
     checkout.cashInHandAmount = checkout.remainingAmount;
     await checkout.save();
 
