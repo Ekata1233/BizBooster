@@ -14,6 +14,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
+
 import { PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
@@ -39,7 +40,6 @@ interface TableData {
     status: string;
 }
 
-
 const Module = () => {
     const { modules, updateModule, deleteModule } = useModule();
     const { isOpen, openModal, closeModal } = useModal();
@@ -50,9 +50,6 @@ const Module = () => {
     const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
     const [activeTab, setActiveTab] = useState('all');
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
-
-
-    console.log("category count module : ", modules);
 
     const fetchFilteredModules = async () => {
         try {
@@ -82,8 +79,8 @@ const Module = () => {
     }
 
     useEffect(() => {
-        fetchFilteredModules()
-    }, [searchQuery])
+        fetchFilteredModules();
+    }, [searchQuery]);
 
     const columns = [
         {
@@ -110,13 +107,11 @@ const Module = () => {
         {
             header: 'category Count',
             accessor: 'categoryCount',
-            render: (row: TableData) => {  // Log the row data
-                return (
-                    <div className="flex justify-center items-center">
-                        {row.categoryCount}
-                    </div>
-                );
-            },
+            render: (row: TableData) => (
+                <div className="flex justify-center items-center">
+                    {row.categoryCount}
+                </div>
+            ),
         },
         {
             header: 'Status',
@@ -157,11 +152,6 @@ const Module = () => {
                         <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                             <TrashBinIcon />
                         </button>
-                        {/* <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
-                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                                <EyeIcon />
-                            </button>
-                        </Link> */}
                     </div>
                 )
             },
@@ -174,7 +164,6 @@ const Module = () => {
         if (selectedModule) {
             setEditingModuleId(id);
             setModuleName(selectedModule.name);
-            // setSelectedCategoryId(module.category?._id || '');
             setExistingImageUrl(selectedModule.image || null);
             setSelectedFile(null);
             openModal();
@@ -198,12 +187,11 @@ const Module = () => {
             setModuleName('');
             setSelectedFile(null);
             setExistingImageUrl(null);
-            fetchFilteredModules();
+            fetchFilteredModules(); // ✅ refresh UI
         } catch (error) {
             console.error('Error updating module:', error);
         }
     };
-
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -213,15 +201,13 @@ const Module = () => {
     };
 
     const handleDelete = async (id: string) => {
-        // const confirmDelete = window.confirm('Are you sure you want to delete this module?');
-        // if (!confirmDelete) return;
-
         try {
             await deleteModule(id);
             alert('Module deleted successfully');
-            fetchFilteredModules();
+            // ✅ Immediately remove from UI
+            setFilteredModules(prev => prev.filter(mod => mod.id !== id));
         } catch (error) {
-            console.error('Error deleting module:', error); // ✅ using the error
+            console.error('Error deleting module:', error);
         }
     };
 
@@ -235,9 +221,7 @@ const Module = () => {
     };
 
     if (!modules || !Array.isArray(modules)) {
-        return <div>
-            <RouteLoader ></RouteLoader>
-        </div>;
+        return <div><RouteLoader /></div>;
     }
 
     return (
@@ -260,7 +244,6 @@ const Module = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-
                     </div>
 
                     <div className="border-b border-gray-200">
@@ -298,7 +281,6 @@ const Module = () => {
                             <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
                                 Edit Module Information
                             </h4>
-
                         </div>
 
                         <form className="flex flex-col">
@@ -341,7 +323,6 @@ const Module = () => {
 
                                     </div>
                                 </div>
-
                             </div>
                             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                                 <Button size="sm" variant="outline" onClick={closeModal}>

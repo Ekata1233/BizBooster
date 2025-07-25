@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
     const modules = await Module.find(filter);
      const modulesWithCategoryCount = await Promise.all(modules.map(async (module) => {
       // Count categories related to each module
-      const categoryCount = await Category.countDocuments({ module: module._id, isDeleted: false });
+      const categoryCount = await Category.countDocuments({ module: module._id});
       
       // Add category count to each module
       return {

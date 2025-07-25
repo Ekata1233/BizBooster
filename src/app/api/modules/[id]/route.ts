@@ -89,11 +89,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deletedModule = await Module.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true }
-    );
+    const deletedModule = await Module.findByIdAndDelete(id);
 
     if (!deletedModule) {
       return NextResponse.json(
@@ -103,7 +99,7 @@ export async function DELETE(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, message: "Module soft-deleted successfully" },
+      { success: true, message: "Module permanently deleted successfully" },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -115,3 +111,4 @@ export async function DELETE(req: Request) {
     );
   }
 }
+

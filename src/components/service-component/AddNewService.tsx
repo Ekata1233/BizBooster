@@ -33,6 +33,7 @@ type BasicDetailsData = {
   subcategory?: string;
   price?: number;
   discount?: number;
+  gst?: number;
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
   tags?: string[];
@@ -55,6 +56,7 @@ const AddNewService = () => {
       subcategory: '',
       price: 0,
       discount: 0,
+      gst: 0,
       thumbnail: null,
       covers: [],
       tags: [],
@@ -203,6 +205,7 @@ console.log("form data of service : ", formData);
           subcategory: '',
           price: 0,
           discount: 0,
+          gst: 0, 
           thumbnail: null,
           covers: [],
           tags: [],
