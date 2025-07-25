@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout"; // make sure path is correct
+import "@/models/Service"
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
