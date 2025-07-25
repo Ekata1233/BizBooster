@@ -8,7 +8,7 @@ export const userValidationSchema = z.object({
     .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, 'Full name must contain only letters and spaces'),
   email: z.string().email('Invalid email format'),
   mobileNumber: z.string().min(10).max(15).regex(/^\+?\d{10,15}$/, 'Invalid mobile number'),
-  password: z.string().min(8).max(20),
+  password: z.string(),
   // confirmPassword: z.string().min(6).max(20),
   // otp: z.string().min(6).max(6, 'OTP must be 6 digits'),
   isAgree: z.boolean().refine(val => val === true, 'You must agree to the terms'),
