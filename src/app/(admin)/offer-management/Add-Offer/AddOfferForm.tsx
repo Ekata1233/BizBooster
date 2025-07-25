@@ -27,7 +27,7 @@ const AddOfferForm: React.FC = () => {
       </h1>
 
       <div className="bg-white p-6 rounded shadow mb-10">
-        {/* You may not even need the 'mounted' check anymore with this pattern */}
+       
         <OfferComponent offerIdToEdit={offerId} />
       </div>
     </div>

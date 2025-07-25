@@ -16,10 +16,10 @@ export async function PUT(req: Request, { params }: any) {
   try {
     await connectToDatabase();
     const { id } = params;
-    const { adminCommission, platformFee } = await req.json();
+    const { assurityfee, platformFee } = await req.json();
     const updated = await Commission.findByIdAndUpdate(
       id,
-      { adminCommission, platformFee },
+      { assurityfee, platformFee },
       { new: true }
     );
     return NextResponse.json(updated, { status: 200, headers: corsHeaders });

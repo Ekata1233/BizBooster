@@ -14,10 +14,9 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import {  PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
-import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 // Define types
@@ -50,6 +49,8 @@ const Module = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
     const [activeTab, setActiveTab] = useState('all');
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+
 
     console.log("category count module : ", modules);
 
@@ -174,6 +175,7 @@ const Module = () => {
             setEditingModuleId(id);
             setModuleName(selectedModule.name);
             // setSelectedCategoryId(module.category?._id || '');
+            setExistingImageUrl(selectedModule.image || null);
             setSelectedFile(null);
             openModal();
         }
@@ -195,6 +197,7 @@ const Module = () => {
             setEditingModuleId(null);
             setModuleName('');
             setSelectedFile(null);
+            setExistingImageUrl(null);
             fetchFilteredModules();
         } catch (error) {
             console.error('Error updating module:', error);
@@ -317,6 +320,26 @@ const Module = () => {
                                             <FileInput onChange={handleFileChange} className="custom-class" />
 
                                         </div>
+                                        <div className="mt-2">
+                                            {selectedFile ? (
+                                                <Image
+                                                    src={URL.createObjectURL(selectedFile)}
+                                                    width={120}
+                                                    height={120}
+                                                    alt="Selected Module"
+                                                    className="rounded object-cover"
+                                                />
+                                            ) : existingImageUrl ? (
+                                                <Image
+                                                    src={existingImageUrl}
+                                                    width={120}
+                                                    height={120}
+                                                    alt="Current Module"
+                                                    className="rounded object-cover"
+                                                />
+                                            ) : null}
+                                        </div>
+
 
                                     </div>
                                 </div>
