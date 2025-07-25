@@ -86,6 +86,7 @@ export interface ServiceData {
   subcategory: { _id: string, name: string };
   price: number;
   discount: number;
+  gst:number;
   tags?: string[];
   keyValues?: KeyValue[];
   serviceDetails: ServiceDetails;

@@ -40,6 +40,7 @@ type FormDataType = {
         subcategory: string;
         price: number;
         discount?: number;
+        gst?: number;
         thumbnail: File | null;
         thumbnailPreview?: string;
         bannerImages: File[];
@@ -84,6 +85,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             subcategory: '',
             price: 0,
             discount: 0,
+            gst: 0,
             thumbnail: null,
             bannerImages: [],
             tags: [],
@@ -127,6 +129,7 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                     subcategory: service.subcategory._id || '',
                     price: service.price,
                     discount: service.discount || 0,
+                    gst: service.gst || 0,
                     thumbnail: null,
                     thumbnailPreview: service.thumbnailImage || '',
                     bannerImages: [],
@@ -236,6 +239,9 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
             formDataToSend.append('price', formData.basic.price.toString());
             if (formData.basic.discount !== undefined) {
                 formDataToSend.append('discount', formData.basic.discount.toString());
+            }
+            if (formData.basic.gst !== undefined) {
+                formDataToSend.append('gst', formData.basic.gst.toString()); // ✅ Append GST
             }
 
             if (formData.basic.thumbnail) {
@@ -393,8 +399,8 @@ const EditModuleModal: React.FC<EditServiceModalProps> = ({
                                     setData={(newData) =>
                                         setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
                                     }
-                                       price={formData.basic?.price}
-                                       
+                                    price={formData.basic?.price}
+
                                 />
                             )}
 
