@@ -42,6 +42,10 @@ export async function POST(req: Request) {
             );
         }
 
+        console.log("checkout otp : " , checkout.otp);
+        console.log("send otp : " , otp);
+
+
         if (checkout.otp !== otp) {
             return NextResponse.json(
                 { success: false, message: "Invalid OTP." },
