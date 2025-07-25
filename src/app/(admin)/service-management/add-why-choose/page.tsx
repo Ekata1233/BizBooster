@@ -67,51 +67,48 @@ const Page = () => {
   };
 
   const handleSubmit = async () => {
-    const formData = new FormData();
+  const formData = new FormData();
 
-    // Append text fields
-    formData.append("title", formState.title || "");
-    formData.append("description", formState.description || "");
+  formData.append("title", formState.title || "");
+  formData.append("description", formState.description || "");
 
-    // Append the file if it exists
-    if (selectedFile) {
-      formData.append("image", selectedFile);
-    } else if (formState.image && !formState.image.startsWith('blob:')) {
-      // If editing and image wasn't changed, keep the existing image
-      formData.append("image", formState.image);
+  if (selectedFile) {
+    formData.append("image", selectedFile);
+  } else if (formState.image && !formState.image.startsWith('blob:')) {
+    formData.append("image", formState.image);
+  }
+
+  const extraSections = formState.extraSections
+    ? JSON.stringify(
+        formState.extraSections
+          .split(',')
+          .map(desc => ({ description: desc.trim() }))
+      )
+    : "[]";
+
+  formData.append("extraSections", extraSections);
+
+  try {
+    if (editItem) {
+      await updateItem(editItem._id!, formData);
+      alert("Item updated successfully");
+    } else {
+      await addItem(formData);
+      alert("Item added successfully");
     }
-
-    // Handle extra sections
-const extraSections = formState.extraSections
-  ? JSON.stringify(
-      formState.extraSections
-        .split(',')
-        .map(desc => ({ description: desc.trim() }))
-    )
-  : "[]";
-
-formData.append("extraSections", extraSections);
-
-
-    try {
-      if (editItem) {
-        await updateItem(editItem._id!, formData);
-      } else {
-        await addItem(formData);
-      }
-      setFormState({
-        title: '',
-        description: '',
-        image: '',
-        extraSections: ''
-      })
-      setShowModal(false);
-      setEditItem(null);
-      setSelectedFile(null);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
+    setFormState({
+      title: '',
+      description: '',
+      image: '',
+      extraSections: ''
+    });
+    setShowModal(false);
+    setEditItem(null);
+    setSelectedFile(null);
+  } catch (error) {
+    console.error("Error submitting form:", error);
+  }
+};
 
   const columns = useMemo(() => [
     {

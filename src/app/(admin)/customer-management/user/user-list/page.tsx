@@ -143,12 +143,12 @@ const columns = [
         render: (row: TableData) => {
             // console.log("row id ", row.id)
             return (<div className="flex gap-2">
-                <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
+                {/* <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
                     <PencilIcon />
                 </button>
                 <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                     <TrashBinIcon />
-                </button>
+                </button> */}
                 <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
                     <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
                         <EyeIcon />
