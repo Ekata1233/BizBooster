@@ -14,6 +14,7 @@ interface BasicDetailsData {
     subcategory?: string;
     price?: number;
     discount?: number;
+    gst?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
     tags?: string[];
@@ -234,6 +235,15 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             placeholder="Discount (%)"
                             value={data.discount || ""}
                             onChange={(e) => setData({ ...data, discount: Number(e.target.value) })}
+                        />
+                    </div>
+                    <div>
+                        <Label>GST (%)</Label>
+                        <Input
+                            type="number"
+                            placeholder="GST (%)"
+                            value={data.gst || ""}
+                            onChange={(e) => setData({ ...data, gst: Number(e.target.value) })}
                         />
                     </div>
 

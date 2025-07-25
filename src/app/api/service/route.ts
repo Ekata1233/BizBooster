@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    console.log("Service in backend", formData)
+    // console.log("Service in backend", formData)
 
     // Required fields from formData (adjust based on your schema)
     const serviceName = formData.get("basic[name]") as string;
@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
     subcategory = subcategory?.trim() === "" ? undefined : subcategory;
     const priceStr = formData.get("basic[price]");
     const discount = formData.get("basic[discount]");
+    const gstStr = formData.get("basic[gst]");
+    const gst = gstStr ? parseFloat(gstStr as string) : 0;
+
+    console.log("Parsed GST from form:", gstStr, "Parsed:", gst);
+
+
     const tags: string[] = [];
     const recommendedServicesStr = formData.get("basic[recommendedServices]") as string;
     const recommendedServices = recommendedServicesStr === "true";
@@ -194,6 +200,7 @@ export async function POST(req: NextRequest) {
       subcategory,
       price,
       discount,
+      gst,
       discountedPrice,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,

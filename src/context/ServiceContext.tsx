@@ -30,6 +30,7 @@ interface Service {
   subcategory: {_id: string, name: string };
   price: number;
   discountedPrice: number;
+  gst?: number;
   tags?: string[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
