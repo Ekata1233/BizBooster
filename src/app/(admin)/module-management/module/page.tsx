@@ -14,7 +14,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
-import {  PencilIcon, TrashBinIcon } from '@/icons';
+import { PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
@@ -315,31 +315,29 @@ const Module = () => {
                                             />
 
                                         </div>
+
+
                                         <div>
                                             <Label>Select Image</Label>
                                             <FileInput onChange={handleFileChange} className="custom-class" />
-
-                                        </div>
-                                        <div className="mt-2">
                                             {selectedFile ? (
                                                 <Image
                                                     src={URL.createObjectURL(selectedFile)}
-                                                    width={120}
-                                                    height={120}
+                                                    width={80}
+                                                    height={80}
                                                     alt="Selected Module"
-                                                    className="rounded object-cover"
+                                                    className="mt-2 w-20 h-20 object-cover rounded border"
                                                 />
                                             ) : existingImageUrl ? (
                                                 <Image
                                                     src={existingImageUrl}
-                                                    width={120}
-                                                    height={120}
+                                                    width={80}
+                                                    height={80}
                                                     alt="Current Module"
-                                                    className="rounded object-cover"
+                                                    className="mt-2 w-20 h-20 object-cover rounded border"
                                                 />
                                             ) : null}
                                         </div>
-
 
                                     </div>
                                 </div>

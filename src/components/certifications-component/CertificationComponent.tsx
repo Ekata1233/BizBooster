@@ -163,7 +163,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
     try {
         if (certificationIdToEdit) {
             await axios.put(`/api/certifications/${certificationIdToEdit}`, formData);
-            alert('Certificate updated successfully!');
+            alert('Tutorial updated successfully!');
         } else {
             if (addCertificate) {
                 await addCertificate(formData);
@@ -177,7 +177,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
             }
-            alert('Certificate added successfully!');
+            alert('Tutorial added successfully!');
         }
 
         // Reset everything

@@ -367,23 +367,24 @@ const Subcategory = () => {
                             <div>
                                 <Label>Upload Image</Label>
                                 <FileInput onChange={handleFileChange} />
-                            </div>
-                            {(selectedFile || existingImageUrl) && (
-                                <div className="mt-2">
-                                    <Image
-                                        src={
-                                            selectedFile
-                                                ? URL.createObjectURL(selectedFile)
-                                                : existingImageUrl ?? ''
-                                        }
-                                        width={120}
-                                        height={120}
-                                        alt="Category Image"
-                                        className="rounded object-cover"
-                                    />
-                                </div>
-                            )}
 
+                                {(selectedFile || existingImageUrl) && (
+                                    <div className="mt-2">
+                                        <Image
+                                            src={
+                                                selectedFile
+                                                    ? URL.createObjectURL(selectedFile)
+                                                    : existingImageUrl ?? ''
+                                            }
+                                            width={120}
+                                            height={120}
+                                            alt="Category Image"
+                                            className="mt-2 w-20 h-20 object-cover rounded border"
+                                        />
+                                    </div>
+                                )}
+
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">

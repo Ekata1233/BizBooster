@@ -395,7 +395,7 @@ const Category = () => {
                       <Label>Select Image</Label>
                       <FileInput onChange={handleFileChange} className="custom-class" />
 
-                    </div>
+                    
                     {(selectedFile || existingImageUrl) && (
                       <div className="mt-2">
                         <Image
@@ -407,15 +407,12 @@ const Category = () => {
                           width={120}
                           height={120}
                           alt="Category Image"
-                          className="rounded object-cover"
+                           className="mt-2 w-20 h-20 object-cover rounded border"
                         />
                       </div>
                     )}
-
-
-
-
                   </div>
+                </div>
                 </div>
 
               </div>
