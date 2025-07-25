@@ -124,6 +124,12 @@ export async function PUT(req: NextRequest) {
     const newPendingWithdraw = Math.max(providerWallet.pendingWithdraw - amount, 0);
     const newCashInHand = providerWallet.cashInHand + amount;
 
+    console.log("ammount : ", amount)
+    console.log("newBalance : ", newBalance)
+    console.log("newWithdrawable : ", newWithdrawable)
+    console.log("newPendingWithdraw : ", newPendingWithdraw)
+    console.log("newCashInHand : ", newCashInHand)
+
     // 5. Add transaction
     providerWallet.transactions.push({
       type: "credit",
@@ -143,6 +149,12 @@ export async function PUT(req: NextRequest) {
     providerWallet.cashInHand = newCashInHand;
     providerWallet.withdrawableBalance = newWithdrawable;
     providerWallet.pendingWithdraw = newPendingWithdraw;
+
+    console.log("providerWallet.balance : ", providerWallet.balance)
+    console.log("providerWallet.totalCredits : ", providerWallet.totalCredits)
+    console.log("providerWallet.cashInHand : ", providerWallet.cashInHand)
+    console.log("providerWallet.withdrawableBalance : ", providerWallet.withdrawableBalance)
+    console.log("providerWallet.pendingWithdraw : ", providerWallet.pendingWithdraw)
 
     await providerWallet.save();
 
