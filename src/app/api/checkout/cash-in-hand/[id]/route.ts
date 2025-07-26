@@ -119,14 +119,15 @@ export async function PUT(req: NextRequest) {
     }
 
     // 4. Calculate new balances
+    console.log("previous balance of pending withdraw : ",providerWallet.pendingWithdraw)
     const newBalance = providerWallet.balance + amount;
     const newWithdrawable = Math.max(providerWallet.withdrawableBalance - amount, 0);
     const newPendingWithdraw = Math.max(providerWallet.pendingWithdraw - amount, 0);
     const newCashInHand = providerWallet.cashInHand + amount;
 
     console.log("ammount : ", amount)
-    console.log("newBalance : ", newBalance)
-    console.log("newWithdrawable : ", newWithdrawable)
+    // console.log("newBalance : ", newBalance)
+    // console.log("newWithdrawable : ", newWithdrawable)
     console.log("newPendingWithdraw : ", newPendingWithdraw)
     console.log("newCashInHand : ", newCashInHand)
 
@@ -150,11 +151,11 @@ export async function PUT(req: NextRequest) {
     providerWallet.withdrawableBalance = newWithdrawable;
     providerWallet.pendingWithdraw = newPendingWithdraw;
 
-    console.log("providerWallet.balance : ", providerWallet.balance)
-    console.log("providerWallet.totalCredits : ", providerWallet.totalCredits)
-    console.log("providerWallet.cashInHand : ", providerWallet.cashInHand)
-    console.log("providerWallet.withdrawableBalance : ", providerWallet.withdrawableBalance)
-    console.log("providerWallet.pendingWithdraw : ", providerWallet.pendingWithdraw)
+    // console.log("providerWallet.balance : ", providerWallet.balance)
+    // console.log("providerWallet.totalCredits : ", providerWallet.totalCredits)
+    // console.log("providerWallet.cashInHand : ", providerWallet.cashInHand)
+    // console.log("providerWallet.withdrawableBalance : ", providerWallet.withdrawableBalance)
+    // console.log("providerWallet.pendingWithdraw : ", providerWallet.pendingWithdraw)
 
     await providerWallet.save();
 
