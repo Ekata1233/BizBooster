@@ -33,6 +33,8 @@ interface Service {
   discountedPrice: number;
   gst?: number;
   includeGst?: boolean;
+   gstInRupees?: number;       // ✅ newly added
+  totalWithGst?: number;
 keyValues:string;
   tags?: string[];
   serviceDetails: ServiceDetails;
