@@ -14,8 +14,10 @@ import Input from '@/components/form/input/InputField';
 import { Category, useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import axios from 'axios';
-import EditServiceModal from '@/components/service-component/EditServiceModal';
 import { useService } from '@/context/ServiceContext';
+import EditServiceModal from '@/components/service-component/EditServiceModal';
+import { useRouter } from 'next/navigation';
+
 
 
 
@@ -28,6 +30,8 @@ interface Service {
   subcategory: { _id: string; name: string };
   price: number;
   discount: number;
+  gst: number;
+  includeGst: boolean;
   tags?: string[];
   keyValues?: KeyValue[];
   serviceDetails: ServiceDetails;
@@ -64,7 +68,7 @@ interface ServiceDetails {
   document: string;
   row?: ExtraSection[]; // <-- add this
   whyChoose?: WhyChooseItem[];    // <-- and this
-  faqs?: FaqItem[];   
+  faqs?: FaqItem[];
   faq?: FaqItem[];               // <-- and this
 }
 
@@ -86,7 +90,8 @@ export interface ServiceData {
   subcategory: { _id: string, name: string };
   price: number;
   discount: number;
-  gst:number;
+  gst: number;
+  includeGst: boolean;
   tags?: string[];
   keyValues?: KeyValue[];
   serviceDetails: ServiceDetails;
@@ -118,6 +123,7 @@ const ServiceList = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
 
+  const router = useRouter();
 
   const fetchFilteredServices = async () => {
     try {
@@ -147,6 +153,8 @@ const ServiceList = () => {
           subcategory: service.subcategory || { _id: '', name: 'N/A' },
           price: service.price,
           discount: service.discount,
+          gst: service.gst,
+          includeGst: service.includeGst,
           tags: service.tags?.length ? service.tags : ['N/A'],
           keyValues: service.keyValues?.length
             ? service.keyValues
@@ -245,11 +253,12 @@ const ServiceList = () => {
       accessor: 'action',
       render: (row: ServiceData) => (
         <div className="flex gap-2">
-          <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-            onClick={() => openModal(row)}
-          >
-            <PencilIcon />
-          </button>
+          <Link href={`/service-management/service-list/${row.id}`} passHref>
+            <button className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white">
+              <PencilIcon />
+            </button>
+          </Link>
+
           <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
             <TrashBinIcon />
           </button>
@@ -287,7 +296,7 @@ const ServiceList = () => {
   };
 
   const openModal = (service: ServiceData) => {
-    console.log("service in modal : ", service)
+    console.log("service in modal of gst and include gst : ", service)
     setSelectedService(service);
     setIsOpen(true);
   };
@@ -379,20 +388,7 @@ const ServiceList = () => {
               >
                 All
               </li>
-              {/* <li
-                className={`px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                  }`}
-                onClick={() => setActiveTab('active')}
-              >
-                Active
-              </li>
-              <li
-                className={`px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                  }`}
-                onClick={() => setActiveTab('inactive')}
-              >
-                Inactive
-              </li> */}
+
             </ul>
           </div>
 
@@ -404,15 +400,16 @@ const ServiceList = () => {
         </ComponentCard>
       </div>
 
-      <EditServiceModal
+      {/* <EditServiceModal
         isOpen={isOpen}
         onClose={closeModal}
         service={selectedService}
-        onUpdate={async (id, formData) => {
+        onUpdate={async (id: string, formData: FormData) => {
           await updateService(id, formData);
           fetchFilteredServices();
         }}
-      />
+      /> */}
+
     </div>
   );
 };

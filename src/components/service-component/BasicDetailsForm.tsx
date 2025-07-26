@@ -15,6 +15,7 @@ interface BasicDetailsData {
     price?: number;
     discount?: number;
     gst?: number;
+    includeGst?: boolean;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
     tags?: string[];
@@ -42,7 +43,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const [rows, setRows] = useState<KeyValue[]>([]);
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
-
+    const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
     console.log("data of basic details form : ", data)
 
     useEffect(() => {
@@ -237,15 +238,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             onChange={(e) => setData({ ...data, discount: Number(e.target.value) })}
                         />
                     </div>
-                    <div>
-                        <Label>GST (%)</Label>
-                        <Input
-                            type="number"
-                            placeholder="GST (%)"
-                            value={data.gst || ""}
-                            onChange={(e) => setData({ ...data, gst: Number(e.target.value) })}
-                        />
-                    </div>
+
 
                     <div>
                         <Label>After Discount Price</Label>
@@ -260,6 +253,35 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             {...{ readOnly: true }}
                         />
                     </div>
+                    {/* GST Section */}
+                   <div className="border p-3 rounded-md">
+  <div className="flex items-center justify-between mb-2">
+    <Label>Include GST</Label>
+    <Switch
+      label="Enable GST"
+      checked={!!data.includeGst}
+      onChange={(val: boolean) => setData({ includeGst: val })}
+    />
+  </div>
+
+  <p className={`font-medium mb-2 ${data.includeGst ? "text-green-600" : "text-red-600"}`}>
+    {data.includeGst
+      ? "GST Included in Price (Provider Pays GST)"
+      : "GST Not Included (Customer Pays GST)"}
+  </p>
+
+  <div>
+    <Label>GST (%)</Label>
+    <Input
+      type="number"
+      placeholder="Enter GST %"
+      value={data.gst ?? ""}
+      onChange={(e) => setData({ gst: Number(e.target.value) })}
+    />
+  </div>
+</div>
+
+
 
                 </div>
 

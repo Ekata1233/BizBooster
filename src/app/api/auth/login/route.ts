@@ -64,7 +64,7 @@ export const POST = async (req: Request) => {
 
     if (!isMatch) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid Password' },
         { status: 400, headers: corsHeaders }
       );
     }

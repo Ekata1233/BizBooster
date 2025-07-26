@@ -34,6 +34,8 @@ type BasicDetailsData = {
   price?: number;
   discount?: number;
   gst?: number;
+  includeGst?: boolean;
+
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
   tags?: string[];
@@ -57,6 +59,7 @@ const AddNewService = () => {
       price: 0,
       discount: 0,
       gst: 0,
+      includeGst: false,
       thumbnail: null,
       covers: [],
       tags: [],
