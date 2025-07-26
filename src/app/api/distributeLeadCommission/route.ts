@@ -388,6 +388,7 @@ export async function POST(req: Request) {
             providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
             providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
             providerWallet.balance = providerWallet.balance - cashAmount;
+            providerWallet.totalDebits = providerWallet.totalDebits + cashAmount;
 
             providerWallet.transactions.push({
                 type: "debit",
