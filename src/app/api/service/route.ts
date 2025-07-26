@@ -193,9 +193,14 @@ export async function POST(req: NextRequest) {
     };
 
     // Convert price and discount to numbers
-    const discountedPrice = discount
-      ? Math.floor(price - (price * parseFloat(discount as string) / 100))
-      : price;
+   const discountPercentage = discount ? parseFloat(discount as string) : 0;
+const discountedPrice = discountPercentage
+  ? Math.floor(price - (price * discountPercentage / 100))
+  : price;
+
+const gstInRupees = (discountedPrice * gst) / 100;
+const totalWithGst = discountedPrice + gstInRupees;
+
 
     const newService = await Service.create({
       serviceName,
@@ -205,7 +210,9 @@ export async function POST(req: NextRequest) {
       discount,
       gst,
       includeGst,
+      gstInRupees, 
       discountedPrice,
+       totalWithGst, 
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
       tags,

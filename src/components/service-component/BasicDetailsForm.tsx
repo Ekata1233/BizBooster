@@ -14,8 +14,11 @@ interface BasicDetailsData {
     subcategory?: string;
     price?: number;
     discount?: number;
+    discountedPrice?: number;
     gst?: number;
     includeGst?: boolean;
+    gstInRupees?: number;        // ✅ added
+    totalWithGst?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
     tags?: string[];
@@ -63,6 +66,25 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
             }
         }
     }, [data]);
+    // 🧮 Auto calculate GST values
+    useEffect(() => {
+        const discountedPrice = data.discountedPrice || 0;
+
+        console.log("discounted price for the gst : ", discountedPrice);
+        const gst = data.gst || 0;
+
+        console.log("gst for th gst : ", gst)
+
+        const gstInRupees = (discountedPrice * gst) / 100;
+        console.log("gst for th gst : ", gst)
+        const totalWithGst = discountedPrice + gstInRupees;
+        console.log("gst for th gst : ", gst)
+
+        setData({
+            gstInRupees,
+            totalWithGst,
+        });
+    }, [data.discountedPrice, data.gst]);
 
     const categoryOptions = categories.map((cat) => ({
         value: cat._id as string,
@@ -170,6 +192,21 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setData({ recommendedServices: checked });
     };
 
+    useEffect(() => {
+        const price = data.price ?? 0;
+        const discount = data.discount ?? 0;
+
+        // Only calculate if both are present
+        if (price && discount >= 0) {
+            const discountedPrice = Math.floor(price - (price * discount) / 100);
+            setData({
+                ...data,
+                discountedPrice,
+            });
+        }
+    }, [data.price, data.discount]);
+
+
     return (
         <div>
             <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
@@ -187,37 +224,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         />
                     </div>
 
-                    <div>
-                        <Label>Select Category</Label>
-                        <div className="relative">
-                            <Select
-                                options={categoryOptions}
-                                placeholder="Categories"
-                                value={selectedCategory}
-                                onChange={(value: string) => setData({ category: value })}
-                                className="dark:bg-dark-900"
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <ChevronDownIcon />
-                            </span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <Label>Select Subcategory</Label>
-                        <div className="relative">
-                            <Select
-                                options={subcategoryOptions}
-                                placeholder="Subcategories"
-                                value={selectedSubcategory}
-                                onChange={(value: string) => setData({ subcategory: value })}
-                                className="dark:bg-dark-900"
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <ChevronDownIcon />
-                            </span>
-                        </div>
-                    </div>
+                    
 
                     <div>
                         <Label>Price</Label>
@@ -254,39 +261,101 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         />
                     </div>
                     {/* GST Section */}
-                   <div className="border p-3 rounded-md">
-  <div className="flex items-center justify-between mb-2">
-    <Label>Include GST</Label>
-    <Switch
-      label="Enable GST"
-      checked={!!data.includeGst}
-      onChange={(val: boolean) => setData({ includeGst: val })}
-    />
-  </div>
+                    <div className="border p-3 rounded-md">
+                        <div className="flex items-center justify-between mb-2">
+                            <Label>Include GST</Label>
+                            <Switch
+                                label="Enable GST"
+                                checked={!!data.includeGst}
+                                onChange={(val: boolean) => setData({ includeGst: val })}
+                            />
+                        </div>
 
-  <p className={`font-medium mb-2 ${data.includeGst ? "text-green-600" : "text-red-600"}`}>
-    {data.includeGst
-      ? "GST Included in Price (Provider Pays GST)"
-      : "GST Not Included (Customer Pays GST)"}
-  </p>
+                        <p className={`font-medium mb-2 ${data.includeGst ? "text-green-600" : "text-red-600"}`}>
+                            {data.includeGst
+                                ? "GST Included in Price (Provider Pays GST)"
+                                : "GST Not Included (Customer Pays GST)"}
+                        </p>
 
-  <div>
-    <Label>GST (%)</Label>
-    <Input
-      type="number"
-      placeholder="Enter GST %"
-      value={data.gst ?? ""}
-      onChange={(e) => setData({ gst: Number(e.target.value) })}
+                        <div>
+                            <Label>GST (%)</Label>
+                            <Input
+                                type="number"
+                                placeholder="Enter GST %"
+                                value={data.gst ?? ""}
+                                onChange={(e) => setData({ gst: Number(e.target.value) })}
+                            />
+                        </div>
+                        <div className="mt-3">
+                            <Label>GST in Rupees</Label>
+                            <Input
+                                type="number"
+                                value={data.gstInRupees || 0}
+                                disabled
+                            />
+                        </div>
+
+                        {/* <div className="mt-3">
+                            <Label>Total with GST</Label>
+                            <Input
+                                type="number"
+                                value={data.totalWithGst || 0}
+                                disabled
+                            />
+                        </div> */}
+
+                    </div>
+
+<div className="mt-4">
+  <div className="relative">
+    <input
+      type="text"
+      value="Total with GST"
+      disabled
+      className="w-full pl-4 pr-28 py-2 bg-green-50 text-green-800 border border-green-300 rounded-xl shadow-sm font-semibold disabled:cursor-not-allowed"
     />
+    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-800 font-bold">
+      ₹ {data.totalWithGst || 0}
+    </span>
   </div>
 </div>
-
 
 
                 </div>
 
                 {/* Right Side */}
                 <div className="space-y-3">
+                    <div>
+                        <Label>Select Category</Label>
+                        <div className="relative">
+                            <Select
+                                options={categoryOptions}
+                                placeholder="Categories"
+                                value={selectedCategory}
+                                onChange={(value: string) => setData({ category: value })}
+                                className="dark:bg-dark-900"
+                            />
+                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                <ChevronDownIcon />
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label>Select Subcategory</Label>
+                        <div className="relative">
+                            <Select
+                                options={subcategoryOptions}
+                                placeholder="Subcategories"
+                                value={selectedSubcategory}
+                                onChange={(value: string) => setData({ subcategory: value })}
+                                className="dark:bg-dark-900"
+                            />
+                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
+                                <ChevronDownIcon />
+                            </span>
+                        </div>
+                    </div>
                     <div>
                         <Label>Thumbnail Image</Label>
                         <FileInput onChange={handleFileChange} className="custom-class" />

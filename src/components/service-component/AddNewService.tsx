@@ -33,9 +33,11 @@ type BasicDetailsData = {
   subcategory?: string;
   price?: number;
   discount?: number;
+    discountedPrice?: number;
   gst?: number;
   includeGst?: boolean;
-
+ gstInRupees?: number;        // ✅ newly added
+  totalWithGst?: number;
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
   tags?: string[];
@@ -58,6 +60,7 @@ const AddNewService = () => {
       subcategory: '',
       price: 0,
       discount: 0,
+      discountedPrice : 0,
       gst: 0,
       includeGst: false,
       thumbnail: null,
@@ -87,7 +90,7 @@ const AddNewService = () => {
     },
   });
 
-console.log("form data of service : ", formData);
+// console.log("form data of service : ", formData);
   
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,59 +191,83 @@ console.log("form data of service : ", formData);
   };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent form submit reload
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!isStepComplete(3)) {
-      alert("Please complete all steps before submitting");
-      return;
-    }
+  if (!isStepComplete(3)) {
+    alert("Please complete all steps before submitting");
+    return;
+  }
 
-    setIsSubmitting(true);
-    try {
-      const fd = buildFormData(formData);
-      await createService(fd);
-      alert("Service added successfully!");
-      setFormData({
-        basic: {
-          name: '',
-          category: '',
-          subcategory: '',
-          price: 0,
-          discount: 0,
-          gst: 0, 
-          thumbnail: null,
-          covers: [],
-          tags: [],
-        },
-        service: {
-          benefits: '',
-          overview: '',
-          highlight: null,
-          document: '',
-          whyChoose: [],
-          howItWorks: '',
-          terms: '',
-          faqs: [],
-          rows: [],
-        },
-        franchise: {
-          commission: '',
-          overview: '',
-          howItWorks: '',
-          terms: '',
-          rows: [],
-        },
-      });
-      setStep(1);
-      setCompletedSteps([]);
-    } catch (err) {
-      console.error("Failed to add service:", err);
-      alert("Failed to add service");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  setIsSubmitting(true);
+
+  try {
+    // ✅ Step 1: Calculate GST-related fields
+    const { price = 0, gst = 0 } = formData.basic;
+    const gstInRupees = (price * gst) / 100;
+    const totalWithGst = price + gstInRupees;
+
+    // ✅ Step 2: Inject values into basic form before building FormData
+    const formDataWithGst = {
+      ...formData,
+      basic: {
+        ...formData.basic,
+        gstInRupees,
+        totalWithGst,
+      },
+    };
+
+    const fd = buildFormData(formDataWithGst);
+    await createService(fd);
+
+    alert("Service added successfully!");
+
+    // Reset
+    setFormData({
+      basic: {
+        name: '',
+        category: '',
+        subcategory: '',
+        price: 0,
+        discount: 0,
+        gst: 0,
+        includeGst: false,
+        thumbnail: null,
+        covers: [],
+        tags: [],
+        keyValues: [{ key: '', value: '' }],
+        recommendedServices: false,
+      },
+      service: {
+        benefits: '',
+        overview: '',
+        highlight: null,
+        document: '',
+        howItWorks: '',
+        terms: '',
+        faqs: [{ question: '', answer: '' }],
+        rows: [{ title: '', description: '' }],
+        whyChoose: [],
+      },
+      franchise: {
+        commission: '',
+        overview: '',
+        howItWorks: '',
+        terms: '',
+        rows: [{ title: '', description: '' }],
+      },
+    });
+    setStep(1);
+    setCompletedSteps([]);
+
+  } catch (err) {
+    console.error("Failed to add service:", err);
+    alert("Failed to add service");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div>

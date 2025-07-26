@@ -24,7 +24,6 @@ export const useGallery = () => {
 export const GalleryProvider = ({ children }: { children: React.ReactNode }) => {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-console.log("gg ", );
 
   const fetchGallery = async (providerId: string) => {
     setLoading(true);
