@@ -45,13 +45,12 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("franchise details :", checkout.service?.franchiseDetails);
+        console.log("checkout details in commission distribute :", checkout);
 
         // const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
-        console.log("franchise details :", checkout.service?.franchiseDetails);
+
 
         const rawCommission = checkout.service?.franchiseDetails?.commission;
-        console.log("Raw commission string:", rawCommission);
 
         // ✅ CORRECT fallback logic
         const commission =
@@ -62,7 +61,6 @@ export async function POST(req: Request) {
                 : rawCommission;
 
 
-        console.log("✅ Final resolved commission:", commission);
 
 
         if (!checkout || checkout.commissionDistributed) {
