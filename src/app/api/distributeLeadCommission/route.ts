@@ -38,18 +38,31 @@ export async function POST(req: Request) {
             );
         }
         const lead = await Lead.findOne({ checkout: checkoutId })
-        console.log("lead : ", lead)
+        // console.log("lead : ", lead)
 
         const checkout = await Checkout.findById(checkoutId).populate("user").populate({
             path: "service",
             select: "franchiseDetails.commission"
         });
 
-console.log("checkout:", checkout);
-console.log("checkout.user:", checkout?.user);
-console.log("checkout.service:", checkout?.service);
+        console.log("franchise details :", checkout.service?.franchiseDetails);
 
-        const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
+        // const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
+        console.log("franchise details :", checkout.service?.franchiseDetails);
+
+        const rawCommission = checkout.service?.franchiseDetails?.commission;
+        console.log("Raw commission string:", rawCommission);
+
+        // ✅ CORRECT fallback logic
+        const commission =
+            lead?.newCommission || lead?.newCommission === 0
+                ? lead?.newCommission > 0
+                    ? lead.newCommission
+                    : rawCommission
+                : rawCommission;
+
+
+        console.log("✅ Final resolved commission:", commission);
 
 
         if (!checkout || checkout.commissionDistributed) {
@@ -60,6 +73,8 @@ console.log("checkout.service:", checkout?.service);
         }
 
         const leadAmount = lead?.afterDicountAmount ?? checkout.totalAmount;
+
+        console.log("lead amount : ", leadAmount);
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
             ? lead.extraService.reduce((sum: number, item: { total?: number }) => sum + (item.total || 0), 0)
@@ -87,12 +102,16 @@ console.log("checkout.service:", checkout?.service);
         if (typeof commission === "string") {
             const trimmed = commission.trim();
 
+            console.log("commission after trimmed : ", trimmed);
+
             if (trimmed.endsWith("%")) {
                 const percent = parseFloat(trimmed.replace("%", ""));
                 commissionPool = (leadAmount * percent) / 100;
+                console.log("commission pool : ", commissionPool);
             } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
                 const numericString = trimmed.replace("₹", "").trim();
                 commissionPool = parseFloat(numericString);
+                console.log("commission pool : ", commissionPool);
             } else {
                 throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
             }
@@ -200,7 +219,7 @@ console.log("checkout.service:", checkout?.service);
         };
 
         // Distribute commissions
-        await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C",checkout.bookingId,userC._id);
+        await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC._id);
         await ReferralCommission.create({
             fromLead: checkout._id,
             receiver: userC._id,
@@ -208,7 +227,7 @@ console.log("checkout.service:", checkout?.service);
         });
 
         if (userB) {
-            await creditWallet(userB._id, B_share, "Referral Earning", checkout._id.toString(), "B",checkout.bookingId,userC._id);
+            await creditWallet(userB._id, B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userB._id,
@@ -217,7 +236,7 @@ console.log("checkout.service:", checkout?.service);
         }
 
         if (userA) {
-            await creditWallet(userA._id, A_share, "Referral Earning", checkout._id.toString(), "A",checkout.bookingId,userC._id);
+            await creditWallet(userA._id, A_share, "Referral Earning", checkout._id.toString(), "A", checkout.bookingId, userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userA._id,
@@ -225,7 +244,7 @@ console.log("checkout.service:", checkout?.service);
             });
         }
 
-        await creditWallet(ADMIN_ID, adminShare, "Referral Earning - Admin", checkout._id.toString(),"A",checkout.bookingId,userC._id);
+        await creditWallet(ADMIN_ID, adminShare, "Referral Earning - Admin", checkout._id.toString(), "A", checkout.bookingId, userC._id);
         await ReferralCommission.create({
             fromLead: checkout._id,
             receiver: ADMIN_ID,
@@ -304,7 +323,7 @@ console.log("checkout.service:", checkout?.service);
             if (!userB) extra_adminShare += extra_B_share;
             if (!userA) extra_adminShare += extra_A_share;
 
-            await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C",checkout.bookingId,userC._id);
+            await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userC._id,
@@ -312,7 +331,7 @@ console.log("checkout.service:", checkout?.service);
             });
 
             if (userB) {
-                await creditWallet(userB._id, extra_B_share, "Referral Earning", checkout._id.toString(), "B",checkout.bookingId,userC._id);
+                await creditWallet(userB._id, extra_B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userB._id,
@@ -321,7 +340,7 @@ console.log("checkout.service:", checkout?.service);
             }
 
             if (userA) {
-                await creditWallet(userA._id, extra_A_share, "Referral Earning", checkout._id.toString(), "A",checkout.bookingId,userC._id);
+                await creditWallet(userA._id, extra_A_share, "Referral Earning", checkout._id.toString(), "A", checkout.bookingId, userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userA._id,
@@ -329,7 +348,7 @@ console.log("checkout.service:", checkout?.service);
                 });
             }
 
-            await creditWallet(ADMIN_ID, extra_adminShare, "Referral Earning - Admin", checkout._id.toString(),checkout.bookingId,userC._id);
+            await creditWallet(ADMIN_ID, extra_adminShare, "Referral Earning - Admin", checkout._id.toString(), checkout.bookingId, userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: ADMIN_ID,

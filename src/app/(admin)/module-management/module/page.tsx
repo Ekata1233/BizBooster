@@ -14,6 +14,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
+
 import { PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
@@ -284,38 +285,42 @@ const Module = () => {
 
                         <form className="flex flex-col">
                             <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
-                                <div className="grid grid-cols-1 gap-x-6 gap-y-5 ">
-                                    <div>
-                                        <Label>Module Name</Label>
-                                        <Input
-                                            type="text"
-                                            value={moduleName}
-                                            placeholder="Enter Module"
-                                            onChange={(e) => setModuleName(e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label>Select Image</Label>
-                                        <FileInput onChange={handleFileChange} className="custom-class" />
-                                    </div>
-                                    <div className="mt-2">
-                                        {selectedFile ? (
-                                            <Image
-                                                src={URL.createObjectURL(selectedFile)}
-                                                width={120}
-                                                height={120}
-                                                alt="Selected Module"
-                                                className="rounded object-cover"
+                                <div className="">
+                                    <div className="grid grid-cols-1 gap-x-6 gap-y-5 ">
+                                        <div>
+                                            <Label>Module Name</Label>
+                                            <Input
+                                                type="text"
+                                                value={moduleName}
+                                                placeholder="Enter Module"
+                                                onChange={(e) => setModuleName(e.target.value)}
                                             />
-                                        ) : existingImageUrl ? (
-                                            <Image
-                                                src={existingImageUrl}
-                                                width={120}
-                                                height={120}
-                                                alt="Current Module"
-                                                className="rounded object-cover"
-                                            />
-                                        ) : null}
+
+                                        </div>
+
+
+                                        <div>
+                                            <Label>Select Image</Label>
+                                            <FileInput onChange={handleFileChange} className="custom-class" />
+                                            {selectedFile ? (
+                                                <Image
+                                                    src={URL.createObjectURL(selectedFile)}
+                                                    width={80}
+                                                    height={80}
+                                                    alt="Selected Module"
+                                                    className="mt-2 w-20 h-20 object-cover rounded border"
+                                                />
+                                            ) : existingImageUrl ? (
+                                                <Image
+                                                    src={existingImageUrl}
+                                                    width={80}
+                                                    height={80}
+                                                    alt="Current Module"
+                                                    className="mt-2 w-20 h-20 object-cover rounded border"
+                                                />
+                                            ) : null}
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
