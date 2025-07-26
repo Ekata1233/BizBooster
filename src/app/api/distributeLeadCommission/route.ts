@@ -256,6 +256,8 @@ export async function POST(req: Request) {
         }
 
         providerWallet.balance += providerShare;
+        providerWallet.withdrawableBalance += providerShare;
+        providerWallet.pendingWithdraw += providerShare;
         providerWallet.totalCredits += providerShare;
         providerWallet.totalEarning += providerShare;
         providerWallet.updatedAt = new Date();
@@ -354,6 +356,8 @@ export async function POST(req: Request) {
             });
 
             providerWallet.balance += extraProviderShare;
+            providerWallet.withdrawableBalance += extraProviderShare;
+            providerWallet.pendingWithdraw += extraProviderShare;
             providerWallet.totalCredits += extraProviderShare;
             providerWallet.totalEarning += extraProviderShare;
             providerWallet.updatedAt = new Date();
@@ -383,6 +387,7 @@ export async function POST(req: Request) {
 
             providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
             providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
+            providerWallet.balance = providerWallet.balance - cashAmount;
 
             providerWallet.transactions.push({
                 type: "debit",
