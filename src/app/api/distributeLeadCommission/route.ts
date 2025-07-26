@@ -374,6 +374,11 @@ export async function POST(req: Request) {
 
         // ✅ Deduct cash in hand from provider withdrawable and pending balances
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
+            console.log("🧾 Provider Wallet Before Cash Deduction:", {
+                withdrawableBalance: providerWallet.withdrawableBalance,
+                pendingWithdraw: providerWallet.pendingWithdraw,
+                cashInHandAmount: checkout.cashInHandAmount,
+            });
             const cashAmount = checkout.cashInHandAmount;
 
             providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
