@@ -84,6 +84,21 @@ export async function POST(req: Request) {
       );
     }
 
+    const existingCustomer = await ServiceCustomer.findOne({
+      user,
+      $or: [{ phone }, { email }]
+    });
+
+    if (existingCustomer) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Customer with same ${existingCustomer.phone === phone ? "phone" : "email"} already exists for this user.`,
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const newCustomer = await ServiceCustomer.create({
       fullName,
       phone,

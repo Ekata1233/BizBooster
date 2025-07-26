@@ -39,14 +39,14 @@ const serviceCustomerSchema: Schema = new mongoose.Schema(
         phone: {
             type: String,
             required: [true, "Phone number is required"],
-            unique: true,
+            // unique: true,
             trim: true,
             match: [/^\d{10}$/, "Phone number must be a 10-digit number"],
         },
         email: {
             type: String,
             required: [true, "Email is required"],
-            unique: true,
+            // unique: true,
             lowercase: true,
             trim: true,
             match: [/.+@.+\..+/, "Please provide a valid email address"],
