@@ -372,6 +372,28 @@ export async function POST(req: Request) {
 
         await providerWallet.save();
 
+        // ✅ Deduct cash in hand from provider withdrawable and pending balances
+        if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
+            const cashAmount = checkout.cashInHandAmount;
+
+            providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
+            providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
+
+            providerWallet.transactions.push({
+                type: "debit",
+                amount: cashAmount,
+                description: "Cash in hand collected from customer",
+                referenceId: checkout._id.toString(),
+                method: "Cash",
+                source: "adjustment",
+                status: "success",
+                createdAt: new Date(),
+            });
+
+            await providerWallet.save();
+        }
+
+
         checkout.commissionDistributed = true;
         checkout.isCompleted = true;
         checkout.orderStatus = "completed";
