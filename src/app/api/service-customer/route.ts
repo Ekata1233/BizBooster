@@ -104,8 +104,15 @@ export async function POST(req: Request) {
       { success: true, data: newCustomer },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+  } catch (error: any) {
+    let message = "Unknown error";
+
+    // Handle duplicate key error
+    if (error.code === 11000 && error.keyPattern?.phone) {
+      message = "Mobile number is already registered.";
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
