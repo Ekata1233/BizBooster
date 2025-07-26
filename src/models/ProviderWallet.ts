@@ -105,12 +105,10 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
     withdrawableBalance: {
       type: Number,
       default: 0,
-      min: 0,
     },
     pendingWithdraw: {
       type: Number,
       default: 0,
-      min: 0,
     },
     alreadyWithdrawn: {
       type: Number,
@@ -120,7 +118,6 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
     totalEarning: {
       type: Number,
       default: 0,
-      min: 0,
     },
     totalCredits: {
       type: Number,

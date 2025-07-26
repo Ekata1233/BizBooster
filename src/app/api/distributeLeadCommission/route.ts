@@ -45,13 +45,12 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("franchise details :", checkout.service?.franchiseDetails);
+        console.log("checkout details in commission distribute :", checkout);
 
         // const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
-        console.log("franchise details :", checkout.service?.franchiseDetails);
+
 
         const rawCommission = checkout.service?.franchiseDetails?.commission;
-        console.log("Raw commission string:", rawCommission);
 
         // ✅ CORRECT fallback logic
         const commission =
@@ -62,7 +61,6 @@ export async function POST(req: Request) {
                 : rawCommission;
 
 
-        console.log("✅ Final resolved commission:", commission);
 
 
         if (!checkout || checkout.commissionDistributed) {
@@ -258,6 +256,8 @@ export async function POST(req: Request) {
         }
 
         providerWallet.balance += providerShare;
+        providerWallet.withdrawableBalance += providerShare;
+        providerWallet.pendingWithdraw += providerShare;
         providerWallet.totalCredits += providerShare;
         providerWallet.totalEarning += providerShare;
         providerWallet.updatedAt = new Date();
@@ -356,6 +356,8 @@ export async function POST(req: Request) {
             });
 
             providerWallet.balance += extraProviderShare;
+            providerWallet.withdrawableBalance += extraProviderShare;
+            providerWallet.pendingWithdraw += extraProviderShare;
             providerWallet.totalCredits += extraProviderShare;
             providerWallet.totalEarning += extraProviderShare;
             providerWallet.updatedAt = new Date();
@@ -373,6 +375,35 @@ export async function POST(req: Request) {
         }
 
         await providerWallet.save();
+
+        // ✅ Deduct cash in hand from provider withdrawable and pending balances
+        if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
+            console.log("🧾 Provider Wallet Before Cash Deduction:", {
+                withdrawableBalance: providerWallet.withdrawableBalance,
+                pendingWithdraw: providerWallet.pendingWithdraw,
+                cashInHandAmount: checkout.cashInHandAmount,
+            });
+            const cashAmount = checkout.cashInHandAmount;
+
+            providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
+            providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
+            providerWallet.balance = providerWallet.balance - cashAmount;
+            providerWallet.totalDebits = providerWallet.totalDebits + cashAmount;
+
+            providerWallet.transactions.push({
+                type: "debit",
+                amount: cashAmount,
+                description: "Cash in hand collected from customer",
+                referenceId: checkout._id.toString(),
+                method: "Cash",
+                source: "adjustment",
+                status: "success",
+                createdAt: new Date(),
+            });
+
+            await providerWallet.save();
+        }
+
 
         checkout.commissionDistributed = true;
         checkout.isCompleted = true;
