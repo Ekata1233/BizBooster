@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
     const discount = formData.get("basic[discount]");
     const gstStr = formData.get("basic[gst]");
     const gst = gstStr ? parseFloat(gstStr as string) : 0;
+    const includeGstStr = formData.get("basic[includeGst]") as string;
+    const includeGst = includeGstStr === "true";
+
 
     console.log("Parsed GST from form:", gstStr, "Parsed:", gst);
 
@@ -201,6 +204,7 @@ export async function POST(req: NextRequest) {
       price,
       discount,
       gst,
+      includeGst,
       discountedPrice,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
