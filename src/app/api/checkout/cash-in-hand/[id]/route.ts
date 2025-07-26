@@ -126,6 +126,8 @@ export async function PUT(req: NextRequest) {
         const newWithdrawable = providerWallet.withdrawableBalance - amount;
         const newPendingWithdraw = providerWallet.pendingWithdraw - amount;
         const newCashInHand = providerWallet.cashInHand + amount;
+        const newTotalEarning = providerWallet.totalEarning - amount;
+
 
         console.log("ammount : ", amount)
         // console.log("newBalance : ", newBalance)
@@ -152,6 +154,7 @@ export async function PUT(req: NextRequest) {
         providerWallet.cashInHand = newCashInHand;
         providerWallet.withdrawableBalance = newWithdrawable;
         providerWallet.pendingWithdraw = newPendingWithdraw;
+        providerWallet.totalEarning = newTotalEarning;
 
         // console.log("providerWallet.balance : ", providerWallet.balance)
         // console.log("providerWallet.totalCredits : ", providerWallet.totalCredits)
