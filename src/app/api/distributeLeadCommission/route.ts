@@ -70,7 +70,9 @@ export async function POST(req: Request) {
             );
         }
 
-        const leadAmount = lead?.afterDicountAmount ?? checkout.totalAmount;
+        // const leadAmount = lead?.afterDicountAmount ?? checkout.totalAmount;
+        const leadAmount = lead?.afterDicountAmount ?? checkout.subtotal;
+
 
         console.log("lead amount : ", leadAmount);
 

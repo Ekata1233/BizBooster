@@ -140,16 +140,14 @@ const EditService: React.FC = () => {
         service: {
           overview: service.serviceDetails?.overview || '',
           highlight: [], // instead of null
-          highlightPreviews:  [],
-
-
+          highlightPreviews: service.serviceDetails?.highlight || [],
           benefits: service.serviceDetails?.benefits || '',
           howItWorks: service.serviceDetails?.howItWorks || '',
           terms: service.serviceDetails?.termsAndConditions || '',
           document: service.serviceDetails?.document || '',
           rows: service.serviceDetails?.rows || [],
           whyChoose: service.serviceDetails?.whyChoose?.map(item => ({ _id: item._id })) || [],
-          faqs: [],
+          faqs: service.serviceDetails?.faq || [],
         },
         franchise: {
           overview: service.franchiseDetails?.overview || '',
