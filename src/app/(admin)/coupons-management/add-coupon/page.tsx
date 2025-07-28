@@ -44,12 +44,12 @@ const AddCouponPage = () => {
     //     label: cus.fullName,
     // })) ?? [];  
     const customersOptions: Option[] = Array.isArray(customers)
-  ? customers.map(cus => ({
-      value: String(cus._id),
-      label: cus.fullName,
-    }))
-  : [];
-  // const categoryOptions = categories?.map(c => ({ value: c._id, label: c.name })) ?? [];
+        ? customers.map(cus => ({
+            value: String(cus._id),
+            label: cus.fullName,
+        }))
+        : [];
+    // const categoryOptions = categories?.map(c => ({ value: c._id, label: c.name })) ?? [];
     const categoryOptions = categories?.map(c => ({
         value: c._id ?? "",  // ensure it's never undefined
         label: c.name
@@ -102,32 +102,37 @@ const AddCouponPage = () => {
         });
 
         try {
-            await addCoupon(fd);           // ⬅️ persist via context (calls /api/coupon)
-            // optional: clear form or show toast
-            alert("Coupon added!");
-            setForm({
-                couponType: "",
-                couponCode: "",
-                customer: "",
-                discountType: "Category Wise",
-                discountTitle: "",
-                category: "",
-                service: "",
-                zone: "",
-                discountAmountType: "Percentage",
-                amount: "",
-                startDate: "",
-                endDate: "",
-                minPurchase: "",
-                maxDiscount: "",
-                limitPerUser: "",
-                discountCostBearer: "Admin",
-                couponAppliesTo: "Growth Partner",
-            });
+            const res = await addCoupon(fd); // Make sure this returns a proper JSON response
 
+            // ✅ Check if response indicates success
+            if (res?.success) {
+                alert("Coupon added!");
+                setForm({
+                    couponType: "",
+                    couponCode: "",
+                    customer: "",
+                    discountType: "Category Wise",
+                    discountTitle: "",
+                    category: "",
+                    service: "",
+                    zone: "",
+                    discountAmountType: "Percentage",
+                    amount: "",
+                    startDate: "",
+                    endDate: "",
+                    minPurchase: "",
+                    maxDiscount: "",
+                    limitPerUser: "",
+                    discountCostBearer: "Admin",
+                    couponAppliesTo: "Growth Partner",
+                });
+            } else {
+                // ❌ Show backend error message
+                alert(res?.message || "Something went wrong");
+            }
         } catch (err) {
             console.error("Error saving coupon:", err);
-            // toast.error("Something went wrong");
+            alert("Failed to create coupon");
         }
     };
 
