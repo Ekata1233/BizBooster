@@ -194,17 +194,17 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
 
     const handleKeyValueChange = (index: number, field: 'key' | 'value', value: string) => {
-        const updatedKeyValues = [...data.keyValues];
-        updatedKeyValues[index][field] = value;
-        setData({ keyValues: updatedKeyValues });
+        // const updatedKeyValues = [...data.keyValues];
+        // updatedKeyValues[index][field] = value;
+        // setData({ keyValues: updatedKeyValues });
     };
     const addKeyValue = () => {
-        setData({ keyValues: [...data.keyValues, { key: '', value: '' }] });
+        // setData({ keyValues: [...data.keyValues, { key: '', value: '' }] });
     };
 
     const removeKeyValue = (index: number) => {
-        const updatedKeyValues = data.keyValues.filter((_, i) => i !== index);
-        setData({ keyValues: updatedKeyValues });
+        // const updatedKeyValues = data.keyValues.filter((_, i) => i !== index);
+        // setData({ keyValues: updatedKeyValues });
     };
 
     useEffect(() => {
