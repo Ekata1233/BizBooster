@@ -192,6 +192,21 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setData({ recommendedServices: checked });
     };
 
+
+    const handleKeyValueChange = (index: number, field: 'key' | 'value', value: string) => {
+        const updatedKeyValues = [...data.keyValues];
+        updatedKeyValues[index][field] = value;
+        setData({ keyValues: updatedKeyValues });
+    };
+    const addKeyValue = () => {
+        setData({ keyValues: [...data.keyValues, { key: '', value: '' }] });
+    };
+
+    const removeKeyValue = (index: number) => {
+        const updatedKeyValues = data.keyValues.filter((_, i) => i !== index);
+        setData({ keyValues: updatedKeyValues });
+    };
+
     useEffect(() => {
         const price = data.price ?? 0;
         const discount = data.discount ?? 0;
@@ -224,7 +239,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         />
                     </div>
 
-                    
+
 
                     <div>
                         <Label>Price</Label>
@@ -306,19 +321,19 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
                     </div>
 
-<div className="mt-4">
-  <div className="relative">
-    <input
-      type="text"
-      value="Total with GST"
-      disabled
-      className="w-full pl-4 pr-28 py-2 bg-green-50 text-green-800 border border-green-300 rounded-xl shadow-sm font-semibold disabled:cursor-not-allowed"
-    />
-    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-800 font-bold">
-      ₹ {data.totalWithGst || 0}
-    </span>
-  </div>
-</div>
+                    <div className="mt-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value="Total with GST"
+                                disabled
+                                className="w-full pl-4 pr-28 py-2 bg-green-50 text-green-800 border border-green-300 rounded-xl shadow-sm font-semibold disabled:cursor-not-allowed"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-800 font-bold">
+                                ₹ {data.totalWithGst || 0}
+                            </span>
+                        </div>
+                    </div>
 
 
                 </div>
@@ -454,28 +469,32 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                 </div>
 
                                 {/* Fields Row: Title + Description */}
-                                <div className="flex gap-4">
-                                    <div className="w-1/2">
-                                        <Label>Key</Label>
-                                        <Input
-                                            type="text"
-                                            placeholder="Enter Key"
-                                            value={row.key}
-                                            onChange={(e) => handleRowChange(index, 'key', e.target.value)}
-                                            className="w-full"
-                                        />
-                                    </div>
-                                    <div className="w-1/2">
-                                        <Label>Value</Label>
-                                        <Input
-                                            type="text"
-                                            placeholder="Enter Value"
-                                            value={row.value}
-                                            onChange={(e) => handleRowChange(index, 'value', e.target.value)}
-                                            className="w-full"
-                                        />
-                                    </div>
-                                </div>
+                                {data.keyValues?.map((row, index) => (
+  <div key={index} className="flex gap-4 mt-4">
+    <div className="w-1/2">
+      <Label>Key</Label>
+      <Input
+        type="text"
+        placeholder="Enter Key"
+        value={row.key}
+        onChange={(e) => handleRowChange(index, 'key', e.target.value)}
+        className="w-full"
+      />
+    </div>
+    <div className="w-1/2">
+      <Label>Value</Label>
+      <Input
+        type="text"
+        placeholder="Enter Value"
+        value={row.value}
+        onChange={(e) => handleRowChange(index, 'value', e.target.value)}
+        className="w-full"
+      />
+    </div>
+  </div>
+))}
+
+
                             </div>
                         ))}
 
