@@ -192,7 +192,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setData({ recommendedServices: checked });
     };
 
-
     const handleKeyValueChange = (index: number, field: 'key' | 'value', value: string) => {
         const updatedKeyValues = [...(data.keyValues ?? [])];
         updatedKeyValues[index][field] = value;

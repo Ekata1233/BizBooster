@@ -40,7 +40,7 @@ export const POST = async (req: Request) => {
     }
 
     if (existingUserByEmail) {
-      
+
       return NextResponse.json(
         { error: 'Email already exists' },
         { status: 400, headers: corsHeaders }
@@ -98,7 +98,7 @@ export const POST = async (req: Request) => {
       referralCode,
       referredBy,
       isMobileVerified: true,
-
+      personalDetailsCompleted: true
     });
 
     await newUser.save();
