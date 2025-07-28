@@ -154,7 +154,7 @@ const CouponList: React.FC = () => {
         discount: formatDiscount(c),
         appliesTo: formatAppliesTo(c),
         validity: formatValidity(c),
-        status: c.isActive ? 'Active' : 'Inactive',
+        status: !c.isActive || (c as any).isDeleted ? 'Inactive' : 'Active',
       }));
 
       setRows(mapped);
