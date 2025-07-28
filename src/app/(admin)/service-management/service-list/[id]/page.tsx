@@ -143,8 +143,6 @@ const EditService: React.FC = () => {
           overview: service.serviceDetails?.overview || '',
           highlight: [], // instead of null
           highlightPreviews: service.serviceDetails?.highlight || [],
-
-
           benefits: service.serviceDetails?.benefits || '',
           howItWorks: service.serviceDetails?.howItWorks || '',
           terms: service.serviceDetails?.termsAndConditions || '',

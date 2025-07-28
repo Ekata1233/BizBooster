@@ -32,7 +32,7 @@ export async function GET(req: Request) {
 
         const checkouts = await Checkout.find({ user: id }).populate({
             path: 'service',
-            select: 'serviceName', // ✅ only populate serviceName
+            select: 'serviceName price discount discountedPrice', // ✅ only populate serviceName
         })
             .populate('serviceCustomer');
 
