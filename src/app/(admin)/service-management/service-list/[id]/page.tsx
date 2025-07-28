@@ -149,7 +149,7 @@ const EditService: React.FC = () => {
           document: service.serviceDetails?.document || '',
           rows: service.serviceDetails?.rows || [],
           whyChoose: service.serviceDetails?.whyChoose?.map(item => ({ _id: item._id })) || [],
-          faqs:  [],
+          faqs: (service.serviceDetails as any)?.faq || [],
         },
         franchise: {
           overview: service.franchiseDetails?.overview || '',
