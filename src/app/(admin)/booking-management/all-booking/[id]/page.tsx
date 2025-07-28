@@ -206,13 +206,15 @@ const AllBookingsDetails = () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {[
-                  ['Subtotal', leadDetails?.newAmount ?? checkoutDetails?.service?.price],
-                  ['Discount', leadDetails?.newDiscountAmount ?? (checkoutDetails?.service?.price - checkoutDetails?.service?.discountedPrice) ?? 0],
+                  ['Price', leadDetails?.newAmount ?? checkoutDetails?.service?.price],
+                  ['Service Discount', leadDetails?.newDiscountAmount ?? (checkoutDetails?.service?.price - checkoutDetails?.service?.discountedPrice) ?? 0],
+                                    ['Coupon Discount', checkoutDetails.couponDiscount || 0],
+
                   ['Campaign Discount', 0],
-                  ['Coupon Discount', checkoutDetails.couponDiscount || 0],
-                  ['VAT', 0],
+                  ['Service GST', 0],
                   ['Platform Fee', 0],
-                  ['Total ', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice],
+                  ['Fetch True Assurity Charges', 0],
+                  ['Grand Total ', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice],
                 ].map(([label, amount]) => (
                   <div className="flex justify-between" key={label}>
                     <span className="font-medium">{label} :</span>
