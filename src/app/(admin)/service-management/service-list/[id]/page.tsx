@@ -46,8 +46,9 @@ type FormDataType = {
   };
   service: {
     overview: string;
-    highlight: File[] | FileList | null;
-    benefits: string;
+highlight: File[] | FileList | null;
+    highlightPreviews?: string[] | undefined ; 
+        benefits: string;
     howItWorks: string;
     terms: string;
     document: string;
@@ -64,7 +65,7 @@ type FormDataType = {
   };
 };
 
-const EditModule: React.FC = () => {
+const EditService: React.FC = () => {
   const { id } = useParams();
   const { fetchSingleService, singleService: service, updateService } = useService();
 
@@ -138,14 +139,17 @@ console.log("console service : ",service);
         },
         service: {
           overview: service.serviceDetails?.overview || '',
-          highlight: null,
+         highlight: [], // instead of null
+highlightPreviews: service.serviceDetails?.highlight || [],
+
+          
           benefits: service.serviceDetails?.benefits || '',
           howItWorks: service.serviceDetails?.howItWorks || '',
           terms: service.serviceDetails?.termsAndConditions || '',
           document: service.serviceDetails?.document || '',
           rows: service.serviceDetails?.rows || [],
           whyChoose: service.serviceDetails?.whyChoose?.map(item => ({ _id: item._id })) || [],
-          faqs: service.serviceDetails?.faqs || [],
+          faqs: service.serviceDetails?.faq || [],
         },
         franchise: {
           overview: service.franchiseDetails?.overview || '',
@@ -155,12 +159,14 @@ console.log("console service : ",service);
           rows: service.franchiseDetails?.extraSections || [],
         },
       });
+console.log("Initialized FAQs:", service.serviceDetails);
 
       if (service.serviceName && service.category?._id && service.subcategory?._id && service.price) {
         setCompletedSteps([1]);
       }
 
       setHasInitialized(true);
+      
     }
   }, [service]);
 
@@ -369,4 +375,4 @@ console.log("console service : ",service);
   );
 };
 
-export default EditModule;
+export default EditService;
