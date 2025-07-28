@@ -15,8 +15,6 @@ const ClientSideCustomEditor = dynamic(() => import('../../components/custom-edi
   loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
 });
 
-
-
 interface RowData {
   title: string;
   description: string;
