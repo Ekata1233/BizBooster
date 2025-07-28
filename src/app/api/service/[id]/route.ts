@@ -222,7 +222,7 @@ export async function PUT(req: Request) {
   totalWithGst?: number;
   tags?: string[];
   recommendedServices?: boolean;
-  keyValues?: KeyValue[];
+  // keyValues?: KeyValue[];
       serviceDetails: NestedFormData;
       franchiseDetails: NestedFormData;
       isDeleted: boolean;
@@ -242,11 +242,11 @@ export async function PUT(req: Request) {
       isDeleted: false,
       gst,
       includeGst,
-      gstInRupees,
-      totalWithGst,
+      // gstInRupees,
+      // totalWithGst,
       tags,
       recommendedServices,
-      keyValues,
+      // keyValues,
 
     };
     if (subcategory) {
