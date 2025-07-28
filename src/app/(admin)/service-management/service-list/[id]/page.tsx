@@ -46,9 +46,9 @@ type FormDataType = {
   };
   service: {
     overview: string;
-highlight: File[] | FileList | null;
-    highlightPreviews?: string[] | undefined ; 
-        benefits: string;
+    highlight: File[] | FileList | null;
+    highlightPreviews?: string[] | undefined;
+    benefits: string;
     howItWorks: string;
     terms: string;
     document: string;
@@ -73,7 +73,7 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-console.log("console service : ",service);
+  console.log("console service : ", service);
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -139,17 +139,17 @@ console.log("console service : ",service);
         },
         service: {
           overview: service.serviceDetails?.overview || '',
-         highlight: [], // instead of null
-highlightPreviews: service.serviceDetails?.highlight || [],
+          highlight: [], // instead of null
+          highlightPreviews:  [],
 
-          
+
           benefits: service.serviceDetails?.benefits || '',
           howItWorks: service.serviceDetails?.howItWorks || '',
           terms: service.serviceDetails?.termsAndConditions || '',
           document: service.serviceDetails?.document || '',
           rows: service.serviceDetails?.rows || [],
           whyChoose: service.serviceDetails?.whyChoose?.map(item => ({ _id: item._id })) || [],
-          faqs: service.serviceDetails?.faq || [],
+          faqs: [],
         },
         franchise: {
           overview: service.franchiseDetails?.overview || '',
@@ -159,14 +159,14 @@ highlightPreviews: service.serviceDetails?.highlight || [],
           rows: service.franchiseDetails?.extraSections || [],
         },
       });
-console.log("Initialized FAQs:", service.serviceDetails);
+      console.log("Initialized FAQs:", service.serviceDetails);
 
       if (service.serviceName && service.category?._id && service.subcategory?._id && service.price) {
         setCompletedSteps([1]);
       }
 
       setHasInitialized(true);
-      
+
     }
   }, [service]);
 
@@ -294,9 +294,9 @@ console.log("Initialized FAQs:", service.serviceDetails);
                   )}
                   <div className={`z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 text-sm font-bold
                       ${isCompleted ? 'bg-blue-600 text-white border-blue-600'
-                        : isActive ? 'bg-white text-blue-600 border-blue-600'
-                          : 'bg-white text-gray-400 border-gray-300'
-                      }`}>
+                      : isActive ? 'bg-white text-blue-600 border-blue-600'
+                        : 'bg-white text-gray-400 border-gray-300'
+                    }`}>
                     {isCompleted ? (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
