@@ -192,19 +192,18 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         setData({ recommendedServices: checked });
     };
 
-
     const handleKeyValueChange = (index: number, field: 'key' | 'value', value: string) => {
-        // const updatedKeyValues = [...data.keyValues];
-        // updatedKeyValues[index][field] = value;
-        // setData({ keyValues: updatedKeyValues });
+        const updatedKeyValues = [...data.keyValues];
+        updatedKeyValues[index][field] = value;
+        setData({ keyValues: updatedKeyValues });
     };
     const addKeyValue = () => {
-        // setData({ keyValues: [...data.keyValues, { key: '', value: '' }] });
+        setData({ keyValues: [...data.keyValues, { key: '', value: '' }] });
     };
 
     const removeKeyValue = (index: number) => {
-        // const updatedKeyValues = data.keyValues.filter((_, i) => i !== index);
-        // setData({ keyValues: updatedKeyValues });
+        const updatedKeyValues = data.keyValues.filter((_, i) => i !== index);
+        setData({ keyValues: updatedKeyValues });
     };
 
     useEffect(() => {
@@ -470,29 +469,29 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
                                 {/* Fields Row: Title + Description */}
                                 {data.keyValues?.map((row, index) => (
-  <div key={index} className="flex gap-4 mt-4">
-    <div className="w-1/2">
-      <Label>Key</Label>
-      <Input
-        type="text"
-        placeholder="Enter Key"
-        value={row.key}
-        onChange={(e) => handleRowChange(index, 'key', e.target.value)}
-        className="w-full"
-      />
-    </div>
-    <div className="w-1/2">
-      <Label>Value</Label>
-      <Input
-        type="text"
-        placeholder="Enter Value"
-        value={row.value}
-        onChange={(e) => handleRowChange(index, 'value', e.target.value)}
-        className="w-full"
-      />
-    </div>
-  </div>
-))}
+                                    <div key={index} className="flex gap-4 mt-4">
+                                        <div className="w-1/2">
+                                            <Label>Key</Label>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter Key"
+                                                value={row.key}
+                                                onChange={(e) => handleRowChange(index, 'key', e.target.value)}
+                                                className="w-full"
+                                            />
+                                        </div>
+                                        <div className="w-1/2">
+                                            <Label>Value</Label>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter Value"
+                                                value={row.value}
+                                                onChange={(e) => handleRowChange(index, 'value', e.target.value)}
+                                                className="w-full"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
 
 
                             </div>
