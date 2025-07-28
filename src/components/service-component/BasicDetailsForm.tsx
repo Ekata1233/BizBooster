@@ -504,11 +504,12 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     <div className='py-3'>
                         <Label>Recommended Service</Label>
                         <div className="px-3 py-1 flex flex-wrap items-center gap-2">
-                            <Switch
-                                label="Recommended"
-                                checked={!!data.recommendedServices} // Fallback to false if undefined
-                                onChange={handleSwitchChange}
-                            />
+                           <Switch
+  label="Recommended"
+  checked={!!data.recommendedServices}
+  onChange={handleSwitchChange}
+/>
+
 
                         </div>
                     </div>

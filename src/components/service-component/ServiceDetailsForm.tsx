@@ -47,6 +47,7 @@ export type ServiceDetails = {
   howItWorks: string;
   terms: string;
   faqs: FAQ[];
+  
   rows: RowData[];
   whyChoose: WhyChoose[];
   termsAndConditions?: string;
@@ -63,7 +64,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [document, setDocument] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
-  const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
+  const [faqs, setfaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [rows, setRows] = useState<RowData[]>([]);
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
     _id: ''
@@ -74,7 +75,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   const whyChooseContext = useWhyChoose();
 
   console.log("data of service : ", data)
-      console.log("FAQs State:", faqs);
+      console.log("faqs State:", faqs);
 
 
  useEffect(() => {
@@ -89,10 +90,10 @@ const ServiceDetailsForm = ({ data, setData }: {
 
     // Fix here 👇
     if (Array.isArray(data.faqs) && data.faqs.length > 0) {
-      setFaqs(data.faqs);
+      setfaqs(data.faqs);
 
     } else {
-      setFaqs([{ question: '', answer: '' }]);
+      setfaqs([{ question: '', answer: '' }]);
     }
 
     if (data.highlight?.length) {
@@ -182,18 +183,18 @@ const ServiceDetailsForm = ({ data, setData }: {
   };
 
   const handleFaqChange = (index: number, field: keyof FAQ, value: string) => {
-    const updatedFaqs = [...faqs];
-    updatedFaqs[index][field] = value;
-    setFaqs(updatedFaqs);
+    const updatedfaqs = [...faqs];
+    updatedfaqs[index][field] = value;
+    setfaqs(updatedfaqs);
   };
 
   const handleAddFaq = () => {
-    setFaqs([...faqs, { question: '', answer: '' }]);
+    setfaqs([...faqs, { question: '', answer: '' }]);
   };
 
   const handleRemoveFaq = (index: number) => {
-    const updatedFaqs = faqs.filter((_, i) => i !== index);
-    setFaqs(updatedFaqs);
+    const updatedfaqs = faqs.filter((_, i) => i !== index);
+    setfaqs(updatedfaqs);
   };
 
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
