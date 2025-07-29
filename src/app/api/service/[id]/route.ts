@@ -61,8 +61,6 @@ export async function PUT(req: Request) {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
 
-    console.log("id of service : ", id);
-
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing ID parameter." },
@@ -72,59 +70,36 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    console.log("service data for the update : ", formData)
-
-    // Extract fields (adjust according to your schema)
     const serviceName = formData.get("name") as string;
     const category = formData.get("category") as string;
     const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
     const discountStr = formData.get("discount") as string | null;
-    // Handle gst & includeGst
     const gstStr = formData.get("gst") as string | null;
     const includeGstStr = formData.get("includeGst") as string | null;
+    const recommendedServicesStr = formData.get("recommendedServices") as string;
+
     const gst = gstStr ? parseFloat(gstStr) : 0;
     const includeGst = includeGstStr === "true";
+    const recommendedServices = recommendedServicesStr === "true";
 
-    // Calculate GST in Rupees
-   // Step 4: Use discountedPrice in calculations
-// const gstInRupees = includeGst ? (discountedPrice * gst) / 100 : 0;
-// const totalWithGst = discountedPrice + gstInRupees;
-
-    // Handle tags
-    const tags = formData.getAll("tags")?.filter(Boolean) as string[];
-
-    // Handle recommendedServices
-    const recommendedStr = formData.get("recommendedServices") as string | null;
-    const recommendedServices = recommendedStr === "true";
-
-    // Handle keyValues (JSON string expected from frontend)
-    let keyValues = [];
-    const keyValuesStr = formData.get("keyValues") as string | null;
-    if (keyValuesStr) {
-      try {
-        keyValues = JSON.parse(keyValuesStr);
-      } catch (error) {
-        console.warn("Invalid keyValues JSON", error);
+    const tags: string[] = [];
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("tags") && typeof value === "string") {
+        tags.push(value);
       }
     }
 
-
+    // Parse nested formData
     interface NestedFormData {
       [key: string]: string | NestedFormData | NestedFormData[];
     }
 
     function parseNestedFormData(formData: FormData): NestedFormData {
       const data: NestedFormData = {};
-
       for (const [key, value] of formData.entries()) {
-        if (typeof value === "object") continue; // skip files for now
-
-        const keys = key
-          .replace(/\]/g, "")
-          .split("[")
-          .flatMap(k => k.split(".")); // support both [key] and dot.key
-
+        if (typeof value === "object") continue;
+        const keys = key.replace(/\]/g, "").split("[").flatMap(k => k.split("."));
         let current = data;
         for (let i = 0; i < keys.length; i++) {
           const part = keys[i];
@@ -132,7 +107,6 @@ export async function PUT(req: Request) {
             current[part] = value.toString();
           } else {
             if (!current[part]) {
-              // check if next is array index
               const nextIsArrayIndex = /^\d+$/.test(keys[i + 1]);
               current[part] = nextIsArrayIndex ? [] : {};
             }
@@ -140,7 +114,6 @@ export async function PUT(req: Request) {
           }
         }
       }
-
       return data;
     }
 
@@ -148,22 +121,27 @@ export async function PUT(req: Request) {
     const serviceDetails = fullData.serviceDetails as NestedFormData || {};
     const franchiseDetails = fullData.franchiseDetails as NestedFormData || {};
 
-    if (!serviceName || !category || !priceStr) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields." },
-        { status: 400, headers: corsHeaders }
-      );
+    const keyValues: { key: string; value: string }[] = [];
+    let index = 0;
+    while (true) {
+      const key = formData.get(`keyValues[${index}][key]`);
+      const value = formData.get(`keyValues[${index}][value]`);
+      if (!key && !value) break;
+      if (key && value) keyValues.push({ key: key.toString(), value: value.toString() });
+      index++;
+    }
+
+    const whyChooseIds: string[] = [];
+    let whyIndex = 0;
+    while (true) {
+      const id = formData.get(`whyChoose[${whyIndex}][_id]`);
+      if (!id) break;
+      whyChooseIds.push(id.toString());
+      whyIndex++;
     }
 
     const price = parseFloat(priceStr);
-    if (isNaN(price)) {
-      return NextResponse.json(
-        { success: false, message: "Price must be a valid number." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    let discount: number = 0;
+    let discount = 0;
     if (discountStr !== null && discountStr.trim() !== "") {
       const parsedDiscount = parseFloat(discountStr);
       if (!isNaN(parsedDiscount)) {
@@ -171,91 +149,87 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Calculate discountedPrice
     const discountedPrice = price - (price * discount / 100);
+    const gstInRupees = (discountedPrice * gst) / 100;
+    const totalWithGst = discountedPrice + gstInRupees;
 
-    // Handle thumbnail image upload (optional)
+    // Thumbnail
     let thumbnailImageUrl = "";
     const thumbnailFile = formData.get("thumbnailImage") as File | null;
     if (thumbnailFile && thumbnailFile instanceof File) {
       const arrayBuffer = await thumbnailFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${thumbnailFile.name}`,
         folder: "/services/thumbnail",
       });
-
       thumbnailImageUrl = uploadResponse.url;
     }
 
-    // Handle banner images upload (optional, multiple)
+    // Banner images
     const bannerImagesUrls: string[] = [];
     const bannerFiles = formData.getAll("bannerImages") as File[];
     for (const file of bannerFiles) {
       if (file && file instanceof File) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-
         const uploadResponse = await imagekit.upload({
           file: buffer,
           fileName: `${uuidv4()}-${file.name}`,
           folder: "/services/banners",
         });
-
         bannerImagesUrls.push(uploadResponse.url);
       }
     }
 
-    // Define the type for updateData
-    interface UpdateData {
-      serviceName: string;
-      category: string;
-      subcategory?: string;
-      price: number;
-      discount?: number;
-      discountedPrice?: number;
-      gst?: number;
-  includeGst?: boolean;
-  gstInRupees?: number;
-  totalWithGst?: number;
-  tags?: string[];
-  recommendedServices?: boolean;
-  keyValues?: KeyValue[];
-      serviceDetails: NestedFormData;
-      franchiseDetails: NestedFormData;
-      isDeleted: boolean;
-      thumbnailImage?: string;
-      bannerImages?: string[];
-      
+    // Highlight images
+    const highlightImagesUrls: string[] = [];
+    const highlightFiles: File[] = [];
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("highlight") && value instanceof File) {
+        highlightFiles.push(value);
+      }
+    }
+    for (const file of highlightFiles) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/services/highlight",
+      });
+      highlightImagesUrls.push(uploadResponse.url);
     }
 
-    const updateData: UpdateData = {
+    // Add highlight images into serviceDetails
+    // serviceDetails.highlight = highlightImagesUrls;
+
+    const updateData = {
       serviceName,
       category,
+      subcategory,
       price,
       discount,
       discountedPrice,
-      serviceDetails,
-      franchiseDetails,
-      isDeleted: false,
       gst,
       includeGst,
       gstInRupees,
       totalWithGst,
+      serviceDetails: {
+        ...serviceDetails,
+        highlight: highlightImagesUrls, 
+        whyChoose: whyChooseIds,
+      },
+      franchiseDetails,
       tags,
-      recommendedServices,
       keyValues,
-
+      recommendedServices,
+      isDeleted: false,
+      ...(thumbnailImageUrl && { thumbnailImage: thumbnailImageUrl }),
+      ...(bannerImagesUrls.length > 0 && { bannerImages: bannerImagesUrls }),
     };
-    if (subcategory) {
-      updateData.subcategory = subcategory;
-    }
-    if (thumbnailImageUrl) updateData.thumbnailImage = thumbnailImageUrl;
-    if (bannerImagesUrls.length > 0) updateData.bannerImages = bannerImagesUrls;
 
-    // Update the service document
     const updatedService = await Service.findByIdAndUpdate(id, updateData, {
       new: true,
     });
@@ -272,14 +246,14 @@ export async function PUT(req: Request) {
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

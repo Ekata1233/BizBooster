@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 // Define the Coupon type (adapt based on your schema)
-type Coupon = {
+export type Coupon = {
   _id: string;
   couponType: string;
   couponCode: string;

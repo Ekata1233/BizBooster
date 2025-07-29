@@ -15,9 +15,8 @@ import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { TrashBinIcon } from '@/icons'; 
-
 import { useWebinars } from '@/context/WebinarContext'; 
-import { PlusCircle } from 'lucide-react';
+import { PencilIcon} from 'lucide-react';
 
 // Define types for clarity
 interface Video {
@@ -40,10 +39,9 @@ const WebinarDetailPage: React.FC = () => {
   const id = params?.id as string; 
   const router = useRouter();
 
-  /* context / modal */
-  // Keeping original context method names: deleteTutorial (for video), updateTutorial (for video), deleteWebinar (for main webinar)
+ 
   const { webinars, deleteTutorial, updateTutorial, deleteWebinar } = useWebinars();
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen,  closeModal } = useModal();
 
   /* local state */
   const [webinar, setWebinar] = useState<Webinar | null>(null);
@@ -51,7 +49,7 @@ const WebinarDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // Add error state
 
   // Removed videoFiles state as it was not actively used in the modal's update logic
-  const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]);
+  const [currentVideoUrls, ] = useState<string[]>([]);
   const [editingVideoIndex, setEditingVideoIndex] = useState<number | null>(null);
 
   const [newVideos, setNewVideos] = useState<
@@ -68,13 +66,12 @@ const WebinarDetailPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // First, try to find in context (if already loaded)
+      
       const found = webinars.find((w) => w._id === id);
       if (found) {
         setWebinar(found as Webinar);
       } else {
-        // If not found in context, fetch from API (useful on direct URL access/refresh)
-        // Assuming the API endpoint for fetching a single webinar by ID is /api/academy/webinar-tutorials/[id]
+       
         const res = await axios.get(`/api/academy/webinar-tutorials/${id}`);
         console.log('Webinar details fetched:', res.data.data);
         setWebinar(res.data.data as Webinar);
@@ -98,17 +95,20 @@ const WebinarDetailPage: React.FC = () => {
   }, [loadWebinarDetails]);
 
 
-
-
-
-  const handleUpdateVideo = (videoIdx: number) => {
-    if (!webinar) return;
-    const v = webinar.video[videoIdx];
-    setEditingVideoIndex(videoIdx);
-    setCurrentVideoUrls([v?.videoUrl || '']);
-    setNewVideos([{ name: v?.videoName || '', description: v?.videoDescription || '', file: null }]);
-    openModal();
+  const handleEdit = (certId: string, videoIdx: number) => {
+    // router.push(`/academy/webinars/updatemodals/${id}`);
+     router.push(`/academy/webinars/updatemodals/${certId}/${videoIdx}`);
   };
+
+
+  // const handleUpdateVideo = (videoIdx: number) => {
+  //   if (!webinar) return;
+  //   const v = webinar.video[videoIdx];
+  //   setEditingVideoIndex(videoIdx);
+  //   setCurrentVideoUrls([v?.videoUrl || '']);
+  //   setNewVideos([{ name: v?.videoName || '', description: v?.videoDescription || '', file: null }]);
+  //   openModal();
+  // };
 
   const handleUpdateData = async () => {
     if (!webinar || editingVideoIndex === null) return;
@@ -236,54 +236,57 @@ const WebinarDetailPage: React.FC = () => {
       </div>
 
       {/* Videos List Section */}
-      <div className=" p-6 sm:p-8 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-black mb-6 pb-4 border-blue-200">Webinar Videos</h2>
-        {webinar.video && webinar.video.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {webinar.video.map((vid, index) => (
-              <div key={index} className="border border-blue-100  p-5 rounded-lg flex flex-col gap-4 bg-white hover:shadow-xl hover:border-blue-300 transition-all duration-300">
-                <h3 className="text-lg font-semibold text-gray-800">Video {index + 1}: {vid.videoName || 'Untitled Video'}</h3>
-
-                {vid.videoUrl ? (
-                  <video controls className="w-full h-56 object-cover rounded-lg border border-blue-300" preload="metadata">
-                    <source src={vid.videoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <div className="w-full h-56 bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 text-md">
-                    Video Not Available
-                  </div>
-                )}
-
-                <p className="text-sm text-gray-700">
-                  <strong>Description: </strong>
-                  {vid.videoDescription || 'No description.'}
-                </p>
-
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleUpdateVideo(index)}
-                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                    aria-label="Edit"
-                  >
-                    <PlusCircle size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteVideo(index)}
-                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                    aria-label="Delete"
-                  >
-                    <TrashBinIcon />
-                  </button>
+       <div className=" p-6 sm:p-8   mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-black mb-6 pb-4 ">Webinar Videos</h2>
+              {webinar.video.length ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {webinar.video.map((v, idx) => (
+                    <div key={idx} className="border border-blue-100 rounded-2xl p-5 shadow-md flex flex-col gap-4 bg-white hover:shadow-xl hover:border-blue-300 transition-all duration-300">
+                      <h3 className="text-lg font-semibold text-gray-800">Video {idx + 1}: {v.videoName || 'Untitled Video'}</h3>
+                        <strong>Video Url: 
+                      <a
+                        href={v.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800 transition-colors duration-200"
+                      >
+                        View Video
+                      </a>
+                      </strong>
+      
+      
+                      <p className="text-sm text-gray-700">
+                        <strong>Description: </strong>
+                        {v.videoDescription || 'No description.'}
+                      </p>
+      
+      
+      
+                      <div className="flex gap-2">
+                        <button
+                          // onClick={() => handleUpdateVideo(idx)}
+                           onClick={() => handleEdit(webinar._id, idx)}
+                          className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                          aria-label="Edit"
+                        >
+                          <PencilIcon size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVideo(idx)}
+                          className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                          aria-label="Delete"
+                        >
+                          <TrashBinIcon />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-600 text-lg py-8">No webinar videos available for this webinar.</p>
-        )}
-      </div>
+              ) : (
+                <p className="text-center text-gray-600 text-lg py-8">No webinar videos available for this webinar.</p>
+              )}
+            </div>
+      
 
 
       <Link href="/academy/webinars" passHref>
@@ -368,3 +371,8 @@ const WebinarDetailPage: React.FC = () => {
 };
 
 export default WebinarDetailPage;
+
+
+
+
+

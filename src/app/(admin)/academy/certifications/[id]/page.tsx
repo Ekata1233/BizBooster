@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
-
 import { useModal } from '@/hooks/useModal';
 import { Modal } from '@/components/ui/modal';
 import FileInput from '@/components/form/input/FileInput';
@@ -14,10 +13,9 @@ import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import { TrashBinIcon } from '@/icons'; // Assuming this is a custom SVG/React component for the trash bin
-
-import { useCertificate } from '@/context/CertificationContext'; // Assuming this context exists
-import { PlusCircle } from 'lucide-react';
+import { TrashBinIcon } from '@/icons'; 
+import { useCertificate } from '@/context/CertificationContext'; 
+import { PencilIcon} from 'lucide-react';
 
 // Define types for clarity
 interface Video {
@@ -36,14 +34,12 @@ interface Certificate {
 
 const CertificateDetailPage: React.FC = () => {
   const params = useParams();
-const id = params?.id as string;
+  const id = params?.id as string;
 
   const router = useRouter();
 
-  /* context / modal */
-  // Renamed deleteTutorial to deleteVideoInCertificate for clarity, assuming it's for sub-documents
   const { certificates, deleteCertificate, updateTutorial: updateCertificateTutorial, deleteTutorial: deleteVideoInCertificate } = useCertificate();
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen,  closeModal } = useModal();
 
   /* local state */
   const [certificate, setCertificate] = useState<Certificate | null>(null);
@@ -51,7 +47,7 @@ const id = params?.id as string;
   const [error, setError] = useState<string | null>(null); // Add error state
 
   const [videoFiles,] = useState<File[]>([]); // This state seems unused for current video logic
-  const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]);
+  const [currentVideoUrls, ] = useState<string[]>([]);
   const [editingVideoIndex, setEditingVideoIndex] = useState<number | null>(null);
 
   const [newVideos, setNewVideos] = useState<
@@ -97,14 +93,14 @@ const id = params?.id as string;
   }, [loadCertificateDetails]);
 
 
-  const handleUpdateVideo = (videoIdx: number) => {
-    if (!certificate) return;
-    const v = certificate.video[videoIdx];
-    setEditingVideoIndex(videoIdx);
-    setCurrentVideoUrls([v?.videoUrl || '']);
-    setNewVideos([{ name: v?.videoName || '', description: v?.videoDescription || '', file: null }]);
-    openModal();
-  };
+  // const handleUpdateVideo = (videoIdx: number) => {
+  //   if (!certificate) return;
+  //   const v = certificate.video[videoIdx];
+  //   setEditingVideoIndex(videoIdx);
+  //   setCurrentVideoUrls([v?.videoUrl || '']);
+  //   setNewVideos([{ name: v?.videoName || '', description: v?.videoDescription || '', file: null }]);
+  //   openModal();
+  // };
 
   const handleUpdateData = async () => {
     if (!certificate || editingVideoIndex === null) return;
@@ -176,14 +172,23 @@ const id = params?.id as string;
     }
   };
 
+  
+
+  const handleEdit = (certId: string, videoIdx: number) => {
+  // router.push(`/academy/certifications/updatemodals/[certId]/[videoIdx]/${certId}/${videoIdx}`);
+  router.push(`/academy/certifications/updatemodals/${certId}/${videoIdx}`);
+
+};
+
+
   /* add / update form helpers */
   const handleNewVideoChange = (key: 'name' | 'description' | 'file', value: string | File | null) =>
     setNewVideos([{ ...newVideos[0], [key]: value }]);
 
 
-  if (isLoading) return <p className="p-8 text-center text-gray-600">Loading certificate details...</p>;
+  if (isLoading) return <p className="p-8 text-center text-gray-600">Loading tutorial details...</p>;
   if (error) return <p className="p-8 text-center text-red-600">Error: {error}</p>;
-  if (!certificate) return <p className="p-8 text-center text-gray-600">Certificate not found.</p>;
+  if (!certificate) return <p className="p-8 text-center text-gray-600">Tutorials not found.</p>;
 
   return (
     <div className="min-h-screen bg-white p-6 sm:p-8 md:p-10 font-sans">
@@ -194,13 +199,6 @@ const id = params?.id as string;
         <h1 className="text-3xl sm:text-4xl font-extrabold text-black mb-4 sm:mb-0">
           {certificate.name}
         </h1>
-        {/* <Button
-          onClick={handleDeleteCertificate}
-          className="bg-gradient-to-r from-red-500 to-red-700 text-white px-6 py-3 rounded-full shadow-lg hover:from-red-600 hover:to-red-800 transition-all duration-300 flex items-center space-x-3 text-lg font-semibold"
-        >
-          <TrashBinIcon className="w-5 h-5" />
-         
-        </Button> */}
         <button onClick={handleDeleteCertificate} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
           <TrashBinIcon />
         </button>
@@ -244,17 +242,17 @@ const id = params?.id as string;
             {certificate.video.map((v, idx) => (
               <div key={idx} className="border border-blue-100 rounded-2xl p-5 shadow-md flex flex-col gap-4 bg-white hover:shadow-xl hover:border-blue-300 transition-all duration-300">
                 <h3 className="text-lg font-semibold text-gray-800">Video {idx + 1}: {v.videoName || 'Untitled Video'}</h3>
+                  <strong>Video Url: 
+                <a
+                  href={v.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800 transition-colors duration-200"
+                >
+                  View Video
+                </a>
+                </strong>
 
-                {v.videoUrl ? (
-                  <video controls className="w-full h-56 object-cover rounded-lg border border-blue-300" preload="metadata">
-                    <source src={v.videoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <div className="w-full h-56 bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 text-md">
-                    Video Not Available
-                  </div>
-                )}
 
                 <p className="text-sm text-gray-700">
                   <strong>Description: </strong>
@@ -265,11 +263,13 @@ const id = params?.id as string;
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleUpdateVideo(idx)}
+                    // onClick={() => handleUpdateVideo(idx)}
+                     onClick={() => handleEdit(certificate._id, idx)}
                     className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                     aria-label="Edit"
                   >
-                    <PlusCircle size={16} />
+                    {/* <PlusCircle size={16} /> */}
+                    <PencilIcon size={16} />
                   </button>
                   <button
                     onClick={() => handleDeleteVideo(idx)}
@@ -289,14 +289,6 @@ const id = params?.id as string;
 
 
       <Link href="/academy/certifications" passHref>
-        {/* <Button className="bg-gradient-to-r from-gray-600 to-gray-800 text-white px-8 py-4 rounded-full shadow-lg hover:from-gray-700 hover:to-gray-900 transition-all duration-300 text-lg font-semibold">
-                Back to Webinars
-              </Button> */}
-        {/* <button
-                className="text-white bg-black border border-violet-200 rounded-md px-3 py-1 hover:bg-violet-600 "
-              >
-                Back to Webinars
-              </button> */}
         <Button variant="outline">Back</Button>
       </Link>
 

@@ -44,9 +44,9 @@ const ModuleStatCard: React.FC = () => {
   let mainTitle = ''; // Title for the first StatCard
 
   // Determine which data to show based on the path
-  const isLiveWebinarsPath = pathname === '/academy/livewebinars';
-  const isCertificationsPath = pathname === '/academy/certifications';
-  const isWebinarsPath = pathname === '/academy/webinars';
+  const isLiveWebinarsPath = pathname === '/academy/livewebinars-management/livewebinars-list';
+  const isCertificationsPath = pathname === '/academy/certifications-management/Tutorial-List';
+  const isWebinarsPath = pathname === '/academy/webinars-management/webinars-list';
 
   if (isLiveWebinarsPath) {
     mainTitle = "Live Webinars";
@@ -204,3 +204,6 @@ const ModuleStatCard: React.FC = () => {
 }
 
 export default ModuleStatCard;
+
+
+
