@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
     const active  = searchParams.get("active"); // "true" | "false" | null
 
     /* ── build filter object ────────────────────────── */
-    const filter: Record<string, unknown> = { isDeleted: false };
+    const filter: Record<string, unknown> = { };
 
     if (search) {
       const regex = { $regex: search, $options: "i" };
@@ -155,3 +155,48 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const search = searchParams.get("search");
+//     const active = searchParams.get("active"); // "true" | "false" | null
+
+//     /* ── build filter object ────────────────────────── */
+//     const filter: Record<string, unknown> = {  };
+
+//     if (search) {
+//       const regex = { $regex: search, $options: "i" };
+//       filter.$or = [{ couponCode: regex }, { discountTitle: regex }];
+//     }
+
+//     if (active === "true") {
+//       // Only check for isActive, remove date checks
+//       filter.isActive = true;
+//     } else if (active === "false") {
+//       filter.$or = [
+//         { isActive: false },
+//         { endDate: { $lt: new Date() } }, // optional: remove this too if you want no date logic
+//       ];
+//     }
+
+//     const coupons = await Coupon
+//       .find(filter)
+//       .populate("category", "name")
+//       .populate("service", "serviceName")
+//       .populate("zone", "name")
+//       .sort();
+
+//     return NextResponse.json(
+//       { success: true, data: coupons },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : "Unknown error";
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }

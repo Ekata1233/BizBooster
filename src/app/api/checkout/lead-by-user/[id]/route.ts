@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout"; // make sure path is correct
+import "@/models/Service"
+import "@/models/ServiceCustomer"
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -30,7 +32,7 @@ export async function GET(req: Request) {
 
         const checkouts = await Checkout.find({ user: id }).populate({
             path: 'service',
-            select: 'serviceName', // ✅ only populate serviceName
+            select: 'serviceName price discount discountedPrice', // ✅ only populate serviceName
         })
             .populate('serviceCustomer');
 

@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     if (!provider || !(await provider.comparePassword(password))) {
       return NextResponse.json(
-        { success: false, message: "Invalid credentials" },
+        { success: false, message: "Invalid Password" },
         { status: 401, headers }
       );
     }

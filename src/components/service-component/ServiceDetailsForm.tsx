@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Label from '../form/Label';
-import Input from '../form/input/InputField';              
+import Input from '../form/input/InputField';
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
@@ -14,12 +14,6 @@ const ClientSideCustomEditor = dynamic(() => import('../../components/custom-edi
   ssr: false,
   loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
 });
-
-// type EditorType = {
-//   create: (...args: Parameters<typeof ClassicEditor.create>) => Promise<Editor>;
-//   EditorWatchdog: typeof EditorWatchdog;
-//   ContextWatchdog: typeof ContextWatchdog;
-// };
 
 interface RowData {
   title: string;
@@ -40,10 +34,12 @@ export type ServiceDetails = {
   benefits: string;
   overview: string;
   highlight: File[] | FileList | null;
+  highlightPreviews?: string[];
   document: string;
   howItWorks: string;
   terms: string;
   faqs: FAQ[];
+  
   rows: RowData[];
   whyChoose: WhyChoose[];
   termsAndConditions?: string;
@@ -60,7 +56,7 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [document, setDocument] = useState('');
   const [howItWorks, setHowItWorks] = useState('');
   const [terms, setTerms] = useState('');
-  const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
+  const [faqs, setfaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [rows, setRows] = useState<RowData[]>([]);
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
     _id: ''
@@ -71,33 +67,39 @@ const ServiceDetailsForm = ({ data, setData }: {
   const whyChooseContext = useWhyChoose();
 
   console.log("data of service : ", data)
+      console.log("faqs State:", faqs);
 
 
-  useEffect(() => {
-    if (data) {
-      setBenefits(data.benefits || '');
-      setOverview(data.overview || '');
+ useEffect(() => {
+  if (data) {
+    setBenefits(data.benefits || '');
+    setOverview(data.overview || '');
+    setDocument(data.document || '');
+    setHowItWorks(data.howItWorks || '');
+    setTerms(data.terms || '');
+    setRows(data.rows?.length ? data.rows : []);
+    setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
 
-      setDocument(data.document || '');
-      setHowItWorks(data.howItWorks || '');
-      setTerms(data.terms || '');
-      setFaqs(data.faqs?.length ? data.faqs : [{ question: '', answer: '' }]);
-      setRows(data.rows?.length ? data.rows : []);
-      setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
-      if (data.highlight?.length) {
-        // If it's an uploaded file (File object), set directly
-        if (data.highlight[0] instanceof File) {
-          setHighlight(data.highlight);
-        }
-        // If it's coming as a string (like image URL from DB), wrap in array
-        else if (typeof data.highlight[0] === 'string') {
-          setHighlight(data.highlight); // or [data.highlight[0]]
-        }
-      } else {
-        setHighlight([]); // fallback
-      }
+    // Fix here 👇
+    if (Array.isArray(data.faqs) && data.faqs.length > 0) {
+      setfaqs(data.faqs);
+
+    } else {
+      setfaqs([{ question: '', answer: '' }]);
     }
-  }, []);
+
+    if (data.highlight?.length) {
+      if (data.highlight[0] instanceof File) {
+        setHighlight(data.highlight);
+      } else if (typeof data.highlight[0] === 'string') {
+        setHighlight(data.highlight);
+      }
+    } else {
+      setHighlight([]);
+    }
+  }
+}, []);
+
 
   // useEffect(() => {
 
@@ -173,18 +175,18 @@ const ServiceDetailsForm = ({ data, setData }: {
   };
 
   const handleFaqChange = (index: number, field: keyof FAQ, value: string) => {
-    const updatedFaqs = [...faqs];
-    updatedFaqs[index][field] = value;
-    setFaqs(updatedFaqs);
+    const updatedfaqs = [...faqs];
+    updatedfaqs[index][field] = value;
+    setfaqs(updatedfaqs);
   };
 
   const handleAddFaq = () => {
-    setFaqs([...faqs, { question: '', answer: '' }]);
+    setfaqs([...faqs, { question: '', answer: '' }]);
   };
 
   const handleRemoveFaq = (index: number) => {
-    const updatedFaqs = faqs.filter((_, i) => i !== index);
-    setFaqs(updatedFaqs);
+    const updatedfaqs = faqs.filter((_, i) => i !== index);
+    setfaqs(updatedfaqs);
   };
 
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,33 +242,31 @@ const ServiceDetailsForm = ({ data, setData }: {
           <ClientSideCustomEditor value={overview} onChange={setOverview} />
         </div>
       </div>
+<div className='my-3'>
+  <Label>Highlight Images (Select Multiple Images)</Label>
+  <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
+  
+  {/* Optional: Preview selected new images (not existing ones) */}
+  <div className="mt-2 flex gap-2 flex-wrap">
+    {/* You can add previews for new uploads here if you're handling them separately */}
+  </div>
 
-      <div className='my-3'>
-        <Label>Highlight Images (Select Multiple Images)</Label>
-        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
-        <div className="mt-2 flex gap-2 flex-wrap">
-          {/* {highlight &&
-            Array.from(highlight as FileList | File[]).map((file, index) => (
-              <img
-                key={index}
-                src={URL.createObjectURL(file)}
-                alt={`Highlight Preview ${index}`}
-                className="w-42 h-24 object-cover rounded border"
-              />
-            ))} */}
+  {/* ✅ Display existing highlight image previews */}
+  <div className="flex flex-wrap gap-4 mt-2">
+    {data.highlightPreviews?.length === 0 && (
+      <p className="text-gray-500">No highlight images available.</p>
+    )}
+    {data.highlightPreviews?.map((src, index) => (
+      <img
+        key={index}
+        src={src}
+        alt={`highlight-${index}`}
+        className="w-24 h-24 object-cover rounded"
+      />
+    ))}
+  </div>
+</div>
 
-        </div>
-        <div className="flex flex-wrap gap-4 mt-2">
-          {highlightPreviews.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`highlight-${index}`}
-              className="w-24 h-24 object-cover rounded"
-            />
-          ))}
-        </div>
-      </div>
 
       <div className='my-3'>
         <Label>Document</Label>
@@ -413,26 +413,26 @@ const ServiceDetailsForm = ({ data, setData }: {
             </div>
 
             <div>
-              <Label>Question</Label>
-              <Input
-                type="text"
-                placeholder="Enter question"
-                value={faq.question}
-                onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                className="w-full"
-              />
-            </div>
+      <Label>Question</Label>
+      <Input
+        type="text"
+        placeholder="Enter question"
+        value={faq.question}
+        onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+        className="w-full"
+      />
+    </div>
 
-            <div>
-              <Label>Answer</Label>
-              <textarea
-                placeholder="Enter answer"
-                value={faq.answer}
-                onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                className="w-full border rounded p-2 resize-none"
-                rows={4}
-              />
-            </div>
+    <div>
+      <Label>Answer</Label>
+      <textarea
+        placeholder="Enter answer"
+        value={faq.answer}
+        onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+        className="w-full border rounded p-2 resize-none"
+        rows={4}
+      />
+    </div>
           </div>
         ))}
 

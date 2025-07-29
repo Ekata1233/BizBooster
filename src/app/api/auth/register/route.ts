@@ -32,12 +32,6 @@ export const POST = async (req: Request) => {
       existingUserByMobile.otp?.verified === true &&
       existingUserByMobile.isMobileVerified === true;
 
-    // console.log("body ", body);
-    // console.log("parsedData ", parsedData);
-    // console.log("existingUserByEmail", existingUserByEmail);
-    // console.log("existingUserByMobile", existingUserByMobile);
-    // console.log("isMobileBlocked", isMobileBlocked);
-
     if (existingUserByEmail && isMobileBlocked) {
       return NextResponse.json(
         { error: 'Email and Mobile already exists' },
@@ -46,7 +40,7 @@ export const POST = async (req: Request) => {
     }
 
     if (existingUserByEmail) {
-      
+
       return NextResponse.json(
         { error: 'Email already exists' },
         { status: 400, headers: corsHeaders }
@@ -81,21 +75,6 @@ export const POST = async (req: Request) => {
       if (!existing) exists = false;
     }
 
-    // const otp = generateOtp();
-    // console.log(`OTP for ${parsedData.email}: ${otp}`);
-
-    // let referredBy = null;
-
-    // if (parsedData.referredBy) {
-    //   const referringUser = await User.findOne({ referralCode: parsedData.referredBy });
-    //   if (!referringUser) {
-    //     return NextResponse.json(
-    //       { error: 'Referral code is not valid' },
-    //       { status: 400, headers: corsHeaders }
-    //     );
-    //   }
-    //   referredBy = referringUser._id;
-    // }
 
     let referredBy = null;
     let referringUser = null;
@@ -119,7 +98,7 @@ export const POST = async (req: Request) => {
       referralCode,
       referredBy,
       isMobileVerified: true,
-
+      personalDetailsCompleted: true
     });
 
     await newUser.save();

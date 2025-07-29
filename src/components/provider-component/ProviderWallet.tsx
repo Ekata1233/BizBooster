@@ -22,6 +22,7 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
         receivableBalance: 0,
         cashInHand: 0,
         balance: 0,
+        withdrawableBalance: 0,
         pendingWithdraw: 0,
         alreadyWithdrawn: 0,
         totalEarning: 0,
@@ -38,8 +39,8 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
                     wallet={{
                         receivableBalance: finalWallet.receivableBalance,
                         cashInHand: finalWallet.cashInHand,
-                        withdrawableBalance: finalWallet.balance,
-                        pendingWithdraw: finalWallet.balance,
+                        withdrawableBalance: finalWallet.withdrawableBalance,
+                        pendingWithdraw: finalWallet.pendingWithdraw,
                         alreadyWithdrawn: finalWallet.alreadyWithdrawn,
                         totalEarning: finalWallet.totalEarning,
                     }}

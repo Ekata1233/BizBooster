@@ -80,6 +80,34 @@ export async function PUT(req: Request) {
     const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
     const discountStr = formData.get("discount") as string | null;
+    // Handle gst & includeGst
+    const gstStr = formData.get("gst") as string | null;
+    const includeGstStr = formData.get("includeGst") as string | null;
+    const gst = gstStr ? parseFloat(gstStr) : 0;
+    const includeGst = includeGstStr === "true";
+
+    // Calculate GST in Rupees
+   // Step 4: Use discountedPrice in calculations
+// const gstInRupees = includeGst ? (discountedPrice * gst) / 100 : 0;
+// const totalWithGst = discountedPrice + gstInRupees;
+
+    // Handle tags
+    const tags = formData.getAll("tags")?.filter(Boolean) as string[];
+
+    // Handle recommendedServices
+    const recommendedStr = formData.get("recommendedServices") as string | null;
+    const recommendedServices = recommendedStr === "true";
+
+    // Handle keyValues (JSON string expected from frontend)
+    let keyValues = [];
+    const keyValuesStr = formData.get("keyValues") as string | null;
+    if (keyValuesStr) {
+      try {
+        keyValues = JSON.parse(keyValuesStr);
+      } catch (error) {
+        console.warn("Invalid keyValues JSON", error);
+      }
+    }
 
 
     interface NestedFormData {
@@ -135,7 +163,7 @@ export async function PUT(req: Request) {
       );
     }
 
-     let discount: number = 0;
+    let discount: number = 0;
     if (discountStr !== null && discountStr.trim() !== "") {
       const parsedDiscount = parseFloat(discountStr);
       if (!isNaN(parsedDiscount)) {
@@ -186,13 +214,21 @@ export async function PUT(req: Request) {
       category: string;
       subcategory?: string;
       price: number;
-       discount?: number;
+      discount?: number;
       discountedPrice?: number;
+      gst?: number;
+  includeGst?: boolean;
+  gstInRupees?: number;
+  totalWithGst?: number;
+  tags?: string[];
+  recommendedServices?: boolean;
+  // keyValues?: KeyValue[];
       serviceDetails: NestedFormData;
       franchiseDetails: NestedFormData;
       isDeleted: boolean;
       thumbnailImage?: string;
       bannerImages?: string[];
+      
     }
 
     const updateData: UpdateData = {
@@ -204,6 +240,14 @@ export async function PUT(req: Request) {
       serviceDetails,
       franchiseDetails,
       isDeleted: false,
+      gst,
+      includeGst,
+      // gstInRupees,
+      // totalWithGst,
+      tags,
+      recommendedServices,
+      // keyValues,
+
     };
     if (subcategory) {
       updateData.subcategory = subcategory;

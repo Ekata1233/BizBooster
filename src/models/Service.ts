@@ -28,6 +28,18 @@ const serviceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  includeGst:{
+    type: Boolean,
+    default: false
+  },
+  gstInRupees: {
+    type: Number,
+    default: 0
+  },
+  totalWithGst:{
+     type: Number,
+    default: 0
+  },
   discountedPrice: {
     type: Number,
   },

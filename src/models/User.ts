@@ -2,6 +2,16 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import { string } from 'zod';
 
+const addressSchema = new mongoose.Schema({
+  houseNumber: String,
+  landmark: String,
+  state: String,
+  city: String,
+  pinCode: String,
+  country: String,
+  fullAddress: String,
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -25,21 +35,44 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\+?\d{10,15}$/, 'Mobile number format is invalid']
   },
-  address: {
-    type: String,
-  },
-  state: {
-    type: String,
-  },
-  city: {
-    type: String,
-  },
-  country: {
-    type: String,
-  },
+  personalDetailsCompleted: { type: Boolean, default: false },
   profilePhoto: {
     type: String,
   },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other'],
+  },
+  maritalStatus: {
+    type: String,
+    enum: ['single', 'married'],
+  },
+  bloodGroup: {
+    type: String,
+    enum: ['a+', 'a-', 'b+', 'b-', 'o+', 'o-', 'ab+', 'ab-'],
+    lowercase: true
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  education: {
+    type: String,
+  },
+  profession: {
+    type: String,
+  },
+  emergencyContact: {
+    type: String,
+    trim: true,
+    match: [/^\+?\d{10,15}$/, 'Mobile number format is invalid']
+  },
+  additionalDetailsCompleted: { type: Boolean, default: false },
+
+  homeAddress: addressSchema,
+  workAddress: addressSchema,
+  otherAddress: addressSchema,
+  addressCompleted: { type: Boolean, default: false },
+
   password: {
     type: String,
     required: true

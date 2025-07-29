@@ -28,10 +28,16 @@ export type Coupon = {
   __v?: number;
 };
 
+type CouponAPIResponse = {
+  success: boolean;
+  message: string;
+  data?: any;
+};
+
 // Define the context type
 interface CouponContextType {
   coupons: Coupon[];
-  addCoupon: (formData: FormData) => Promise<void>;
+  addCoupon: (formData: FormData) => Promise<CouponAPIResponse>;
   updateCoupon: (id: string, formData: FormData) => Promise<void>;
   deleteCoupon: (id: string) => Promise<void>;
 }
@@ -59,14 +65,22 @@ export const CouponProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Add coupon
-  const addCoupon = async (formData: FormData) => {
+  const addCoupon = async (formData: FormData): Promise<CouponAPIResponse> => {
     try {
-      await axios.post("/api/coupon", formData);
-      fetchCoupons();
-    } catch (error) {
+      const response = await axios.post("/api/coupon", formData);
+      fetchCoupons(); // optional if you want to refresh the list
+      return response.data; // ✅ return backend response (e.g., { success: true/false, message: "" })
+    } catch (error: any) {
       console.error("Error adding coupon:", error);
+
+      // ✅ return a standard error object so the UI can handle it
+      return {
+        success: false,
+        message: error.response?.data?.message || "Something went wrong",
+      };
     }
   };
+
 
   // Update coupon
   const updateCoupon = async (id: string, formData: FormData) => {
