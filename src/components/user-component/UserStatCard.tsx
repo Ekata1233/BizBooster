@@ -36,7 +36,7 @@ const UserStatCard = () => {
             />
             <StatCard
                 title="Total Revenue"
-                value="$8420"
+                value="₹8420"
                 icon={DollarLineIcon}
                 badgeColor="success"
                 badgeValue="6.88%"
@@ -44,7 +44,7 @@ const UserStatCard = () => {
             />
             <StatCard
                 title="Revenue"
-                value="$8420"
+                value="₹8420"
                 icon={BoxCubeIcon}
                 badgeColor="success"
                 badgeValue="6.88%"

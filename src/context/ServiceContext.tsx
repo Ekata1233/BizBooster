@@ -98,9 +98,11 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
       const res = await axios.post<Service>("/api/service", formData);
       await fetchServices();
       return res.data;
-    } catch (error) {
-      console.error("Failed to create service:", error);
-    }
+    } catch (error: any) {
+    const message = error?.response?.data?.message || "Unknown error";
+    console.error("Failed to create service:", message);
+    throw new Error(message); // ⬅️ THROW here so caller can catch
+  }
   };
 
   const updateService = async (id: string, data: Partial<Service> | FormData) => {
