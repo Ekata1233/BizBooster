@@ -168,7 +168,7 @@ const EditVideoEntryPage = () => {
         </div>
 
         <div className="flex justify-end gap-4 mt-10">
-          <button variant="outline" onClick={() => router.push('/academy/understandingfetchtrue')} type="button">
+          <button  onClick={() => router.push('/academy/understandingfetchtrue')} type="button">
             Cancel
           </button>
           <Button type="submit" disabled={loading}>
