@@ -16,6 +16,7 @@ import { Modal } from '@/components/ui/modal';
 import { useModal } from '@/hooks/useModal'
 import { useModule } from '@/context/ModuleContext'
 import axios from 'axios'
+import { useRouter } from 'next/navigation';
 import Select from '@/components/form/Select'
 import ModuleStatCard from '@/components/module-component/ModuleStatCard'
 
@@ -50,18 +51,19 @@ interface TableData {
   status: string;
 }
 
-type CategoryItem = {
-  _id: string;
-  name: string;
-  image?: string;
-  module?: {
-    _id: string;
-  };
-};
+// type CategoryItem = {
+//   _id: string;
+//   name: string;
+//   image?: string;
+//   module?: {
+//     _id: string;
+//   };
+// };
+
 const Category = () => {
   const { categories, updateCategory, deleteCategory } = useCategory();
   const { modules } = useModule();
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen, closeModal } = useModal();
   const [CategoryName, setCategoryName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -71,6 +73,7 @@ const Category = () => {
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [activeTab, setActiveTab] = useState('all');
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   const moduleOptions = modules.map((module) => ({
     value: module._id, // or value: module if you want full object
@@ -195,7 +198,7 @@ const Category = () => {
           <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
             <TrashBinIcon />
           </button>
-          <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+          <Link href={`/category-management/category/${row.id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
               <EyeIcon />
             </button>
@@ -205,18 +208,23 @@ const Category = () => {
     },
   ];
 
-  const handleEdit = (id: string) => {
-    const category = categories.find(item => item._id === id) as CategoryItem | undefined;
-    console.log("in handle edit : ", category)
-    if (category) {
-      setEditingCategoryId(id);
-      setCategoryName(category.name);
-      setSelectedModuleId(category.module?._id || '');
-      setSelectedFile(null);
-      setExistingImageUrl(category.image || null);
-      openModal();
-    }
+  // const handleEdit = (id: string) => {
+  //   const category = categories.find(item => item._id === id) as CategoryItem | undefined;
+  //   console.log("in handle edit : ", category)
+  //   if (category) {
+  //     setEditingCategoryId(id);
+  //     setCategoryName(category.name);
+  //     setSelectedModuleId(category.module?._id || '');
+  //     setSelectedFile(null);
+  //     setExistingImageUrl(category.image || null);
+  //     openModal();
+  //   }
+  // };
+
+    const handleEdit = (id: string) => {
+    router.push(`/category-management/category/modals/${id}`);
   };
+
 
   const handleUpdateData = async () => {
     if (!editingCategoryId) return;

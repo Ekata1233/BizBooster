@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import Certifications from "@/models/Certifications";
 import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
-import { v4 as uuidv4 } from "uuid";
+
 
 export async function PUT(req: Request) {
   await connectToDatabase();
@@ -16,7 +15,7 @@ export async function PUT(req: Request) {
     const videoIndex = parseInt(formData.get("videoIndex") as string);
     const videoName = formData.get("videoName") as string;
     const videoDescription = formData.get("videoDescription") as string;
-    const videoFile = formData.get("videoFile") as File | null;
+    const videoUrl = formData.get("videoUrl") as string;
 
     const tutorial = await Certifications.findById(id);
     if (!tutorial || !tutorial.video || tutorial.video.length <= videoIndex) {
@@ -28,16 +27,7 @@ export async function PUT(req: Request) {
 
     if (videoName) tutorial.video[videoIndex].videoName = videoName;
     if (videoDescription) tutorial.video[videoIndex].videoDescription = videoDescription;
-
-    if (videoFile && videoFile.size > 0) {
-      const buffer = Buffer.from(await videoFile.arrayBuffer());
-      const uploadRes = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${videoFile.name}`,
-        folder: "/tutorial-videos",
-      });
-      tutorial.video[videoIndex].videoUrl = uploadRes.url;
-    }
+    if (videoUrl) tutorial.video[videoIndex].videoUrl = videoUrl;
 
     const updated = await tutorial.save();
 
@@ -50,6 +40,7 @@ export async function PUT(req: Request) {
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

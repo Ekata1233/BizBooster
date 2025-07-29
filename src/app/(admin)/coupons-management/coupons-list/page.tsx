@@ -18,6 +18,7 @@ import { useSubcategory } from '@/context/SubcategoryContext';
 import { useCategory } from '@/context/CategoryContext';
 import StatCard from '@/components/common/StatCard';
 import EditCouponModal from '@/components/coupon-component/EditCouponModal';
+import Link from 'next/link';
 
 
 /* -------------------------------------------------------------------------- */
@@ -264,11 +265,16 @@ const CouponList: React.FC = () => {
           >
             <TrashBinIcon />
           </button>
-          <button
+          {/* <button
             className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white"
           >
             <EyeIcon />
-          </button>
+          </button> */}
+          <Link href={`/coupons-management/coupons-list/${row.id}`} passHref>
+            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+              <EyeIcon />
+            </button>
+          </Link>
         </div>
       ),
     },

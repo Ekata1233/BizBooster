@@ -1,7 +1,7 @@
 // context/GalleryContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState,  } from "react";
 import axios from "axios";
 
 interface GalleryContextType {
@@ -24,7 +24,7 @@ export const useGallery = () => {
 export const GalleryProvider = ({ children }: { children: React.ReactNode }) => {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-console.log("gg ", );
+
 
   const fetchGallery = async (providerId: string) => {
     setLoading(true);

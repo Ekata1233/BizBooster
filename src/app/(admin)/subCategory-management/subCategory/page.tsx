@@ -15,6 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
@@ -54,7 +55,7 @@ interface TableData {
 
 const Subcategory = () => {
     const { subcategories, updateSubcategory, deleteSubcategory } = useSubcategory();
-    const { isOpen, openModal, closeModal } = useModal();
+    const { isOpen, closeModal } = useModal();
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,6 +66,7 @@ const Subcategory = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+    const router = useRouter();
 
     console.log("data in categories : ", categories)
     useEffect(() => {
@@ -111,17 +113,21 @@ const Subcategory = () => {
         fetchFilteredSubcategory()
     }, [selectedCategory, searchQuery])
 
-    const handleEdit = (id: string) => {
-        const subcat = subcategories.find(item => item._id === id);
+    // const handleEdit = (id: string) => {
+    //     const subcat = subcategories.find(item => item._id === id);
 
-        if (subcat) {
-            setEditingId(id);
-            setSubcategoryName(subcat.name);
-            setSelectedCategoryId((subcat.category as Category)?._id || '');
-            setSelectedFile(null);
-            setExistingImageUrl(subcat.image || null);
-            openModal();
-        }
+    //     if (subcat) {
+    //         setEditingId(id);
+    //         setSubcategoryName(subcat.name);
+    //         setSelectedCategoryId((subcat.category as Category)?._id || '');
+    //         setSelectedFile(null);
+    //         setExistingImageUrl(subcat.image || null);
+    //         openModal();
+    //     }
+    // };
+
+    const handleEdit = (id: string) => {
+        router.push(`/subCategory-management/subCategory/modals/${id}`);
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,7 +243,7 @@ const Subcategory = () => {
                             <TrashBinIcon />
                         </button>
 
-                        <Link href={`/subcategory/${row.id}`} passHref>
+                        <Link href={`/subCategory-management/subCategory/${row.id}`} passHref>
                             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
                                 <EyeIcon />
                             </button>

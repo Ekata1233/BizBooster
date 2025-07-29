@@ -20,9 +20,7 @@ import { PlusCircle } from 'lucide-react';
 import { useCertificate } from '@/context/CertificationContext';
 import { useRouter } from 'next/navigation';
 
-/* ------------------------------------------------------------------
- * Types
- * ------------------------------------------------------------------ */
+
 interface TableData {
   id: string;
   name: string;
@@ -34,9 +32,6 @@ interface TableData {
   status: 'Active' | 'Deleted';
 }
 
-/* ------------------------------------------------------------------
- * Video preview (show more/less)
- * ------------------------------------------------------------------ */
 const VideoPreviewCell: React.FC<{ urls: string[] }> = ({ urls }) => {
   const [showAll, setShowAll] = useState(false);
   if (!urls.length) return <span className="text-gray-500">No Videos</span>;
@@ -69,9 +64,6 @@ const VideoPreviewCell: React.FC<{ urls: string[] }> = ({ urls }) => {
   );
 };
 
-/* ==================================================================
- * Main Page Component
- * ================================================================== */
 const CertificatePage: React.FC = () => {
   const { certificates, deleteCertificate } = useCertificate();
   // const { isOpen, closeModal } = useModal();
@@ -136,9 +128,7 @@ const CertificatePage: React.FC = () => {
   /* ---------------------------- Loader --------------------------- */
   if (!certificates) return <RouteLoader />;
 
-  /* ==================================================================
-   * Render
-   * ================================================================== */
+  
   return (
     <div>
       <PageBreadcrumb pageTitle="Training Tutorials" />

@@ -39,7 +39,7 @@ export const CertificationProvider = ({ children }: { children: React.ReactNode 
   // Fetch certificates from the API
   const fetchCertificates = async () => {
     try {
-      const response = await axios.get("/api/certifications");
+      const response = await axios.get("/api/academy/certifications");
       setCertificates(response.data.data);
     } catch (error) {
       console.error("Error fetching certificates:", error);
@@ -54,7 +54,7 @@ export const CertificationProvider = ({ children }: { children: React.ReactNode 
   // Add new certificate to the system
   const addCertificate = async (formData: FormData) => {
     try {
-      await axios.post("/api/certifications", formData);
+      await axios.post("/api/academy/certifications", formData);
       fetchCertificates();  // Re-fetch certificates after adding a new one
     } catch (error) {
       console.error("Error adding certificates:", error);
@@ -64,7 +64,7 @@ export const CertificationProvider = ({ children }: { children: React.ReactNode 
   // Update existing certificate
   const updateCertificate = async (id: string, formData: FormData) => {
     try {
-      await axios.put(`/api/certifications/${id}`, formData);
+      await axios.put(`/api/academy/certifications/${id}`, formData);
       fetchCertificates();  // Re-fetch certificates after updating one
     } catch (error) {
       console.error("Error updating certificates:", error);

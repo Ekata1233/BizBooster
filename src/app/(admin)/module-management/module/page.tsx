@@ -5,7 +5,6 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
-
 import AddModule from '@/components/module-component/AddModule';
 import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import RouteLoader from '@/components/RouteLoader';
@@ -14,7 +13,7 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
-
+import { useRouter } from 'next/navigation';
 import { PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
@@ -42,7 +41,7 @@ interface TableData {
 
 const Module = () => {
     const { modules, updateModule, deleteModule } = useModule();
-    const { isOpen, openModal, closeModal } = useModal();
+    const { isOpen, closeModal } = useModal();
     const [moduleName, setModuleName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
@@ -50,7 +49,10 @@ const Module = () => {
     const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
     const [activeTab, setActiveTab] = useState('all');
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+    const router = useRouter();
 
+
+   
     const fetchFilteredModules = async () => {
         try {
             const params = {
@@ -81,6 +83,10 @@ const Module = () => {
     useEffect(() => {
         fetchFilteredModules();
     }, [searchQuery]);
+
+      const handleEdit = (id: string) => {
+    router.push(`/module-management/module/modals/${id}`);
+  };
 
     const columns = [
         {
@@ -158,17 +164,17 @@ const Module = () => {
         },
     ];
 
-    const handleEdit = (id: string) => {
-        const selectedModule = modules.find(item => item._id === id);
+    // const handleEdit = (id: string) => {
+    //     const selectedModule = modules.find(item => item._id === id);
 
-        if (selectedModule) {
-            setEditingModuleId(id);
-            setModuleName(selectedModule.name);
-            setExistingImageUrl(selectedModule.image || null);
-            setSelectedFile(null);
-            openModal();
-        }
-    };
+    //     if (selectedModule) {
+    //         setEditingModuleId(id);
+    //         setModuleName(selectedModule.name);
+    //         setExistingImageUrl(selectedModule.image || null);
+    //         setSelectedFile(null);
+    //         openModal();
+    //     }
+    // };
 
     const handleUpdateData = async () => {
         if (!editingModuleId) return;
