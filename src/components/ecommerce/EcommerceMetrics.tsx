@@ -65,7 +65,7 @@ export const EcommerceMetrics = () => {
         title="Total Revenue"
         value={`₹${summary.totalRevenue.toLocaleString("en-IN")}`}
         trend="up"
-        percentChange="6.88%"
+        percentChange=""
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
       />
     </div>
