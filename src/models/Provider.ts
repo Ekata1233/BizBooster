@@ -35,6 +35,7 @@ export interface KYC {
 
 export interface ProviderDocument extends Document {
   /* step-1 */
+  providerId: string;
   fullName: string;
   phoneNo: string;
   email: string;
@@ -53,8 +54,8 @@ export interface ProviderDocument extends Document {
   /* misc */
   setBusinessPlan?: "commission base" | "other";
   subscribedServices?: mongoose.Types.ObjectId[];
-  averageRating?:number;
-  totalReviews?:number;
+  averageRating?: number;
+  totalReviews?: number;
   isRejected: boolean;
   isApproved: boolean;
   isVerified: boolean;
@@ -123,6 +124,7 @@ const kycSchema = new Schema<KYC>(
 const providerSchema = new Schema<ProviderDocument>(
   {
     /* ––– Step-1 fields ––– */
+    providerId: { type: String, unique: true },
     fullName: { type: String, required: true, trim: true },
     phoneNo: { type: String, required: true, trim: true },
     email: {
@@ -180,6 +182,25 @@ providerSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password as string, 10);
   }
+
+   if (!this.providerId) {
+      const lastUser = await mongoose
+        .model('Provider')
+        .findOne({ providerId: { $regex: /^FTP\d+$/ } })
+        .sort({ createdAt: -1 })
+        .select('providerId');
+  
+      let nextId = 1;
+      if (lastUser?.providerId) {
+        const numericPart = parseInt(lastUser.providerId.replace('FTP', ''), 10);
+        if (!isNaN(numericPart)) {
+          nextId = numericPart + 1;
+        }
+      }
+  
+      this.providerId = `FTP${String(nextId).padStart(6, '0')}`;
+    }
+
   next();
 });
 
