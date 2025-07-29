@@ -193,13 +193,13 @@ export async function POST(req: NextRequest) {
     };
 
     // Convert price and discount to numbers
-   const discountPercentage = discount ? parseFloat(discount as string) : 0;
-const discountedPrice = discountPercentage
-  ? Math.floor(price - (price * discountPercentage / 100))
-  : price;
+    const discountPercentage = discount ? parseFloat(discount as string) : 0;
+    const discountedPrice = discountPercentage
+      ? Math.floor(price - (price * discountPercentage / 100))
+      : price;
 
-const gstInRupees = (discountedPrice * gst) / 100;
-const totalWithGst = discountedPrice + gstInRupees;
+    const gstInRupees = (discountedPrice * gst) / 100;
+    const totalWithGst = discountedPrice + gstInRupees;
 
 
     const newService = await Service.create({
@@ -210,9 +210,9 @@ const totalWithGst = discountedPrice + gstInRupees;
       discount,
       gst,
       includeGst,
-      gstInRupees, 
+      gstInRupees,
       discountedPrice,
-       totalWithGst, 
+      totalWithGst,
       thumbnailImage: thumbnailImageUrl,
       bannerImages: bannerImagesUrls,
       tags,
@@ -251,7 +251,8 @@ export async function GET(req: NextRequest) {
     const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
-      filter.serviceName = { $regex: search, $options: 'i' };
+      // filter.serviceName = { $regex: search, $options: 'i' };
+      filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
     }
 
     if (category) {
