@@ -21,13 +21,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
 
+    const videoUrls = formData.getAll("videoUrl") as string[];
     const videoNames = formData.getAll("videoName") as string[];
     const videoDescriptions = formData.getAll("videoDescription") as string[];
 
-    // --- Handle Image Upload ---
+    // Image handling
     const imageFile = formData.get("imageUrl") as File;
     let imageUrlString = "";
 
@@ -41,82 +43,63 @@ export async function POST(req: NextRequest) {
       imageUrlString = uploadResponse.url;
     } else {
       return NextResponse.json(
-        { success: false, message: "Image file for imageUrl is required." },
+        { success: false, message: "Image file is required." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const newVideoFiles = formData.getAll("video") as File[];
     const videoToAppend: VideoEntry[] = [];
 
-    for (const [index, file] of newVideoFiles.entries()) {
-      if (file instanceof File && file.size > 0) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const uploadResponse = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${file.name}`,
-          folder: "/certifications/videos",
-        });
+    for (let i = 0; i < videoUrls.length; i++) {
+      if (!videoUrls[i] || !videoNames[i] || !videoDescriptions[i]) continue;
 
-        videoToAppend.push({
-          videoName: videoNames[index] || file.name || "Untitled Video",
-          videoUrl: uploadResponse.url,
-          videoDescription: videoDescriptions[index] || "No description",
-        });
-      }
+      videoToAppend.push({
+        videoUrl: videoUrls[i],
+        videoName: videoNames[i],
+        videoDescription: videoDescriptions[i],
+      });
     }
 
-    const existingCertification = await Certifications.findOne({ name });
+    // Check if certificate exists
+    const existing = await Certifications.findOne({ name });
 
-    if (existingCertification) {
-      console.log("Found existing certification:", existingCertification.name);
-      const updatedFields: Partial<typeof existingCertification> = {};
-
-      if (description) updatedFields.description = description;
+    if (existing) {
+      if (description) existing.description = description;
+      if (imageUrlString) existing.imageUrl = imageUrlString;
       if (videoToAppend.length > 0) {
-        existingCertification.video.push(...videoToAppend);
+        existing.video.push(...videoToAppend);
       }
 
-      Object.assign(existingCertification, updatedFields);
-      await existingCertification.save();
+      await existing.save();
 
-      return NextResponse.json(existingCertification, {
+      return NextResponse.json(existing, {
         status: 200,
         headers: corsHeaders,
       });
-    } else {
-      if (!name || !description || !imageUrlString) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Name, Description, and Image are required for new certification",
-          },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-
-      if (!videoNames.length || !videoDescriptions.length || videoToAppend.length === 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Video name, description, and at least one file are required",
-          },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-
-      const newCertification = await Certifications.create({
-        name,
-        imageUrl: imageUrlString,
-        description,
-        video: videoToAppend,
-      });
-
-      return NextResponse.json(newCertification, {
-        status: 201,
-        headers: corsHeaders,
-      });
     }
+
+    // Validate required fields
+    if (!name || !description || !imageUrlString || videoToAppend.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Name, Description, Image, and at least one video are required.",
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const newCert = await Certifications.create({
+      name,
+      description,
+      imageUrl: imageUrlString,
+      video: videoToAppend,
+    });
+
+    return NextResponse.json(newCert, {
+      status: 201,
+      headers: corsHeaders,
+    });
   } catch (error: unknown) {
     console.error("POST /api/certifications error:", error);
 
@@ -135,57 +118,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-   if (
-  typeof error === "object" &&
-  error !== null &&
-  "name" in error &&
-  (error as { name: string }).name === "ValidationError" &&
-  "errors" in error
-) {
-  const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
-  const messages = Object.values(validationErrors).map((err) => err.message);
-  return NextResponse.json(
-    {
-      success: false,
-      message: `Validation Error: ${messages.join(", ")}`,
-    },
-    { status: 400, headers: corsHeaders }
-  );
-}
-
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || "Internal Server Error",
-      },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-
-// GET ALL Certifications
-
-export async function GET() {
-  await connectToDatabase();
-  try {
-    const certificationEntry = await Certifications.find({});
-
-    if (!certificationEntry) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "ValidationError" &&
+      "errors" in error
+    ) {
+      const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
+      const messages = Object.values(validationErrors).map((err) => err.message);
       return NextResponse.json(
-        { success: false, message: "Certification not found." },
-        { status: 404, headers: corsHeaders }
+        {
+          success: false,
+          message: `Validation Error: ${messages.join(", ")}`,
+        },
+        { status: 400, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, data: certificationEntry },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    console.error("GET /api/certifications error:", error);
-
-    return NextResponse.json(
       {
         success: false,
         message: (error as Error).message || "Internal Server Error",
@@ -195,32 +146,24 @@ export async function GET() {
   }
 }
 
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
+// GET All Certifications
+export async function GET() {
+  await connectToDatabase();
 
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const search = searchParams.get("search");
-
-//     const filter = search
-//       ? { name: { $regex: search, $options: "i" } } // case-insensitive name match
-//       : {};
-
-//     const certificationEntry = await Certifications.find(filter);
-
-//     return NextResponse.json(
-//       { success: true, data: certificationEntry },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     console.error("GET /api/certifications error:", error);
-
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: (error as Error).message || "Internal Server Error",
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
+  try {
+    const allCertifications = await Certifications.find({});
+    return NextResponse.json(
+      { success: true, data: allCertifications },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    console.error("GET /api/certifications error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: (error as Error).message || "Internal Server Error",
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

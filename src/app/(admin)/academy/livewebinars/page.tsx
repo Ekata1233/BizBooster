@@ -65,46 +65,6 @@ const LiveWebinar = () => {
 
 
 
-    // const fetchFilteredWebinars = async () => {
-    //     try {
-    //         const params = {
-    //             ...(searchQuery && { search: searchQuery }),
-    //         };
-
-    //         const response = await axios.get('/api/academy/livewebinars', { params });
-    //         const data = response.data.data;
-
-    //         if (data.length === 0) {
-    //             setFilteredCertificates([]);
-    //         } else {
-    //             const tableData: TableData[] = data.map((mod: LiveWebinar) => ({
-    //                 id: mod._id,
-    //                 user: mod.user || [],
-    //                 name: mod.name,
-    //                 imageUrl: mod.imageUrl,
-    //                 description: mod.description || 'N/A',
-    //                 displayVideoUrls: Array.isArray(mod.displayVideoUrls)
-    //                     ? mod.displayVideoUrls
-    //                     : (mod.displayVideoUrls ? mod.displayVideoUrls.split(',') : []),
-    //                 date: mod.date || 'N/A',
-    //                 startTime: mod.startTime || 'N/A',
-    //                 endTime: mod.endTime || 'N/A',
-    //                 categoryCount: mod.categoryCount || 0,
-    //                 status: mod.isDeleted ? 'Deleted' : 'Active',
-    //             }));
-
-    //             setFilteredCertificates(tableData);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching users:', error);
-    //         setFilteredCertificates([]);
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     fetchFilteredWebinars();
-    // }, [searchQuery, webinars]);
-
 useEffect(() => {
   const filteredData = webinars
     .filter((webinar) =>

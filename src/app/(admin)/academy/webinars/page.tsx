@@ -14,9 +14,9 @@ import Button from '@/components/ui/button/Button';
 import { Modal } from '@/components/ui/modal';
 import { useWebinars } from '@/context/WebinarContext';
 import { useModal } from '@/hooks/useModal';
-import { EyeIcon, TrashBinIcon } from '@/icons'; // Assuming these are custom SVG/React components
-import { PlusCircle } from 'lucide-react'; // Lucide icons are React components
-// import axios from 'axios'; // axios import was commented out in original, keeping it that way
+import { useRouter } from 'next/navigation';
+import { EyeIcon, TrashBinIcon } from '@/icons'; 
+import { PlusCircle } from 'lucide-react'; 
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -47,18 +47,18 @@ interface TableData {
 
 const Webinar = () => {
   const { webinars, updateWebinar, deleteWebinar } = useWebinars();
-  const { isOpen, openModal, closeModal } = useModal();
-
+  const { isOpen,  closeModal } = useModal();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, ] = useState<string | null>(null);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [videoName, setVideoName] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
   const [newVideos, setNewVideos] = useState([{ name: '', description: '', file: null as File | null }]);
-  const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]);
+  const [currentVideoUrls, ] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [editingWebinarId, setEditingWebinarId] = useState<string | null>(null);
+  const [editingWebinarId, ] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredWebinars, setFilteredWebinars] = useState<TableData[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
@@ -242,18 +242,22 @@ const Webinar = () => {
     },
   ];
 
-  const handleEdit = (id: string) => {
-    const w = webinars.find(x => x._id === id);
-    if (!w) return;
-    setEditingWebinarId(w._id);
-    setName(w.name);
-    setDescription(w.description);
-    setVideoName(w.video?.[0]?.videoName || '');
-    setVideoDescription(w.video?.[0]?.videoDescription || '');
-    setCurrentVideoUrls(w.video?.map(v => v.videoUrl) || []);
-    setImageUrl(w.imageUrl);
-    setNewVideos([{ name: '', description: '', file: null }]);
-    openModal();
+  // const handleEdit = (id: string) => {
+  //   const w = webinars.find(x => x._id === id);
+  //   if (!w) return;
+  //   setEditingWebinarId(w._id);
+  //   setName(w.name);
+  //   setDescription(w.description);
+  //   setVideoName(w.video?.[0]?.videoName || '');
+  //   setVideoDescription(w.video?.[0]?.videoDescription || '');
+  //   setCurrentVideoUrls(w.video?.map(v => v.videoUrl) || []);
+  //   setImageUrl(w.imageUrl);
+  //   setNewVideos([{ name: '', description: '', file: null }]);
+  //   openModal();
+  // };
+
+   const handleEdit = (id: string) => {
+    router.push(`/academy/webinars/modals/${id}`);
   };
 
   const handleUpdateData = async () => {

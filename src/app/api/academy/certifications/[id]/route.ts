@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
-import Webinars from "@/models/Webinars";
+import Certifications from "@/models/Certifications";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const certification = await Webinars.findById(id);
+    const certification = await Certifications.findById(id);
 
     if (!certification) {
       return NextResponse.json(
@@ -53,6 +53,120 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// export async function PUT(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const url = new URL(req.url);
+//     const id = url.pathname.split("/").pop();
+
+//     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+//       return NextResponse.json(
+//         { success: false, message: "Invalid Certification ID format." },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     const formData = await req.formData();
+//     const name = formData.get("name") as string | null;
+//     const description = formData.get("description") as string | null;
+//     const imageFile = formData.get("imageUrl") as File | null;
+
+//     const videoFiles = formData.getAll("videos");
+//     const videoNames = formData.getAll("videoNames") as string[];
+//     const videoDescriptions = formData.getAll("videoDescriptions") as string[];
+
+//     const existingCertification = await Webinars.findById(id);
+//     if (!existingCertification) {
+//       return NextResponse.json(
+//         { success: false, message: "Certification not found." },
+//         { status: 404, headers: corsHeaders }
+//       );
+//     }
+
+//     if (name !== null) existingCertification.name = name;
+//     if (description !== null) existingCertification.description = description;
+
+//     if (imageFile && imageFile.size > 0) {
+//       const arrayBuffer = await imageFile.arrayBuffer();
+//       const buffer = Buffer.from(arrayBuffer);
+
+//       const uploadResponse = await imagekit.upload({
+//         file: buffer,
+//         fileName: `${uuidv4()}-${imageFile.name}`,
+//         folder: "/certifications/images",
+//       });
+
+//       existingCertification.imageUrl = uploadResponse.url;
+//     }
+
+//     const hasNewVideos = videoFiles.length > 0;
+//     const hasMetadataOnly =
+//       videoFiles.length === 0 &&
+//       videoNames.length === existingCertification.video.length &&
+//       videoDescriptions.length === existingCertification.video.length;
+
+//     if (hasMetadataOnly) {
+//       for (let i = 0; i < existingCertification.video.length; i++) {
+//         existingCertification.video[i].videoName = videoNames[i];
+//         existingCertification.video[i].videoDescription = videoDescriptions[i];
+//       }
+//     } else if (hasNewVideos) {
+//       if (
+//         videoFiles.length !== videoNames.length ||
+//         videoFiles.length !== videoDescriptions.length
+//       ) {
+//         return NextResponse.json(
+//           {
+//             success: false,
+//             message: "Mismatch in video files, names, or descriptions.",
+//           },
+//           { status: 400, headers: corsHeaders }
+//         );
+//       }
+
+//       for (let i = 0; i < videoFiles.length; i++) {
+//         const file = videoFiles[i] as File;
+//         const vname = videoNames[i] || "Untitled";
+//         const vdesc = videoDescriptions[i] || "No description";
+
+//         if (file instanceof File && file.size > 0) {
+//           const arrayBuffer = await file.arrayBuffer();
+//           const buffer = Buffer.from(arrayBuffer);
+
+//           const uploadResponse = await imagekit.upload({
+//             file: buffer,
+//             fileName: `${uuidv4()}-${file.name}`,
+//             folder: "/certifications/videos",
+//           });
+
+//           existingCertification.video.push({
+//             videoName: vname,
+//             videoDescription: vdesc,
+//             videoUrl: uploadResponse.url,
+//           });
+//         }
+//       }
+//     }
+
+//     const updated = await existingCertification.save();
+
+//     return NextResponse.json(
+//       { success: true, data: updated },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error) {
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message: error instanceof Error ? error.message : "Internal Server Error",
+//       },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
 export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
@@ -72,20 +186,21 @@ export async function PUT(req: NextRequest) {
     const description = formData.get("description") as string | null;
     const imageFile = formData.get("imageUrl") as File | null;
 
-    const videoFiles = formData.getAll("videos");
-    const videoNames = formData.getAll("videoNames") as string[];
-    const videoDescriptions = formData.getAll("videoDescriptions") as string[];
+    const videoUrls = formData.getAll("videoUrl") as string[];
+    const videoNames = formData.getAll("videoName") as string[];
+    const videoDescriptions = formData.getAll("videoDescription") as string[];
 
-    const existingCertification = await Webinars.findById(id);
-    if (!existingCertification) {
+    const certification = await Certifications.findById(id);
+    if (!certification) {
       return NextResponse.json(
         { success: false, message: "Certification not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    if (name !== null) existingCertification.name = name;
-    if (description !== null) existingCertification.description = description;
+    // Update fields
+    if (name !== null) certification.name = name;
+    if (description !== null) certification.description = description;
 
     if (imageFile && imageFile.size > 0) {
       const arrayBuffer = await imageFile.arrayBuffer();
@@ -97,59 +212,39 @@ export async function PUT(req: NextRequest) {
         folder: "/certifications/images",
       });
 
-      existingCertification.imageUrl = uploadResponse.url;
+      certification.imageUrl = uploadResponse.url;
     }
 
-    const hasNewVideos = videoFiles.length > 0;
-    const hasMetadataOnly =
-      videoFiles.length === 0 &&
-      videoNames.length === existingCertification.video.length &&
-      videoDescriptions.length === existingCertification.video.length;
+    // Validate and add new videos
+    if (
+      videoUrls.length === videoNames.length &&
+      videoUrls.length === videoDescriptions.length
+    ) {
+      for (let i = 0; i < videoUrls.length; i++) {
+        const url = videoUrls[i]?.trim();
+        const name = videoNames[i]?.trim();
+        const desc = videoDescriptions[i]?.trim();
 
-    if (hasMetadataOnly) {
-      for (let i = 0; i < existingCertification.video.length; i++) {
-        existingCertification.video[i].videoName = videoNames[i];
-        existingCertification.video[i].videoDescription = videoDescriptions[i];
-      }
-    } else if (hasNewVideos) {
-      if (
-        videoFiles.length !== videoNames.length ||
-        videoFiles.length !== videoDescriptions.length
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Mismatch in video files, names, or descriptions.",
-          },
-          { status: 400, headers: corsHeaders }
-        );
-      }
-
-      for (let i = 0; i < videoFiles.length; i++) {
-        const file = videoFiles[i] as File;
-        const vname = videoNames[i] || "Untitled";
-        const vdesc = videoDescriptions[i] || "No description";
-
-        if (file instanceof File && file.size > 0) {
-          const arrayBuffer = await file.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-
-          const uploadResponse = await imagekit.upload({
-            file: buffer,
-            fileName: `${uuidv4()}-${file.name}`,
-            folder: "/certifications/videos",
-          });
-
-          existingCertification.video.push({
-            videoName: vname,
-            videoDescription: vdesc,
-            videoUrl: uploadResponse.url,
+        if (url && name && desc) {
+          certification.video.push({
+            videoUrl: url,
+            videoName: name,
+            videoDescription: desc,
           });
         }
       }
+    } else if (videoUrls.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Mismatch in number of video URLs, names, or descriptions.",
+        },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const updated = await existingCertification.save();
+    const updated = await certification.save();
 
     return NextResponse.json(
       { success: true, data: updated },
@@ -159,12 +254,14 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Internal Server Error",
+        message:
+          error instanceof Error ? error.message : "Internal Server Error",
       },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();
@@ -180,7 +277,7 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deleted = await Webinars.findByIdAndDelete(id);
+    const deleted = await Certifications.findByIdAndDelete(id);
 
     if (!deleted) {
       return NextResponse.json(
