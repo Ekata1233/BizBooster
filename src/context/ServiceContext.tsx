@@ -46,10 +46,17 @@ keyValues:string;
   providerPrices?: ProviderPrice[];
 }
 
+type UpdateServiceResponse = {
+  success: boolean;
+  message?: string;
+  data: Service;
+};
+
+
 type ServiceContextType = {
   services: Service[];
   createService: (formData: FormData) => Promise<Service | undefined>;
-  updateService: (id: string, data: Partial<Service> | FormData) => Promise<Service | undefined>;
+updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
   fetchSingleService: (id: string) => Promise<void>;
   singleService: Service | null;
@@ -105,23 +112,45 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   }
   };
 
-  const updateService = async (id: string, data: Partial<Service> | FormData) => {
-    try {
-      const res = await axios.put<Service>(
-        `/api/service/${id}`,
-        data instanceof FormData ? data : data,
-        {
-          headers: data instanceof FormData
-            ? undefined
-            : { "Content-Type": "application/json" },
-        }
-      );
-      fetchServices();
-      return res.data;
-    } catch (error) {
-      console.error("Failed to update service:", error);
-    }
-  };
+  // const updateService = async (id: string, data: Partial<Service> | FormData) => {
+  //   try {
+  //     const res = await axios.put<Service>(
+  //       `/api/service/${id}`,
+  //       data instanceof FormData ? data : data,
+  //       {
+  //         headers: data instanceof FormData
+  //           ? undefined
+  //           : { "Content-Type": "application/json" },
+  //       }
+  //     );
+  //     fetchServices();
+  //     return res.data;
+  //   } catch (error) {
+  //     console.error("Failed to update service:", error);
+  //   }
+  // };
+
+  const updateService = async (
+  id: string,
+  data: Partial<Service> | FormData
+): Promise<UpdateServiceResponse | undefined> => {
+  try {
+    const res = await axios.put<UpdateServiceResponse>(
+      `/api/service/${id}`,
+      data instanceof FormData ? data : data,
+      {
+        headers: data instanceof FormData
+          ? undefined
+          : { "Content-Type": "application/json" },
+      }
+    );
+    fetchServices();
+    return res.data;
+  } catch (error) {
+    console.error("Failed to update service:", error);
+  }
+};
+
 
 
   const deleteService = async (id: string) => {

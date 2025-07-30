@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import { useService } from '@/context/ServiceContext';
 import BasicDetailsForm from '@/components/service-component/BasicDetailsForm';
@@ -75,6 +75,7 @@ const EditService: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   // console.log("console service : ", service);
+  const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -261,7 +262,7 @@ const EditService: React.FC = () => {
 
         highlightsArray.forEach((item, index) => {
           // if (item instanceof File) {
-            formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
+          formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
           // }
         });
       }
@@ -298,8 +299,13 @@ const EditService: React.FC = () => {
         formDataToSend.append(`franchiseDetails[extraSections][${index}][description]`, section.description);
       });
 
-      await updateService(service._id, formDataToSend);
-      alert('Service updated successfully!');
+      const response = await updateService(service._id, formDataToSend);
+      if (response?.success) {
+        alert('Service updated successfully!');
+        router.push(`/service-management/service-list`);
+      } else {
+        alert('Update failed. Please try again.');
+      }
     } catch (error) {
       console.error('Error updating service:', error);
       alert('Failed to update service. Please try again.');
