@@ -162,7 +162,7 @@ interface ICheckout extends Document {
     serviceDiscountPrice: Number;
     priceAfterDiscount: Number;
     couponDiscountPrice: Number;
-    servuceGSTPrice: Number;
+    serviceGSTPrice: Number;
     platformFeePrice: Number;
     assurityChargesPrice: Number;
 
@@ -219,7 +219,7 @@ const checkoutSchema = new Schema<ICheckout>({
     serviceDiscountPrice: { type: Number, required: true, min: 0 },
     priceAfterDiscount: { type: Number, required: true, min: 0 },
     couponDiscountPrice: { type: Number, required: true, min: 0 },
-    servuceGSTPrice: { type: Number, required: true, min: 0 },
+    serviceGSTPrice: { type: Number, required: true, min: 0 },
     platformFeePrice: { type: Number, required: true, min: 0 },
     assurityChargesPrice: { type: Number, required: true, min: 0 },
 
