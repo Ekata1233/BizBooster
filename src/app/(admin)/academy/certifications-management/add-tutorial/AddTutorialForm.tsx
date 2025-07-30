@@ -21,11 +21,11 @@ const CertificatePage: React.FC = () => {
   return (
     <div>
       <div className="my-5">
-        {/* <AddCertificate certificateIdToEdit={certificateId} /> */}
+     
         <AddCertificate certificationIdToEdit={certificateId} />
       </div>
 
-      {/* Optionally, keep your list or redirect after save */}
+  
     </div>
   );
 };

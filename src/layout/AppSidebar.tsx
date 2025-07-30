@@ -723,11 +723,7 @@
 
 
 
-
-
-
-
-"use client";
+// "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -744,29 +740,19 @@ import {
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
-// Updated Type Definitions
-type GrandSubNavItem = {
-  name: string;
-  path: string;
-  pro?: boolean;
-  new?: boolean;
-};
-
-type SubNavItem = {
-  name: string;
-  path?: string;
-  pro?: boolean;
-  new?: boolean;
-  subItems?: GrandSubNavItem[];
-};
-
+// --- MODIFIED TYPE DEFINITION TO BE RECURSIVE ---
 type NavItem = {
   name: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode; // Icon is optional for nested sub-items
   path?: string;
-  subItems?: SubNavItem[];
+  subItems?: NavItem[]; // Now recursive: a NavItem can contain other NavItems
+  pro?: boolean; // For sub-sub-items
+  new?: boolean; // For sub-sub-items
 };
 
+// --- NAVIGATION DATA ARRAYS ---
+// IMPORTANT: Ensure these arrays are populated with your actual menu data.
+// If they are empty, your sidebar will appear empty.
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
@@ -807,11 +793,6 @@ const customerItems: NavItem[] = [
     name: "Users",
     path: "/customer-management/user/user-list",
   },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "Franchise",
-  //   path: "/customer-management/franchise/franchise-list",
-  // },
 ];
 
 const providerItems: NavItem[] = [
@@ -846,19 +827,15 @@ const serviceItems: NavItem[] = [
     ],
   },
 ];
-
 const packageItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Package",
     subItems: [
       { name: "Add New package", path: "/package-management/add-package", pro: false },
-      // { name: "package List", path: "/service-management/service-list", pro: false },
-      // { name: "Add Why Choose FetchTrue", path: "/service-management/add-why-choose", pro: false },
     ],
   },
 ];
-
 const subscribeItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -916,6 +893,7 @@ const privacyItems: NavItem[] = [
       { name: "Terms and Conditions", path: "/preferences/terms-conditions" },
       { name: "Cancellation Policy", path: "/preferences/cancellation-policy" },
       { name: "About Us", path: "/preferences/aboutus" },
+      // { name: "Partner Review", path: "/preferences/partner-review" },
     ],
   },
 ];
@@ -946,6 +924,7 @@ const providerpreferenceItems: NavItem[] = [
   },
 ];
 
+// --- MODIFIED ACADEMY ITEMS WITH NESTED DATA ---
 const academyItems: NavItem[] = [
   {
     name: "Academy",
@@ -972,15 +951,14 @@ const academyItems: NavItem[] = [
           { name: "Recorded Webinars List", path: "/academy/webinars-management/webinars-list" },
         ],
       },
-       {
+      {
         name: "Understanding Fetch True",
         subItems: [
           { name: "Add Understanding Fetch True", path: "/academy/understandingfetchtrue/add" },
           { name: "Understanding Fetch True List", path: "/academy/understandingfetchtrue" },
         ],
       },
-      // { name: "Understanding Fetch True", path: "/academy/understandingfetchtrue" },
-       { name: "Partner Review", path: "/preferences/partner-review" },
+      { name: "Partner Review", path: "/preferences/partner-review" }, // This seems out of place for Academy, if it's correct, keep it. Otherwise, consider moving it.
     ],
   },
 ];
@@ -1004,221 +982,193 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
-  // State to manage multiple levels of open submenus
-  const [openSubmenus, setOpenSubmenus] = useState<
-    Record<string, { type: string; index: number; subIndex?: number }>
-  >({});
-  const [subMenuHeights, setSubMenuHeights] = useState<Record<string, number>>({});
+  // State to manage which submenus are open
+  // Keys will be like "main-0", "module-1-0", "academy-0-0" for nested items
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
+  // Effect to automatically open submenus based on the current pathname
   useEffect(() => {
-    let submenuMatched = false;
-    const allMenuTypes = [
-      "main", "customer", "module", "provider", "service", "package",
-      "booking", "subscribe", "coupon", "system", "preferences", "academy",
-      "providerpreferences", "report", "offer"
-    ];
+    const newOpenSubmenus: Record<string, boolean> = {};
 
-    const findAndOpenSubmenus = (items: NavItem[] | SubNavItem[] | GrandSubNavItem[], menuType: string, parentKey = '') => {
+    const findAndMarkActiveParents = (
+      items: NavItem[],
+      menuTypePrefix: string,
+      currentPathSegments: number[] = [] // Tracks indices for nested levels
+    ): boolean => {
+      let anyChildOrCurrentItemIsActive = false;
+
       items.forEach((item, index) => {
-        const currentKey = parentKey ? `${parentKey}-${index}` : `${menuType}-${index}`;
+        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join('-')}`;
 
-        // If it's a NavItem or SubNavItem with subItems
-        if ('subItems' in item && item.subItems) {
-          if (findAndOpenSubmenus(item.subItems, menuType, currentKey)) {
-            setOpenSubmenus((prev) => ({ ...prev, [currentKey]: { type: menuType, index, subIndex: 'path' in item ? undefined : index } }));
-            submenuMatched = true;
-            return true;
+        if (item.subItems) {
+          // Recursively check sub-items
+          if (findAndMarkActiveParents(item.subItems, menuTypePrefix, [...currentPathSegments, index])) {
+            newOpenSubmenus[itemKey] = true; // Mark this parent as open
+            anyChildOrCurrentItemIsActive = true;
           }
-        } else if ('path' in item && isActive(item.path as string)) {
-          // It's a direct link
-          const keyToOpen = currentKey;
-          // Traverse up the parent keys to open all necessary parent menus
-          let tempKey = parentKey;
-          while (tempKey) {
-            setOpenSubmenus((prev) => ({ ...prev, [tempKey]: { type: menuType, index: parseInt(tempKey.split('-').pop() || '0'), subIndex: undefined } })); // Simplified for now, can be improved
-            tempKey = tempKey.substring(0, tempKey.lastIndexOf('-'));
+        } else if (item.path && isActive(item.path)) {
+          // If a leaf item's path matches, mark its direct parent as open
+          if (currentPathSegments.length > 0) {
+            const parentKeySegments = [...currentPathSegments.slice(0, -1), currentPathSegments[currentPathSegments.length - 1]];
+            const parentKey = `${menuTypePrefix}-${parentKeySegments.join('-')}`;
+            newOpenSubmenus[parentKey] = true;
           }
-          setOpenSubmenus((prev) => ({ ...prev, [keyToOpen]: { type: menuType, index, subIndex: undefined } }));
-          submenuMatched = true;
-          return true;
+          anyChildOrCurrentItemIsActive = true;
         }
       });
-      return submenuMatched;
+      return anyChildOrCurrentItemIsActive;
     };
 
-    allMenuTypes.forEach((menuType) => {
-      let items: NavItem[] = [];
-      switch (menuType) {
-        case "main": items = navItems; break;
-        case "module": items = moduleItems; break;
-        case "provider": items = providerItems; break;
-        case "service": items = serviceItems; break;
-        case "package": items = packageItems; break;
-        case "booking": items = bookingItems; break;
-        case "subscribe": items = subscribeItems; break;
-        case "coupon": items = promotionItems; break;
-        case "system": items = systemItems; break;
-        case "preferences": items = privacyItems; break;
-        case "offer": items = offerItems; break;
-        case "academy": items = academyItems; break;
-        case "providerpreferences": items = providerpreferenceItems; break;
-        case "report": items = reportItems; break;
-        case "customer": items = customerItems; break;
-      }
-      findAndOpenSubmenus(items, menuType);
+    const allMenuMaps = {
+      main: navItems,
+      customer: customerItems,
+      module: moduleItems,
+      provider: providerItems,
+      service: serviceItems,
+      package: packageItems,
+      booking: bookingItems,
+      subscribe: subscribeItems,
+      coupon: promotionItems,
+      system: systemItems,
+      preferences: privacyItems,
+      academy: academyItems, // Correctly using the nested academyItems
+      providerpreferences: providerpreferenceItems,
+      report: reportItems,
+      offer: offerItems,
+    };
+
+    (Object.keys(allMenuMaps) as Array<keyof typeof allMenuMaps>).forEach(menuType => {
+      findAndMarkActiveParents(allMenuMaps[menuType], menuType);
     });
 
-    if (!submenuMatched) {
-      setOpenSubmenus({});
-    }
+    setOpenSubmenus(newOpenSubmenus);
+
   }, [pathname, isActive]);
 
-
-  // Effect to calculate and set submenu heights
+  // Effect to calculate submenu heights
   useEffect(() => {
+    const newHeights: Record<string, number> = {};
     Object.keys(openSubmenus).forEach((key) => {
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeights((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
+      if (openSubmenus[key] && subMenuRefs.current[key]) {
+        newHeights[key] = subMenuRefs.current[key]?.scrollHeight || 0;
       }
     });
+    setSubMenuHeight(newHeights);
   }, [openSubmenus]);
 
-  const handleSubmenuToggle = (key: string, menuType: string, index: number, subIndex?: number) => {
+
+  // Handler for toggling submenus
+  const handleSubmenuToggle = (key: string) => {
     setOpenSubmenus((prevOpenSubmenus) => {
       const newOpenSubmenus = { ...prevOpenSubmenus };
+
+      // Close if already open
       if (newOpenSubmenus[key]) {
-        delete newOpenSubmenus[key]; // Close if already open
+        delete newOpenSubmenus[key];
       } else {
-        // Only open the clicked one, close others at the same level (optional, but cleaner)
-        // You might want to remove this if you want multiple submenus open simultaneously
-        Object.keys(newOpenSubmenus).forEach(existingKey => {
-            if (existingKey.startsWith(key.substring(0, key.lastIndexOf('-') + 1)) && existingKey !== key) {
-                delete newOpenSubmenus[existingKey];
-            }
-        });
-        newOpenSubmenus[key] = { type: menuType, index, subIndex };
+        // Open the clicked submenu
+        newOpenSubmenus[key] = true;
+
+        // Optional: Close other submenus at the same level if desired
+        // This part can be adjusted based on desired behavior (e.g., only one main submenu open at a time)
+        // For truly nested menus, this needs to be precise to not close parent/child submenus accidentally
+        // For simplicity, this example just opens/closes the clicked one.
+        // If you want only one top-level submenu to be open at a time, you'd add more complex logic here.
       }
       return newOpenSubmenus;
     });
   };
 
-  const renderNestedMenuItems = (
-    items: NavItem[] | SubNavItem[] | GrandSubNavItem[],
-    menuType: string,
-    level: number = 0,
-    parentKey: string = ""
+  // --- RECURSIVE RENDER FUNCTION ---
+  const renderMenuItems = (
+    items: NavItem[],
+    menuTypePrefix: string,
+    currentPathSegments: number[] = [], // Tracks indices for unique key generation
+    marginLeftClass = "ml-0" // Controls indentation for nested items
   ) => (
-    <ul className={level === 0 ? "flex flex-col gap-4" : "mt-2 space-y-1"}>
-      {items.map((item, index) => {
-        const currentKey = parentKey ? `${parentKey}-${index}` : `${menuType}-${index}`;
-        const isOpen = !!openSubmenus[currentKey];
+    <ul className={`flex flex-col gap-4 ${marginLeftClass}`}>
+      {items.map((nav, index) => {
+        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join('-')}`;
+        const isOpen = !!openSubmenus[itemKey];
+        const currentSubMenuHeight = subMenuHeight[itemKey] || 0;
 
-        const isMainNavItem = (item: NavItem | SubNavItem | GrandSubNavItem): item is NavItem => {
-          return (item as NavItem).icon !== undefined;
-        };
-
-        // const isSubNavItem = (item: NavItem | SubNavItem | GrandSubNavItem): item is SubNavItem => {
-        //   return !isMainNavItem(item) && (item as SubNavItem).subItems !== undefined;
-        // };
-
-        // const isGrandSubNavItem = (item: NavItem | SubNavItem | GrandSubNavItem): item is GrandSubNavItem => {
-        //     return (item as GrandSubNavItem).path !== undefined && !('subItems' in item);
-        // }
+        // const isLeaf = !nav.subItems || nav.subItems.length === 0;
 
         return (
-          <li key={item.name}>
-            {('subItems' in item && item.subItems) ? (
-              <>
-                <button
-                  onClick={() => handleSubmenuToggle(currentKey, menuType, index)}
-                  className={`menu-item group ${isOpen ? "menu-item-active" : "menu-item-inactive"} cursor-pointer ${
-                    !isExpanded && !isHovered && level === 0 ? "lg:justify-center" : "lg:justify-start"
+          <li key={itemKey}>
+            {/* Conditional rendering for items with subItems vs. direct links */}
+            {nav.subItems ? (
+              <button
+                onClick={() => handleSubmenuToggle(itemKey)}
+                className={`menu-item group ${isOpen ? "menu-item-active" : "menu-item-inactive"
+                  } cursor-pointer ${!isExpanded && !isHovered && currentPathSegments.length === 0 ? "lg:justify-center" : "lg:justify-start"
                   }`}
+              >
+                {/* Only render icon for top-level items or if explicitly present */}
+                {nav.icon && (
+                  <span className={`${isOpen ? "menu-item-icon-active" : "menu-item-icon-inactive"}`}>
+                    {nav.icon}
+                  </span>
+                )}
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className="menu-item-text">{nav.name}</span>
+                )}
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <ChevronDownIcon
+                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${isOpen ? "rotate-180 text-brand-500" : ""
+                      }`}
+                  />
+                )}
+              </button>
+            ) : (
+              // This is a direct link (leaf node)
+              nav.path && (
+                <Link
+                  href={nav.path}
+                  className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                    } ${!isExpanded && !isHovered && currentPathSegments.length === 0 ? "lg:justify-center" : "lg:justify-start"
+                    }`}
                 >
-                  {isMainNavItem(item) && (
-                    <span
-                      className={`${
-                        isOpen ? "menu-item-icon-active" : "menu-item-icon-inactive"
+                  {/* Only render icon for top-level items or if explicitly present */}
+                  {nav.icon && (
+                    <span className={`${isActive(nav.path)
+                      ? "menu-item-icon-active"
+                      : "menu-item-icon-inactive"
                       }`}
                     >
-                      {item.icon}
+                      {nav.icon}
                     </span>
                   )}
                   {(isExpanded || isHovered || isMobileOpen) && (
-                    <span className={`menu-item-text ${level > 0 ? 'ml-0' : ''}`}>{item.name}</span>
+                    <span className="menu-item-text">{nav.name}</span>
                   )}
-                  {(isExpanded || isHovered || isMobileOpen) && (
-                    <ChevronDownIcon
-                      className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-brand-500" : ""
-                      }`}
-                    />
-                  )}
-                </button>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <div
-                    ref={(el) => {
-                      subMenuRefs.current[currentKey] = el;
-                    }}
-                    className="overflow-hidden transition-all duration-300"
-                    style={{
-                      height: isOpen ? `${subMenuHeights[currentKey] || 0}px` : "0px",
-                    }}
-                  >
-                    {renderNestedMenuItems(item.subItems, menuType, level + 1, currentKey)}
-                  </div>
+                </Link>
+              )
+            )}
+
+            {/* Render nested sub-items if available and sidebar is expanded/hovered/mobile-open */}
+            {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+              <div
+                ref={(el) => {
+                  subMenuRefs.current[itemKey] = el;
+                }}
+                className="overflow-hidden transition-all duration-300"
+                style={{
+                  height: isOpen ? `${currentSubMenuHeight}px` : "0px",
+                }}
+              >
+                {/* Recursive call for nested sub-items */}
+                {renderMenuItems(
+                  nav.subItems,
+                  menuTypePrefix,
+                  [...currentPathSegments, index],
+                  "ml-9" // Indent nested sub-items
                 )}
-              </>
-            ) : (
-                'path' in item && item.path && (
-                    <Link
-                        href={item.path}
-                        className={`menu-dropdown-item ${isActive(item.path)
-                            ? "menu-dropdown-item-active"
-                            : "menu-dropdown-item-inactive"
-                            } ${level > 0 ? 'ml-4' : 'ml-0'} `} // Adjusted margin for nested items
-                    >
-                        {isMainNavItem(item) && (
-                            <span
-                                className={`${isActive(item.path)
-                                    ? "menu-item-icon-active"
-                                    : "menu-item-icon-inactive"
-                                    }`}
-                            >
-                                {item.icon}
-                            </span>
-                        )}
-                        <span className="menu-item-text">{item.name}</span>
-                        <span className="flex items-center gap-1 ml-auto">
-                            {('new' in item && item.new) && (
-                                <span
-                                    className={`ml-auto ${isActive(item.path)
-                                        ? "menu-dropdown-badge-active"
-                                        : "menu-dropdown-badge-inactive"
-                                        } menu-dropdown-badge`}
-                                >
-                                    new
-                                </span>
-                            )}
-                            {('pro' in item && item.pro) && (
-                                <span
-                                    className={`ml-auto ${isActive(item.path)
-                                        ? "menu-dropdown-badge-active"
-                                        : "menu-dropdown-badge-inactive"
-                                        } menu-dropdown-badge`}
-                                >
-                                    pro
-                                </span>
-                            )}
-                        </span>
-                    </Link>
-                )
+              </div>
             )}
           </li>
         );
@@ -1228,17 +1178,21 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
-        ${isExpanded || isMobileOpen ? "w-[290px]" : isHovered ? "w-[290px]" : "w-[90px]"}
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+        ${isExpanded || isMobileOpen
+          ? "w-[290px]"
+          : isHovered
+            ? "w-[290px]"
+            : "w-[90px]"
+        }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`pb-8 pt-3 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
+        className={`pb-8 pt-3 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+          }`}
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -1271,226 +1225,36 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
-              </h2>
-              {renderNestedMenuItems(navItems, "main")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "CUSTOMER MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(customerItems, "customer")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "MODULE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(moduleItems, "module")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "SERVICE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(serviceItems, "service")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PACKAGE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(packageItems, "package")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "BOOKING MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(bookingItems, "booking")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "SUBSCRIBE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(subscribeItems, "subscribe")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PROVIDER MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(providerItems, "provider")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PROMOTION MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(promotionItems, "coupon")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PREFERENCES"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(privacyItems, "preferences")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "OFFER MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(offerItems, "offer")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PROVIDER PREFERENCES"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(providerpreferenceItems, "providerpreferences")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "ACADEMY"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(academyItems, "academy")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "REPORT MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(reportItems, "report")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "SYSTEM MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderNestedMenuItems(systemItems, "system")}
-            </div>
+            {/* Render each top-level menu section */}
+            {[
+              { title: "Menu", items: navItems, type: "main" },
+              { title: "Customer Management", items: customerItems, type: "customer" },
+              { title: "Module Management", items: moduleItems, type: "module" },
+              { title: "Service Management", items: serviceItems, type: "service" },
+              { title: "Package Management", items: packageItems, type: "package" },
+              { title: "Booking Management", items: bookingItems, type: "booking" },
+              { title: "Subscribe Management", items: subscribeItems, type: "subscribe" },
+              { title: "Provider Management", items: providerItems, type: "provider" },
+              { title: "Promotion Management", items: promotionItems, type: "coupon" },
+              { title: "Preferences", items: privacyItems, type: "preferences" },
+              { title: "Offer Management", items: offerItems, type: "offer" },
+              { title: "Provider Preferences", items: providerpreferenceItems, type: "providerpreferences" },
+              // --- ACADEMY SECTION ---
+              { title: "Academy", items: academyItems, type: "academy" },
+              // --- END ACADEMY SECTION ---
+              { title: "Report Management", items: reportItems, type: "report" },
+              { title: "System Management", items: systemItems, type: "system" },
+            ].map((section) => (
+              <div key={section.type}>
+                <h2
+                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                    }`}
+                >
+                  {isExpanded || isHovered || isMobileOpen ? section.title : <HorizontaLDots />}
+                </h2>
+                {renderMenuItems(section.items, section.type)}
+              </div>
+            ))}
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

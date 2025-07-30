@@ -8,6 +8,7 @@ import Button from '@/components/ui/button/Button';
 import ComponentCard from '../common/ComponentCard';
 import { useCertificate } from '@/context/CertificationContext';
 import axios from 'axios';
+import Image from 'next/image';
 
 interface AddCertificateProps {
     certificationIdToEdit?: string;
@@ -17,6 +18,8 @@ interface VideoEntry {
     videoUrl: string;
     name: string;
     description: string;
+    videoImageFile: File | null; 
+    videoImageUrl: string | null; 
 }
 
 const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }) => {
@@ -25,7 +28,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [mainImageFile, setMainImageFile] = useState<File | null>(null);
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [imageUrl, setImageUrl] = useState<string | null>(null); // This holds the main image URL for display/sending back
     const [videoEntries, setVideoEntries] = useState<VideoEntry[]>([]);
     const [newVideoUrl, setNewVideoUrl] = useState('');
 
@@ -41,19 +44,24 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
             try {
                 const res = await axios.get(`/api/academy/certifications/${certificationIdToEdit}`);
-                const data = res.data.data;
+                // IMPORTANT: Adjust this line based on your actual API response structure
+                // If your API returns { data: { ... } }, then res.data.data is correct.
+                // If your API returns { ... } directly, then use res.data.
+                const data = res.data.data; // KEEP THIS IF YOUR API NESTS DATA. If not, change to res.data;
 
                 setName(data.name || '');
                 setDescription(data.description || '');
-                setImageUrl(data.imageUrl || null);
+                setImageUrl(data.imageUrl || null); // Set the current main image URL for display and resending
 
                 if (Array.isArray(data.video)) {
                     const formatted = data.video.map((v: unknown) => {
-                        const videoObj = v as { videoUrl?: string; name?: string; description?: string };
+                        const videoObj = v as { videoUrl?: string; name?: string; description?: string; videoImageUrl?: string };
                         return {
                             videoUrl: videoObj.videoUrl || '',
                             name: videoObj.name || '',
                             description: videoObj.description || '',
+                            videoImageFile: null,
+                            videoImageUrl: videoObj.videoImageUrl || null, // This is correctly populated
                         };
                     });
                     setVideoEntries(formatted);
@@ -73,8 +81,36 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
         const file = e.target.files?.[0];
         if (file) {
             setMainImageFile(file);
-            setImageUrl(null);
+            setImageUrl(null); // Clear existing URL if a new file is selected, as new file takes precedence
+        } else {
+            // If user clears selection, reset file but keep current URL if it exists
+            setMainImageFile(null);
+            // Don't change imageUrl here; it means they might want to keep the old one.
+            // The handleSubmit will send `currentImageUrl` if mainImageFile is null.
         }
+    };
+
+    const handleVideoImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        setVideoEntries((prev) => {
+            const updated = [...prev];
+            if (file) {
+                updated[index] = {
+                    ...updated[index],
+                    videoImageFile: file,
+                    videoImageUrl: null, // Clear existing URL if a new file is selected
+                };
+            } else {
+                // If user clears selection, reset file but keep current URL if it exists
+                updated[index] = {
+                    ...updated[index],
+                    videoImageFile: null,
+                    // Don't set videoImageUrl to null here if it had a value,
+                    // as it means they might want to keep the old one.
+                };
+            }
+            return updated;
+        });
     };
 
     const handleAddUrl = () => {
@@ -82,7 +118,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
 
         setVideoEntries((prev) => [
             ...prev,
-            { videoUrl: newVideoUrl, name: '', description: '' },
+            { videoUrl: newVideoUrl, name: '', description: '', videoImageFile: null, videoImageUrl: null },
         ]);
         setNewVideoUrl('');
     };
@@ -96,20 +132,56 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
         formData.append('name', name);
         formData.append('description', description);
 
+        // --- Start Main Image Handling for FormData ---
         if (mainImageFile) {
-            formData.append('imageUrl', mainImageFile);
+            formData.append('imageUrl', mainImageFile); // Append new file
+        } else if (imageUrl) {
+            // If no new file is selected, but there's an existing imageUrl, send it
+            formData.append('currentImageUrl', imageUrl);
+        } else {
+            // If neither new file nor existing URL, and it's required for creation/update
+            alert('Main image for the tutorial is required.');
+            setLoading(false);
+            return;
         }
+        // --- End Main Image Handling for FormData ---
 
+
+        // Loop through video entries and append their data including image files/URLs
         for (const [i, video] of videoEntries.entries()) {
+            // Basic text field validation for each video
             if (!video.videoUrl || !video.name || !video.description) {
-                alert(`Please complete video entry ${i + 1}`);
+                alert(`Please complete all text fields (URL, Name, Description) for video entry ${i + 1}.`);
                 setLoading(false);
                 return;
             }
 
-            formData.append(`videoUrl`, video.videoUrl);
-            formData.append(`videoName`, video.name);
-            formData.append(`videoDescription`, video.description);
+            // Video Image validation:
+            // For a new video, a file or URL must be provided.
+            // For an existing video, if both file and existing URL are absent, it's an error.
+            if (!video.videoImageFile && !video.videoImageUrl) {
+                 alert(`Please upload a video image or ensure an existing image is present for video entry ${i + 1}.`);
+                 setLoading(false);
+                 return;
+            }
+
+            formData.append(`video[${i}][videoUrl]`, video.videoUrl);
+            formData.append(`video[${i}][name]`, video.name);
+            formData.append(`video[${i}][description]`, video.description);
+
+            if (video.videoImageFile) {
+                formData.append(`video[${i}][videoImage]`, video.videoImageFile); // New file upload
+            } else if (video.videoImageUrl) {
+                // If no new file, but an existing URL is present, send the existing URL
+                formData.append(`video[${i}][videoImageUrl]`, video.videoImageUrl);
+            }
+        }
+
+        // Validate that at least one video entry exists for new certifications
+        if (videoEntries.length === 0 && !certificationIdToEdit) {
+            alert('Please add at least one video entry.');
+            setLoading(false);
+            return;
         }
 
         try {
@@ -120,6 +192,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                 if (addCertificate) {
                     await addCertificate(formData);
                 } else {
+                    // This path is for direct POST to the API if addCertificate is not provided
                     await axios.post('/api/academy/certifications', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
                     });
@@ -127,15 +200,20 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                 alert('Tutorial added!');
             }
 
-            // Reset
+            // Reset form fields after successful submission
             setName('');
             setDescription('');
             setMainImageFile(null);
-            setImageUrl('');
+            setImageUrl(null); // Reset imageUrl state
             setVideoEntries([]);
         } catch (err) {
             console.error('Submission error:', err);
-            setError('Failed to submit form.');
+            // Attempt to get a more specific error message from the response
+            if (axios.isAxiosError(err) && err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Failed to submit form. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -170,7 +248,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                             />
                             {mainImageFile && <p>New: {mainImageFile.name}</p>}
                             {imageUrl && !mainImageFile && (
-                                <p>Current: <a href={imageUrl} target="_blank">View</a></p>
+                                <p>Current: <a href={imageUrl} target="_blank" rel="noopener noreferrer">View Main Image</a></p>
                             )}
                         </div>
 
@@ -186,10 +264,10 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                         </div>
 
                         <div className="col-span-2">
-                            <Label htmlFor="videoUrl">Paste Video URL</Label>
+                            <Label htmlFor="newVideoUrl">Paste Video URL</Label>
                             <div className="flex gap-2">
                                 <Input
-                                    id="videoUrl"
+                                    id="newVideoUrl"
                                     type="text"
                                     placeholder="https://example.com/video.mp4"
                                     value={newVideoUrl}
@@ -201,10 +279,9 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                             </div>
                         </div>
 
-
                         {videoEntries.map((video, index) => (
                             <div key={index} className="col-span-2 border p-4 rounded-md mb-4">
-                                <p className="text-sm text-gray-600 mb-3">URL: {video.videoUrl}</p>
+                                <p className="text-sm text-gray-600 mb-3">Video URL: {video.videoUrl}</p>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
@@ -218,7 +295,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                                                 updated[index].name = e.target.value;
                                                 setVideoEntries(updated);
                                             }}
-                                            placeholder="Enter name"
+                                            placeholder="Enter video name"
                                         />
                                     </div>
 
@@ -233,13 +310,36 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                                                 updated[index].description = e.target.value;
                                                 setVideoEntries(updated);
                                             }}
-                                            placeholder="Enter description"
+                                            placeholder="Enter video description"
                                         />
+                                    </div>
+
+                                    {/* Video Image Input and Display */}
+                                    <div className="col-span-full">
+                                        <Label htmlFor={`videoImage-${index}`}>Video Image (Thumbnail)</Label>
+                                        <FileInput
+                                            id={`videoImage-${index}`}
+                                            onChange={(e) => handleVideoImageChange(index, e)}
+                                            accept="image/*"
+                                        />
+                                        {video.videoImageFile && <p>New Thumbnail: {video.videoImageFile.name}</p>}
+                                        {video.videoImageUrl && !video.videoImageFile && (
+                                            <div className="mt-2">
+                                                <p>Current Thumbnail:</p>
+                                                <Image
+                                                    src={video.videoImageUrl}
+                                                    alt={`Video thumbnail for ${video.name}`}
+                                                    width={100}
+                                                    height={60}
+                                                    className="object-cover rounded-md"
+                                                />
+                                                <a href={video.videoImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm ml-2">View Full Size</a>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         ))}
-
 
                         <div className="mt-4 col-span-2">
                             <Button size="sm" variant="primary" type="submit" disabled={loading}>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, {  useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,24 +17,22 @@ import { PlusCircle } from 'lucide-react';
 import { useCertificate } from '@/context/CertificationContext';
 import { useRouter } from 'next/navigation';
 
+// --- UPDATED: Add videoImageUrl to VideoDetail interface ---
 interface VideoDetail {
   videoName: string;
   videoDescription: string;
   videoUrl: string;
+  videoImageUrl?: string; // New property for video thumbnail
 }
 
-// interface CertificateEntry {
-//   _id: string;
-//   name: string;
-//   imageUrl: string;
-//   description: string;
-//   video: VideoDetail[];
-//   isDeleted: boolean; // Assuming this property exists to determine status
-// }
+type TutorialStatus = 'Active' | 'Inactive';
 
-type TutorialStatus = 'Active' | 'Inactive'; // Using 'Inactive' to align with the tab, which likely means 'Deleted' or 'Disabled'
+// --- ORIGINAL VideoPreviewCell (now only for links) ---
+interface VideoPreviewCellProps {
+  urls: string[]; // Still takes just URLs
+}
 
-const VideoPreviewCell: React.FC<{ urls: string[] }> = ({ urls }) => {
+const VideoPreviewCell: React.FC<VideoPreviewCellProps> = ({ urls }) => {
   const [showAll, setShowAll] = useState(false);
   if (!urls.length) return <span className="text-gray-500">No Videos</span>;
 
@@ -47,7 +45,8 @@ const VideoPreviewCell: React.FC<{ urls: string[] }> = ({ urls }) => {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 hover:underline text-sm truncate"
+          title={`Video ${i + 1} URL`} // Add title for hover
         >
           Video {i + 1}
         </a>
@@ -66,6 +65,51 @@ const VideoPreviewCell: React.FC<{ urls: string[] }> = ({ urls }) => {
   );
 };
 
+// --- NEW: VideoImagePreviewCell (for image thumbnails only) ---
+interface VideoImagePreviewCellProps {
+  videoDetails: VideoDetail[]; // Accepts full video details
+}
+
+const VideoImagePreviewCell: React.FC<VideoImagePreviewCellProps> = ({ videoDetails }) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!videoDetails || videoDetails.length === 0) return <span className="text-gray-500">No Images</span>;
+
+  const visibleVideos = showAll ? videoDetails : videoDetails.slice(0, 2);
+
+  return (
+    <div className="flex flex-col gap-2">
+      {visibleVideos.map((video, i) => (
+        <div key={i} className="flex items-center justify-center p-1 border rounded-md border-gray-100 bg-gray-50 shadow-sm">
+          {video.videoImageUrl ? (
+            <div className="relative w-12 h-10 flex-shrink-0">
+              <Image
+                src={video.videoImageUrl}
+                alt={video.videoName ? `${video.videoName} thumbnail` : `Video ${i + 1} thumbnail`}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover rounded-sm"
+              />
+            </div>
+          ) : (
+            <span className="text-gray-400 text-xs">No img</span>
+          )}
+        </div>
+      ))}
+
+      {videoDetails.length > 2 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((p) => !p)}
+          className="text-sm text-red-600 hover:text-blue-800 underline w-fit mt-1 transition-colors duration-200"
+        >
+          {showAll ? 'Show Less' : 'Show More'}
+        </button>
+      )}
+    </div>
+  );
+};
+
+
 const CertificatePage: React.FC = () => {
   const { certificates, deleteCertificate } = useCertificate();
   const router = useRouter();
@@ -73,10 +117,10 @@ const CertificatePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | TutorialStatus>('all');
 
-  // For expanding video details
-  const [expandedVideoDetailsRows, setExpandedVideoDetailsRows] = useState<string[]>([]);
-  const toggleVideoDetailsExpansion = (id: string) => {
-    setExpandedVideoDetailsRows((prev) =>
+  // For expanding video details and video files/images
+  const [expandedRowIds, setExpandedRowIds] = useState<string[]>([]); // Consolidated state for row expansion
+  const toggleRowExpansion = (id: string) => {
+    setExpandedRowIds((prev) =>
       prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
@@ -91,20 +135,22 @@ const CertificatePage: React.FC = () => {
         const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
         const status: TutorialStatus = c.isDeleted ? 'Inactive' : 'Active';
         const matchesTab =
-          activeTab === 'all'
-           || (activeTab === 'Active' && status === 'Active') || (activeTab === 'Inactive' && status === 'Inactive');
+          activeTab === 'all' ||
+          (activeTab === 'Active' && status === 'Active') ||
+          (activeTab === 'Inactive' && status === 'Inactive');
 
-        
         return matchesSearch && matchesTab;
       })
       .map((c) => ({
         id: c._id,
         name: c.name,
-        imageUrl: c.imageUrl,
+        imageUrl: c.imageUrl, // This is for the main tutorial image
         description: c.description ?? 'N/A',
+        videoDetails: c.video || [], // Pass the entire video array for both video cells
         displayVideoNames: c.video?.map((v: VideoDetail) => v.videoName) || [],
         displayVideoDescriptions: c.video?.map((v: VideoDetail) => v.videoDescription) || [],
         displayVideoUrls: c.video?.map((v: VideoDetail) => v.videoUrl) || [],
+        // The image URLs for the videos are contained within videoDetails
         status: (c.isDeleted ? 'Inactive' : 'Active') as TutorialStatus,
       }));
   }, [certificates, searchQuery, activeTab]);
@@ -129,7 +175,7 @@ const CertificatePage: React.FC = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="Training Tutorials" />
-      <ModuleStatCard /> {/* This is your stat card */}
+      <ModuleStatCard />
 
       <div className="my-5">
         <ComponentCard title="All Training Tutorials">
@@ -143,7 +189,7 @@ const CertificatePage: React.FC = () => {
 
           {/* Tabs */}
           <div className="border-b border-gray-200 mt-4 flex gap-2">
-            {(['all', ] as const).map((tab) => (
+            {(['all', 'Active', 'Inactive'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -168,9 +214,10 @@ const CertificatePage: React.FC = () => {
               <thead>
                 <tr>
                   <th className="px-5 py-3 text-left text-gray-500 border-b">Tutorial Name</th>
-                  <th className="px-5 py-3 text-left text-gray-500 border-b">Image</th>
+                  <th className="px-5 py-3 text-left text-gray-500 border-b">Main Image</th>
                   <th className="px-5 py-3 text-left text-gray-500 border-b">Tutorial Description</th>
-                  <th className="px-5 py-3 text-left text-gray-500 border-b">Tutorial Details</th>
+                  <th className="px-5 py-3 text-left text-gray-500 border-b">Video Details</th>
+                  <th className="px-5 py-3 text-left text-gray-500 border-b">Video Images</th> 
                   <th className="px-5 py-3 text-left text-gray-500 border-b">Video Files</th>
                   <th className="px-5 py-3 text-left text-gray-500 border-b">Videos Count</th>
                   <th className="px-5 py-3 text-center text-gray-500 border-b">Action</th>
@@ -179,7 +226,8 @@ const CertificatePage: React.FC = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredAndMappedCertificates.length > 0 ? (
                   filteredAndMappedCertificates.map((row) => {
-                    const expanded = expandedVideoDetailsRows.includes(row.id);
+                    // Use a single expanded state for consistency across Video Details/Files/Images
+                    const expanded = expandedRowIds.includes(row.id);
                     const visibleCount = expanded
                       ? row.displayVideoNames.length
                       : Math.min(row.displayVideoNames.length, 2);
@@ -190,13 +238,14 @@ const CertificatePage: React.FC = () => {
                         {/* Name */}
                         <td className="px-5 py-4 font-medium text-gray-800">{row.name}</td>
 
-                        {/* Image */}
+                        {/* Main Image */}
                         <td className="px-5 py-4">
                           <div className="relative w-20 h-20">
                             <Image
                               src={row.imageUrl}
                               alt={row.name}
                               fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               className="object-cover rounded-md ring-1 ring-gray-200"
                             />
                           </div>
@@ -207,7 +256,7 @@ const CertificatePage: React.FC = () => {
                           {row.description}
                         </td>
 
-                        {/* Video Details */}
+                        {/* Video Details (Name & Description) */}
                         <td className="px-5 py-4">
                           <div className="flex flex-col gap-3 w-full">
                             {row.displayVideoNames.slice(0, visibleCount).map((name, i) => (
@@ -227,7 +276,7 @@ const CertificatePage: React.FC = () => {
                             {hasMore && (
                               <button
                                 className="text-sm text-red-600 underline mt-1 hover:text-blue-800"
-                                onClick={() => toggleVideoDetailsExpansion(row.id)}
+                                onClick={() => toggleRowExpansion(row.id)}
                               >
                                 {expanded ? 'Show Less' : 'Show More'}
                               </button>
@@ -235,12 +284,17 @@ const CertificatePage: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Video Files */}
+                        {/* --- NEW: Video Images column with thumbnails --- */}
+                        <td className="px-5 py-4 text-gray-700">
+                          <VideoImagePreviewCell videoDetails={row.videoDetails} />
+                        </td>
+
+                        {/* --- MODIFIED: Video Files column (now only showing links) --- */}
                         <td className="px-5 py-4 text-gray-700">
                           <VideoPreviewCell urls={row.displayVideoUrls} />
                         </td>
 
-                        {/* Count */}
+                        {/* Videos Count */}
                         <td className="px-5 py-4 text-gray-700">{row.displayVideoUrls.length}</td>
 
                         {/* Actions */}
@@ -271,7 +325,7 @@ const CertificatePage: React.FC = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-gray-500">
+                    <td colSpan={8} className="px-5 py-10 text-center text-gray-500"> {/* colspan updated to 8 */}
                       No tutorials found.
                     </td>
                   </tr>

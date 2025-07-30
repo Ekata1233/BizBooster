@@ -1,280 +1,352 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import ComponentCard from '@/components/common/ComponentCard';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-// Removed unused imports related to modal/form fields
-// import FileInput from '@/components/form/input/FileInput';
-import Input from '@/components/form/input/InputField';
-// Removed AddWebinar as per requirement
-// import AddWebinar from '@/components/webinars-component/WebinarComponent';
-import ModuleStatCard from '@/components/module-component/ModuleStatCard';
-import RouteLoader from '@/components/RouteLoader';
-import BasicTableOne from '@/components/tables/BasicTableOne';
-// Removed Button as it was only used inside the removed modal
-// import Button from '@/components/ui/button/Button';
-// Removed Modal as per requirement
-// import { Modal } from '@/components/ui/modal';
-import { useWebinars } from '@/context/WebinarContext';
-// Removed useModal as per requirement
-// import { useModal } from '@/hooks/useModal';
-import { useRouter } from 'next/navigation';
-import { EyeIcon, TrashBinIcon } from '@/icons';
-import { PlusCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// interface Webinar {
-//   _id: string;
-//   name: string;
-//   imageUrl: string;
-//   description: string;
-//   video: {
-//     videoName: string;
-//     videoDescription: string;
-//     videoUrl: string;
-//   }[];
-//   // categoryCount is not directly from backend, calculated as video count for display
-//   isDeleted: boolean;
-// }
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
+import ModuleStatCard from '@/components/module-component/ModuleStatCard';
+import RouteLoader from '@/components/RouteLoader';
+import Input from '@/components/form/input/InputField';
+import Label from '@/components/form/Label'; // Make sure Label is imported if used in render functions
 
-interface TableData {
-  id: string;
-  name: string;
-  imageUrl: string;
-  description: string;
-  displayVideoNames: string[];
-  displayVideoDescriptions: string[];
-  displayVideoUrls: string[];
-  status: 'Active' | 'Deleted'; // Explicitly define possible statuses
+import { EyeIcon, TrashBinIcon } from '@/icons';
+import { PlusCircle } from 'lucide-react';
+
+import { useWebinars } from '@/context/WebinarContext'; // Correct context import
+import { useRouter } from 'next/navigation';
+
+// --- NEW: Interface for individual video details within a webinar ---
+interface VideoDetail {
+    videoName: string;
+    videoDescription: string;
+    videoUrl: string;
+    videoImageUrl?: string; // Optional: video thumbnail URL
 }
 
-const WebinarPage = () => { // Renamed from 'Webinar'
-  const { webinars, deleteWebinar } = useWebinars();
-  const router = useRouter();
+// --- NEW: VideoPreviewCell (now only for video URLs) ---
+interface VideoPreviewCellProps {
+    urls: string[];
+}
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredWebinars, setFilteredWebinars] = useState<TableData[]>([]);
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'inactive'>('all');
+const VideoPreviewCell: React.FC<VideoPreviewCellProps> = ({ urls }) => {
+    const [showAll, setShowAll] = useState(false);
+    if (!urls.length) return <span className="text-gray-500">No Videos</span>;
 
-  // State to manage expansion for 'Video Files' column
-  const [expandedVideoFilesRows, setExpandedVideoFilesRows] = useState<string[]>([]);
-  // State to manage expansion for 'Video Details' column
-  const [expandedVideoDetailsRows, setExpandedVideoDetailsRows] = useState<string[]>([]);
-
-  const toggleVideoFilesExpansion = (id: string) => {
-    setExpandedVideoFilesRows(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
-  };
-
-  const toggleVideoDetailsExpansion = (id: string) => {
-    setExpandedVideoDetailsRows(prev => (prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]));
-  };
-
-  useEffect(() => {
-    if (!webinars || !Array.isArray(webinars)) {
-      setFilteredWebinars([]);
-      return;
-    }
-
-    const filteredData = webinars
-      .filter((w) => {
-        const matchesSearch = w.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const status: TableData['status'] = w.isDeleted ? 'Deleted' : 'Active';
-        const matchesTab =
-          activeTab === 'all' ||
-          (activeTab === 'active' && status === 'Active') ||
-          (activeTab === 'inactive' && status === 'Deleted');
-        return matchesSearch && matchesTab;
-      })
-      .map((w) => ({
-        id: w._id,
-        name: w.name,
-        imageUrl: w.imageUrl,
-        description: w.description ?? 'N/A',
-        displayVideoNames: w.video?.map((v) => v.videoName) || [],
-        displayVideoDescriptions: w.video?.map((v) => v.videoDescription) || [],
-        displayVideoUrls: w.video?.map((v) => v.videoUrl) || [],
-        status: (w.isDeleted ? 'Deleted' : 'Active') as TableData['status'],
-      }));
-
-    setFilteredWebinars(filteredData);
-  }, [searchQuery, webinars, activeTab]); // Added activeTab to dependency array
-
-  const columns = [
-    { header: 'Webinar Name', accessor: 'name' },
-    {
-      header: 'Image',
-      accessor: 'imageUrl',
-      render: (row: TableData) => (
-        <Image
-          src={row.imageUrl || '/path/to/default-image.png'} // Provide a default image path
-          alt={row.name}
-          width={130}
-          height={130}
-          className="object-cover rounded"
-        />
-      ),
-    },
-    {
-      header: 'Description',
-      accessor: 'description',
-      render: (row: TableData) =>
-        row.description.split(',').map((d, i) => <p key={i}>{d.trim()}</p>),
-    },
-    {
-      header: 'Video Details',
-      accessor: 'videoDetails', // Dummy accessor, content is rendered
-      render: (r: TableData) => {
-        const expanded = expandedVideoDetailsRows.includes(r.id);
-        const visibleCount = expanded ? r.displayVideoNames.length : Math.min(r.displayVideoNames.length, 2);
-        const hasMore = r.displayVideoNames.length > 2;
-
-        return (
-          <div className="flex flex-col gap-2 w-full">
-            {r.displayVideoNames.slice(0, visibleCount).map((name, i) => (
-              <div key={i} className="border border-gray-200 p-1 rounded-md shadow-sm bg-gray-50">
-                {/* Note: Label component expects htmlFor or content. Assuming content here. */}
-                <span className="text-gray-600 font-medium">Video Name: </span>
-                <span className="font-semibold text-gray-800 break-words">{name}</span>
-                <p className="mt-1 text-gray-600 font-medium">Description:</p> {/* Changed Label to p for simpler styling here */}
-                <div className="text-gray-700 text-sm max-w-md break-words whitespace-pre-wrap text-justify">
-                  {r.displayVideoDescriptions[i] || 'No description'}
-                </div>
-              </div>
+    const visible = showAll ? urls : urls.slice(0, 2);
+    return (
+        <div className="flex flex-col gap-1">
+            {visible.map((url, i) => (
+                <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-sm truncate"
+                    title={`Video ${i + 1} URL`}
+                >
+                    Video {i + 1}
+                </a>
             ))}
-            {hasMore && (
-              <button
-                className="text-sm text-red-600 underline mt-1 hover:text-blue-800 transition-colors duration-200"
-                onClick={() => toggleVideoDetailsExpansion(r.id)}
-              >
-                {expanded ? 'Show Less' : 'Show More'}
-              </button>
+
+            {urls.length > 2 && (
+                <button
+                    type="button"
+                    onClick={() => setShowAll((p) => !p)}
+                    className="text-sm text-red-600 hover:text-blue-800 underline w-fit mt-1 transition-colors duration-200"
+                >
+                    {showAll ? 'Show Less' : 'Show More'}
+                </button>
             )}
-          </div>
-        );
-      },
-    },
-    {
-      header: 'Video Files',
-      accessor: 'displayVideoUrls',
-      render: (r: TableData) => {
-        const expanded = expandedVideoFilesRows.includes(r.id);
-        const list = expanded ? r.displayVideoUrls : r.displayVideoUrls.slice(0, 2);
-        return (
-          <div className="flex flex-col gap-1">
-            {list.map((u, i) => (
-              <a key={i} href={u} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                Video {i + 1}
-              </a>
-            ))}
-            {r.displayVideoUrls.length > 2 && (
-              <button
-                className="text-sm text-red-600 hover:underline w-fit mt-1 hover:text-blue-800"
-                onClick={() => toggleVideoFilesExpansion(r.id)}
-              >
-                {expanded ? 'Show Less' : 'Show More'}
-              </button>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      header: 'Video Count', // Changed from 'Count' to be more descriptive
-      accessor: 'videoCount', // Dummy accessor
-      render: (r: TableData) => r.displayVideoUrls.length,
-    },
-    {
-      header: 'Action',
-      accessor: 'action',
-      render: (r: TableData) => (
-        <div className="flex gap-2">
-          {/* PlusCircle (Edit) Button */}
-          <button
-            onClick={() => handleEdit(r.id)}
-            className="text-yellow-500 border border-yellow-500 p-2 rounded-md
-                         hover:bg-yellow-500 hover:text-white transition-colors duration-200"
-          >
-            <PlusCircle size={16} />
-          </button>
-          {/* TrashBinIcon (Delete) Button */}
-          <button
-            onClick={() => handleDelete(r.id)}
-            className="text-red-500 border border-red-500 p-2 rounded-md
-                         hover:bg-red-500 hover:text-white transition-colors duration-200"
-          >
-            <TrashBinIcon />
-          </button>
-          {/* EyeIcon (View Details) Link Button */}
-          <Link href={`/academy/webinars-management/webinars-list/${r.id}`} passHref>
-            <button
-              className="text-blue-500 border border-blue-500 p-2 rounded-md
-                           hover:bg-blue-500 hover:text-white transition-colors duration-200"
-            >
-              <EyeIcon />
-            </button>
-          </Link>
         </div>
-      ),
-    },
-  ];
+    );
+};
 
-  const handleEdit = (id: string) => {
-    router.push(`/academy/webinars-management/modals/${id}`);
-  };
+// --- NEW: VideoImagePreviewCell (for image thumbnails only) ---
+interface VideoImagePreviewCellProps {
+    videoDetails: VideoDetail[]; // Accepts full video details
+}
 
-  const handleDelete = async (id: string) => {
-    // IMPORTANT: Replace with a custom modal/toast for user confirmation
-    if (confirm('Are you sure you want to delete this webinar?')) {
-      await deleteWebinar(id);
-    }
-  };
+const VideoImagePreviewCell: React.FC<VideoImagePreviewCellProps> = ({ videoDetails }) => {
+    const [showAll, setShowAll] = useState(false);
+    if (!videoDetails || videoDetails.length === 0) return <span className="text-gray-500">No Images</span>;
 
-  // The filtering logic for tabs is now integrated into the useEffect
-  // const visibleData is already correctly set by useEffect and filteredWebinars state.
+    const visibleVideos = showAll ? videoDetails : videoDetails.slice(0, 2);
 
-  if (!webinars) {
-    // Show a loader while webinars are being fetched
-    return <RouteLoader />;
-  }
-
-  return (
-    <div>
-      <PageBreadcrumb pageTitle="Webinars" />
-      <ModuleStatCard /> {/* This will now correctly display webinar stats with the ModuleStatCard changes */}
-
-      {/* Removed AddWebinar component */}
-
-      <div className="my-5">
-        <ComponentCard title="All Webinars">
-          <Input
-            type="text"
-            placeholder="Search by webinar name"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="mb-4" // Added some margin for separation
-          />
-          <div className="border-b my-3 flex"> {/* Added flex to keep tabs on one line */}
-            {/* --- CORRECTED TABS RENDERING START --- */}
-            {['all', 'active', 'inactive'].map(t => ( // Now includes 'active' and 'inactive'
-              <span
-                key={t}
-                className={`cursor-pointer px-4 py-2 ${activeTab === t ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'
-                  } transition-colors duration-200`}
-                onClick={() => setActiveTab(t as typeof activeTab)}
-              >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </span>
+    return (
+        <div className="flex flex-col gap-2">
+            {visibleVideos.map((video, i) => (
+                <div key={i} className="flex items-center justify-center p-1 border rounded-md border-gray-100 bg-gray-50 shadow-sm">
+                    {video.videoImageUrl ? (
+                        <div className="relative w-12 h-10 flex-shrink-0">
+                            <Image
+                                src={video.videoImageUrl}
+                                alt={video.videoName ? `${video.videoName} thumbnail` : `Video ${i + 1} thumbnail`}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover rounded-sm"
+                                unoptimized={true} // Add unoptimized if the URL is not from a known image host
+                            />
+                        </div>
+                    ) : (
+                        <span className="text-gray-400 text-xs">No img</span>
+                    )}
+                </div>
             ))}
-            {/* --- CORRECTED TABS RENDERING END --- */}
-          </div>
-          <BasicTableOne columns={columns} data={filteredWebinars} /> {/* Use filteredWebinars directly */}
-        </ComponentCard>
-      </div>
 
-      {/* The Modal component and its content are entirely removed */}
-    </div>
-  );
+            {videoDetails.length > 2 && (
+                <button
+                    type="button"
+                    onClick={() => setShowAll((p) => !p)}
+                    className="text-sm text-red-600 hover:text-blue-800 underline w-fit mt-1 transition-colors duration-200"
+                >
+                    {showAll ? 'Show Less' : 'Show More'}
+                </button>
+            )}
+        </div>
+    );
+};
+
+
+// --- UPDATED: TableData interface to mirror CertificatePage's structure ---
+interface TableData {
+    id: string;
+    name: string;
+    imageUrl: string; // Main image for the webinar
+    description: string;
+    videoDetails: VideoDetail[]; // Array of full video details
+    displayVideoNames: string[];
+    displayVideoDescriptions: string[];
+    displayVideoUrls: string[];
+    status: 'Active' | 'Inactive'; // Using 'Inactive' to match CertificatePage
+}
+
+const WebinarPage = () => {
+    const { webinars, deleteWebinar } = useWebinars();
+    const router = useRouter();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState<'all' | 'Active' | 'Inactive'>('all'); // Match types from CertificatePage
+
+    // Consolidated state for row expansion
+    const [expandedRowIds, setExpandedRowIds] = useState<string[]>([]);
+    const toggleRowExpansion = (id: string) => {
+        setExpandedRowIds((prev) =>
+            prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+        );
+    };
+
+    // Use useMemo for filtering and mapping data
+    const filteredAndMappedWebinars = useMemo(() => {
+        if (!webinars || !Array.isArray(webinars)) {
+            return [];
+        }
+
+        return webinars
+            .filter((w) => {
+                const matchesSearch = w.name.toLowerCase().includes(searchQuery.toLowerCase());
+                const status: TableData['status'] = w.isDeleted ? 'Inactive' : 'Active'; // Match 'Inactive'
+                const matchesTab =
+                    activeTab === 'all' ||
+                    (activeTab === 'Active' && status === 'Active') ||
+                    (activeTab === 'Inactive' && status === 'Inactive');
+                return matchesSearch && matchesTab;
+            })
+            .map((w) => ({
+                id: w._id,
+                name: w.name,
+                imageUrl: w.imageUrl,
+                description: w.description ?? 'N/A',
+                videoDetails: w.video || [], // Pass the entire video array
+                displayVideoNames: w.video?.map((v: VideoDetail) => v.videoName) || [],
+                displayVideoDescriptions: w.video?.map((v: VideoDetail) => v.videoDescription) || [],
+                displayVideoUrls: w.video?.map((v: VideoDetail) => v.videoUrl) || [],
+                status: (w.isDeleted ? 'Inactive' : 'Active') as TableData['status'], // Match 'Inactive'
+            }));
+    }, [webinars, searchQuery, activeTab]);
+
+    const handleEdit = (id: string) => {
+        router.push(`/academy/webinars-management/modals/${id}`);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this webinar?')) return;
+        try {
+            await deleteWebinar(id);
+        } catch (err) {
+            console.error('Delete error', err);
+        }
+    };
+
+    /* ---------------------------- Loader --------------------------- */
+    if (!webinars) return <RouteLoader />;
+
+    return (
+        <div>
+            <PageBreadcrumb pageTitle="Webinars" />
+            <ModuleStatCard />
+
+            <div className="my-5">
+                <ComponentCard title="All Webinars">
+                    {/* Search */}
+                    <Input
+                        placeholder="Search by webinar name"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="mb-4"
+                    />
+
+                    {/* Tabs */}
+                    <div className="border-b border-gray-200 mt-4 flex gap-2">
+                        {(['all', 'Active', 'Inactive'] as const).map((tab) => (
+                            <button
+                                key={tab}
+                                type="button"
+                                onClick={() => setActiveTab(tab)}
+                                className={`relative px-4 pb-2 text-sm font-medium transition-colors ${
+                                    activeTab === tab
+                                        ? 'text-blue-600'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                {tab === 'all' ? 'All' : tab}
+                                {activeTab === tab && (
+                                    <span className="absolute left-0 -bottom-[1px] h-[2px] w-full rounded-full bg-blue-600" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Table */}
+                    <div className="mt-6 overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
+                        <table className="min-w-full border-collapse text-sm">
+                            <thead>
+                                <tr>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Webinar Name</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Main Image</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Webinar Description</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Details</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Images</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Files</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Videos Count</th>
+                                    <th className="px-5 py-3 text-center text-gray-500 border-b">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {filteredAndMappedWebinars.length > 0 ? (
+                                    filteredAndMappedWebinars.map((row) => {
+                                        const expanded = expandedRowIds.includes(row.id);
+                                        const visibleCount = expanded
+                                            ? row.displayVideoNames.length
+                                            : Math.min(row.displayVideoNames.length, 2);
+                                        const hasMore = row.displayVideoNames.length > 2;
+
+                                        return (
+                                            <tr key={row.id} className="">
+                                                {/* Name */}
+                                                <td className="px-5 py-4 font-medium text-gray-800">{row.name}</td>
+
+                                                {/* Main Image */}
+                                                <td className="px-5 py-4">
+                                                    <div className="relative w-20 h-20">
+                                                        <Image
+                                                            src={row.imageUrl || '/path/to/default-image.png'}
+                                                            alt={row.name}
+                                                            fill
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                            className="object-cover rounded-md ring-1 ring-gray-200"
+                                                            unoptimized={true} // Add unoptimized if the URL is not from a known image host
+                                                        />
+                                                    </div>
+                                                </td>
+
+                                                {/* Description */}
+                                                <td className="px-5 py-4 text-gray-700 whitespace-pre-line max-w-xs">
+                                                    {row.description}
+                                                </td>
+
+                                                {/* Video Details (Name & Description) */}
+                                                <td className="px-5 py-4">
+                                                    <div className="flex flex-col gap-3 w-full">
+                                                        {row.displayVideoNames.slice(0, visibleCount).map((name, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="border border-gray-200 p-3 rounded-lg bg-gray-50 shadow-sm"
+                                                            >
+                                                                <span className="text-black-700 font-semibold block">Video Name:</span>
+                                                                <span className="font-medium text-gray-800">{name}</span>
+
+                                                                <Label className="mt-2 text-gray-600">Description:</Label>
+                                                                <div className="text-gray-700 text-sm mt-1">
+                                                                    {row.displayVideoDescriptions[i] || 'No description'}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {hasMore && (
+                                                            <button
+                                                                className="text-sm text-red-600 underline mt-1 hover:text-blue-800"
+                                                                onClick={() => toggleRowExpansion(row.id)}
+                                                            >
+                                                                {expanded ? 'Show Less' : 'Show More'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                                {/* NEW: Video Images column with thumbnails */}
+                                                <td className="px-5 py-4 text-gray-700">
+                                                    <VideoImagePreviewCell videoDetails={row.videoDetails} />
+                                                </td>
+
+                                                {/* MODIFIED: Video Files column (now only showing links) */}
+                                                <td className="px-5 py-4 text-gray-700">
+                                                    <VideoPreviewCell urls={row.displayVideoUrls} />
+                                                </td>
+
+                                                {/* Videos Count */}
+                                                <td className="px-5 py-4 text-gray-700">{row.displayVideoUrls.length}</td>
+
+                                                {/* Actions */}
+                                                <td className="px-5 py-4 text-center">
+                                                    <div className="flex gap-2 justify-center">
+                                                        <button
+                                                            onClick={() => handleEdit(row.id)}
+                                                            className="p-2 rounded-md border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                                                        >
+                                                            <PlusCircle size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(row.id)}
+                                                            className="p-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                                        >
+                                                            <TrashBinIcon />
+                                                        </button>
+                                                        <Link
+                                                            href={`/academy/webinars-management/webinars-list/${row.id}`}
+                                                            className="p-2 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                                                        >
+                                                            <EyeIcon />
+                                                        </Link>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={8} className="px-5 py-10 text-center text-gray-500">
+                                            No webinars found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </ComponentCard>
+            </div>
+        </div>
+    );
 };
 
 export default WebinarPage;
