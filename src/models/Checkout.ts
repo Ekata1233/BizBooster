@@ -215,13 +215,13 @@ const checkoutSchema = new Schema<ICheckout>({
     assurityfee: { type: Number, required: true, min: 0, default: 0 },
 
 
-    listingPrice: { type: Number, required: true, min: 0 },
-    serviceDiscountPrice: { type: Number, required: true, min: 0 },
-    priceAfterDiscount: { type: Number, required: true, min: 0 },
-    couponDiscountPrice: { type: Number, required: true, min: 0 },
-    serviceGSTPrice: { type: Number, required: true, min: 0 },
-    platformFeePrice: { type: Number, required: true, min: 0 },
-    assurityChargesPrice: { type: Number, required: true, min: 0 },
+    listingPrice: { type: Number},
+    serviceDiscountPrice: { type: Number},
+    priceAfterDiscount: { type: Number},
+    couponDiscountPrice: { type: Number},
+    serviceGSTPrice: { type: Number},
+    platformFeePrice: { type: Number},
+    assurityChargesPrice: { type: Number},
 
 
     totalAmount: { type: Number, required: true, min: 0 },
