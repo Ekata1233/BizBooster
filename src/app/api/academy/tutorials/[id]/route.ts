@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const id = req.nextUrl.pathname.split("/").pop(); // ✅ FIXED: Extract id from URL
+    const id = req.nextUrl.pathname.split("/").pop();
 
     const formData = await req.formData();
 
@@ -73,7 +73,7 @@ export async function PUT(req: NextRequest) {
         folder: "/webinars/video_thumbnails",
       });
       targetVideo.videoImageUrl = uploadResponse.url;
-    } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== 'null') {
+    } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== "null") {
       targetVideo.videoImageUrl = currentVideoImageUrl;
     } else {
       targetVideo.videoImageUrl = "";
@@ -81,14 +81,12 @@ export async function PUT(req: NextRequest) {
 
     await webinarToUpdate.save();
 
-    return NextResponse.json(webinarToUpdate, {
-      status: 200,
-      headers: corsHeaders,
-    });
-
+    return NextResponse.json(
+      { success: true, data: webinarToUpdate },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    console.error("PUT /api/academy/webinars/[id] error:", error);
-
+    // Mongoose duplicate key error
     if (
       typeof error === "object" &&
       error !== null &&
@@ -104,6 +102,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Mongoose validation error
     if (
       typeof error === "object" &&
       error !== null &&
@@ -122,6 +121,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Generic server error
     return NextResponse.json(
       {
         success: false,

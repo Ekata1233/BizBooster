@@ -58,9 +58,8 @@ export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    // Extract `id` from URL manually
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop(); // Gets [id] from the route
+    const id = url.pathname.split("/").pop();
 
     const formData = await req.formData();
 
@@ -77,7 +76,7 @@ export async function PUT(req: NextRequest) {
 
     if (videoIndexStr !== null) {
       // =============== SCENARIO 1: Update a specific video ===============
-      const videoIndex = parseInt(videoIndexStr, 10);
+      const videoIndex = Number(videoIndexStr);
 
       if (isNaN(videoIndex) || videoIndex < 0 || videoIndex >= certificationToUpdate.video.length) {
         return NextResponse.json(
@@ -187,6 +186,7 @@ export async function PUT(req: NextRequest) {
             ...(videoImageUrl && { videoImageUrl }),
           });
         }
+
         i++;
       }
 

@@ -88,7 +88,11 @@ export async function PUT(req: NextRequest) {
     if (videoIndexStr !== null) {
       const videoIndex = parseInt(videoIndexStr, 10);
 
-      if (isNaN(videoIndex) || videoIndex < 0 || videoIndex >= webinarToUpdate.video.length) {
+      if (
+        isNaN(videoIndex) ||
+        videoIndex < 0 ||
+        videoIndex >= webinarToUpdate.video.length
+      ) {
         return NextResponse.json(
           { success: false, message: "Invalid video index provided for update." },
           { status: 400, headers: corsHeaders }
@@ -151,8 +155,6 @@ export async function PUT(req: NextRequest) {
           { success: false, message: "Main image is required for the webinars." },
           { status: 400, headers: corsHeaders }
         );
-      } else {
-        webinarToUpdate.imageUrl = "";
       }
 
       const newVideos: Array<{
@@ -214,8 +216,7 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "At least one video entry (existing or new) is required for the certification.",
+            message: "At least one video entry (existing or new) is required for the certification.",
           },
           { status: 400, headers: corsHeaders }
         );
@@ -238,10 +239,7 @@ export async function PUT(req: NextRequest) {
       (error as { code: number }).code === 11000
     ) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Webinar name must be unique.",
-        },
+        { success: false, message: "Webinar name must be unique." },
         { status: 409, headers: corsHeaders }
       );
     }
@@ -258,24 +256,17 @@ export async function PUT(req: NextRequest) {
       }).errors;
       const messages = Object.values(validationErrors).map((err) => err.message);
       return NextResponse.json(
-        {
-          success: false,
-          message: `Validation Error: ${messages.join(", ")}`,
-        },
+        { success: false, message: `Validation Error: ${messages.join(", ")}` },
         { status: 400, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || "Internal Server Error",
-      },
+      { success: false, message: (error as Error).message || "Internal Server Error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
-
 export async function DELETE(req: Request) {
   await connectToDatabase();
 

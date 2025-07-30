@@ -87,7 +87,7 @@ export async function PUT(req: NextRequest) {
       targetVideo.videoImageUrl = "";
     }
 
-    await webinarToUpdate.save();
+//     await webinarToUpdate.save();
 
     return NextResponse.json(webinarToUpdate, {
       status: 200,
