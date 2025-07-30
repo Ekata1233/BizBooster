@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +11,15 @@ import FileInput from '@/components/form/input/FileInput';
 import Button from '@/components/ui/button/Button';
 import { useWebinars } from '@/context/WebinarContext';
 
+// Define the structure for existing video details including videoImageUrl
+// Ensure this matches the structure your backend sends
+interface ExistingVideoDetail {
+  videoName: string;
+  videoDescription: string;
+  videoUrl: string;
+  videoImageUrl?: string; // Optional field for existing video thumbnail URL
+}
+
 const EditWebinarPage = () => {
   const router = useRouter();
   const { id } = useParams();
@@ -22,24 +30,32 @@ const EditWebinarPage = () => {
   const [description, setDescription] = useState('');
   const [mainImgFile, setMainImgFile] = useState<File | null>(null);
   const [currentImgUrl, setCurrentImgUrl] = useState<string | null>(null);
-  const [currentVideoUrls, setCurrentVideoUrls] = useState<string[]>([]);
 
+  // State to hold existing video details including their image URLs
+  const [currentVideos, setCurrentVideos] = useState<ExistingVideoDetail[]>([]);
+
+  // State for new video entries to be added
   const [newVideos, setNewVideos] = useState<
-    { name: string; description: string; url: string }[]
-  >([{ name: '', description: '', url: '' }]);
+    { name: string; description: string; url: string; imageFile: File | null; imageUrl: string | null }[]
+  >([{ name: '', description: '', url: '', imageFile: null, imageUrl: null }]); // Added imageFile and imageUrl for preview
 
   useEffect(() => {
     if (id && webinars.length > 0) {
-      const webinar = webinars.find((c) => c._id === id);
+      const webinar = webinars.find((w) => w._id === id);
       if (!webinar) return;
+
       setEditId(webinar._id);
       setName(webinar.name);
       setDescription(webinar.description ?? '');
       setCurrentImgUrl(webinar.imageUrl);
-      setCurrentVideoUrls(webinar.video.map((v) => v.videoUrl));
+      // Populate currentVideos with existing data, including image URLs
+      setCurrentVideos(webinar.video || []);
+      // Reset new videos fields, or pre-fill if you want to allow editing existing videos in the new section
+      setNewVideos([{ name: '', description: '', url: '', imageFile: null, imageUrl: null }]);
     }
   }, [id, webinars]);
 
+  // Handler for changing fields in a new video entry (name, description, url)
   const handleNewVideoChange = (
     idx: number,
     key: 'name' | 'description' | 'url',
@@ -50,8 +66,21 @@ const EditWebinarPage = () => {
     );
   };
 
+  // Handler for changing the image file for a new video entry
+  const handleNewVideoImageChange = (
+    idx: number,
+    file: File | null
+  ) => {
+    setNewVideos((prev) =>
+      prev.map((v, i) =>
+        i === idx ? { ...v, imageFile: file, imageUrl: file ? URL.createObjectURL(file) : null } : v
+      )
+    );
+  };
+
   const addNewVideoField = () =>
-    setNewVideos((prev) => [...prev, { name: '', description: '', url: '' }]);
+    setNewVideos((prev) => [...prev, { name: '', description: '', url: '', imageFile: null, imageUrl: null }]);
+
 
   const handleUpdate = async () => {
     if (!editId) return;
@@ -59,38 +88,56 @@ const EditWebinarPage = () => {
     const fd = new FormData();
     fd.append('name', name);
     fd.append('description', description);
-    if (mainImgFile) fd.append('imageUrl', mainImgFile);
 
-    newVideos.forEach((v) => {
-      if (v.url.trim()) fd.append('videoUrl', v.url);
-      fd.append('videoName', v.name);
-      fd.append('videoDescription', v.description);
+    // --- IMPORTANT CHANGE HERE FOR MAIN IMAGE ---
+    if (mainImgFile) {
+      // A new image file was selected
+      fd.append('imageUrl', mainImgFile);
+    } else if (currentImgUrl) {
+      // No new file, but there's an existing image URL from the fetched data
+      // Send it to the backend as 'currentImageUrl' so the backend knows to keep it
+      fd.append('currentImageUrl', currentImgUrl);
+    } else {
+      
+      fd.append('currentImageUrl', 'null'); // Or an empty string if your backend prefers that to clear it
+    }
+    // --- END IMPORTANT CHANGE ---
+
+    // Append new video data
+    newVideos.forEach((v, index) => {
+      if (v.url.trim() || v.name.trim() || v.description.trim() || v.imageFile) {
+        fd.append(`newVideos[${index}][videoName]`, v.name);
+        fd.append(`newVideos[${index}][videoDescription]`, v.description);
+        fd.append(`newVideos[${index}][videoUrl]`, v.url);
+        if (v.imageFile) {
+          fd.append(`newVideos[${index}][videoImageUrl]`, v.imageFile);
+        }
+      }
     });
 
     try {
       await updateWebinar(editId, fd);
       alert('Webinar updated successfully');
-      router.push('/academy/webinars');
+      router.push('/academy/webinars-management/webinars-list');
     } catch (err) {
       console.error('Error updating webinar:', err);
       alert('Failed to update webinar');
     }
   };
-
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-2xl shadow">
       <h2 className="text-3xl font-bold text-center text-black dark:text-white mb-10">
-        Edit Tutorial Information
+        Edit Webinar Information
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <Label>Name</Label>
+          <Label>Webinar Name</Label> {/* Changed to Webinar Name */}
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
         <div>
-          <Label>Description</Label>
+          <Label>Webinar Description</Label> {/* Changed to Webinar Description */}
           <Input value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
@@ -105,54 +152,105 @@ const EditWebinarPage = () => {
               src={mainImgFile ? URL.createObjectURL(mainImgFile) : currentImgUrl!}
               width={120}
               height={120}
-              alt="Certificate"
+              alt="Main Webinar Image"
               className="mt-2 rounded object-cover"
+              unoptimized={true} // Add unoptimized if the URL is not from a known image host
             />
           )}
         </div>
 
-        {currentVideoUrls.length > 0 && (
-          <div className="col-span-2">
+        {/* Display Current Videos (read-only for existing) */}
+        {currentVideos.length > 0 && (
+          <div className="col-span-2 mt-4">
             <Label>Current Videos</Label>
-            {currentVideoUrls.map((u, i) => (
-              <a
-                key={i}
-                href={u}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline block"
-              >
-                Video {i + 1}
-              </a>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentVideos.map((video, i) => (
+                <div key={i} className="border p-3 rounded-md bg-gray-50 shadow-sm flex flex-col gap-2">
+                  {video.videoImageUrl && (
+                    <div className="relative w-full h-24">
+                      <Image
+                        src={video.videoImageUrl}
+                        alt={`Current Video ${i + 1} thumbnail`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover rounded-md"
+                        unoptimized={true} // Add unoptimized if the URL is not from a known image host
+                      />
+                    </div>
+                  )}
+                  <p className="font-semibold text-gray-800 break-words">Name: {video.videoName || 'N/A'}</p>
+                  <p className="text-gray-700 text-sm break-words">Desc: {video.videoDescription || 'N/A'}</p>
+                  {video.videoUrl && (
+                    <a
+                      href={video.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline block text-sm break-words"
+                    >
+                      Watch Video
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        <div className="col-span-2">
-          <Label>Add New Video URLs</Label>
+        {/* Section for adding NEW videos */}
+        <div className="col-span-2 mt-6">
+          <Label className="mb-4 block">Add New Videos</Label>
           {newVideos.map((v, idx) => (
-            <div key={idx} className="border p-4 rounded-md mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                placeholder="Video Name"
-                value={v.name}
-                onChange={(e) => handleNewVideoChange(idx, 'name', e.target.value)}
-              />
-              <Input
-                placeholder="Video Description"
-                value={v.description}
-                onChange={(e) => handleNewVideoChange(idx, 'description', e.target.value)}
-              />
-              <Input
-                placeholder="Video URL"
-                value={v.url}
-                onChange={(e) => handleNewVideoChange(idx, 'url', e.target.value)}
-              />
+            <div key={idx} className="border p-4 rounded-md mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+              <div className="col-span-full text-sm font-medium text-gray-600 mb-2">
+                New Video {idx + 1}
+              </div>
+              <div className="md:col-span-1">
+                <Label>Video Name</Label>
+                <Input
+                  placeholder="Video Name"
+                  value={v.name}
+                  onChange={(e) => handleNewVideoChange(idx, 'name', e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-1">
+                <Label>Video Description</Label>
+                <Input
+                  placeholder="Video Description"
+                  value={v.description}
+                  onChange={(e) => handleNewVideoChange(idx, 'description', e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-1">
+                <Label>Video URL</Label>
+                <Input
+                  placeholder="Video URL"
+                  value={v.url}
+                  onChange={(e) => handleNewVideoChange(idx, 'url', e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-1">
+                <Label>Video Thumbnail Image</Label>
+                <FileInput
+                  accept="image/*"
+                  onChange={(e) => handleNewVideoImageChange(idx, e.target.files?.[0] || null)}
+                />
+                {(v.imageFile || v.imageUrl) && (
+                  <Image
+                    src={v.imageFile ? URL.createObjectURL(v.imageFile) : v.imageUrl!}
+                    width={80}
+                    height={60}
+                    alt={`Video ${idx + 1} Thumbnail`}
+                    className="mt-2 rounded object-cover"
+                    unoptimized={true} // Add unoptimized if the URL is not from a known image host
+                  />
+                )}
+              </div>
             </div>
           ))}
           <button
             type="button"
             onClick={addNewVideoField}
-            className="text-blue-600 underline"
+            className="text-blue-600 underline mt-2"
           >
             + Add Another Video
           </button>
@@ -160,7 +258,7 @@ const EditWebinarPage = () => {
       </div>
 
       <div className="flex justify-end gap-4 mt-10">
-        <Link href="/academy/webinars-management/webinars-list">
+        <Link href="/academy/webinars-management/webinars-list"> {/* Corrected path */}
           <Button variant="outline">Cancel</Button>
         </Link>
         <Button onClick={handleUpdate}>Save Changes</Button>

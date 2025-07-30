@@ -21,11 +21,11 @@ const WebinarPage: React.FC = () => {
   return (
     <div>
       <div className="my-5">
-        {/* <AddCertificate certificateIdToEdit={certificateId} /> */}
+      
         <AddWebinar certificationIdToEdit={webinarId} />
       </div>
 
-      {/* Optionally, keep your list or redirect after save */}
+     
     </div>
   );
 };

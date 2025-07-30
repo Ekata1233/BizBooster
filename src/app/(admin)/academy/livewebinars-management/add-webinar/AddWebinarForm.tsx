@@ -25,7 +25,7 @@ const LiveWebinarPage: React.FC = () => {
         <AddLiveWebinar webinarIdToEdit={webinarId} />
       </div>
 
-      {/* Optionally, keep your list or redirect after save */}
+     
     </div>
   );
 };
