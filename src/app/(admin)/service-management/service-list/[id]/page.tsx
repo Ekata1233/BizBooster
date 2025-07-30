@@ -260,9 +260,9 @@ const EditService: React.FC = () => {
           : Array.from(formData.service.highlight);
 
         highlightsArray.forEach((item, index) => {
-          if (item instanceof File) {
+          // if (item instanceof File) {
             formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
-          }
+          // }
         });
       }
 
