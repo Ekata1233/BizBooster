@@ -13,140 +13,119 @@ const corsHeaders = {
 
 // Initialize ImageKit (ensure your environment variables are set)
 
-// export async function PUT(
-//   req: NextRequest, // Use NextRequest for better type inference with formData
-//   { params }: { params: { id: string } } // Get params directly from context
-// ) {
-//   await connectToDatabase();
 
-//   const { id } = params; // params is already awaited by Next.js in route handlers
+export async function PUT(req: NextRequest) {
+  await connectToDatabase();
 
-//   try {
-//     // *** CRITICAL FIX: Parse formData instead of JSON ***
-//     const formData = await req.formData();
+  try {
+    // Extract ID from URL
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-//     // Get fields for updating an existing video
-//     const videoIndexStr = formData.get("videoIndex") as string | null;
-//     const videoName = formData.get("videoName") as string;
-//     const videoDescription = formData.get("videoDescription") as string;
-//     const videoUrl = formData.get("videoUrl") as string;
-//     const videoImageFile = formData.get("videoImageFile") as File | null;
-//     const currentVideoImageUrl = formData.get("currentVideoImageUrl") as string | null;
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing webinar ID in URL." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     if (videoIndexStr === null) {
-//       // This PUT endpoint is specifically for updating a video by index.
-//       // If videoIndex is missing, it implies a different type of update,
-//       // which this specific handler isn't designed for.
-//       return NextResponse.json(
-//         { success: false, message: "videoIndex is required for this update." },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
+    const formData = await req.formData();
 
-//     const videoIndex = parseInt(videoIndexStr, 10);
+    const videoIndexStr = formData.get("videoIndex") as string | null;
+    const videoName = formData.get("videoName") as string;
+    const videoDescription = formData.get("videoDescription") as string;
+    const videoUrl = formData.get("videoUrl") as string;
+    const videoImageFile = formData.get("videoImageFile") as File | null;
+    const currentVideoImageUrl = formData.get("currentVideoImageUrl") as string | null;
 
-//     // Basic validation for video index
-//     if (isNaN(videoIndex) || videoIndex < 0) {
-//       return NextResponse.json(
-//         { success: false, message: "Invalid video index provided for update." },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
+    if (videoIndexStr === null) {
+      return NextResponse.json(
+        { success: false, message: "videoIndex is required for this update." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     const webinarToUpdate = await Webinars.findById(id);
+    const videoIndex = parseInt(videoIndexStr, 10);
+    if (isNaN(videoIndex) || videoIndex < 0) {
+      return NextResponse.json(
+        { success: false, message: "Invalid video index." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     if (!webinarToUpdate) {
-//       return NextResponse.json(
-//         { success: false, message: "Webinar not found." },
-//         { status: 404, headers: corsHeaders }
-//       );
-//     }
+    const webinarToUpdate = await Webinars.findById(id);
+    if (!webinarToUpdate) {
+      return NextResponse.json(
+        { success: false, message: "Webinar not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
-//     // Check if video index is out of bounds after fetching the webinar
-//     if (videoIndex >= webinarToUpdate.video.length) {
-//         return NextResponse.json(
-//             { success: false, message: "Video index out of bounds for the specified webinar." },
-//             { status: 400, headers: corsHeaders }
-//         );
-//     }
+    if (videoIndex >= webinarToUpdate.video.length) {
+      return NextResponse.json(
+        { success: false, message: "Video index out of bounds." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     const targetVideo = webinarToUpdate.video[videoIndex];
+    const targetVideo = webinarToUpdate.video[videoIndex];
+    if (videoName !== null) targetVideo.videoName = videoName;
+    if (videoDescription !== null) targetVideo.videoDescription = videoDescription;
+    if (videoUrl !== null) targetVideo.videoUrl = videoUrl;
 
-//     // Update specific video fields (only if provided in the formData)
-//     if (videoName !== null) targetVideo.videoName = videoName; // formData.get returns null if not present
-//     if (videoDescription !== null) targetVideo.videoDescription = videoDescription;
-//     if (videoUrl !== null) targetVideo.videoUrl = videoUrl;
-
-//     // Handle video thumbnail image update for the specific video
-//     if (videoImageFile && videoImageFile.size > 0) {
-//       // A new image file was uploaded for the thumbnail
-//       const buffer = Buffer.from(await videoImageFile.arrayBuffer());
-//       const uploadResponse = await imagekit.upload({
-//         file: buffer,
-//         fileName: `${uuidv4()}-${videoImageFile.name}`,
-//         folder: "/webinars/video_thumbnails", // Specific folder for video thumbnails
-//       });
-//       targetVideo.videoImageUrl = uploadResponse.url;
-//     } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== 'null') {
-//       // No new file, but an existing URL was provided by the client to keep
-//       targetVideo.videoImageUrl = currentVideoImageUrl;
-//     } else {
-//       // If neither new file nor current URL (or 'null' string) is present, explicitly remove the image
-//       targetVideo.videoImageUrl = ""; // Or `null` if your schema allows/prefers null
-//     }
+    if (videoImageFile && videoImageFile.size > 0) {
+      const buffer = Buffer.from(await videoImageFile.arrayBuffer());
+      const uploadResponse = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${videoImageFile.name}`,
+        folder: "/webinars/video_thumbnails",
+      });
+      targetVideo.videoImageUrl = uploadResponse.url;
+    } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== "null") {
+      targetVideo.videoImageUrl = currentVideoImageUrl;
+    } else {
+      targetVideo.videoImageUrl = "";
+    }
 
 //     await webinarToUpdate.save();
 
-//     return NextResponse.json(webinarToUpdate, {
-//       status: 200,
-//       headers: corsHeaders,
-//     });
+    return NextResponse.json(webinarToUpdate, {
+      status: 200,
+      headers: corsHeaders,
+    });
+  } catch (error: unknown) {
+    console.error("PUT /api/academy/webinar-tutorials/[id] error:", error);
 
-//   } catch (error: unknown) {
-//     console.error("PUT /api/academy/webinars/[id] error:", error);
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code: number }).code === 11000
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Duplicate key error." },
+        { status: 409, headers: corsHeaders }
+      );
+    }
 
-//     // Mongoose duplicate key error (if applicable for video sub-documents, though less common)
-//     if (
-//       typeof error === "object" &&
-//       error !== null &&
-//       "code" in error &&
-//       (error as { code: number }).code === 11000
-//     ) {
-//       return NextResponse.json(
-//         {
-//           success: false,
-//           message: "A unique constraint was violated.", // More generic message for sub-doc
-//         },
-//         { status: 409, headers: corsHeaders }
-//       );
-//     }
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "ValidationError" &&
+      "errors" in error
+    ) {
+      const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
+      const messages = Object.values(validationErrors).map((err) => err.message);
+      return NextResponse.json(
+        { success: false, message: `Validation Error: ${messages.join(", ")}` },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-//     // Mongoose validation errors
-//     if (
-//       typeof error === "object" &&
-//       error !== null &&
-//       "name" in error &&
-//       (error as { name: string }).name === "ValidationError" &&
-//       "errors" in error
-//     ) {
-//       const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
-//       const messages = Object.values(validationErrors).map((err) => err.message);
-//       return NextResponse.json(
-//         {
-//           success: false,
-//           message: `Validation Error: ${messages.join(", ")}`,
-//         },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
-
-//     // Generic internal server error
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: (error as Error).message || "Internal Server Error",
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
+    return NextResponse.json(
+      { success: false, message: (error as Error).message || "Internal Server Error" },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
