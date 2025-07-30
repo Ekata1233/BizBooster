@@ -67,6 +67,9 @@ const ServiceDetailsForm = ({ data, setData }: {
   const whyChooseContext = useWhyChoose();
 
   console.log("data of service form : ", data)
+  // console.log("faqs State:", faqs);
+
+
   useEffect(() => {
     if (data) {
       setBenefits(data.benefits || '');
@@ -97,6 +100,27 @@ const ServiceDetailsForm = ({ data, setData }: {
     }
   }, []);
 
+
+  // useEffect(() => {
+
+  //   const newData = {
+  //     benefits,
+  //     overview,
+  //     highlight,
+  //     document,
+  //     whyChoose,
+  //     howItWorks,
+  //     terms,
+  //     faqs,
+  //     rows,
+  //   };
+
+  //   if (JSON.stringify(newData) !== JSON.stringify(data)) {
+  //     setData(newData);
+  //   }
+  // }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+
+
   useEffect(() => {
     const newData: ServiceDetails = {
       benefits,
@@ -109,7 +133,10 @@ const ServiceDetailsForm = ({ data, setData }: {
       faqs,
       rows,
     };
+
+    // Optional: Only setData if there's a change
     if (JSON.stringify(data) !== JSON.stringify(newData)) {
+      setData(newData); // ✅ pass object, not function
     }
   }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
 
