@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const body = await req.json();
+    
     console.log("✅ Webhook Received:", body);
 
     const {

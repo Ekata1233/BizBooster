@@ -226,7 +226,7 @@ const checkoutSchema = new Schema<ICheckout>({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed'],
+        enum: ['pending', 'paid', 'failed','unpaid'],
         default: 'pending',
     },
     orderStatus: {

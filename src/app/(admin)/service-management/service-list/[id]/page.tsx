@@ -74,7 +74,7 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  console.log("console service : ", service);
+  // console.log("console service : ", service);
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -161,7 +161,7 @@ const EditService: React.FC = () => {
           rows: service.franchiseDetails?.extraSections || [],
         },
       });
-      console.log("Initialized FAQs:", service.serviceDetails);
+      // console.log("Initialized FAQs:", service);
 
       if (service.serviceName && service.category?._id && service.subcategory?._id && service.price) {
         setCompletedSteps([1]);
@@ -224,6 +224,8 @@ const EditService: React.FC = () => {
       if (formData.basic.thumbnail) {
         formDataToSend.append('thumbnailImage', formData.basic.thumbnail);
       }
+      console.log("Banner Images to upload:", formData.basic.bannerImages);
+
       formData.basic.bannerImages.forEach(file => {
         formDataToSend.append('bannerImages', file);
       });
@@ -319,10 +321,28 @@ const EditService: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {step === 1 && (
+              // <BasicDetailsForm
+              //   data={formData.basic}
+              //   setData={(newData) => setFormData(prev => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+              // />
               <BasicDetailsForm
                 data={formData.basic}
-                setData={(newData) => setFormData(prev => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+                setData={(newData) => {
+                  const bannerImages = (newData.covers instanceof FileList)
+                    ? Array.from(newData.covers)
+                    : (Array.isArray(newData.covers) ? newData.covers : []);
+
+                  setFormData(prev => ({
+                    ...prev,
+                    basic: {
+                      ...prev.basic,
+                      ...newData,
+                      bannerImages: bannerImages.length ? bannerImages : prev.basic.bannerImages,
+                    },
+                  }));
+                }}
               />
+
             )}
 
             {step === 2 && (

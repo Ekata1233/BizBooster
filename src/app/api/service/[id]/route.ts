@@ -70,10 +70,15 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+    console.log("formdata of the update service : ", formData);
+
     const serviceName = formData.get("name") as string;
     const category = formData.get("category") as string;
-    const subcategory = formData.get("subcategory") as string;
+    // const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
+    const subcategoryRaw = formData.get("subcategory") as string;
+    const subcategory = subcategoryRaw && subcategoryRaw.trim() !== "" ? subcategoryRaw : undefined;
+
     const discountStr = formData.get("discount") as string | null;
     const gstStr = formData.get("gst") as string | null;
     const includeGstStr = formData.get("includeGst") as string | null;
@@ -208,7 +213,8 @@ export async function PUT(req: Request) {
     const updateData = {
       serviceName,
       category,
-      subcategory,
+      // subcategory,
+      ...(subcategory && { subcategory }),
       price,
       discount,
       discountedPrice,
@@ -218,7 +224,7 @@ export async function PUT(req: Request) {
       totalWithGst,
       serviceDetails: {
         ...serviceDetails,
-        highlight: highlightImagesUrls, 
+        highlight: highlightImagesUrls,
         whyChoose: whyChooseIds,
       },
       franchiseDetails,

@@ -17,7 +17,7 @@ interface BasicDetailsData {
     discountedPrice?: number;
     gst?: number;
     includeGst?: boolean;
-    gstInRupees?: number;        // ✅ added
+    gstInRupees?: number;       
     totalWithGst?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
@@ -47,7 +47,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
     const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
-    console.log("data of basic details form : ", data)
+    // console.log("data of basic details form : ", data)
 
     useEffect(() => {
         if (data) {
@@ -70,15 +70,15 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     useEffect(() => {
         const discountedPrice = data.discountedPrice || 0;
 
-        console.log("discounted price for the gst : ", discountedPrice);
+        // console.log("discounted price for the gst : ", discountedPrice);
         const gst = data.gst || 0;
 
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
 
         const gstInRupees = (discountedPrice * gst) / 100;
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
         const totalWithGst = discountedPrice + gstInRupees;
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
 
         setData({
             gstInRupees,
