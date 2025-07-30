@@ -47,7 +47,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
     const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
-    console.log("data of basic details form : ", data)
+    // console.log("data of basic details form : ", data)
 
     useEffect(() => {
         if (data) {
