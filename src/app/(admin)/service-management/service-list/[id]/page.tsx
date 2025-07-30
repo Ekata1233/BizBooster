@@ -229,6 +229,15 @@ const EditService: React.FC = () => {
       formData.basic.bannerImages.forEach(file => {
         formDataToSend.append('bannerImages', file);
       });
+      formData.basic.tags?.forEach((tag, index) => {
+        formDataToSend.append(`tags[${index}]`, tag);
+      });
+
+      formData.basic.keyValues?.forEach((pair, index) => {
+        formDataToSend.append(`keyValues[${index}][key]`, pair.key);
+        formDataToSend.append(`keyValues[${index}][value]`, pair.value);
+      });
+
 
       formDataToSend.append('serviceDetails[overview]', formData.service.overview);
       if (formData.service.highlight) {
@@ -321,7 +330,7 @@ const EditService: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {step === 1 && (
-             
+
               <BasicDetailsForm
                 data={formData.basic}
                 setData={(newData) => {
@@ -335,6 +344,8 @@ const EditService: React.FC = () => {
                       ...prev.basic,
                       ...newData,
                       bannerImages: bannerImages.length ? bannerImages : prev.basic.bannerImages,
+                      tags: newData.tags ?? prev.basic.tags,
+                      keyValues: newData.keyValues ?? prev.basic.keyValues,
                     },
                   }));
                 }}
