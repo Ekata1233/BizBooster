@@ -66,8 +66,8 @@ const ServiceDetailsForm = ({ data, setData }: {
 
   const whyChooseContext = useWhyChoose();
 
-  console.log("data of service : ", data)
-      console.log("faqs State:", faqs);
+  console.log("data of service form : ", data)
+      // console.log("faqs State:", faqs);
 
 
  useEffect(() => {

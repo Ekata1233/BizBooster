@@ -157,7 +157,16 @@ interface ICheckout extends Document {
     gst: number;
     platformFee: number;
     assurityfee: number;
-    // tax: number;
+
+    listingPrice: Number;
+    serviceDiscountPrice: Number;
+    priceAfterDiscount: Number;
+    couponDiscountPrice: Number;
+    servuceGSTPrice: Number;
+    platformFeePrice: Number;
+    assurityChargesPrice: Number;
+
+
     totalAmount: number;
 
 
@@ -204,7 +213,17 @@ const checkoutSchema = new Schema<ICheckout>({
     gst: { type: Number, required: true, min: 0, default: 0 },
     platformFee: { type: Number, required: true, min: 0, default: 0 },
     assurityfee: { type: Number, required: true, min: 0, default: 0 },
-    // tax: { type: Number, required: true, min: 0, default: 0 },
+
+
+    listingPrice: { type: Number, required: true, min: 0 },
+    serviceDiscountPrice: { type: Number, required: true, min: 0 },
+    priceAfterDiscount: { type: Number, required: true, min: 0 },
+    couponDiscountPrice: { type: Number, required: true, min: 0 },
+    servuceGSTPrice: { type: Number, required: true, min: 0 },
+    platformFeePrice: { type: Number, required: true, min: 0 },
+    assurityChargesPrice: { type: Number, required: true, min: 0 },
+
+
     totalAmount: { type: Number, required: true, min: 0 },
 
 
@@ -226,7 +245,7 @@ const checkoutSchema = new Schema<ICheckout>({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed','unpaid'],
+        enum: ['pending', 'paid', 'failed', 'unpaid'],
         default: 'pending',
     },
     orderStatus: {
@@ -235,7 +254,7 @@ const checkoutSchema = new Schema<ICheckout>({
         default: 'processing',
     },
     cashInHand: { type: Boolean, default: false },
-    cashInHandAmount: {type: Number, default: 0},
+    cashInHandAmount: { type: Number, default: 0 },
     notes: { type: String, trim: true, default: '' },
     termsCondition: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
