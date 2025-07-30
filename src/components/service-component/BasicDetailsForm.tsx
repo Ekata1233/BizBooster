@@ -17,7 +17,7 @@ interface BasicDetailsData {
     discountedPrice?: number;
     gst?: number;
     includeGst?: boolean;
-    gstInRupees?: number;       
+    gstInRupees?: number;
     totalWithGst?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
@@ -504,11 +504,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                     <div className='py-3'>
                         <Label>Recommended Service</Label>
                         <div className="px-3 py-1 flex flex-wrap items-center gap-2">
-                           <Switch
-  label="Recommended"
-  checked={!!data.recommendedServices}
-  onChange={handleSwitchChange}
-/>
+                            <Switch
+                                label="Recommended"
+                                checked={!!data.recommendedServices}
+                                onChange={handleSwitchChange}
+                            />
 
 
                         </div>

@@ -321,10 +321,7 @@ const EditService: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {step === 1 && (
-              // <BasicDetailsForm
-              //   data={formData.basic}
-              //   setData={(newData) => setFormData(prev => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
-              // />
+             
               <BasicDetailsForm
                 data={formData.basic}
                 setData={(newData) => {
