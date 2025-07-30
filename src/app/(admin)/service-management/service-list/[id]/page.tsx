@@ -141,7 +141,11 @@ const EditService: React.FC = () => {
         },
         service: {
           overview: service.serviceDetails?.overview || '',
-          highlight: [], // instead of null
+          // highlight: [], 
+          highlight: Array.isArray(service.serviceDetails?.highlight)
+            ? service.serviceDetails.highlight.filter((item: any) => typeof item === 'string')
+            : [],
+
           highlightPreviews: Array.isArray(service.serviceDetails?.highlight)
             ? service.serviceDetails.highlight.filter(item => typeof item === 'string')
             : [],
@@ -204,6 +208,8 @@ const EditService: React.FC = () => {
     if (step > 1) setStep(step - 1);
   };
 
+  console.log("formddta of hightlight : ", formData)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!service || !isStepComplete(3)) return;
@@ -240,14 +246,26 @@ const EditService: React.FC = () => {
 
 
       formDataToSend.append('serviceDetails[overview]', formData.service.overview);
+      // if (formData.service.highlight) {
+      //   const filesArray = Array.isArray(formData.service.highlight)
+      //     ? formData.service.highlight
+      //     : Array.from(formData.service.highlight);
+      //   filesArray.forEach((file, index) => {
+      //     formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
+      //   });
+      // }
       if (formData.service.highlight) {
-        const filesArray = Array.isArray(formData.service.highlight)
+        const highlightsArray = Array.isArray(formData.service.highlight)
           ? formData.service.highlight
           : Array.from(formData.service.highlight);
-        filesArray.forEach((file, index) => {
-          formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
+
+        highlightsArray.forEach((item, index) => {
+          if (item instanceof File) {
+            formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
+          }
         });
       }
+
 
       formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
       formDataToSend.append('serviceDetails[howItWorks]', formData.service.howItWorks);
