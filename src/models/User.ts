@@ -13,6 +13,7 @@ const addressSchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
+  userId: { type: String, unique: true },
   fullName: {
     type: String,
     required: true,
@@ -135,6 +136,25 @@ userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+   if (!this.userId) {
+    const lastUser = await mongoose
+      .model('User')
+      .findOne({ userId: { $regex: /^FTF\d+$/ } })
+      .sort({ createdAt: -1 })
+      .select('userId');
+
+    let nextId = 1;
+    if (lastUser?.userId) {
+      const numericPart = parseInt(lastUser.userId.replace('FTF', ''), 10);
+      if (!isNaN(numericPart)) {
+        nextId = numericPart + 1;
+      }
+    }
+
+    this.userId = `FTF${String(nextId).padStart(6, '0')}`;
+  }
+
   next();
 });
 userSchema.methods.comparePassword = async function (

@@ -179,18 +179,19 @@ const ServiceList = () => {
   }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
 
   const handleDelete = async (id: string) => {
-    // const confirmDelete = window.confirm('Are you sure you want to delete this service?');
-    // if (!confirmDelete) return;
+  const confirmDelete = window.confirm('Are you sure you want to delete this service?');
+  if (!confirmDelete) return;
 
-    try {
-      await deleteService(id);
-      alert('service deleted successfully');
-      fetchFilteredServices();
-    } catch (error) {
-      const err = error as Error;
-      alert('Error deleting service: ' + err.message);
-    }
-  };
+  try {
+    await deleteService(id);
+    alert('Service deleted successfully');
+    fetchFilteredServices();
+  } catch (error) {
+    const err = error as Error;
+    alert('Error deleting service: ' + err.message);
+  }
+};
+
 
   const columns = [
     {

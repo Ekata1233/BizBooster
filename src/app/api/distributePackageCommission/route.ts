@@ -55,6 +55,16 @@ export async function POST(req: NextRequest) {
         console.log("user c : ", userC)
         if (!userC) throw new Error("User not found");
 
+        if (userC.packageActive && userC.isCommissionDistribute) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Commission already distributed for this user.",
+                },
+                { status: 400, headers: corsHeaders }
+            );
+        }
+
         const userB = userC.referredBy ? await User.findById(userC.referredBy) : null;
         console.log("user b : ", userB)
         const userA = userB?.referredBy ? await User.findById(userB.referredBy) : null;
@@ -157,7 +167,7 @@ export async function POST(req: NextRequest) {
 
         // B Level
         if (userB && level1Amount > 0) {
-            await creditWallet(userB._id, level1Amount, "Package Referral Commission - Level 1", userId, "B", userId, userC._id);
+            await creditWallet(userB._id, level1Amount, "Package Referral Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userB._id,
@@ -167,7 +177,7 @@ export async function POST(req: NextRequest) {
 
         // A Level
         if (userA && level2Amount > 0) {
-            await creditWallet(userA._id, level2Amount, "Package Referral Commission - Level 2", userId, "A", userId, userC._id);
+            await creditWallet(userA._id, level2Amount, "Package Referral Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userA._id,
@@ -177,7 +187,7 @@ export async function POST(req: NextRequest) {
 
         // Admin
         if (adminAmount > 0) {
-            await creditWallet(ADMIN_ID, adminAmount, "Package Referral Commission - Admin", userId, userC._id);
+            await creditWallet(ADMIN_ID, adminAmount, "Package Referral Commission - Admin", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: ADMIN_ID,

@@ -31,12 +31,16 @@ const columnsWallet = [
   {
     header: 'Lead ID',
     accessor: 'leadId',
-    render: (row: IWalletTransaction) => (
-      <div className="flex flex-col">
-        <span className="text-xs text-muted-foreground">Lead Id : {row.leadId || '-'}</span>
-        <span className="text-xs text-muted-foreground">From : {row.commissionFrom || 'N/A'}</span>
-      </div>
-    ),
+    render: (row: IWalletTransaction) => {
+      console.log('Row:', row); // ✅ Console log here
+
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">Lead Id : {row.leadId || '-'}</span>
+          <span className="text-xs text-muted-foreground">From : {row.commissionFrom || 'N/A'}</span>
+        </div>
+      );
+    },
   },
   {
     header: 'Debit',

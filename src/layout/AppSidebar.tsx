@@ -723,6 +723,14 @@
 
 
 
+
+
+
+
+
+
+
+
 // "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
@@ -831,9 +839,7 @@ const packageItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Package",
-    subItems: [
-      { name: "Add New package", path: "/package-management/add-package", pro: false },
-    ],
+    subItems: [{ name: "Add New package", path: "/package-management/add-package", pro: false }],
   },
 ];
 const subscribeItems: NavItem[] = [
@@ -870,16 +876,17 @@ const bookingItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Bookings",
-    subItems: [
-      { name: "All Bookings", path: "/booking-management/all-booking", pro: false },
-    ],
+    subItems: [{ name: "All Bookings", path: "/booking-management/all-booking", pro: false }],
   },
   {
     icon: <PieChartIcon />,
     name: "Leads",
-    subItems: [
-      { name: "Lead Requests", path: "/booking-management/lead-request", pro: false },
-    ],
+    subItems: [{ name: "Lead Requests", path: "/booking-management/lead-request", pro: false }],
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Assign Provider",
+    path: "/booking-management/assign-provider",
   },
 ];
 
@@ -916,8 +923,14 @@ const providerpreferenceItems: NavItem[] = [
     subItems: [
       { name: "Provider Privacy & Policy", path: "/providerpreferences/provider-privacypolicy" },
       { name: "Provider Refund Policy", path: "/providerpreferences/provider-refundpolicy" },
-      { name: "Provider Terms and Conditions", path: "/providerpreferences/provider-termsandconditions" },
-      { name: "Provider Cancellation Policy", path: "/providerpreferences/provider-cancellationpolicy" },
+      {
+        name: "Provider Terms and Conditions",
+        path: "/providerpreferences/provider-termsandconditions",
+      },
+      {
+        name: "Provider Cancellation Policy",
+        path: "/providerpreferences/provider-cancellationpolicy",
+      },
       { name: "Provider About Us", path: "/providerpreferences/provider-aboutus" },
       { name: "Provider Help and Support", path: "/providerpreferences/provider-helpandsupport" },
     ],
@@ -927,8 +940,8 @@ const providerpreferenceItems: NavItem[] = [
 // --- MODIFIED ACADEMY ITEMS WITH NESTED DATA ---
 const academyItems: NavItem[] = [
   {
-    name: "Academy",
     icon: <PieChartIcon />,
+    name: "Academy",
     subItems: [
       {
         name: "Tutorials",
@@ -941,7 +954,10 @@ const academyItems: NavItem[] = [
         name: "Live Webinars",
         subItems: [
           { name: "Add Live Webinars", path: "/academy/livewebinars-management/add-webinar" },
-          { name: "Live Webinars List", path: "/academy/livewebinars-management/livewebinars-list" },
+          {
+            name: "Live Webinars List",
+            path: "/academy/livewebinars-management/livewebinars-list",
+          },
         ],
       },
       {
@@ -1002,7 +1018,7 @@ const AppSidebar: React.FC = () => {
       let anyChildOrCurrentItemIsActive = false;
 
       items.forEach((item, index) => {
-        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join('-')}`;
+        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join("-")}`;
 
         if (item.subItems) {
           // Recursively check sub-items
@@ -1012,9 +1028,12 @@ const AppSidebar: React.FC = () => {
           }
         } else if (item.path && isActive(item.path)) {
           // If a leaf item's path matches, mark its direct parent as open
-          if (currentPathSegments.length > 0) {
-            const parentKeySegments = [...currentPathSegments.slice(0, -1), currentPathSegments[currentPathSegments.length - 1]];
-            const parentKey = `${menuTypePrefix}-${parentKeySegments.join('-')}`;
+          // This logic seems slightly off for deeply nested items.
+          // It should mark all parents up the chain.
+          // Let's refine this:
+          const tempSegments = [...currentPathSegments];
+          for (let i = tempSegments.length - 1; i >= 0; i--) {
+            const parentKey = `${menuTypePrefix}-${tempSegments.slice(0, i + 1).join("-")}`;
             newOpenSubmenus[parentKey] = true;
           }
           anyChildOrCurrentItemIsActive = true;
@@ -1041,12 +1060,11 @@ const AppSidebar: React.FC = () => {
       offer: offerItems,
     };
 
-    (Object.keys(allMenuMaps) as Array<keyof typeof allMenuMaps>).forEach(menuType => {
+    (Object.keys(allMenuMaps) as Array<keyof typeof allMenuMaps>).forEach((menuType) => {
       findAndMarkActiveParents(allMenuMaps[menuType], menuType);
     });
 
     setOpenSubmenus(newOpenSubmenus);
-
   }, [pathname, isActive]);
 
   // Effect to calculate submenu heights
@@ -1060,25 +1078,19 @@ const AppSidebar: React.FC = () => {
     setSubMenuHeight(newHeights);
   }, [openSubmenus]);
 
-
   // Handler for toggling submenus
   const handleSubmenuToggle = (key: string) => {
     setOpenSubmenus((prevOpenSubmenus) => {
       const newOpenSubmenus = { ...prevOpenSubmenus };
 
-      // Close if already open
-      if (newOpenSubmenus[key]) {
-        delete newOpenSubmenus[key];
-      } else {
-        // Open the clicked submenu
-        newOpenSubmenus[key] = true;
+      // Toggle the state of the clicked submenu
+      newOpenSubmenus[key] = !newOpenSubmenus[key];
 
-        // Optional: Close other submenus at the same level if desired
-        // This part can be adjusted based on desired behavior (e.g., only one main submenu open at a time)
-        // For truly nested menus, this needs to be precise to not close parent/child submenus accidentally
-        // For simplicity, this example just opens/closes the clicked one.
-        // If you want only one top-level submenu to be open at a time, you'd add more complex logic here.
-      }
+      // Optional: Close sibling submenus at the same level (if you want only one open at a time)
+      // This part can be more complex for deeply nested menus.
+      // For now, it just toggles the specific clicked submenu.
+      // If you implement a "close others" logic, ensure it doesn't close parent/child submenus.
+
       return newOpenSubmenus;
     });
   };
@@ -1092,11 +1104,11 @@ const AppSidebar: React.FC = () => {
   ) => (
     <ul className={`flex flex-col gap-4 ${marginLeftClass}`}>
       {items.map((nav, index) => {
-        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join('-')}`;
+        const itemKey = `${menuTypePrefix}-${[...currentPathSegments, index].join("-")}`;
         const isOpen = !!openSubmenus[itemKey];
         const currentSubMenuHeight = subMenuHeight[itemKey] || 0;
 
-        // const isLeaf = !nav.subItems || nav.subItems.length === 0;
+        // const isLeaf = !nav.subItems || nav.subItems.length === 0; // This variable is not used
 
         return (
           <li key={itemKey}>
@@ -1104,9 +1116,13 @@ const AppSidebar: React.FC = () => {
             {nav.subItems ? (
               <button
                 onClick={() => handleSubmenuToggle(itemKey)}
-                className={`menu-item group ${isOpen ? "menu-item-active" : "menu-item-inactive"
-                  } cursor-pointer ${!isExpanded && !isHovered && currentPathSegments.length === 0 ? "lg:justify-center" : "lg:justify-start"
-                  }`}
+                className={`menu-item group ${
+                  isOpen ? "menu-item-active" : "menu-item-inactive"
+                } cursor-pointer ${
+                  !isExpanded && !isHovered && currentPathSegments.length === 0
+                    ? "lg:justify-center"
+                    : "lg:justify-start"
+                }`}
               >
                 {/* Only render icon for top-level items or if explicitly present */}
                 {nav.icon && (
@@ -1119,8 +1135,9 @@ const AppSidebar: React.FC = () => {
                 )}
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <ChevronDownIcon
-                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${isOpen ? "rotate-180 text-brand-500" : ""
-                      }`}
+                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                      isOpen ? "rotate-180 text-brand-500" : ""
+                    }`}
                   />
                 )}
               </button>
@@ -1129,15 +1146,19 @@ const AppSidebar: React.FC = () => {
               nav.path && (
                 <Link
                   href={nav.path}
-                  className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                    } ${!isExpanded && !isHovered && currentPathSegments.length === 0 ? "lg:justify-center" : "lg:justify-start"
-                    }`}
+                  className={`menu-item group ${
+                    isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                  } ${
+                    !isExpanded && !isHovered && currentPathSegments.length === 0
+                      ? "lg:justify-center"
+                      : "lg:justify-start"
+                  }`}
                 >
                   {/* Only render icon for top-level items or if explicitly present */}
                   {nav.icon && (
-                    <span className={`${isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+                    <span
+                      className={`${
+                        isActive(nav.path) ? "menu-item-icon-active" : "menu-item-icon-inactive"
                       }`}
                     >
                       {nav.icon}
@@ -1179,9 +1200,10 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${isExpanded || isMobileOpen
-          ? "w-[290px]"
-          : isHovered
+        ${
+          isExpanded || isMobileOpen
+            ? "w-[290px]"
+            : isHovered
             ? "w-[290px]"
             : "w-[90px]"
         }
@@ -1191,8 +1213,9 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`pb-8 pt-3 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-          }`}
+        className={`pb-8 pt-3 flex ${
+          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        }`}
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -1213,12 +1236,7 @@ const AppSidebar: React.FC = () => {
               />
             </>
           ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            <Image src="/images/logo/logo-icon.svg" alt="Logo" width={32} height={32} />
           )}
         </Link>
       </div>
@@ -1247,8 +1265,9 @@ const AppSidebar: React.FC = () => {
             ].map((section) => (
               <div key={section.type}>
                 <h2
-                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                    }`}
+                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                    !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
                 >
                   {isExpanded || isHovered || isMobileOpen ? section.title : <HorizontaLDots />}
                 </h2>

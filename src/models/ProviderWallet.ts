@@ -80,12 +80,12 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
     },
     beneficiaryId: {
       type: String,
-      required: true,
+      // required: true,
       maxlength: 100,
     },
     bankAccount: {
       type: String,
-      required: true,
+      // required: true,
       maxlength: 100,
     },
     upiId: {
