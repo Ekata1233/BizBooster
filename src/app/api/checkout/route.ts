@@ -139,19 +139,28 @@ export async function POST(req: NextRequest) {
       gst,
       platformFee,
       assurityfee,
+
+      listingPrice,
+      serviceDiscountPrice,
+      priceAfterDiscount,
+      couponDiscountPrice,
+      serviceGSTPrice,
+      platformFeePrice,
+      assurityChargesPrice,
+
       totalAmount,
 
-      termsCondition ,
+      termsCondition,
       paymentMethod,
-      walletAmount ,
-      otherAmount ,
-      paidAmount ,
-      remainingAmount ,
-      isPartialPayment ,
+      walletAmount,
+      otherAmount,
+      paidAmount,
+      remainingAmount,
+      isPartialPayment,
 
-      paymentStatus ,
+      paymentStatus,
       orderStatus,
-      notes ,
+      notes,
     } = body;
 
     // Required field validation
@@ -194,6 +203,15 @@ export async function POST(req: NextRequest) {
       gst,
       platformFee,
       assurityfee,
+
+      listingPrice,
+      serviceDiscountPrice,
+      priceAfterDiscount,
+      couponDiscountPrice,
+      serviceGSTPrice,
+      platformFeePrice,
+      assurityChargesPrice,
+
       totalAmount,
 
       termsCondition,

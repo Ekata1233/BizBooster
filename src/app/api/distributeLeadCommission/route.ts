@@ -23,6 +23,10 @@ export async function OPTIONS() {
 
 // Replace this with your admin ID or logic
 const ADMIN_ID = new Types.ObjectId("444c44d4444be444d4444444");
+function toFixed2(num: number): number {
+    return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
 
 export async function POST(req: Request) {
     await connectToDatabase();
@@ -38,7 +42,7 @@ export async function POST(req: Request) {
             );
         }
         const lead = await Lead.findOne({ checkout: checkoutId })
-        // console.log("lead : ", lead)
+
 
         const checkout = await Checkout.findById(checkoutId).populate("user").populate({
             path: "service",
@@ -47,12 +51,9 @@ export async function POST(req: Request) {
 
         console.log("checkout details in commission distribute :", checkout);
 
-        // const commission = lead?.newCommission ?? checkout.service?.franchiseDetails?.commission;
-
 
         const rawCommission = checkout.service?.franchiseDetails?.commission;
 
-        // ✅ CORRECT fallback logic
         const commission =
             lead?.newCommission || lead?.newCommission === 0
                 ? lead?.newCommission > 0
@@ -70,7 +71,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // const leadAmount = lead?.afterDicountAmount ?? checkout.totalAmount;
         const leadAmount = lead?.afterDicountAmount ?? checkout.subtotal;
 
 
@@ -127,10 +127,11 @@ export async function POST(req: Request) {
         }
 
 
-        const C_share = commissionPool * 0.5;
-        const B_share = commissionPool * 0.2;
-        const A_share = commissionPool * 0.1;
-        let adminShare = commissionPool * 0.2;
+        const C_share = toFixed2(commissionPool * 0.5);
+        const B_share = toFixed2(commissionPool * 0.2);
+        const A_share = toFixed2(commissionPool * 0.1);
+        let adminShare = toFixed2(commissionPool * 0.2);
+
 
         console.log("commission commission : ", commissionPool);
         console.log("proivder commission : ", providerShare);
@@ -142,32 +143,6 @@ export async function POST(req: Request) {
         if (!userB) adminShare += B_share;
         if (!userA) adminShare += A_share;
 
-        // const creditWallet = async (
-        //     userId: Types.ObjectId,
-        //     amount: number,
-        //     description: string,
-        //     referenceId?: string
-        // ) => {
-        //     const wallet = await Wallet.findOne({ userId });
-        //     if (!wallet) throw new Error(`Wallet not found for user ${userId}`);
-
-        //     wallet.balance += amount;
-        //     wallet.totalCredits += amount;
-        //     wallet.lastTransactionAt = new Date();
-        //     wallet.transactions.push({
-        //         type: "credit",
-        //         amount,
-        //         description,
-        //         referenceId,
-        //         method: "Wallet",
-        //         source: "referral",
-        //         status: "success",
-        //         createdAt: new Date(),
-        //     });
-
-        //     await wallet.save();
-        // };
-
         const creditWallet = async (
             userId: Types.ObjectId,
             amount: number,
@@ -177,11 +152,14 @@ export async function POST(req: Request) {
             leadId?: string,
             commissionFrom?: string
         ) => {
+
+            const roundedAmount = toFixed2(amount);
+
             let wallet = await Wallet.findOne({ userId });
 
             const transaction = {
                 type: "credit",
-                amount,
+                amount: roundedAmount,
                 description,
                 referenceId,
                 method: "Wallet",
@@ -196,23 +174,20 @@ export async function POST(req: Request) {
             if (!wallet) {
                 wallet = new Wallet({
                     userId,
-                    balance: amount,
-                    totalCredits: amount,
+                    balance: roundedAmount,
+                    totalCredits: roundedAmount,
                     totalDebits: 0,
-                    selfEarnings: level === "C" ? amount : 0,
-                    referralEarnings: level === "A" || level === "B" ? amount : 0,
+                    selfEarnings: level === "C" ? roundedAmount : 0,
+                    referralEarnings: level === "A" || level === "B" ? roundedAmount : 0,
                     transactions: [transaction],
                     lastTransactionAt: new Date(),
                 });
             } else {
-                wallet.balance += amount;
-                wallet.totalCredits += amount;
+                wallet.balance = toFixed2(wallet.balance + roundedAmount);
+                wallet.totalCredits = toFixed2(wallet.totalCredits + roundedAmount);
                 wallet.lastTransactionAt = new Date();
-                if (level === "C") {
-                    wallet.selfEarnings += amount;
-                } else if (level === "A" || level === "B") {
-                    wallet.referralEarnings += amount;
-                }
+                if (level === "C") wallet.selfEarnings = toFixed2(wallet.selfEarnings + roundedAmount);
+                else if (level === "A" || level === "B") wallet.referralEarnings = toFixed2(wallet.referralEarnings + roundedAmount);
                 transaction.balanceAfterTransaction = wallet.balance;
                 wallet.transactions.push(transaction);
             }
@@ -220,13 +195,16 @@ export async function POST(req: Request) {
             await wallet.save();
         };
 
-        // Distribute commissions
-        await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
-        await ReferralCommission.create({
-            fromLead: checkout._id,
-            receiver: userC._id,
-            amount: C_share,
-        });
+        if (userC?.packageActive) {
+            await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
+            await ReferralCommission.create({
+                fromLead: checkout._id,
+                receiver: userC._id,
+                amount: C_share,
+            });
+        } else {
+            adminShare += C_share;
+        }
 
         if (userB) {
             await creditWallet(userB._id, B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
@@ -255,10 +233,6 @@ export async function POST(req: Request) {
 
         const providerId = checkout.provider;
         let providerWallet = await ProviderWallet.findOne({ providerId });
-        // if (!providerWallet) {
-        //     throw new Error(`Provider wallet not found for provider ${providerId}`);
-        // }
-
         if (!providerWallet) {
             providerWallet = new ProviderWallet({
                 providerId,
@@ -329,10 +303,11 @@ export async function POST(req: Request) {
         if (extraLeadAmount > 0) {
 
 
-            extra_C_share = extraCommissionPool * 0.5;
-            extra_B_share = extraCommissionPool * 0.2;
-            extra_A_share = extraCommissionPool * 0.1;
-            extra_adminShare = extraCommissionPool * 0.2;
+            const extra_C_share = toFixed2(extraCommissionPool * 0.5);
+            const extra_B_share = toFixed2(extraCommissionPool * 0.2);
+            const extra_A_share = toFixed2(extraCommissionPool * 0.1);
+            let extra_adminShare = toFixed2(extraCommissionPool * 0.2);
+
 
             console.log("extra commission commission : ", extraCommissionPool);
             console.log("extra proivder commission : ", extraProviderShare);
@@ -344,12 +319,16 @@ export async function POST(req: Request) {
             if (!userB) extra_adminShare += extra_B_share;
             if (!userA) extra_adminShare += extra_A_share;
 
-            await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
-            await ReferralCommission.create({
-                fromLead: checkout._id,
-                receiver: userC._id,
-                amount: extra_C_share,
-            });
+            if (userC?.packageActive) {
+                await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
+                await ReferralCommission.create({
+                    fromLead: checkout._id,
+                    receiver: userC._id,
+                    amount: extra_C_share,
+                });
+            } else {
+                extra_adminShare += extra_C_share;
+            }
 
             if (userB) {
                 await creditWallet(userB._id, extra_B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
@@ -382,7 +361,6 @@ export async function POST(req: Request) {
             providerWallet.totalCredits += extraProviderShare;
             providerWallet.totalEarning += extraProviderShare;
             providerWallet.updatedAt = new Date();
-
             providerWallet.transactions.push({
                 type: "credit",
                 amount: extraProviderShare,
@@ -394,10 +372,8 @@ export async function POST(req: Request) {
                 createdAt: new Date(),
             });
         }
-
         await providerWallet.save();
 
-        // ✅ Deduct cash in hand from provider withdrawable and pending balances
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
             console.log("🧾 Provider Wallet Before Cash Deduction:", {
                 withdrawableBalance: providerWallet.withdrawableBalance,

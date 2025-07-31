@@ -39,7 +39,7 @@ export type ServiceDetails = {
   howItWorks: string;
   terms: string;
   faqs: FAQ[];
-  
+
   rows: RowData[];
   whyChoose: WhyChoose[];
   termsAndConditions?: string;
@@ -66,39 +66,39 @@ const ServiceDetailsForm = ({ data, setData }: {
 
   const whyChooseContext = useWhyChoose();
 
-  console.log("data of service : ", data)
-      console.log("faqs State:", faqs);
+  console.log("data of service form : ", data)
+  // console.log("faqs State:", faqs);
 
 
- useEffect(() => {
-  if (data) {
-    setBenefits(data.benefits || '');
-    setOverview(data.overview || '');
-    setDocument(data.document || '');
-    setHowItWorks(data.howItWorks || '');
-    setTerms(data.terms || '');
-    setRows(data.rows?.length ? data.rows : []);
-    setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
+  useEffect(() => {
+    if (data) {
+      setBenefits(data.benefits || '');
+      setOverview(data.overview || '');
+      setDocument(data.document || '');
+      setHowItWorks(data.howItWorks || '');
+      setTerms(data.terms || '');
+      setRows(data.rows?.length ? data.rows : []);
+      setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
 
-    // Fix here 👇
-    if (Array.isArray(data.faqs) && data.faqs.length > 0) {
-      setfaqs(data.faqs);
+      // Fix here 👇
+      if (Array.isArray(data.faqs) && data.faqs.length > 0) {
+        setfaqs(data.faqs);
 
-    } else {
-      setfaqs([{ question: '', answer: '' }]);
-    }
-
-    if (data.highlight?.length) {
-      if (data.highlight[0] instanceof File) {
-        setHighlight(data.highlight);
-      } else if (typeof data.highlight[0] === 'string') {
-        setHighlight(data.highlight);
+      } else {
+        setfaqs([{ question: '', answer: '' }]);
       }
-    } else {
-      setHighlight([]);
+
+      if (data.highlight?.length) {
+        if (data.highlight[0] instanceof File) {
+          setHighlight(data.highlight);
+        } else if (typeof data.highlight[0] === 'string') {
+          setHighlight(data.highlight);
+        }
+      } else {
+        setHighlight([]);
+      }
     }
-  }
-}, []);
+  }, []);
 
 
   // useEffect(() => {
@@ -140,15 +140,11 @@ const ServiceDetailsForm = ({ data, setData }: {
     }
   }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
 
-
-  // Corrected handleCheckboxChange to work with array of WhyChoose objects:
   const handleCheckboxChange = (itemId: string) => {
     setWhyChoose(prev => {
       if (prev.find(item => item._id === itemId)) {
-        // Remove the object with this _id
         return prev.filter(item => item._id !== itemId);
       } else {
-        // Add new object with _id
         return [...prev, { _id: itemId }];
       }
     });
@@ -210,17 +206,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
-          {/* <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
-            data={benefits}
-            onChange={(
-              event: Event,
-              editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
-              const data = editor.getData();
-              setBenefits(data);
-            }}
-          /> */}
+          
           <ClientSideCustomEditor value={benefits} onChange={setBenefits} />
         </div>
       </div>
@@ -228,60 +214,36 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Overview</Label>
         <div className="my-editor">
-          {/* <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
-            data={overview}
-            onChange={(
-              event: Event,
-              editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
-              const data = editor.getData();
-              setOverview(data);
-            }}
-          /> */}
+         
           <ClientSideCustomEditor value={overview} onChange={setOverview} />
         </div>
       </div>
-<div className='my-3'>
-  <Label>Highlight Images (Select Multiple Images)</Label>
-  <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
-  
-  {/* Optional: Preview selected new images (not existing ones) */}
-  <div className="mt-2 flex gap-2 flex-wrap">
-    {/* You can add previews for new uploads here if you're handling them separately */}
-  </div>
+      <div className='my-3'>
+        <Label>Highlight Images (Select Multiple Images)</Label>
+        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
+        <div className="mt-2 flex gap-2 flex-wrap">
+        </div>
 
-  {/* ✅ Display existing highlight image previews */}
-  <div className="flex flex-wrap gap-4 mt-2">
-    {data.highlightPreviews?.length === 0 && (
-      <p className="text-gray-500">No highlight images available.</p>
-    )}
-    {data.highlightPreviews?.map((src, index) => (
-      <img
-        key={index}
-        src={src}
-        alt={`highlight-${index}`}
-        className="w-24 h-24 object-cover rounded"
-      />
-    ))}
-  </div>
-</div>
+        <div className="flex flex-wrap gap-4 mt-2">
+          {data.highlightPreviews?.length === 0 && (
+            <p className="text-gray-500">No highlight images available.</p>
+          )}
+          {data.highlightPreviews?.map((src, index) => (
+            <img
+              key={index}
+              src={src}
+              alt={`highlight-${index}`}
+              className="w-24 h-24 object-cover rounded"
+            />
+          ))}
+        </div>
+      </div>
 
 
       <div className='my-3'>
         <Label>Document</Label>
         <div className="my-editor">
-          {/* <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
-            data={document}
-            onChange={(
-              event: Event,
-              editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
-              const data = editor.getData();
-              setDocument(data);
-            }}
-          /> */}
+         
           <ClientSideCustomEditor value={document} onChange={setDocument} />
         </div>
       </div>
@@ -363,17 +325,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
-          {/* <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
-            data={howItWorks}
-            onChange={(
-              event: Event,
-              editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
-              const data = editor.getData();
-              setHowItWorks(data);
-            }}
-          /> */}
+         
           <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
         </div>
       </div>
@@ -381,17 +333,7 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
-          {/* <CKEditor
-            editor={ClassicEditor as unknown as EditorType}
-            data={terms}
-            onChange={(
-              event: Event,
-              editor: import('@ckeditor/ckeditor5-core').Editor
-            ) => {
-              const data = editor.getData();
-              setTerms(data);
-            }}
-          /> */}
+         
           <ClientSideCustomEditor value={terms} onChange={setTerms} />
         </div>
       </div>
@@ -413,26 +355,26 @@ const ServiceDetailsForm = ({ data, setData }: {
             </div>
 
             <div>
-      <Label>Question</Label>
-      <Input
-        type="text"
-        placeholder="Enter question"
-        value={faq.question}
-        onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-        className="w-full"
-      />
-    </div>
+              <Label>Question</Label>
+              <Input
+                type="text"
+                placeholder="Enter question"
+                value={faq.question}
+                onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                className="w-full"
+              />
+            </div>
 
-    <div>
-      <Label>Answer</Label>
-      <textarea
-        placeholder="Enter answer"
-        value={faq.answer}
-        onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-        className="w-full border rounded p-2 resize-none"
-        rows={4}
-      />
-    </div>
+            <div>
+              <Label>Answer</Label>
+              <textarea
+                placeholder="Enter answer"
+                value={faq.answer}
+                onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                className="w-full border rounded p-2 resize-none"
+                rows={4}
+              />
+            </div>
           </div>
         ))}
 
