@@ -346,7 +346,7 @@ const ProviderList = () => {
             </div>
             <BasicTableOne columns={columns} data={filteredProviders} />
           </>
-        )}
+      )}
       </ComponentCard>
     </div>
   );
