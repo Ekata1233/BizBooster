@@ -12,6 +12,7 @@ import { useProvider } from '@/context/ProviderContext';
 import Link from 'next/link';
 import { useModule } from '@/context/ModuleContext';
 import axios from 'axios';
+import { debounce } from 'lodash';
 
 interface ProviderTableData {
   id: string;
@@ -32,8 +33,16 @@ interface ProviderTableData {
 const sortOptions = [
   { value: 'latest', label: 'Latest' },
   { value: 'oldest', label: 'Oldest' },
-  { value: 'ascending', label: 'Ascending' },
-  { value: 'descending', label: 'Descending' },
+  { value: 'ascending', label: 'A-Z (Name)' },
+  { value: 'descending', label: 'Z-A (Name)' },
+];
+
+const statusOptions = [
+  { value: 'all', label: 'All Status' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
 ];
 
 const ProviderList = () => {
@@ -41,27 +50,25 @@ const ProviderList = () => {
   const { modules } = useModule();
 
   const [selectedModule, setSelectedModule] = useState<string>('');
+  const [providers, setProviders] = useState<ProviderTableData[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderTableData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState('latest');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [message, setMessage] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'all' | 'completed' | 'pending'>('all');
+  const [loading, setLoading] = useState(false);
 
-
-  const fetchFilteredProviders = async () => {
+  const fetchProviders = async () => {
+    setLoading(true);
     try {
-      const params = {
-        ...(selectedModule && { selectedModule }),
-        ...(sort && { sort }),
-        ...(searchQuery && { search: searchQuery }),
-      };
-
-      const response = await axios.get('/api/provider', { params });
+      const response = await axios.get('/api/provider');
       const data = response.data;
 
       if (!Array.isArray(data) || data.length === 0) {
+        setProviders([]);
         setFilteredProviders([]);
         setMessage('No providers found');
+        setLoading(false);
         return;
       }
 
@@ -69,6 +76,15 @@ const ProviderList = () => {
         const storeInfo = provider.storeInfo || {};
         const isComplete =
           provider.step1Completed && provider.storeInfoCompleted && provider.kycCompleted;
+
+        let status: 'Completed' | 'Pending' | 'Approved' | 'Rejected' = 'Pending';
+        if (provider.isApproved) {
+          status = 'Approved';
+        } else if (provider.isRejected) {
+          status = 'Rejected';
+        } else if (isComplete) {
+          status = 'Completed';
+        }
 
         return {
           id: provider._id,
@@ -80,41 +96,104 @@ const ProviderList = () => {
           city: storeInfo.city || '-',
           isRejected: provider.isRejected || false,
           isApproved: provider.isApproved || false,
-          status: isComplete ? 'Completed' : 'Pending',
+          status,
           step1Completed: provider.step1Completed || false,
           storeInfoCompleted: provider.storeInfoCompleted || false,
           kycCompleted: provider.kycCompleted || false,
         };
       });
 
+      setProviders(updatedProviders);
       setFilteredProviders(updatedProviders);
       setMessage('');
     } catch (error) {
       console.error('Error fetching providers:', error);
+      setProviders([]);
       setFilteredProviders([]);
       setMessage('Something went wrong while fetching providers');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFilteredProviders();
-  }, [sort, searchQuery, selectedModule]);
+    fetchProviders();
+  }, []);
 
-  const moduleOptions = modules.map((module) => ({
-    value: module._id,
-    label: module.name,
-    image: module.image,
-  }));
+  // Apply filters whenever any filter criteria changes
+  useEffect(() => {
+    let result = [...providers];
 
-  const getTabFilteredData = () => {
-    if (activeTab === 'completed') {
-      return filteredProviders.filter((p) => p.status === 'Completed');
+    // Apply module filter
+    if (selectedModule) {
+      // Note: You'll need to adjust this if your provider objects have a module reference
+      // Currently, the interface doesn't include module information
+      // result = result.filter(provider => provider.moduleId === selectedModule);
     }
-    if (activeTab === 'pending') {
-      return filteredProviders.filter((p) => p.status === 'Pending');
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(provider => {
+        if (statusFilter === 'completed') return provider.status === 'Completed';
+        if (statusFilter === 'pending') return provider.status === 'Pending';
+        if (statusFilter === 'approved') return provider.status === 'Approved';
+        if (statusFilter === 'rejected') return provider.status === 'Rejected';
+        return true;
+      });
     }
-    return filteredProviders;
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(provider =>
+        provider.fullName.toLowerCase().includes(query) ||
+        provider.email.toLowerCase().includes(query) ||
+        provider.phone.toLowerCase().includes(query) ||
+        provider.storeName.toLowerCase().includes(query) ||
+        provider.city.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    result = sortProviders(result, sort);
+
+    setFilteredProviders(result);
+
+    if (result.length === 0) {
+      setMessage('No providers match your filter criteria');
+    } else {
+      setMessage('');
+    }
+  }, [providers, selectedModule, statusFilter, searchQuery, sort]);
+
+  const sortProviders = (data: ProviderTableData[], sortOption: string) => {
+    const sorted = [...data];
+    switch (sortOption) {
+      case 'latest':
+        return sorted; // Assuming the API returns latest first
+      case 'oldest':
+        return sorted.reverse();
+      case 'ascending':
+        return sorted.sort((a, b) => a.fullName.localeCompare(b.fullName));
+      case 'descending':
+        return sorted.sort((a, b) => b.fullName.localeCompare(a.fullName));
+      default:
+        return sorted;
+    }
   };
+
+  const moduleOptions = [
+    { value: '', label: 'All Modules' },
+    ...modules.map((module) => ({
+      value: module._id,
+      label: module.name,
+      image: module.image,
+    })),
+  ];
+
+  const handleSearchChange = debounce((value: string) => {
+    setSearchQuery(value);
+  }, 300);
 
   const columns = [
     { header: 'Name', accessor: 'fullName' },
@@ -122,49 +201,31 @@ const ProviderList = () => {
     { header: 'Phone', accessor: 'phone' },
     { header: 'Store Name', accessor: 'storeName' },
     { header: 'Store Phone', accessor: 'storePhone' },
-    { header: 'Address', accessor: 'address' },
+    { header: 'City', accessor: 'city' },
     {
       header: 'Status',
       accessor: 'status',
       render: (row: ProviderTableData) => {
-        const isApproved =
-          row.step1Completed &&
-          row.storeInfoCompleted &&
-          row.kycCompleted &&
-          row.isApproved;
+        const statusMap = {
+          Completed: {
+            className: 'text-green-600 bg-green-100 border-green-300',
+            text: 'Completed'
+          },
+          Pending: {
+            className: 'text-yellow-500 bg-yellow-100 border-yellow-300',
+            text: 'Pending'
+          },
+          Approved: {
+            className: 'text-blue-600 bg-blue-100 border-blue-300',
+            text: 'Approved'
+          },
+          Rejected: {
+            className: 'text-red-600 bg-red-100 border-red-300',
+            text: 'Rejected'
+          }
+        };
 
-        const isRejected =
-          row.step1Completed &&
-          row.storeInfoCompleted &&
-          row.kycCompleted &&
-          row.isRejected;
-
-        const isComplete =
-          row.step1Completed && row.storeInfoCompleted && row.kycCompleted;
-
-        if (isApproved) {
-          return (
-            <span className="px-3 py-1 rounded-full text-sm font-semibold text-blue-600 bg-blue-100 border border-blue-300">
-              Approved
-            </span>
-          );
-        }
-
-        if (isRejected) {
-          return (
-            <span className="px-3 py-1 rounded-full text-sm font-semibold text-red-600 bg-red-100 border border-red-300">
-              Rejected
-            </span>
-          );
-        }
-
-        if (isComplete) {
-          return (
-            <span className="px-3 py-1 rounded-full text-sm font-semibold text-green-600 bg-green-100 border border-green-300">
-              Completed
-            </span>
-          );
-        }
+        const statusInfo = statusMap[row.status];
 
         return (
           <Link
@@ -174,20 +235,25 @@ const ProviderList = () => {
             }}
             passHref
           >
-            <button className="px-3 py-1 rounded-full text-sm font-semibold text-yellow-500 bg-yellow-100 border border-yellow-300 hover:bg-yellow-500 hover:text-white">
-              Pending
-            </button>
+            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusInfo.className} border hover:opacity-80`}>
+              {statusInfo.text}
+            </span>
           </Link>
         );
       }
-
     },
     {
       header: 'Action',
       accessor: 'action',
       render: (row: ProviderTableData) => (
         <div className="flex gap-2">
-          <button className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white">
+          <button 
+            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+            onClick={() => {
+              // Add delete functionality here
+              console.log('Delete provider', row.id);
+            }}
+          >
             <TrashBinIcon />
           </button>
           <Link href={`/provider-management/provider-details/${row.id}`} passHref>
@@ -211,8 +277,24 @@ const ProviderList = () => {
               <div className="relative">
                 <Select
                   options={moduleOptions}
+                  value={selectedModule}
                   placeholder="Select Module"
                   onChange={(value: string) => setSelectedModule(value)}
+                  className="dark:bg-dark-900"
+                />
+                <span className="absolute text-gray-500 right-3 top-1/2 transform -translate-y-1/2">
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <div className="relative">
+                <Select
+                  options={statusOptions}
+                  value={statusFilter}
+                  placeholder="Filter by Status"
+                  onChange={(value: string) => setStatusFilter(value)}
                   className="dark:bg-dark-900"
                 />
                 <span className="absolute text-gray-500 right-3 top-1/2 transform -translate-y-1/2">
@@ -225,6 +307,7 @@ const ProviderList = () => {
               <div className="relative">
                 <Select
                   options={sortOptions}
+                  value={sort}
                   placeholder="Sort By"
                   onChange={(value: string) => setSort(value)}
                   className="dark:bg-dark-900"
@@ -235,12 +318,12 @@ const ProviderList = () => {
               </div>
             </div>
             <div>
-              <Label>Search by Name or Email</Label>
+              <Label>Search</Label>
               <Input
                 type="text"
-                placeholder="Enter Name or Email"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, phone, etc."
+                defaultValue={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
           </div>
@@ -248,25 +331,21 @@ const ProviderList = () => {
       </div>
 
       <ComponentCard title="Provider List Table">
-        <div className="flex gap-4 mb-4">
-          {['all', 'completed', 'pending'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as 'all' | 'completed' | 'pending')}
-              className={`px-4 py-2 rounded-lg border ${activeTab === tab
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
-                }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {message ? (
+        {loading ? (
+          <div className="text-center py-8">Loading providers...</div>
+        ) : message ? (
           <p className="text-red-500 text-center my-4">{message}</p>
         ) : (
-          <BasicTableOne columns={columns} data={getTabFilteredData()} />
+          <>
+            <div className="mb-4 flex justify-between items-center">
+              <div>
+                <span className="text-sm text-gray-500">
+                  Showing {filteredProviders.length} of {providers.length} providers
+                </span>
+              </div>
+            </div>
+            <BasicTableOne columns={columns} data={filteredProviders} />
+          </>
         )}
       </ComponentCard>
     </div>
