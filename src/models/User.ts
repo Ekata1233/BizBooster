@@ -110,10 +110,18 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCustomer"
   }],
+   packageAmountPaid: {
+    type: Number,
+    default: 0, // how much the user has paid in total
+  },
+  remainingAmount: {
+    type: Number,
+    default: 0, // how much the user has paid in total
+  },
   packageType: {
     type: String,
-    enum: ['partial', 'full'],
-    default: null, // starts as null
+    enum: ['none','partial', 'full'],
+    default: null, 
   },
   packageActive: {
     type: Boolean,

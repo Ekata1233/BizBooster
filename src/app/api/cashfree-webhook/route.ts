@@ -4,6 +4,8 @@ import Payment from "@/models/Payment";
 import Checkout from "@/models/Checkout";
 import mongoose from "mongoose";
 import axios from "axios";
+import User from "@/models/User";
+import { Package } from "@/models/Package";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const body = await req.json();
-    
+
     console.log("✅ Webhook Received:", body);
 
     const {
@@ -81,11 +83,52 @@ export async function POST(req: NextRequest) {
     const myCustomerId = body?.data?.order?.order_tags?.customer_id;
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("package_") && myCustomerId) {
       try {
-        const distRes = await axios.post(
-          "https://biz-booster.vercel.app/api/distributePackageCommission",
-          { userId: myCustomerId }
-        );
-        console.log("📤 Commission distribution triggered:", distRes.data);
+        // const distRes = await axios.post(
+        //   "https://biz-booster.vercel.app/api/distributePackageCommission",
+        //   { userId: myCustomerId }
+        // );
+        // console.log("📤 Commission distribution triggered:", distRes.data);
+        const amountPaid = Number(payment_amount); // Assuming this is the latest payment
+
+        const pkg = await Package.findOne(); // or use Package.findById(packageId) if you know the package
+        if (!pkg || typeof pkg.price !== "number") {
+          return NextResponse.json(
+            { success: false, message: "Valid package not found." },
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const fullPackageAmount = pkg.discountedPrice;
+
+        const user = await User.findById(myCustomerId);
+        if (!user) throw new Error("User not found");
+
+        const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
+        const remaining = fullPackageAmount - newTotalPaid;
+
+        user.packageAmountPaid = newTotalPaid;
+        user.remainingAmount = Math.max(remaining, 0);
+        user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
+
+        // If fully paid, activate the package and distribute commission
+        if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
+          // user.packageActive = true;
+          // user.isCommissionDistribute = true;
+
+          // Trigger commission API
+          try {
+            const distRes = await axios.post(
+              "https://biz-booster.vercel.app/api/distributePackageCommission",
+              { userId: user._id }
+            );
+            console.log("📤 Commission distribution triggered:", distRes.data);
+          } catch (err: any) {
+            console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
+          }
+        }
+
+        await user.save();
+        console.log("✅ User payment info updated");
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
