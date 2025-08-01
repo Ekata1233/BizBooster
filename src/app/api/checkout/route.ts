@@ -135,10 +135,18 @@ export async function POST(req: NextRequest) {
 
     await checkout.save();
 
-    return NextResponse.json(
-      { success: true, data: checkout },
-      { status: 201, headers: corsHeaders }
-    );
+    // return NextResponse.json(
+    //   { success: true, data: checkout },
+    //   { status: 201, headers: corsHeaders }
+    // );
+    return new NextResponse(JSON.stringify({ success: true, data: checkout }), {
+      status: 201,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+    });
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
