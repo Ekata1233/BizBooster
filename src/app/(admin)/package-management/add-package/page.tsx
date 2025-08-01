@@ -26,6 +26,8 @@ const PackageForm = () => {
     discountedPrice: 0,
     deposit: 0,
     grandtotal: 0,
+     monthlyEarnings: 0,   
+  lockInPeriod: 0  
   });
 
  useEffect(() => {
@@ -46,6 +48,8 @@ const PackageForm = () => {
       discountedPrice: latest.discountedPrice || 0,
       deposit: latest.deposit || 0,
       grandtotal: latest.grandtotal || 0,
+       monthlyEarnings: latest.monthlyEarnings || 0,  // ✅
+  lockInPeriod: latest.lockInPeriod || 0   
     });
   }
 
@@ -56,18 +60,35 @@ const PackageForm = () => {
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const numericValue = parseFloat(value) || 0;
-    setForm(prev => {
-      const newForm = { ...prev, [name]: numericValue };
-      if (name === 'price' || name === 'discount') {
-        const price = name === 'price' ? numericValue : prev.price;
-        const discount = name === 'discount' ? numericValue : prev.discount;
-        newForm.discountedPrice = price - (price * discount) / 100;
-      }
-      return newForm;
-    });
-  };
+  const { name, value } = e.target;
+  const numericValue = parseFloat(value) || 0;
+
+  setForm(prev => {
+    const newForm = { ...prev, [name]: numericValue };
+
+    const price = name === 'price' ? numericValue : prev.price;
+    const discount = name === 'discount' ? numericValue : prev.discount;
+    const deposit = name === 'deposit' ? numericValue : prev.deposit;
+
+    // Update discountedPrice
+    if (name === 'price' || name === 'discount') {
+      newForm.discountedPrice = price - (price * discount) / 100;
+    }
+
+    // Always calculate grandtotal based on latest discountedPrice and deposit
+    const currentDiscountedPrice =
+      name === 'price' || name === 'discount'
+        ? price - (price * discount) / 100
+        : prev.discountedPrice;
+
+    const currentDeposit = name === 'deposit' ? numericValue : prev.deposit;
+
+    newForm.grandtotal = currentDiscountedPrice + currentDeposit;
+
+    return newForm;
+  });
+};
+
 
   const handleEditorChange = (data: string) => {
     if (!hasMounted) return;
@@ -101,6 +122,8 @@ const PackageForm = () => {
       updatePayload.discount = form.discount;
       updatePayload.discountedPrice = form.discountedPrice;
       updatePayload.deposit = form.deposit;
+      updatePayload.monthlyEarnings = form.monthlyEarnings; // ✅ Add this
+updatePayload.lockInPeriod = form.lockInPeriod; 
     }
 
     if (form._id) {
@@ -175,6 +198,29 @@ const PackageForm = () => {
               <label className="block font-medium mb-1">Deposit (₹)</label>
               <input type="number" name="deposit" value={form.deposit} onChange={handleInputChange} className="w-full border p-2 rounded" min={0} />
             </div>
+            <div>
+  <label className="block font-medium mb-1">Monthly Earnings (₹)</label>
+  <input
+    type="number"
+    name="monthlyEarnings"
+    value={form.monthlyEarnings}
+    onChange={handleInputChange}
+    className="w-full border p-2 rounded"
+    min={0}
+  />
+</div>
+<div>
+  <label className="block font-medium mb-1">Lock-In Period (Months)</label>
+  <input
+    type="number"
+    name="lockInPeriod"
+    value={form.lockInPeriod}
+    onChange={handleInputChange}
+    className="w-full border p-2 rounded"
+    min={0}
+  />
+</div>
+
             <div className="flex items-center justify-between border p-3 rounded bg-gray-50">
               <span className="font-bold">Grand Total (₹):</span>
               <span className="text-xl font-bold text-blue-700">

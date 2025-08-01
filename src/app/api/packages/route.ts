@@ -23,7 +23,9 @@ export async function POST(req: NextRequest) {
       typeof body.price !== 'number' ||
       typeof body.discount !== 'number' ||
       typeof body.discountedPrice !== 'number' ||
-      typeof body.deposit !== 'number'
+      typeof body.deposit !== 'number' ||
+           typeof body.monthlyEarnings !== 'number' || 
+      typeof body.lockInPeriod !== 'number'
     ) {
       return NextResponse.json({ error: 'Invalid input data' }, { status: 400 });
     }
@@ -37,6 +39,8 @@ export async function POST(req: NextRequest) {
         gp: body.description.gp,
         sgp: body.description.sgp || '',
         pgp: body.description.pgp || '',
+         monthlyEarnings: body.monthlyEarnings, // ✅ Inject new field
+      lockInPeriod: body.lockInPeriod 
       },
     });
 
