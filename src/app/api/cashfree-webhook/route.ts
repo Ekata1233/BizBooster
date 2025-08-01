@@ -63,33 +63,41 @@ export async function POST(req: NextRequest) {
     console.log("checout I d : ", checkoutId)
 
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("checkout_") && checkoutId) {
-      const updatedCheckout = await Checkout.findOneAndUpdate(
-        new mongoose.Types.ObjectId(checkoutId), {
-        cashfreeMethod: payment_group,
-        paymentStatus: "paid",
-      },
-        { new: true }
-      );
-      console.log("updated checout OUt : ", updatedCheckout)
-      if (updatedCheckout) {
-        console.log(`✅ Updated Checkout for checkoutId: ${checkoutId}`);
+      const checkout = await Checkout.findById(checkoutId);
+
+      if (checkout) {
+        const paid = Number(payment_amount);
+        const total = checkout.totalAmount;
+        const remaining = total - paid;
+
+        const isFullPayment = paid >= total;
+
+        checkout.cashfreeMethod = payment_group;
+        checkout.paidAmount = (checkout.paidAmount || 0) + paid;
+        checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+        checkout.paymentStatus = isFullPayment ? "paid" : "pending";
+        checkout.isPartialPayment = !isFullPayment;
+
+        await checkout.save();
+
+        console.log("✅ Updated Checkout:", {
+          checkoutId,
+          paidAmount: checkout.paidAmount,
+          remainingAmount: checkout.remainingAmount,
+          paymentStatus: checkout.paymentStatus,
+        });
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
     }
 
-
-
     const myCustomerId = body?.data?.order?.order_tags?.customer_id;
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("package_") && myCustomerId) {
       try {
-        // const distRes = await axios.post(
-        //   "https://biz-booster.vercel.app/api/distributePackageCommission",
-        //   { userId: myCustomerId }
-        // );
-        const amountPaid = Number(payment_amount); 
 
-        const pkg = await Package.findOne(); 
+        const amountPaid = Number(payment_amount);
+
+        const pkg = await Package.findOne();
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(
             { success: false, message: "Valid package not found." },
@@ -113,12 +121,8 @@ export async function POST(req: NextRequest) {
         user.remainingAmount = Math.max(remaining, 0);
         user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
 
-        // If fully paid, activate the package and distribute commission
         if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
-          // user.packageActive = true;
-          // user.isCommissionDistribute = true;
 
-          // Trigger commission API
           try {
             const distRes = await axios.post(
               "https://biz-booster.vercel.app/api/distributePackageCommission",
