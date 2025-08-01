@@ -7,22 +7,42 @@ import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://fetchtrue-service-page.vercel.app',
+  '*', // ⚠️ Only if you want to allow all (use with caution!)
+];
 
+// Get CORS headers dynamically based on origin
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
 
-export async function OPTIONS() {
+  if (allowedOrigins.includes('*')) {
+    headers['Access-Control-Allow-Origin'] = '*';
+  } else if (origin && allowedOrigins.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+
+  return headers;
+}
+
+// Handle OPTIONS request (preflight)
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin');
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: getCorsHeaders(origin),
   });
 }
 
 
+
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   await connectToDatabase();
 
   try {
@@ -159,6 +179,8 @@ export async function POST(req: NextRequest) {
 
 // ✅ GET: Get all Checkout entries (with optional filters)
 export async function GET(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   await connectToDatabase();
 
   try {
