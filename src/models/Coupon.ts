@@ -27,9 +27,6 @@ export interface ICoupon extends Document {
   updatedAt: Date;
 }
 
-/** ───────────────
- *  Schema Definition
- *  ─────────────── */
 const CouponSchema = new Schema<ICoupon>(
   {
     couponType: {

@@ -15,11 +15,12 @@ const corsHeaders = {
 
 
 export async function OPTIONS() {
-  return NextResponse.json({}, {
+  return new NextResponse(null, {
     status: 204,
     headers: corsHeaders,
   });
 }
+
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
