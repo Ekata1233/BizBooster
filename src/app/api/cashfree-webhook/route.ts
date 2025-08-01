@@ -87,10 +87,9 @@ export async function POST(req: NextRequest) {
         //   "https://biz-booster.vercel.app/api/distributePackageCommission",
         //   { userId: myCustomerId }
         // );
-        // console.log("📤 Commission distribution triggered:", distRes.data);
-        const amountPaid = Number(payment_amount); // Assuming this is the latest payment
+        const amountPaid = Number(payment_amount); 
 
-        const pkg = await Package.findOne(); // or use Package.findById(packageId) if you know the package
+        const pkg = await Package.findOne(); 
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(
             { success: false, message: "Valid package not found." },
