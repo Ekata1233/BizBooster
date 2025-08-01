@@ -4,38 +4,23 @@ import { Schema, model, models, Document, Types } from 'mongoose';
  *  Type Definition
  *  ─────────────── */
 export interface ICoupon extends Document {
-  /* core */
   couponType: 'default' | 'firstBooking' | 'customerWise';
   couponCode: string;
-
-  /* discount meta */
   discountType: 'Category Wise' | 'Service Wise' | 'Mixed';
   discountTitle: string;
-
-  /* scope selectors (all optional except zone) */
   customer?: Types.ObjectId;
   category?: Types.ObjectId;
   service?: Types.ObjectId;
   zone: Types.ObjectId;
-
-  /* amount */
   discountAmountType: 'Percentage' | 'Fixed Amount';
-  amount: number;               // either % or ₹
-  maxDiscount?: number;         // only for %
-  minPurchase: number;          // order subtotal gate
-
-  /* validity window */
+  amount: number;              
+  maxDiscount?: number;  
+  minPurchase: number;   
   startDate: Date;
   endDate: Date;
-
-  /* usage limits */
   limitPerUser: number;
-
-  /* responsibility & audience */
   discountCostBearer: 'Admin' | 'Provider';
   couponAppliesTo: 'Growth Partner' | 'Customer';
-
-  /* misc */
   isActive: boolean;
   isDeleted: boolean;
   createdAt: Date;
@@ -109,15 +94,8 @@ const CouponSchema = new Schema<ICoupon>(
   { timestamps: true }
 );
 
-/** ───────────────
- *  Indexes & Hooks
- *  ─────────────── */
-// ensure coupon code uniqueness & fast look-ups
 CouponSchema.index({ couponCode: 1 }, { unique: true });
-// quick querying of currently valid coupons
 CouponSchema.index({ startDate: 1, endDate: 1 });
-
-/* optional: enforce maxDiscount only when amount type is % */
 CouponSchema.pre('validate', function (next) {
   if (this.discountAmountType === 'Percentage' && this.maxDiscount == null) {
     this.invalidate(

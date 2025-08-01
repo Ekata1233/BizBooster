@@ -134,7 +134,6 @@ export async function POST(req: NextRequest) {
     console.log('Checkout before save:', checkout);
 
     await checkout.save();
-
     // return NextResponse.json(
     //   { success: true, data: checkout },
     //   { status: 201, headers: corsHeaders }
