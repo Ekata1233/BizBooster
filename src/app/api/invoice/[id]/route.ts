@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/utils/db';
 import Checkout from '@/models/Checkout';
 import '@/models/Service';
 import '@/models/Provider';
+import '@/models/ServiceCustomer'
 import mongoose from 'mongoose';
 
 const corsHeaders = {
@@ -29,7 +30,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const invoice = await Checkout.findById(id).populate('service provider');
+  const invoice = await Checkout.findById(id).populate('service provider serviceCustomer');
+
+  console.log("inovice : ", invoice)
 
   if (!invoice) {
     return NextResponse.json(
@@ -106,25 +109,28 @@ export async function GET(req: NextRequest) {
         </div>
 
         <div class="info-block">
-          <div style="display: flex; justify-content: space-between;">
-            <div style="width: 30%;">
-              <strong>Customer Details</strong>
-              <p>${invoice.fullName || '-'}</p>
-            </div>
-            <div style="width: 20%;">
-              <strong>Email</strong>
-              <p>${invoice.customerEmail || '-'}</p>
-            </div>
-            <div style="width: 25%;">
-              <strong>Phone</strong>
-              <p>${invoice.customerPhone || '-'}</p>
-            </div>
-            <div style="width: 25%;">
-              <strong>Invoice Total</strong>
-              <p style="font-weight: bold; font-size: 18px; color: #007bff;">₹${invoice.amount?.toFixed(2) || '0.00'}</p>
-            </div>
-          </div>
-        </div>
+  <div style="display: flex; justify-content: space-between;">
+    <div style="width: 30%;">
+      <strong>Customer Details</strong>
+      <p>${invoice.serviceCustomer?.fullName || '-'}</p>
+      <p>${invoice.serviceCustomer?.address || '-'}</p>
+      <p>${invoice.serviceCustomer?.city || ''}, ${invoice.serviceCustomer?.state || ''}</p>
+    </div>
+    <div style="width: 20%;">
+      <strong>Email</strong>
+      <p>${invoice.serviceCustomer?.email || '-'}</p>
+    </div>
+    <div style="width: 25%;">
+      <strong>Phone</strong>
+      <p>${invoice.serviceCustomer?.phone || '-'}</p>
+    </div>
+    <div style="width: 25%;">
+      <strong>Invoice Total</strong>
+      <p style="font-weight: bold; font-size: 18px; color: #007bff;">₹${invoice.amount?.toFixed(2) || '0.00'}</p>
+    </div>
+  </div>
+</div>
+
 
         <div style="margin: 20px 0;">
           <h3 style="margin-bottom: 10px;">Booking Summary</h3>
@@ -150,22 +156,22 @@ export async function GET(req: NextRequest) {
 
         <div style="margin-top: 20px;">
           ${[
-            ['Subtotal', invoice.service?.price ?? 0],
-            ['Discount', (invoice.service?.price ?? 0) - (invoice.service?.discountedPrice ?? 0)],
-            ['Coupon Discount', invoice.couponDiscount || 0],
-            ['VAT', 0],
-            ['Platform Fee', invoice.platformFee || 0],
-            ['Total', invoice.totalAmount || 0],
-          ]
-            .map(
-              ([label, value]) => `
+      ['Subtotal', invoice.service?.price ?? 0],
+      ['Discount', (invoice.service?.price ?? 0) - (invoice.service?.discountedPrice ?? 0)],
+      ['Coupon Discount', invoice.couponDiscount || 0],
+      ['VAT', 0],
+      ['Platform Fee', invoice.platformFee || 0],
+      ['Total', invoice.totalAmount || 0],
+    ]
+      .map(
+        ([label, value]) => `
             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
               <span><strong>${label}:</strong></span>
               <span>₹${Number(value).toFixed(2)}</span>
             </div>
           `
-            )
-            .join('')}
+      )
+      .join('')}
           <div class="total-row" style="display: flex; justify-content: space-between; margin-top: 10px;">
             <span>Grand Total</span>
             <span>₹${(invoice.totalAmount || 0).toFixed(2)}</span>
