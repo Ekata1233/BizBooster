@@ -1,5 +1,3 @@
-
-
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout";
@@ -25,6 +23,7 @@ export async function PUT(req: NextRequest) {
         const body = await req.json(); // ✅ Get body
         const statusTypeFromClient = body.statusType || null;
         console.log("current status :", body);
+        console.log(statusTypeFromClient);
 
         if (!id) {
             return NextResponse.json(
@@ -42,13 +41,17 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // 2. Update checkout fields
+        // ✅ 2. Update checkout fields based on statusType
         const amount = checkout.remainingAmount || 0;
         checkout.paymentStatus = "paid";
         checkout.cashInHand = true;
-        // checkout.orderStatus = "completed";
-        // checkout.isCompleted = true;
         checkout.cashInHandAmount = amount;
+
+        if (statusTypeFromClient === "Lead completed") {
+            checkout.orderStatus = "completed";
+            checkout.isCompleted = true;
+        }
+
         await checkout.save();
 
         // 3. Find provider's wallet
@@ -61,13 +64,12 @@ export async function PUT(req: NextRequest) {
         }
 
         // 4. Calculate new balances
-        console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw)
+        console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw);
         const newBalance = providerWallet.balance + amount;
         const newCashInHand = providerWallet.cashInHand + amount;
 
-
-        console.log("ammount : ", amount)
-        console.log("newCashInHand : ", newCashInHand)
+        console.log("ammount : ", amount);
+        console.log("newCashInHand : ", newCashInHand);
 
         // 5. Add transaction
         providerWallet.transactions.push({
