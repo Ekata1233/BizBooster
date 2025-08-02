@@ -104,8 +104,8 @@ export async function PUT(req: NextRequest) {
         const amount = checkout.remainingAmount || 0;
         checkout.paymentStatus = "paid";
         checkout.cashInHand = true;
-        checkout.orderStatus = "completed";
-        checkout.isCompleted = true;
+        // checkout.orderStatus = "completed";
+        // checkout.isCompleted = true;
         checkout.cashInHandAmount = amount;
         await checkout.save();
 
