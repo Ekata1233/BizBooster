@@ -4,14 +4,38 @@ import { connectToDatabase } from '@/utils/db';
 import Checkout from '@/models/Checkout';
 import '@/models/Service';
 import '@/models/Provider';
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+import mongoose from 'mongoose';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
-  const invoiceId = params.id;
-  const invoice = await Checkout.findById(invoiceId).populate('service provider');
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
+
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json(
+      { success: false, message: 'Invalid Invoice ID' },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  const invoice = await Checkout.findById(id).populate('service provider');
 
   if (!invoice) {
-    return NextResponse.json({ message: 'Invoice not found' }, { status: 404 });
+    return NextResponse.json(
+      { message: 'Invoice not found' },
+      { status: 404, headers: corsHeaders }
+    );
   }
 
   const browser = await puppeteer.launch();
@@ -172,6 +196,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename=invoice-${invoice._id}.pdf`,
+      ...corsHeaders,
     },
   });
 }
