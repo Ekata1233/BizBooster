@@ -22,6 +22,9 @@ export async function PUT(req: NextRequest) {
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop();
+        const body = await req.json(); // ✅ Get body
+        const statusTypeFromClient = body.statusType || null;
+        console.log("current status :", body);
 
         if (!id) {
             return NextResponse.json(
@@ -43,8 +46,8 @@ export async function PUT(req: NextRequest) {
         const amount = checkout.remainingAmount || 0;
         checkout.paymentStatus = "paid";
         checkout.cashInHand = true;
-        checkout.orderStatus = "completed";
-        checkout.isCompleted = true;
+        // checkout.orderStatus = "completed";
+        // checkout.isCompleted = true;
         checkout.cashInHandAmount = amount;
         await checkout.save();
 
@@ -60,17 +63,10 @@ export async function PUT(req: NextRequest) {
         // 4. Calculate new balances
         console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw)
         const newBalance = providerWallet.balance + amount;
-        // const newWithdrawable = Math.max(providerWallet.withdrawableBalance - amount, 0);
-        // const newPendingWithdraw = Math.max(providerWallet.pendingWithdraw - amount, 0);
-        // const newWithdrawable = providerWallet.withdrawableBalance - amount;
-        // const newPendingWithdraw = providerWallet.pendingWithdraw - amount;
         const newCashInHand = providerWallet.cashInHand + amount;
-        
+
 
         console.log("ammount : ", amount)
-        // console.log("newBalance : ", newBalance)
-        // console.log("newWithdrawable : ", newWithdrawable)
-        // console.log("newPendingWithdraw : ", newPendingWithdraw)
         console.log("newCashInHand : ", newCashInHand)
 
         // 5. Add transaction
@@ -90,14 +86,6 @@ export async function PUT(req: NextRequest) {
         providerWallet.balance = newBalance;
         providerWallet.totalCredits += amount;
         providerWallet.cashInHand = newCashInHand;
-        // providerWallet.withdrawableBalance = newWithdrawable;
-        // providerWallet.pendingWithdraw = newPendingWithdraw;
-
-        // console.log("providerWallet.balance : ", providerWallet.balance)
-        // console.log("providerWallet.totalCredits : ", providerWallet.totalCredits)
-        // console.log("providerWallet.cashInHand : ", providerWallet.cashInHand)
-        // console.log("providerWallet.withdrawableBalance : ", providerWallet.withdrawableBalance)
-        // console.log("providerWallet.pendingWithdraw : ", providerWallet.pendingWithdraw)
 
         await providerWallet.save();
 
