@@ -1,10 +1,8 @@
-// lib/pdf/generateInvoicePdf.tsx
-'use server';
-
-import React from 'react';
-import { renderToStream } from '@react-pdf/renderer';
-import InvoicePDF from '@/components/pdf/InvoicePDF';
+// utils/pdf/generateInvoicePdf.ts
+import { createInvoiceDocument } from "@/components/pdf/InvoicePDF";
+import { renderToStream } from "@react-pdf/renderer";
 
 export async function generateInvoicePdf(data: any) {
-  return await renderToStream(<InvoicePDF data={data} />);
+  const document = createInvoiceDocument(data); // ✅ Safe, pure <Document />
+  return await renderToStream(document);        // ✅ Now works perfectly
 }
