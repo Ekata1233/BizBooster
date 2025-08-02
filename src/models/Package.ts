@@ -11,9 +11,9 @@ export interface IPackage extends Document {
   discount: number;
   discountedPrice: number;
   deposit: number;
-   grandtotal: number;
-     monthlyEarnings: number; 
-  lockInPeriod: number;  
+  grandtotal: number;
+  monthlyEarnings: number;
+  lockInPeriod: number;
 }
 
 const packageSchema = new Schema<IPackage>({
@@ -26,9 +26,9 @@ const packageSchema = new Schema<IPackage>({
   discount: { type: Number, required: true },
   discountedPrice: { type: Number, required: true },
   deposit: { type: Number, required: true },
-  grandtotal: { type: Number,default:0 },
-   monthlyEarnings: { type: Number, required: true }, // Added field
-    lockInPeriod: { type: Number, required: true },   
+  grandtotal: { type: Number, default: 0 },
+  monthlyEarnings: { type: Number, required: true }, // Added field
+  lockInPeriod: { type: Number, required: true },
 }, { timestamps: true });
 
 

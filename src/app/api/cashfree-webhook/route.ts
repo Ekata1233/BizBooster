@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        const fullPackageAmount = pkg.discountedPrice;
+        const fullPackageAmount = pkg.grandtotal;
 
         console.log("package amount : ", fullPackageAmount)
 
