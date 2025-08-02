@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
           <div style="display: flex; justify-content: space-between;">
             <div style="width: 30%;">
               <strong>Customer Details</strong>
-              <p>${invoice.customerName || '-'}</p>
+              <p>${invoice.fullName || '-'}</p>
             </div>
             <div style="width: 20%;">
               <strong>Email</strong>
