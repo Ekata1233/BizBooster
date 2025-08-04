@@ -207,7 +207,7 @@ const AllBookingsDetails = () => {
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {[
                   ['Listing Price', leadDetails?.newAmount ?? checkoutDetails?.listingPrice],
-                  ['Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)', -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
+                  [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
                   [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
