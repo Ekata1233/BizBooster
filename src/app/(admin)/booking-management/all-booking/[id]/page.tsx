@@ -206,15 +206,14 @@ const AllBookingsDetails = () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {[
-                  ['Price', leadDetails?.newAmount ?? checkoutDetails?.service?.price],
-                  ['Service Discount', leadDetails?.newDiscountAmount ?? (checkoutDetails?.service?.price - checkoutDetails?.service?.discountedPrice) ?? 0],
-                                    ['Coupon Discount', checkoutDetails.couponDiscount || 0],
-
-                  ['Campaign Discount', 0],
-                  ['Service GST', 0],
-                  ['Platform Fee', 0],
-                  ['Fetch True Assurity Charges', 0],
-                  ['Grand Total ', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice],
+                  ['Listing Price', leadDetails?.newAmount ?? checkoutDetails?.listingPrice],
+                  ['Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)', -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
+                  ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
+                  [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
+                  [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
+                  [`Platform Fee `, checkoutDetails?.platformFeePrice ?? 0],
+                  [`Fetch True Assurity Charges (${checkoutDetails?.assurityfee ?? 0}%)`, checkoutDetails?.assurityChargesPrice ?? 0],
+                  ['Total ',checkoutDetails?.totalAmount ?? 0],
                 ].map(([label, amount]) => (
                   <div className="flex justify-between" key={label}>
                     <span className="font-medium">{label} :</span>
@@ -314,7 +313,7 @@ const AllBookingsDetails = () => {
 
             {/* RIGHT */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-             <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
+              <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
               {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
               {/* <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} /> */}
             </div>
