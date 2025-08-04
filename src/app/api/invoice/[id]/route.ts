@@ -6,7 +6,15 @@ import '@/models/Provider';
 import '@/models/ServiceCustomer';
 import mongoose from 'mongoose';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 // Type definitions
 interface Service {
   serviceName: string;
@@ -65,16 +73,18 @@ interface Invoice {
   assurityChargesPrice?: number,
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    await connectToDatabase();
-    const id = params.id;
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop(); // <-- Correct way to extract dynamic param
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid ID format." },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     const invoice = await Checkout.findById(id)
@@ -87,7 +97,7 @@ export async function GET(
       .lean() as unknown as Invoice;
 
     if (!invoice) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 ,headers: corsHeaders});
     }
     console.log(invoice);
 
@@ -307,6 +317,6 @@ y -= 20;
     });
   } catch (error) {
     console.error('[INVOICE_PDF_ERROR]', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders });
   }
 }
