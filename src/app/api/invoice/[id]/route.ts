@@ -205,7 +205,7 @@ export async function GET(req: NextRequest) {
   `;
 
   await page.setContent(html, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+  const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
   await browser.close();
 
   return new NextResponse(pdfBuffer, {
