@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
+import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
 import { connectToDatabase } from '@/utils/db';
 import Checkout from '@/models/Checkout';
 import '@/models/Service';
@@ -41,7 +43,15 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const browser = await puppeteer.launch();
+  // const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: process.env.NODE_ENV === 'production'
+      ? await chromium.executablePath
+      : undefined,
+    headless: true,
+  });
+
   const page = await browser.newPage();
 
   const html = `
