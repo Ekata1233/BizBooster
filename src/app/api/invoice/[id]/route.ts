@@ -15,11 +15,12 @@ interface Service {
 }
 
 interface ServiceItem {
-  service: Service;
-  price: number;
+  serviceName: string;
+  price?: number;
   discountedPrice: number;
   total: number;
 }
+
 
 interface Customer {
   name?: string;
@@ -45,23 +46,23 @@ interface Invoice {
   paymentMethod?: string;
   serviceCustomer: Customer;
   provider: Provider | mongoose.Types.ObjectId;
-  services: ServiceItem[];
+  service: ServiceItem;
   subTotal?: number;
   discount?: number;
-  serviceDiscount?:number,
-  serviceDiscountPrice?:number,
+  serviceDiscount?: number,
+  serviceDiscountPrice?: number,
   campaignDiscount?: number;
   couponDiscount?: number;
   gst?: number;
-  serviceGSTPrice?:number,
+  serviceGSTPrice?: number,
   platformFeePrice?: number;
   total?: number;
-  totalAmount?:number,
+  totalAmount?: number,
   grandTotal?: number;
   assurityfee?: number;
-  listingPrice?:number,
-  priceAfterDiscount?:number,
-  assurityChargesPrice?:number,
+  listingPrice?: number,
+  priceAfterDiscount?: number,
+  assurityChargesPrice?: number,
 }
 
 export async function GET(
@@ -79,7 +80,7 @@ export async function GET(
     const invoice = await Checkout.findById(id)
       .populate('serviceCustomer')
       .populate({
-        path: 'services.service',
+        path: 'service',
         strictPopulate: false,
       })
       .populate('provider')
@@ -89,7 +90,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
     console.log(invoice);
-    
+
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4 size
     const { height, width } = page.getSize();
@@ -123,14 +124,14 @@ export async function GET(
         color: rgb(0.8, 0.8, 0.8),
       });
     };
-const listingPrice = invoice.listingPrice || 0;
-const serviceDiscount = invoice.serviceDiscount || 0;
-const serviceDiscountPrice = invoice.serviceDiscountPrice;
-const gst = invoice.gst || 0;
-const platformFeePrice = invoice.platformFeePrice || 0;
-const assurityFee = invoice.assurityfee || 0;
-const grandTotal =
-  invoice.totalAmount || 0 ;
+    const listingPrice = invoice.listingPrice || 0;
+    const serviceDiscount = invoice.serviceDiscount || 0;
+    const serviceDiscountPrice = invoice.serviceDiscountPrice;
+    const gst = invoice.gst || 0;
+    const platformFeePrice = invoice.platformFeePrice || 0;
+    const assurityFee = invoice.assurityfee || 0;
+    const grandTotal =
+      invoice.totalAmount || 0;
     // Header
     drawText('INVOICE', 50, y, 18, rgb(0, 0, 0.6), true);
     y -= 25;
@@ -160,13 +161,18 @@ const grandTotal =
     });
 
     const customer = invoice.serviceCustomer || {};
-    drawText('Customer Details', 60, y - 20, 14, rgb(0, 0, 0.5), true);
-    y -= 35;
+drawText('Customer Details', 60, y - 20, 14, rgb(0, 0, 0.5), true);
+y -= 35;
 
-    // First row
-    drawText(customer.name || customer.fullName || '-', 60, y);
-    drawText(customer.email || '-', 250, y);
-    drawText(customer.mobile || customer.phone || '-', 400, y);
+// First row
+drawText(customer.name || customer.fullName || '-', 60, y);
+drawText(customer.email || '-', 200, y);
+drawText(customer.mobile || customer.phone || '-', 350, y);
+
+// New column: Invoice (INR)
+const invoiceAmount = invoice.total || 0;
+drawText(`₹${invoiceAmount.toFixed(2)}`, 470, y);
+
     y -= 20;
     drawLine(y);
     y -= 20;
@@ -202,51 +208,55 @@ const grandTotal =
     // Table Header
     drawText('Service', 50, y, 12, rgb(0, 0, 0), true);
     drawText('Price', 200, y, 12, rgb(0, 0, 0), true);
-    drawText('Discount Price', 320, y, 12, rgb(0, 0, 0), true);
-    drawText('Total', 440, y, 12, rgb(0, 0, 0), true);
+    drawText('Discount ', 320, y, 12, rgb(0, 0, 0), true);
+    drawText('Discounted Price', 440, y, 12, rgb(0, 0, 0), true);
     y -= 15;
 
     drawLine(y);
     y -= 20;
 
     // Table Rows
-    invoice.services?.forEach((s) => {
-      const serviceName = (s.service && typeof s.service === 'object') ? s.service.serviceName : 'N/A';
-      drawText(serviceName, 50, y);
-      drawText(`Rs. ${(s.service.price || 0).toFixed(2)}`, 200, y);
-      drawText(`Rs. ${((s.service.discountedPrice || 0) - (s.discountedPrice || 0)).toFixed(2)}`, 320, y);
-      drawText(`Rs. ${(s.total || 0).toFixed(2)}`, 440, y);
-      y -= 20;
-    });
+const s = invoice.service;
+const serviceName = s?.serviceName || 'N/A';
+const price = s?.price || 0;
+const discountedPrice = s?.discountedPrice || 0;
+const rowServiceDiscountPrice = price - discountedPrice;
+
+drawText(serviceName, 50, y);
+drawText(`₹${price.toFixed(2)}`, 200, y);
+drawText(`₹${rowServiceDiscountPrice.toFixed(2)}`, 320, y);
+drawText(`₹${discountedPrice.toFixed(2)}`, 440, y);
+y -= 20;
+
 
     y -= 10;
     drawLine(y);
     y -= 20;
 
-   const summaryItems = [
-  ['Listing Price', listingPrice],
-  [`Service Discount (${invoice.serviceDiscount || '0'}%)`,invoice.serviceDiscountPrice],
-  ['Price After Discount', invoice.priceAfterDiscount],
-  [`Service GST (${invoice.gst || '0'}%)`, invoice.serviceGSTPrice],
-  ['Platform Fee (₹)', platformFeePrice],
-  [`Fetch True Assurity Charges (${invoice.assurityfee || '0'}%)`, invoice.assurityChargesPrice],
-];
+    const summaryItems = [
+      ['Listing Price', listingPrice],
+      [`Service Discount (${invoice.serviceDiscount || '0'}%)`, invoice.serviceDiscountPrice],
+      ['Price After Discount', invoice.priceAfterDiscount],
+      [`Service GST (${invoice.gst || '0'}%)`, invoice.serviceGSTPrice],
+      ['Platform Fee (₹)', platformFeePrice],
+      [`Fetch True Assurity Charges (${invoice.assurityfee || '0'}%)`, invoice.assurityChargesPrice],
+    ];
 
-// Draw each line
-summaryItems.forEach(([label, amount]) => {
-  drawText(`${label}:`, 50, y);
-  drawText(`₹${Number(amount).toFixed(2)}`, 450, y);
-  y -= 15;
-});
+    // Draw each line
+    summaryItems.forEach(([label, amount]) => {
+      drawText(`${label}:`, 50, y);
+      drawText(`₹${Number(amount).toFixed(2)}`, 450, y);
+      y -= 15;
+    });
 
-// Grand Total
-y -= 10;
-drawText('Grand Total:', 50, y, 14, rgb(0, 0, 0.8), true);
-drawText(`₹${grandTotal.toFixed(2)}`, 450, y, 14, rgb(0, 0, 0.8), true);
-y -= 40;
+    // Grand Total
+    y -= 10;
+    drawText('Grand Total:', 50, y, 14, rgb(0, 0, 0.8), true);
+    drawText(`₹${grandTotal.toFixed(2)}`, 450, y, 14, rgb(0, 0, 0.8), true);
+    y -= 40;
 
 
-     drawLine(y);
+    drawLine(y);
     y -= 30;
     // Terms & Conditions
     drawText('Terms & Conditions', 50, y, 14, rgb(0, 0, 0.5), true);
