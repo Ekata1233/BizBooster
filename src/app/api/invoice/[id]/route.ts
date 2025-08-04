@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import puppeteer from 'puppeteer';
-import chromium from 'chrome-aws-lambda';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import { connectToDatabase } from '@/utils/db';
 import Checkout from '@/models/Checkout';
 import '@/models/Service';
@@ -43,15 +41,8 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // const browser = await puppeteer.launch();
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: process.env.NODE_ENV === 'production'
-      ? await chromium.executablePath
-      : undefined,
-    headless: true,
-  });
-
+  const browser = await puppeteer.launch();
+  
   const page = await browser.newPage();
 
   const html = `
@@ -205,7 +196,7 @@ export async function GET(req: NextRequest) {
   `;
 
   await page.setContent(html, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
+  const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
   await browser.close();
 
   return new NextResponse(pdfBuffer, {
