@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/utils/db";
 import Webinars from '@/models/Webinars'; // Adjust path as needed
 import imagekit from "@/utils/imagekit"; // Assuming you have imagekit setup
 import { v4 as uuidv4 } from 'uuid'; // For unique file names
+import mongoose from 'mongoose';
 
 // Assuming corsHeaders are defined somewhere accessible, e.g., in a separate file or directly here
 const corsHeaders = {
@@ -134,65 +135,65 @@ export async function PUT(req: NextRequest) {
 
 
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
 
-  const { id } = params; // This `id` is the ID of the Certifications document
-
   try {
-    // Extract videoIndex from the URL's query parameters
-    const { searchParams } = new URL(req.url);
-    const videoIndexStr = searchParams.get("videoIndex");
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop(); // extract the [id] from the path
+    const videoIndexStr = url.searchParams.get("videoIndex");
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid or missing webinar ID." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     if (videoIndexStr === null) {
       return NextResponse.json(
-        { success: false, message: "videoIndex is required for deleting a video." },
+        { success: false, message: "videoIndex is required for deletion." },
         { status: 400, headers: corsHeaders }
       );
     }
 
     const videoIndex = parseInt(videoIndexStr, 10);
-
     if (isNaN(videoIndex) || videoIndex < 0) {
       return NextResponse.json(
-        { success: false, message: "Invalid video index provided." },
+        { success: false, message: "Invalid video index." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const certification = await Webinars.findById(id);
-
-    if (!certification) {
+    const webinar = await Webinars.findById(id);
+    if (!webinar) {
       return NextResponse.json(
-        { success: false, message: "Certification not found." },
+        { success: false, message: "Webinar not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    // Check if the video index is within the bounds of the array
-    if (videoIndex >= certification.video.length) {
+    if (videoIndex >= webinar.video.length) {
       return NextResponse.json(
         { success: false, message: "Video index out of bounds." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Remove the video at the specified index
-    // Using splice to remove the item from the array
-    const [deletedVideo] = certification.video.splice(videoIndex, 1);
-
-
-    await certification.save(); // Save the document with the video removed
+    const [deletedVideo] = webinar.video.splice(videoIndex, 1);
+    await webinar.save();
 
     return NextResponse.json(
-      { success: true, message: "Video deleted successfully.", deletedVideo },
+      {
+        success: true,
+        message: "Video deleted successfully.",
+        deletedVideo,
+        updatedWebinar: webinar,
+      },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    console.error("DELETE /api/academy/tutorials/[id] error:", error);
+    console.error("DELETE /api/academy/webinar-tutorials/[id] error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -202,7 +203,6 @@ export async function DELETE(
     );
   }
 }
-
 
 
 
