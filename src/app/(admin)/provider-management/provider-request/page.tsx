@@ -70,27 +70,37 @@ const ProviderRequest = () => {
     };
 
     const handleApproval = async (id: string, approve: boolean) => {
+        const confirmation = window.confirm(
+            approve 
+                ? 'Are you sure you want to approve this provider?' 
+                : 'Are you sure you want to reject this provider?'
+        );
+        
+        if (!confirmation) return;
+
         try {
-            await updateProvider(id, { isApproved: approve });
-            // await getAllProviders();
-            alert('Provider approved successfully');
+            await updateProvider(id, { isApproved: approve, isRejected: !approve });
+            alert(`Provider ${approve ? 'approved' : 'rejected'} successfully`);
             fetchProviders();
         } catch (error) {
-            console.log('Failed to approve provider');
+            console.log(`Failed to ${approve ? 'approve' : 'reject'} provider`);
+            alert(`Failed to ${approve ? 'approve' : 'reject'} provider`);
         }
     };
 
     const handleReject = async (id: string) => {
+        const confirmation = window.confirm('Are you sure you want to reject this provider?');
+        if (!confirmation) return;
+
         try {
             await updateProvider(id, { isRejected: true, isApproved: false });
-            // await getAllProviders();
             alert('Provider rejected successfully');
             fetchProviders();
         } catch (error) {
             console.log('Failed to reject provider');
+            alert('Failed to reject provider');
         }
     };
-
 
     useEffect(() => {
         fetchProviders();
@@ -132,8 +142,8 @@ const ProviderRequest = () => {
                             </button>
                             <button
                                 onClick={() => handleReject(row.id)}
-                                // disabled={!row.isApproved}
-                                className={`px-3 py-1 rounded text-sm font-medium border ${!row.isApproved
+                                disabled={row.isRejected}
+                                className={`px-3 py-1 rounded text-sm font-medium border ${row.isRejected
                                     ? 'bg-red-200 text-red-800'
                                     : 'bg-red-500 text-white hover:bg-red-600'
                                     }`}

@@ -10,7 +10,7 @@ import { Category, useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 
 const AddSubcategory = () => {
-    const { addSubcategory } = useSubcategory();
+    const { addSubcategory ,fetchSubcategories } = useSubcategory();
     const { categories } = useCategory();
     const [subcategoryName, setSubcategoryName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -44,6 +44,7 @@ const AddSubcategory = () => {
             setSubcategoryName('');
             setFileInputKey(Date.now());
             setSelectedFile(null);
+            fetchSubcategories()
             console.log("page reset")
         } catch (error: unknown) {
             if (error instanceof Error) {

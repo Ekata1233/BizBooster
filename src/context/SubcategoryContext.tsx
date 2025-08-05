@@ -18,6 +18,7 @@ interface Subcategory {
 
 // Define the context value type
 interface SubcategoryContextType {
+  fetchSubcategories : () => Promise<void>;
   subcategories: Subcategory[];
   addSubcategory: (formData: FormData) => Promise<void>;
   updateSubcategory: (id: string, formData: FormData) => Promise<void>;
@@ -86,7 +87,7 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
 
   return (
     <SubcategoryContext.Provider
-      value={{ subcategories, addSubcategory, updateSubcategory, deleteSubcategory }}
+      value={{ subcategories, addSubcategory, updateSubcategory, deleteSubcategory,fetchSubcategories  }}
     >
       {children}
     </SubcategoryContext.Provider>

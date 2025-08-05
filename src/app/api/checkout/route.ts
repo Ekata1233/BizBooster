@@ -7,117 +7,42 @@ import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://fetchtrue-service-page.vercel.app',
+  '*', // ⚠️ Only if you want to allow all (use with caution!)
+];
 
-// ✅ POST: Create a new Checkout
-// export async function POST(req: Request) {
-//   await connectToDatabase();
+// Get CORS headers dynamically based on origin
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
 
-//   try {
-//     const body = await req.json();
-//     console.log("Body of the checkout : ", body);
-//     const {
-//       user,
-//       service,
-//       serviceCustomer,
-//       provider,
-//       coupon,
-//       subtotal,
-//       serviceDiscount,
-//       couponDiscount,
-//       champaignDiscount ,
-//       vat ,
-//       platformFee ,
-//       assurityfee,
-//       tax ,
-//       totalAmount,
-//       termsCondition = false,
-//       paymentMethod,
-//       walletAmount ,
-//       paidByOtherMethodAmount ,
-//       partialPaymentNow ,
-//       partialPaymentLater ,
-//       remainingPaymentStatus, 
-//       paymentStatus ,
-//       orderStatus ,
-//       notes = '',
-//     } = body;
+  if (allowedOrigins.includes('*')) {
+    headers['Access-Control-Allow-Origin'] = '*';
+  } else if (origin && allowedOrigins.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
 
-//     const requiredFields = {
-//       user,
-//       service,
-//       serviceCustomer,
-//       totalAmount,
-//       paymentMethod,
-//     };
+  return headers;
+}
 
-//     if (!termsCondition) {
-//       return NextResponse.json(
-//         { success: false, message: 'You must agree to the terms and conditions to proceed.' },
-//         { status: 400, headers: corsHeaders }
-//       );
-//     }
+// Handle OPTIONS request (preflight)
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(origin),
+  });
+}
 
 
-//     for (const [field, value] of Object.entries(requiredFields)) {
-//       if (!value) {
-//         return NextResponse.json(
-//           { success: false, message: `Missing ${field} field.` },
-//           { status: 400, headers: corsHeaders }
-//         );
-//       }
-//     }
-
-
-//     const checkout = new Checkout({
-//       user,
-//       service,
-//       serviceCustomer,
-//       provider,
-//       coupon,
-//       subtotal,
-//       serviceDiscount,
-//       couponDiscount,
-//       champaignDiscount,
-//       vat,
-//       platformFee,
-//       assurityfee,
-//       tax,
-//       totalAmount,
-//       termsCondition,
-//       paymentMethod,
-//       walletAmount,
-//       paidByOtherMethodAmount,
-//       partialPaymentNow,
-//       partialPaymentLater,
-//       remainingPaymentStatus,
-//       paymentStatus,
-//       orderStatus,
-//       notes,
-//     });
-
-//     console.log("checkout before save: ", checkout)
-
-//     await checkout.save();
-
-//     return NextResponse.json(
-//       { success: true, data: checkout },
-//       { status: 201, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     const message = error instanceof Error ? error.message : 'Unknown error';
-//     return NextResponse.json(
-//       { success: false, message },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
 
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   await connectToDatabase();
 
   try {
@@ -139,19 +64,28 @@ export async function POST(req: NextRequest) {
       gst,
       platformFee,
       assurityfee,
+
+      listingPrice,
+      serviceDiscountPrice,
+      priceAfterDiscount,
+      couponDiscountPrice,
+      serviceGSTPrice,
+      platformFeePrice,
+      assurityChargesPrice,
+
       totalAmount,
 
-      termsCondition ,
+      termsCondition,
       paymentMethod,
-      walletAmount ,
-      otherAmount ,
-      paidAmount ,
-      remainingAmount ,
-      isPartialPayment ,
+      walletAmount,
+      otherAmount,
+      paidAmount,
+      remainingAmount,
+      isPartialPayment,
 
-      paymentStatus ,
+      paymentStatus,
       orderStatus,
-      notes ,
+      notes,
     } = body;
 
     // Required field validation
@@ -194,6 +128,15 @@ export async function POST(req: NextRequest) {
       gst,
       platformFee,
       assurityfee,
+
+      listingPrice,
+      serviceDiscountPrice,
+      priceAfterDiscount,
+      couponDiscountPrice,
+      serviceGSTPrice,
+      platformFeePrice,
+      assurityChargesPrice,
+
       totalAmount,
 
       termsCondition,
@@ -212,11 +155,18 @@ export async function POST(req: NextRequest) {
     console.log('Checkout before save:', checkout);
 
     await checkout.save();
+    // return NextResponse.json(
+    //   { success: true, data: checkout },
+    //   { status: 201, headers: corsHeaders }
+    // );
+    return new NextResponse(JSON.stringify({ success: true, data: checkout }), {
+      status: 201,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+    });
 
-    return NextResponse.json(
-      { success: true, data: checkout },
-      { status: 201, headers: corsHeaders }
-    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
@@ -229,6 +179,8 @@ export async function POST(req: NextRequest) {
 
 // ✅ GET: Get all Checkout entries (with optional filters)
 export async function GET(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   await connectToDatabase();
 
   try {
@@ -243,7 +195,7 @@ export async function GET(req: NextRequest) {
 
     const checkouts = await Checkout.find(filter)
       .populate({ path: 'user', select: 'fullName email mobileNumber' })
-      .populate({ path: 'service', select: 'serviceName price discount discountedPrice' })
+      .populate({ path: 'service', select: 'serviceName price discount discountedPrice franchiseDetails.commission' })
       .populate({ path: 'serviceCustomer', select: 'fullName email city' }).populate('provider')
       .populate('coupon')
       .sort({ createdAt: -1 });

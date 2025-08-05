@@ -16,6 +16,8 @@ export interface PackageType {
   discountedPrice: number;
   deposit: number;
 grandtotal: number;
+ monthlyEarnings: number; // ✅ New field
+  lockInPeriod: number;
   createdAt?: string;
   updatedAt?: string;
 }

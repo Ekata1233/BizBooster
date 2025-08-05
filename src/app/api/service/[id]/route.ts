@@ -70,10 +70,15 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+    console.log("formdata of the update service : ", formData);
+
     const serviceName = formData.get("name") as string;
     const category = formData.get("category") as string;
-    const subcategory = formData.get("subcategory") as string;
+    // const subcategory = formData.get("subcategory") as string;
     const priceStr = formData.get("price") as string;
+    const subcategoryRaw = formData.get("subcategory") as string;
+    const subcategory = subcategoryRaw && subcategoryRaw.trim() !== "" ? subcategoryRaw : undefined;
+
     const discountStr = formData.get("discount") as string | null;
     const gstStr = formData.get("gst") as string | null;
     const includeGstStr = formData.get("includeGst") as string | null;
@@ -131,14 +136,24 @@ export async function PUT(req: Request) {
       index++;
     }
 
+    // const whyChooseIds: string[] = [];
+    // let whyIndex = 0;
+    // while (true) {
+    //   const id = formData.get(`whyChoose[${whyIndex}][_id]`);
+    //   if (!id) break;
+    //   whyChooseIds.push(id.toString());
+    //   whyIndex++;
+    // }
+
     const whyChooseIds: string[] = [];
     let whyIndex = 0;
     while (true) {
-      const id = formData.get(`whyChoose[${whyIndex}][_id]`);
+      const id = formData.get(`serviceDetails[whyChoose][${whyIndex}][_id]`);
       if (!id) break;
       whyChooseIds.push(id.toString());
       whyIndex++;
     }
+
 
     const price = parseFloat(priceStr);
     let discount = 0;
@@ -184,23 +199,34 @@ export async function PUT(req: Request) {
     }
 
     // Highlight images
+    // const highlightImagesUrls: string[] = [];
+    // const highlightFiles: File[] = [];
+    // for (const [key, value] of formData.entries()) {
+    //   if (key.startsWith("highlight") && value instanceof File) {
+    //     highlightFiles.push(value);
+    //   }
+    // }
+    // for (const file of highlightFiles) {
+    //   const arrayBuffer = await file.arrayBuffer();
+    //   const buffer = Buffer.from(arrayBuffer);
+    //   const uploadResponse = await imagekit.upload({
+    //     file: buffer,
+    //     fileName: `${uuidv4()}-${file.name}`,
+    //     folder: "/services/highlight",
+    //   });
+    //   highlightImagesUrls.push(uploadResponse.url);
+    // }
+
+    // Extract highlight URLs from formData (not files)
     const highlightImagesUrls: string[] = [];
-    const highlightFiles: File[] = [];
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("highlight") && value instanceof File) {
-        highlightFiles.push(value);
-      }
+    let highlightIndex = 0;
+    while (true) {
+      const highlightValue = formData.get(`serviceDetails[highlight][${highlightIndex}]`);
+      if (!highlightValue) break;
+      highlightImagesUrls.push(highlightValue.toString());
+      highlightIndex++;
     }
-    for (const file of highlightFiles) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/services/highlight",
-      });
-      highlightImagesUrls.push(uploadResponse.url);
-    }
+
 
     // Add highlight images into serviceDetails
     // serviceDetails.highlight = highlightImagesUrls;
@@ -208,7 +234,8 @@ export async function PUT(req: Request) {
     const updateData = {
       serviceName,
       category,
-      subcategory,
+      // subcategory,
+      ...(subcategory && { subcategory }),
       price,
       discount,
       discountedPrice,
@@ -218,7 +245,7 @@ export async function PUT(req: Request) {
       totalWithGst,
       serviceDetails: {
         ...serviceDetails,
-        highlight: highlightImagesUrls, 
+        highlight: highlightImagesUrls,
         whyChoose: whyChooseIds,
       },
       franchiseDetails,

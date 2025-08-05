@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const packagePrice = pkg.discountedPrice;
+        const packagePrice = pkg.grandtotal;
 
         if (!userId || !packagePrice) {
             return NextResponse.json(

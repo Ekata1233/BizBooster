@@ -40,12 +40,20 @@ export const POST = async (req: Request) => {
 
     const user = await User.findOne({
       $or: [{ email }, { mobileNumber }],
+      isDeleted: false,
     });
 
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (user.isDeleted) {
+      return NextResponse.json(
+        { error: 'User has been deleted' },
+        { status: 403, headers: corsHeaders }
       );
     }
 

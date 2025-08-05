@@ -54,19 +54,14 @@ export async function GET(req: NextRequest) {
 }
 
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
-  const { id } = params;
-
   try {
-    const formData = await req.formData();
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-    // Check if this request is specifically for updating an existing video by index
-    const videoIndexStr = formData.get("videoIndex") as string | null;
+    const formData = await req.formData();
 
     const certificationToUpdate = await Certifications.findById(id);
 
@@ -77,48 +72,42 @@ export async function PUT(
       );
     }
 
+    const videoIndexStr = formData.get("videoIndex") as string | null;
+
     if (videoIndexStr !== null) {
-      // SCENARIO 1: Request to update an EXISTING video by its index
-      const videoIndex = parseInt(videoIndexStr, 10);
-      
-      // Basic validation for video index
+      // =============== SCENARIO 1: Update a specific video ===============
+      const videoIndex = Number(videoIndexStr);
+
       if (isNaN(videoIndex) || videoIndex < 0 || videoIndex >= certificationToUpdate.video.length) {
         return NextResponse.json(
-          { success: false, message: "Invalid video index provided for update." },
+          { success: false, message: "Invalid video index." },
           { status: 400, headers: corsHeaders }
         );
       }
 
       const targetVideo = certificationToUpdate.video[videoIndex];
-
-      // Get fields specific to a single video update (top-level formData keys)
       const videoName = formData.get("videoName") as string;
       const videoDescription = formData.get("videoDescription") as string;
       const videoUrl = formData.get("videoUrl") as string;
       const videoImageFile = formData.get("videoImageFile") as File | null;
       const currentVideoImageUrl = formData.get("currentVideoImageUrl") as string | null;
 
-      // Update specific video fields
       if (videoName !== null) targetVideo.videoName = videoName;
       if (videoDescription !== null) targetVideo.videoDescription = videoDescription;
       if (videoUrl !== null) targetVideo.videoUrl = videoUrl;
 
-      // Handle video thumbnail image update for the specific video
       if (videoImageFile && videoImageFile.size > 0) {
-        // A new image file was uploaded for the thumbnail
         const buffer = Buffer.from(await videoImageFile.arrayBuffer());
         const uploadResponse = await imagekit.upload({
           file: buffer,
           fileName: `${uuidv4()}-${videoImageFile.name}`,
-          folder: "/certifications/video_thumbnails", // Specific folder for video thumbnails
+          folder: "/certifications/video_thumbnails",
         });
         targetVideo.videoImageUrl = uploadResponse.url;
-      } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== 'null') {
-        // No new file, but an existing URL was provided by the client (or null to clear it)
+      } else if (currentVideoImageUrl !== null && currentVideoImageUrl !== "null") {
         targetVideo.videoImageUrl = currentVideoImageUrl;
       } else {
-        // If neither new file nor current URL is present, explicitly remove the image
-        targetVideo.videoImageUrl = ""; // Or `null` if your schema allows/prefers null
+        targetVideo.videoImageUrl = "";
       }
 
       await certificationToUpdate.save();
@@ -127,21 +116,17 @@ export async function PUT(
         status: 200,
         headers: corsHeaders,
       });
-
     } else {
-      // SCENARIO 2: Request to update main certification details AND/OR add NEW videos
+      // =============== SCENARIO 2: Update main data and/or add new videos ===============
       const name = formData.get("name") as string;
       const description = formData.get("description") as string;
-      const mainImageFile = formData.get("imageUrl") as File | null; // This will be the new file if uploaded
+      const mainImageFile = formData.get("imageUrl") as File | null;
       const currentMainImageUrl = formData.get("currentImageUrl") as string | null;
 
-      // Update main certification name and description
       if (name !== null) certificationToUpdate.name = name;
       if (description !== null) certificationToUpdate.description = description;
 
-      // Handle main image update
       if (mainImageFile && mainImageFile.size > 0) {
-        // New main image uploaded
         const buffer = Buffer.from(await mainImageFile.arrayBuffer());
         const uploadResponse = await imagekit.upload({
           file: buffer,
@@ -149,36 +134,25 @@ export async function PUT(
           folder: "/certifications/main_images",
         });
         certificationToUpdate.imageUrl = uploadResponse.url;
-      } else if (currentMainImageUrl !== null && currentMainImageUrl !== 'null') {
-        // Use existing URL if no new file is uploaded
+      } else if (currentMainImageUrl !== null && currentMainImageUrl !== "null") {
         certificationToUpdate.imageUrl = currentMainImageUrl;
       } else if (!certificationToUpdate.imageUrl) {
-        // If neither new file nor old URL is present and it's missing, require it
-        // This check only triggers if current imageUrl is also empty, preventing accidental removal if not re-sent
         return NextResponse.json(
-          { success: false, message: "Main image is required for the certification." },
+          { success: false, message: "Main image is required." },
           { status: 400, headers: corsHeaders }
         );
       } else {
-        // If currentMainImageUrl is null/empty and no new file, explicitly clear it
         certificationToUpdate.imageUrl = "";
       }
 
-
-      const newVideos: Array<{
-        videoName: string;
-        videoDescription: string;
-        videoUrl: string;
-        videoImageUrl?: string;
-      }> = [];
-
+      const newVideos = [];
       let i = 0;
-      // Loop through potential new video entries (e.g., from an array of inputs)
+
       while (
         formData.has(`newVideos[${i}][videoName]`) ||
         formData.has(`newVideos[${i}][videoDescription]`) ||
         formData.has(`newVideos[${i}][videoUrl]`) ||
-        formData.has(`newVideos[${i}][videoImageUrl]`) // Check for image file too
+        formData.has(`newVideos[${i}][videoImageUrl]`)
       ) {
         const videoName = formData.get(`newVideos[${i}][videoName]`) as string;
         const videoDescription = formData.get(`newVideos[${i}][videoDescription]`) as string;
@@ -197,34 +171,30 @@ export async function PUT(
           videoImageUrl = uploadResponse.url;
         }
 
-        // Validate new video entry: all fields must be present if any part of the entry exists
         if (!videoUrl || !videoName || !videoDescription) {
-          // If some parts are missing but others are present, it's an incomplete entry
           if (videoUrl || videoName || videoDescription || videoImageFile) {
             return NextResponse.json(
-              { success: false, message: `All video fields (URL, name, description) are required for new video entry ${i + 1}.` },
+              { success: false, message: `All fields required for video ${i + 1}.` },
               { status: 400, headers: corsHeaders }
             );
           }
         } else {
-          // If all required fields are present, add the new video
           newVideos.push({
             videoName,
             videoDescription,
             videoUrl,
-            ...(videoImageUrl && { videoImageUrl }), // Only add videoImageUrl if it exists
+            ...(videoImageUrl && { videoImageUrl }),
           });
         }
+
         i++;
       }
 
-      // Add all validated new videos to the certification's video array
       certificationToUpdate.video.push(...newVideos);
 
-      // Final check for minimum video entries (if your app requires at least one video)
       if (certificationToUpdate.video.length === 0) {
         return NextResponse.json(
-          { success: false, message: "At least one video entry (existing or new) is required for the certification." },
+          { success: false, message: "At least one video is required." },
           { status: 400, headers: corsHeaders }
         );
       }
@@ -236,55 +206,30 @@ export async function PUT(
         headers: corsHeaders,
       });
     }
-  } catch (error: unknown) {
-    console.error("PUT /api/certifications/[id] error:", error);
+  } catch (error: any) {
+    console.error("PUT error:", error);
 
-    // Mongoose duplicate key error (e.g., if certification name needs to be unique)
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as { code: number }).code === 11000
-    ) {
+    if (error?.code === 11000) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Certification name must be unique.",
-        },
+        { success: false, message: "Certification name must be unique." },
         { status: 409, headers: corsHeaders }
       );
     }
 
-    // Mongoose validation errors
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "name" in error &&
-      (error as { name: string }).name === "ValidationError" &&
-      "errors" in error
-    ) {
-      const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
-      const messages = Object.values(validationErrors).map((err) => err.message);
+    if (error?.name === "ValidationError" && "errors" in error) {
+      const messages = Object.values(error.errors).map((e: any) => e.message);
       return NextResponse.json(
-        {
-          success: false,
-          message: `Validation Error: ${messages.join(", ")}`,
-        },
+        { success: false, message: messages.join(", ") },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Generic internal server error
     return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || "Internal Server Error",
-      },
+      { success: false, message: error.message || "Internal Server Error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
-
 export async function DELETE(req: Request) {
   await connectToDatabase();
 

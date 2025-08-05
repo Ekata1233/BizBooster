@@ -1,7 +1,7 @@
 import mongoose, { Schema, model, models, Document } from 'mongoose';
 
 export interface IAd extends Document {
-  addType: 'video' | 'image';
+  addType: 'image';
   category: mongoose.Types.ObjectId;
   service: mongoose.Types.ObjectId;
   provider: mongoose.Types.ObjectId;
@@ -18,7 +18,7 @@ const AdSchema = new Schema<IAd>(
   {
     addType: {
       type: String,
-      enum: ['video', 'image'],
+      enum: ['image'],
       required: true,
     },
     category: {

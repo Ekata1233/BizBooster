@@ -17,7 +17,7 @@ interface BasicDetailsData {
     discountedPrice?: number;
     gst?: number;
     includeGst?: boolean;
-    gstInRupees?: number;        // ✅ added
+    gstInRupees?: number;
     totalWithGst?: number;
     thumbnail?: File | null;
     covers?: FileList | File[] | null;
@@ -47,7 +47,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
     const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
-    console.log("data of basic details form : ", data)
+    // console.log("data of basic details form : ", data)
 
     useEffect(() => {
         if (data) {
@@ -70,15 +70,15 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     useEffect(() => {
         const discountedPrice = data.discountedPrice || 0;
 
-        console.log("discounted price for the gst : ", discountedPrice);
+        // console.log("discounted price for the gst : ", discountedPrice);
         const gst = data.gst || 0;
 
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
 
         const gstInRupees = (discountedPrice * gst) / 100;
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
         const totalWithGst = discountedPrice + gstInRupees;
-        console.log("gst for th gst : ", gst)
+        // console.log("gst for th gst : ", gst)
 
         setData({
             gstInRupees,
@@ -443,11 +443,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
 
 
-                    <div className="my-3">
+                    {/* <div className="my-3">
                         <Label>Enter Key Value</Label>
                         {rows.map((row, index) => (
                             <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg space-y-3">
-                                {/* Header Row */}
+                                
                                 <div className="flex justify-between items-center mb-2">
                                     <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>
                                     <button
@@ -460,11 +460,10 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                     </button>
                                 </div>
 
-                                {/* Fields Row: Title + Description */}
 
                                 {(data.keyValues || []).map((item, index) => (
                                     <div key={index} className="flex gap-4 mt-4">
-                                        {/* Key Input */}
+                                       
                                         <div className="w-1/2">
                                             <Input
                                                 type="text"
@@ -474,7 +473,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                             />
                                         </div>
 
-                                        {/* Value Input */}
                                         <div className="w-1/2">
                                             <Input
                                                 type="text"
@@ -499,16 +497,67 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             + Add New Key-Value
                         </button>
 
+                    </div> */}
+                    <div className="my-3">
+                        <Label>Enter Key Value</Label>
+                        {rows.map((row, index) => (
+                            <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg space-y-3">
+                                {/* Header Row */}
+                                <div className="flex justify-between items-center mb-2">
+                                    <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>
+                                    <button
+                                        type="button"
+                                        className="text-red-500 hover:text-red-700"
+                                        onClick={() => handleRemoveRow(index)}
+                                        aria-label="Remove Key-Value"
+                                    >
+                                        <TrashBinIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {/* Fields Row: Title + Description */}
+                                {(data.keyValues || []).map((item, index) => (
+                                <div key={index} className="flex gap-4 mt-4">
+                                    <div className="w-1/2">
+                                        <Input
+                                            type="text"
+                                            value={item.key}
+                                            onChange={(e) => handleRowChange(index, 'key', e.target.value)}
+                                            placeholder="Key"
+                                        />
+                                    </div>
+
+                                    <div className="w-1/2">
+                                        <Input
+                                            type="text"
+                                            value={item.value}
+                                            onChange={(e) => handleRowChange(index, 'value', e.target.value)}
+                                            placeholder="Value"
+                                        />
+                                    </div>
+                                </div>
+                                ))}
+                            </div>
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={handleAddRow}
+                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+                        >
+                            + Add New Key-Value
+                        </button>
                     </div>
+
 
                     <div className='py-3'>
                         <Label>Recommended Service</Label>
                         <div className="px-3 py-1 flex flex-wrap items-center gap-2">
-                           <Switch
-  label="Recommended"
-  checked={!!data.recommendedServices}
-  onChange={handleSwitchChange}
-/>
+                            <Switch
+                                label="Recommended"
+                                checked={!!data.recommendedServices}
+                                onChange={handleSwitchChange}
+                            />
 
 
                         </div>
