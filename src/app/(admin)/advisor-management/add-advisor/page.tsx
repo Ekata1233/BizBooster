@@ -11,17 +11,10 @@ import axios from 'axios';
 
 
 interface AddAdvisorProps {
-  params: {
-    advisorId?: string; 
-  };
-  
-  searchParams: { [key: string]: string | string[] | undefined }; 
+  advisorIdToEdit?: string;
 }
 
-const AddAdvisor: React.FC<AddAdvisorProps> = ({ params }) => {
-
-  const advisorIdToEdit = params.advisorId;
-
+const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
   const { addAdvisor, updateAdvisor } = useAdvisor();
 
   const [name, setName] = useState('');
