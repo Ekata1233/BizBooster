@@ -9,7 +9,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdvisor } from '@/context/Advisor';
 import axios from 'axios';
 
-interface AddAdvisorProps {
+export interface AddAdvisorProps {
   advisorIdToEdit?: string;
 }
 
