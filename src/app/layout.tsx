@@ -32,7 +32,7 @@ import { ReviewProvider } from '@/context/ReviewContext';
 import { AdProvider } from '@/context/AdContext';
 import { GalleryProvider } from '@/context/GalleryContext';
 import { OfferProvider } from '@/context/OfferContext';
-
+import { AdvisorProvider } from '@/context/Advisor';
 
 
 
@@ -53,6 +53,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <SidebarProvider>
+            <AdvisorProvider>
             <OfferProvider>
             <AuthProvider>
               <UserProvider>
@@ -111,6 +112,7 @@ export default function RootLayout({
               </UserProvider>
             </AuthProvider>
             </OfferProvider>
+            </AdvisorProvider>
           </SidebarProvider>
         </ThemeProvider>
 

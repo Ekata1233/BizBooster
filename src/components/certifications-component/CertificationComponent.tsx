@@ -269,7 +269,7 @@ const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }
                                 <Input
                                     id="newVideoUrl"
                                     type="text"
-                                    placeholder="https://example.com/video.mp4"
+                                    placeholder="https://example.com/video"
                                     value={newVideoUrl}
                                     onChange={(e) => setNewVideoUrl(e.target.value)}
                                 />

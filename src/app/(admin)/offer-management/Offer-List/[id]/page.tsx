@@ -12,6 +12,7 @@ type FAQItem = { question: string; answer: string };
 type OfferEntry = {
   _id: string;
   bannerImage: string;
+  thumbnailImage: string;
   offerStartTime: string;
   offerEndTime: string;
   galleryImages: string[];
@@ -76,6 +77,19 @@ const OfferDetailPage: React.FC = () => {
         <PhotoIcon className="w-7 h-7 text-indigo-600" />
         Offer Details
       </h1>
+
+         {/* Thumbnail */}
+
+       <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+          <PhotoIcon className="w-5 h-5 text-gray-700" /> Thumbnail
+        </h2>
+        {offer.thumbnailImage ? (
+          <img src={offer.thumbnailImage} alt="Thumbnail" className="w-full h-64 object-fit rounded shadow-md" />
+        ) : (
+          <p>No Thumbnail image</p>
+        )}
+      </div>
 
       {/* Banner */}
       <div className="mb-6">

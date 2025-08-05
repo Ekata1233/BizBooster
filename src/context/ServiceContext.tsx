@@ -21,7 +21,7 @@ interface FranchiseDetails {
   extraSections?: ExtraSection[];
 }
 
-interface Service {
+export interface Service {
   _id: string;
   serviceName: string;
   thumbnailImage: string;

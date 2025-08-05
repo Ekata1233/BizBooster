@@ -16,7 +16,7 @@ interface Video {
   videoName: string;
   videoDescription: string;
   videoUrl: string;
-  videoImageUrl?: string; // <-- ADDED THIS FIELD
+  videoImageUrl?: string; 
 }
 
 interface Certificate {
@@ -24,7 +24,7 @@ interface Certificate {
   name: string;
   description: string;
   imageUrl: string;
-  video: Video[]; // Ensure this is always an array
+  video: Video[]; 
 }
 
 const CertificateDetailPage: React.FC = () => {
@@ -36,8 +36,8 @@ const CertificateDetailPage: React.FC = () => {
   const { certificates, deleteCertificate, deleteTutorial: deleteVideoInCertificate } = useCertificate();
 
   const [certificate, setCertificate] = useState<Certificate | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [isLoading, setIsLoading] = useState(true); 
+  const [error, setError] = useState<string | null>(null); 
 
   
   const loadCertificateDetails = useCallback(async () => {
@@ -50,19 +50,13 @@ const CertificateDetailPage: React.FC = () => {
     try {
       const found = certificates.find((c) => c._id === id);
       if (found) {
-        // Ensure 'video' is an array, default to empty array if undefined/null
         setCertificate({ ...found, video: found.video || [] } as Certificate);
-      } else {
-        // If not found in context, fetch from API (useful on direct URL access/refresh)
-        // Make sure this API route exists and returns the 'videoImageUrl'
+      } else { 
         const res = await axios.get(`/api/academy/certifications/${id}`);
-        // Assuming res.data is the certificate object itself.
-        // Ensure 'video' is an array, default to empty array if undefined/null
         setCertificate({ ...res.data, video: res.data.video || [] } as Certificate);
       }
     } catch (err: unknown) {
       console.error('Failed to fetch tutorial details:', err);
-      // More robust error handling for axios errors
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Failed to load tutorial details.');
       } else if (err instanceof Error) {
@@ -73,7 +67,7 @@ const CertificateDetailPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [id, certificates]); // Add certificates to dependency array
+  }, [id, certificates]); 
 
   useEffect(() => {
     loadCertificateDetails();
@@ -87,7 +81,7 @@ const CertificateDetailPage: React.FC = () => {
 
     try {
       await deleteVideoInCertificate(certificate._id, videoIdx);
-      loadCertificateDetails(); // Refresh certificate info after deletion
+      loadCertificateDetails(); 
       alert('Video deleted successfully!');
     } catch (err: unknown) {
       console.error('Delete video error:', err);
@@ -106,7 +100,7 @@ const CertificateDetailPage: React.FC = () => {
     try {
       await deleteCertificate(certificate._id);
       alert('Tutorial deleted successfully!');
-      router.back(); // Navigate back after successful deletion
+      router.back(); 
     } catch (err: unknown) {
       console.error('Delete tutorial error:', err);
       if (axios.isAxiosError(err)) {
@@ -118,21 +112,21 @@ const CertificateDetailPage: React.FC = () => {
   };
 
   const handleEdit = (certId: string, videoIdx: number) => {
-    // This now consistently redirects to the update page/modal
+   
     router.push(`/academy/certifications-management/updateModals/${certId}/${videoIdx}`);
   };
 
 
   if (isLoading) return <p className="p-8 text-center text-gray-600">Loading tutorial details...</p>;
   if (error) return <p className="p-8 text-center text-red-600">Error: {error}</p>;
-  // Check if certificate exists before trying to access its properties
+  
   if (!certificate) return <p className="p-8 text-center text-gray-600">Tutorial not found.</p>;
 
   return (
     <div className="min-h-screen bg-white p-6 sm:p-8 md:p-10 font-sans">
       <PageBreadcrumb pageTitle="Tutorial Detail" />
 
-      {/* Header Section */}
+    
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 p-6 sm:p-8">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-black mb-4 sm:mb-0">
           {certificate.name}
@@ -142,16 +136,16 @@ const CertificateDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Main Info Card (Image and Description) */}
+  
       <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm mb-8 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
-        {/* Image on Left */}
+    
         <div className="flex-shrink-0 w-full md:w-2/5 lg:w-1/3 relative overflow-hidden rounded-2xl shadow-xl">
           {certificate.imageUrl ? (
             <Image
               src={certificate.imageUrl}
               alt={certificate.name}
-              width={600} // Adjusted for better quality/display
-              height={350} // Adjusted height
+              width={600} 
+              height={350} 
               className="rounded-2xl object-cover w-full h-auto shadow-sm transform transition-transform duration-300 hover:scale-105"
             />
           ) : (
@@ -161,7 +155,7 @@ const CertificateDetailPage: React.FC = () => {
           )}
         </div>
 
-        {/* Data on Right, stacked */}
+       
         <div className="flex-grow space-y-5 text-gray-800">
           <h2 className="text-2xl sm:text-3xl font-bold text-black leading-tight">
             {certificate.name}
@@ -172,34 +166,32 @@ const CertificateDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Videos List Section */}
+   
       <div className="p-6 sm:p-8 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-black mb-6 pb-4">Tutorial Videos</h2>
-        {/* Use (certificate.video || []).length to safely check length */}
+        <h2 className="text-2xl sm:text-3xl font-bold text-black mb-6 pb-4">Tutorial Videos</h2>       
         {(certificate.video || []).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Use (certificate.video || []) to safely map over videos */}
             {(certificate.video || []).map((v, idx) => (
               <div key={idx} className="border border-blue-100 rounded-2xl p-5 shadow-md flex flex-col gap-4 bg-white hover:shadow-xl hover:border-blue-300 transition-all duration-300">
-                {/* --- VIDEO IMAGE DISPLAY --- */}
+                
                 {v.videoImageUrl && (
                   <div className="relative w-full h-40 rounded-lg overflow-hidden mb-2">
                     <Image
                       src={v.videoImageUrl}
                       alt={`${v.videoName || 'Video'} thumbnail`}
-                      fill // Use fill to make image cover the container
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimize image loading
+                      fill 
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                   </div>
                 )}
-                {/* Fallback if no image */}
+              
                 {!v.videoImageUrl && (
                   <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm mb-2">
                     No Thumbnail Available
                   </div>
                 )}
-                {/* --------------------------- */}
+
 
                 <h3 className="text-lg font-semibold text-gray-800">Video {idx + 1}: {v.videoName || 'Untitled Video'}</h3>
                 <strong>Video Url:
@@ -252,4 +244,4 @@ const CertificateDetailPage: React.FC = () => {
   );
 };
 
-export default CertificateDetailPage;
+export default CertificateDetailPage; 

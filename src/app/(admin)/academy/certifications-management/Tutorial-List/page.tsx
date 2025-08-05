@@ -189,7 +189,7 @@ const CertificatePage: React.FC = () => {
 
           {/* Tabs */}
           <div className="border-b border-gray-200 mt-4 flex gap-2">
-            {(['all', 'Active', 'Inactive'] as const).map((tab) => (
+            {(['all', ] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -284,12 +284,12 @@ const CertificatePage: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* --- NEW: Video Images column with thumbnails --- */}
+                        
                         <td className="px-5 py-4 text-gray-700">
                           <VideoImagePreviewCell videoDetails={row.videoDetails} />
                         </td>
 
-                        {/* --- MODIFIED: Video Files column (now only showing links) --- */}
+                        
                         <td className="px-5 py-4 text-gray-700">
                           <VideoPreviewCell urls={row.displayVideoUrls} />
                         </td>
@@ -325,7 +325,7 @@ const CertificatePage: React.FC = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={8} className="px-5 py-10 text-center text-gray-500"> {/* colspan updated to 8 */}
+                    <td colSpan={8} className="px-5 py-10 text-center text-gray-500">
                       No tutorials found.
                     </td>
                   </tr>

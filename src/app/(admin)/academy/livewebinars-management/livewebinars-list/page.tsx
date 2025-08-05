@@ -76,27 +76,49 @@ const LiveWebinar = () => {
       header: 'Webinar Name',
       accessor: 'name',
     },
-    {
-      header: 'Image',
-      accessor: 'imageUrl',
-      render: (row: TableData) => (
-        <div className="flex items-center gap-3">
-          <div className="w-20 h-20 overflow-hidden">
-            {row.imageUrl ? (
-              <Image
-                width={130}
-                height={130}
-                src={row.imageUrl}
-                alt={row.name || 'certification image'}
-                className="object-cover rounded"
-              />
-            ) : (
-              <span>No Image</span>
-            )}
-          </div>
-        </div>
-      ),
-    },
+    // {
+    //   header: 'Image',
+    //   accessor: 'imageUrl',
+    //   render: (row: TableData) => (
+    //     <div className="flex items-center gap-3">
+    //       <div className="w-20 h-20 overflow-hidden">
+    //         {row.imageUrl ? (
+    //           <Image
+    //             width={130}
+    //             height={130}
+    //             src={row.imageUrl}
+    //             alt={row.name || 'certification image'}
+    //             className="object-fit rounded"
+    //           />
+    //         ) : (
+    //           <span>No Image</span>
+    //         )}
+    //       </div>
+    //     </div>
+    //   ),
+    // },
+   {
+  header: 'Image',
+  accessor: 'imageUrl',
+  render: (row: TableData) => (
+    <div className="px-5 py-4"> {/* Added px-5 py-4 from your example */}
+      <div className="relative w-20 h-20"> {/* Apply relative, fixed w/h */}
+        {row.imageUrl ? (
+          <Image
+            src={row.imageUrl}
+            alt={row.name || 'certification image'}
+            fill // Use fill for the object-cover effect
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Recommended for responsive images
+            className="object-cover rounded-md ring-1 ring-gray-200" // Apply object-cover, rounded, ring
+            unoptimized={true} // Keep unoptimized if your images are not optimized by Next.js Image component (e.g., external URLs)
+          />
+        ) : (
+          <span className="flex items-center justify-center w-full h-full text-gray-400 bg-gray-100 rounded-md">No Image</span>
+        )}
+      </div>
+    </div>
+  ),
+},
     {
       header: 'Webinar Description',
       accessor: 'description',

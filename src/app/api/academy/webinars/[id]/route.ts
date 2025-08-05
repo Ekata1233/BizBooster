@@ -1,7 +1,3 @@
-
-
-
-
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";

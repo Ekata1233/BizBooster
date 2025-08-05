@@ -199,7 +199,7 @@ const WebinarPage = () => {
 
                     {/* Tabs */}
                     <div className="border-b border-gray-200 mt-4 flex gap-2">
-                        {(['all', 'Active', 'Inactive'] as const).map((tab) => (
+                        {(['all', ] as const).map((tab) => (
                             <button
                                 key={tab}
                                 type="button"
