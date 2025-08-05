@@ -115,7 +115,6 @@ export async function POST(req: NextRequest) {
                 ? "partial"
                 : "remaining";
 
-          // 1. Find the last Payment Request for this type
           const lastRequestIndex = existingLead.leads
             .map((l: any, index: number) => ({ ...l, index }))
             .reverse()
