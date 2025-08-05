@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -10,18 +9,17 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdvisor } from '@/context/Advisor';
 import axios from 'axios';
 
-// 1. Modify the interface to fully match Next.js App Router page props
+
 interface AddAdvisorProps {
   params: {
-    advisorId?: string; // This will capture the dynamic segment like [advisorId]
+    advisorId?: string; 
   };
-  // Add this line to satisfy the PageProps constraint
+  
   searchParams: { [key: string]: string | string[] | undefined }; 
 }
 
-// 2. Adjust the component's prop destructuring
 const AddAdvisor: React.FC<AddAdvisorProps> = ({ params }) => {
-  // Extract advisorId from params. It will be undefined if no dynamic segment is present.
+
   const advisorIdToEdit = params.advisorId;
 
   const { addAdvisor, updateAdvisor } = useAdvisor();
@@ -40,7 +38,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ params }) => {
 
   useEffect(() => {
     const fetchAdvisor = async () => {
-      // Now advisorIdToEdit correctly reflects the dynamic route segment
+    
       if (!advisorIdToEdit) {
         resetForm();
         return;
