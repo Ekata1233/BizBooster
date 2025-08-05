@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    console.log("✅ Webhook Received:", body);
+    // console.log("✅ Webhook Received:", body);
 
     const {
       order: { order_id },
@@ -84,13 +84,15 @@ export async function POST(req: NextRequest) {
 
         const existingLead = await Lead.findOne({ checkout: checkoutId });
 
+        console.log("extisting liead : ", existingLead);
+
         if (existingLead) {
           const hasPaymentRequest = existingLead.leads.some(
-            (l: any) => l.statusType?.toLowerCase() === "payment request (partial/full)"
+            (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
           );
 
           const alreadyVerified = existingLead.leads.some(
-            (l: any) => l.statusType?.toLowerCase() === "payment verified"
+            (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
           );
 
           if (hasPaymentRequest && !alreadyVerified) {
@@ -103,13 +105,8 @@ export async function POST(req: NextRequest) {
           }
         }
 
-
-        console.log("✅ Updated Checkout:", {
-          checkoutId,
-          paidAmount: checkout.paidAmount,
-          remainingAmount: checkout.remainingAmount,
-          paymentStatus: checkout.paymentStatus,
-        });
+        console.log("after existing lead : ", existingLead)
+        
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
@@ -131,15 +128,15 @@ export async function POST(req: NextRequest) {
 
         const fullPackageAmount = pkg.grandtotal;
 
-        console.log("package amount : ", fullPackageAmount)
+        // console.log("package amount : ", fullPackageAmount)
 
         const user = await User.findById(myCustomerId);
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        console.log("paid amount  : ", newTotalPaid)
+        // console.log("paid amount  : ", newTotalPaid)
         const remaining = fullPackageAmount - newTotalPaid;
-        console.log("remaining amount : ", remaining)
+        // console.log("remaining amount : ", remaining)
 
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
@@ -152,25 +149,25 @@ export async function POST(req: NextRequest) {
               "https://biz-booster.vercel.app/api/distributePackageCommission",
               { userId: user._id }
             );
-            console.log("📤 Commission distribution triggered:", distRes.data);
+            // console.log("📤 Commission distribution triggered:", distRes.data);
           } catch (err: any) {
             console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
           }
         }
 
         await user.save();
-        console.log("✅ User payment info updated");
+        // console.log("✅ User payment info updated");
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
     }
 
 
-    console.log("myOrderId : ", myOrderId)
-    console.log("myCustomerId : ", myCustomerId)
+    // console.log("myOrderId : ", myOrderId)
+    // console.log("myCustomerId : ", myCustomerId)
 
 
-    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
+    // console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);
