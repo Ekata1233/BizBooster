@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import axios from "axios";
 import User from "@/models/User";
 import { Package } from "@/models/Package";
+import Lead from "@/models/Lead";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,6 +81,28 @@ export async function POST(req: NextRequest) {
         checkout.isPartialPayment = !isFullPayment;
 
         await checkout.save();
+
+        const existingLead = await Lead.findOne({ checkout: checkoutId });
+
+        if (existingLead) {
+          const hasPaymentRequest = existingLead.leads.some(
+            (l: any) => l.statusType?.toLowerCase() === "payment request (partial/full)"
+          );
+
+          const alreadyVerified = existingLead.leads.some(
+            (l: any) => l.statusType?.toLowerCase() === "payment verified"
+          );
+
+          if (hasPaymentRequest && !alreadyVerified) {
+            existingLead.leads.push({
+              statusType: "Payment verified",
+              description: "Payment verified via Cashfree",
+            });
+
+            await existingLead.save();
+          }
+        }
+
 
         console.log("✅ Updated Checkout:", {
           checkoutId,
