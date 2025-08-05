@@ -80,7 +80,6 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     }
   }, [userId]);
 
-  if (loading) return <p>Loading wallet...</p>;
 
   const isNotFound = error?.toLowerCase().includes('wallet not found');
   const isWalletAvailable = wallet && wallet._id && !isNotFound;
@@ -147,6 +146,9 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     },
   ];
 
+    if (loading) return <p>Loading wallet...</p>;
+
+    
   return (
     <ComponentCard title="Wallet">
       {/* Summary Cards */}

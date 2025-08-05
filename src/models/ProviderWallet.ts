@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IWalletTransaction {
   type: 'credit' | 'debit';
+  leadId : string;
   amount: number;
   description?: string;
   referenceId?: string;
@@ -35,6 +36,9 @@ export interface IProviderWallet extends Document {
 const TransactionSchema = new Schema<IWalletTransaction>(
   {
     type: { type: String, enum: ['credit', 'debit'], required: true },
+    leadId:{
+      type: String,
+    },
     amount: { type: Number, required: true, min: 0 },
     description: { type: String, maxlength: 255 },
     referenceId: { type: String, maxlength: 100 },
