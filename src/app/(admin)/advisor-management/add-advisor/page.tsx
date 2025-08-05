@@ -11,10 +11,17 @@
 
 
 // interface AddAdvisorProps {
-//   advisorIdToEdit?: string; // optional
+//   params: {
+//     advisorId?: string; 
+//   };
+  
+//   searchParams: { [key: string]: string | string[] | undefined }; 
 // }
 
-// const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
+// const AddAdvisor: React.FC<AddAdvisorProps> = ({ params }) => {
+
+//   const advisorIdToEdit = params.advisorId;
+
 //   const { addAdvisor, updateAdvisor } = useAdvisor();
 
 //   const [name, setName] = useState('');
@@ -244,12 +251,23 @@
 // };
 
 // export default AddAdvisor;
-import React from 'react'
 
-function page() {
+
+
+import { Suspense } from 'react';
+import AdvisorPage from './AddAdvisorForm';
+const Loading = () => (
+  <div className="container mx-auto px-4 py-8 text-center">
+    <h1 className="text-3xl font-bold mb-6">Loading Form...</h1>
+  </div>
+);
+
+export default function AddOfferPage() {
   return (
-    <div>page</div>
-  )
+    <Suspense fallback={<Loading />}>
+      <AdvisorPage />
+    </Suspense>
+  );
 }
 
-export default page
+
