@@ -206,30 +206,34 @@ export async function PUT(req: NextRequest) {
         headers: corsHeaders,
       });
     }
-  } catch (error: any) {
+  }catch (error: unknown) { // Use 'unknown' for better type safety
     console.error("PUT error:", error);
 
-    if (error?.code === 11000) {
+    // Mongoose duplicate key error (11000)
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 11000) {
       return NextResponse.json(
         { success: false, message: "Certification name must be unique." },
         { status: 409, headers: corsHeaders }
       );
     }
-
-    if (error?.name === "ValidationError" && "errors" in error) {
-      const messages = Object.values(error.errors).map((e: any) => e.message);
-      return NextResponse.json(
-        { success: false, message: messages.join(", ") },
-        { status: 400, headers: corsHeaders }
-      );
+    
+    // Mongoose validation error
+    if (error instanceof mongoose.Error.ValidationError) {
+        const messages = Object.values(error.errors).map((e) => e.message);
+        return NextResponse.json(
+            { success: false, message: messages.join(", ") },
+            { status: 400, headers: corsHeaders }
+        );
     }
 
+    // Generic error handling
     return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
+      { success: false, message: error instanceof Error ? error.message : "Internal Server Error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
