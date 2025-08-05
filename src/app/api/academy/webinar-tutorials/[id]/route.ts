@@ -205,88 +205,56 @@ export async function DELETE(req: NextRequest) {
 }
 
 
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
-  const { id } = params; // This `id` is the ID of the Webinar document
-
   try {
-    // Extract videoIndex from the URL's query parameters
-    const { searchParams } = new URL(req.url);
-    const videoIndexStr = searchParams.get("videoIndex");
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop(); // Extract ID from path
+    const videoIndexStr = url.searchParams.get('videoIndex');
 
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid Webinar ID format.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const webinar = await Webinars.findById(id);
+    if (!webinar) {
+      return NextResponse.json(
+        { success: false, message: 'Webinar not found.' },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // If specific video is requested
     if (videoIndexStr !== null) {
-      // If videoIndex is provided, try to return a specific video
       const videoIndex = parseInt(videoIndexStr, 10);
-
-      if (isNaN(videoIndex) || videoIndex < 0) {
+      if (isNaN(videoIndex) || videoIndex < 0 || videoIndex >= webinar.video.length) {
         return NextResponse.json(
-          { success: false, message: "Invalid video index provided." },
+          { success: false, message: 'Invalid or out-of-bounds video index.' },
           { status: 400, headers: corsHeaders }
         );
       }
 
-      const webinar = await Webinars.findById(id);
-
-      if (!webinar) {
-        return NextResponse.json(
-          { success: false, message: "Webinar not found." },
-          { status: 404, headers: corsHeaders }
-        );
-      }
-
-      if (videoIndex >= webinar.video.length) {
-        return NextResponse.json(
-          { success: false, message: "Video index out of bounds for the specified webinar." },
-          { status: 404, headers: corsHeaders }
-        );
-      }
-
-      const specificVideo = webinar.video[videoIndex];
-
       return NextResponse.json(
-        { success: true, video: specificVideo },
-        { status: 200, headers: corsHeaders }
-      );
-
-    } else {
-      // If no videoIndex, return the entire webinar document
-      const webinar = await Webinars.findById(id);
-
-      if (!webinar) {
-        return NextResponse.json(
-          { success: false, message: "Webinar not found." },
-          { status: 404, headers: corsHeaders }
-        );
-      }
-
-      return NextResponse.json(
-        { success: true, webinar },
+        { success: true, video: webinar.video[videoIndex] },
         { status: 200, headers: corsHeaders }
       );
     }
+
+    // If no videoIndex, return the full webinar
+    return NextResponse.json(
+      { success: true, webinar },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: unknown) {
-    console.error("GET /api/academy/webinars/[id] error:", error);
-    // Mongoose CastError for invalid ID format
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "name" in error &&
-      (error as { name: string }).name === "CastError"
-    ) {
-      return NextResponse.json(
-        { success: false, message: "Invalid Webinar ID format." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    console.error('GET /api/academy/webinars/[id] error:', error);
     return NextResponse.json(
       {
         success: false,
-        message: (error as Error).message || "Internal Server Error",
+        message: (error as Error).message || 'Internal Server Error',
       },
       { status: 500, headers: corsHeaders }
     );
