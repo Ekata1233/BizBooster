@@ -105,51 +105,33 @@ export async function POST(req: NextRequest) {
         //   }
         // }
 
-        const existingLead = await Lead.findOne({ checkout: checkoutId });
+               const existingLead = await Lead.findOne({ checkout: checkoutId });
+
+        console.log("extisting liead : ", existingLead);
 
         if (existingLead) {
-          const currentPaymentType =
-            checkout.paidAmount >= total
-              ? "full"
-              : checkout.paidAmount < total && checkout.paidAmount > 0
-                ? "partial"
-                : "remaining";
+          const hasPaymentRequest = existingLead.leads.some(
+            (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
+          );
 
-          const lastRequestIndex = existingLead.leads
-            .map((l: any, index: number) => ({ ...l, index }))
-            .reverse()
-            .find(
-              (l: any) =>
-                l.statusType?.toLowerCase() === "payment request (partial/full)" &&
-                l.paymentType === currentPaymentType
-            )?.index;
+          const alreadyVerified = existingLead.leads.some(
+            (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
+          );
 
-          if (lastRequestIndex !== undefined) {
-            // 2. Check if any "Payment verified" with same type exists after that request
-            const hasVerifiedAfterRequest = existingLead.leads
-              .slice(lastRequestIndex + 1)
-              .some(
-                (l: any) =>
-                  l.statusType?.toLowerCase() === "payment verified" &&
-                  l.paymentType === currentPaymentType
-              );
+          if (hasPaymentRequest && !alreadyVerified) {
+            existingLead.leads.push({
+              statusType: "Payment verified",
+              description: "Payment verified via Cashfree",
+            });
 
-            // 3. If not, add "Payment verified"
-            if (!hasVerifiedAfterRequest) {
-              existingLead.leads.push({
-                statusType: "Payment verified",
-                description: "Payment verified via Cashfree",
-                paymentType: currentPaymentType,
-              });
-
-              await existingLead.save();
-            }
+            await existingLead.save();
           }
         }
 
 
-        console.log("after existing lead : ", existingLead)
 
+        console.log("after existing lead : ", existingLead)
+        
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
