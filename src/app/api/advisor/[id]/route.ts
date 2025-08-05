@@ -10,12 +10,15 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-    await connectToDatabase();
+export async function PUT(req: NextRequest) {
+  await connectToDatabase();
 
-    try {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+    
         const formData = await req.formData();
-        const id = params.id;
+        // const id = params.id;
 
         const advisor = await Advisor.findById(id);
         if (!advisor) {
@@ -74,12 +77,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
   await connectToDatabase();
-  const advisorId = params.id;
 
   try {
-    const deleted = await Advisor.findByIdAndDelete(advisorId);
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+    const deleted = await Advisor.findByIdAndDelete(id);
     if (!deleted) {
       return NextResponse.json({ success: false, message: "Advisor not found." }, { status: 404, headers: corsHeaders });
     }
@@ -96,12 +100,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 
 
-export async function GET (req: NextRequest, {params} : {params : {id : string }}){
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
 
-    await connectToDatabase()
-     const advisorId = await params.id;
-    try{
-      const getData = await Advisor.findById(advisorId)
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+      const getData = await Advisor.findById(id)
 
       if(!getData){
         return NextResponse.json(

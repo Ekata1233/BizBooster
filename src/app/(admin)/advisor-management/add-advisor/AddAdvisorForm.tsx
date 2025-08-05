@@ -1,39 +1,31 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import dynamicImport from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
-// const AddCertificate = dynamicImport(
-//   () => import('@/components/certifications-component/CertificationComponent'),
-//   { ssr: false }
-// );
-
-const AddAdvisor = dynamicImport(
+const AddAdvisorForm = dynamic(
   () => import('@/components/advisor-component/AddAdvisorForm'),
   { ssr: false }
 );
 
-const AdvisorPage: React.FC = () => {
-  const searchParams = useSearchParams();
-  const [certificateId, setCertificateId] = useState<string | undefined>(undefined);
+// This interface is REQUIRED for a dynamic page component.
+interface AddAdvisorPageProps {
+  params: {
+    advisorId: string;
+  };
+}
 
-  useEffect(() => {
-    const id = searchParams.get('id') || searchParams.get('certificateId') || undefined;
-    setCertificateId(id);
-  }, [searchParams]);
+const Loading = () => (
+  <div className="text-center p-8">
+    <p>Loading form...</p>
+  </div>
+);
 
+export default function EditAdvisorPage({ params }: AddAdvisorPageProps) {
+  // We pass the advisorId from the URL params to the form component.
   return (
-    <div>
-      <div className="my-5">
-     
-        <AddAdvisor advisorIdToEdit={certificateId} />
-      </div>
-
-  
-    </div>
+    <Suspense fallback={<Loading />}>
+      <AddAdvisorForm advisorIdToEdit={params.advisorId} />
+    </Suspense>
   );
-};
-
-export default AdvisorPage;
-
+}
