@@ -266,6 +266,7 @@ export async function POST(req: Request) {
             source: "checkout",
             status: "success",
             createdAt: new Date(),
+            leadId: checkout.bookingId
         });
 
         let extraProviderShare = 0;
@@ -370,6 +371,7 @@ export async function POST(req: Request) {
                 source: "checkout",
                 status: "success",
                 createdAt: new Date(),
+                leadId: checkout.bookingId,
             });
         }
         await providerWallet.save();
@@ -396,6 +398,7 @@ export async function POST(req: Request) {
                 source: "adjustment",
                 status: "success",
                 createdAt: new Date(),
+                leadId: checkout.bookingId,
             });
 
             await providerWallet.save();
