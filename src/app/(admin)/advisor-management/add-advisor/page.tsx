@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -9,11 +10,20 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdvisor } from '@/context/Advisor';
 import axios from 'axios';
 
-export interface AddAdvisorProps {
-  advisorIdToEdit?: string;
+// 1. Modify the interface to fully match Next.js App Router page props
+interface AddAdvisorProps {
+  params: {
+    advisorId?: string; // This will capture the dynamic segment like [advisorId]
+  };
+  // Add this line to satisfy the PageProps constraint
+  searchParams: { [key: string]: string | string[] | undefined }; 
 }
 
-const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
+// 2. Adjust the component's prop destructuring
+const AddAdvisor: React.FC<AddAdvisorProps> = ({ params }) => {
+  // Extract advisorId from params. It will be undefined if no dynamic segment is present.
+  const advisorIdToEdit = params.advisorId;
+
   const { addAdvisor, updateAdvisor } = useAdvisor();
 
   const [name, setName] = useState('');
@@ -30,6 +40,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
 
   useEffect(() => {
     const fetchAdvisor = async () => {
+      // Now advisorIdToEdit correctly reflects the dynamic route segment
       if (!advisorIdToEdit) {
         resetForm();
         return;
@@ -46,7 +57,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
         setLanguage(data.language || '');
         setRating(data.rating?.toString() || '');
         setTags(data.tags || []);
-        setImageUrl(null);
+        setImageUrl(null); // Clear image when fetching existing advisor
       } catch (err) {
         setError('Error fetching advisor details: ' + (err as Error).message);
       } finally {
@@ -55,7 +66,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
     };
 
     fetchAdvisor();
-  }, [advisorIdToEdit]);
+  }, [advisorIdToEdit]); // Dependency array remains correct
 
   const resetForm = () => {
     setName('');
@@ -67,7 +78,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
     setTagInput('');
     setImageUrl(null);
     setError(null);
-    setFileInputKey(prevKey => prevKey + 1); 
+    setFileInputKey(prevKey => prevKey + 1);
   };
 
   const handleRemoveTag = (indexToRemove: number) => {
@@ -88,7 +99,9 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !phoneNumber  || !imageUrl || !language || !rating || !chat || tags.length === 0) {
+    if (!name || !phoneNumber || !imageUrl || !language || !rating || !chat || tags.length === 0) {
+      // IMPORTANT: Do NOT use alert() in production React/Next.js apps.
+      // Use a custom modal or toast notification system for user feedback.
       alert('Please fill in all required fields.');
       return;
     }
@@ -104,14 +117,14 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
       formData.append('rating', rating);
       tags.forEach(tag => formData.append('tags', tag));
       if (imageUrl) formData.append('imageUrl', imageUrl);
-    
+
 
       if (advisorIdToEdit) {
         await updateAdvisor(advisorIdToEdit, formData);
-        alert('Advisor updated successfully!');
+        alert('Advisor updated successfully!'); // Replace with proper UI feedback
       } else {
         await addAdvisor(formData);
-        alert('Advisor added successfully!');
+        alert('Advisor added successfully!'); // Replace with proper UI feedback
       }
 
       resetForm();
@@ -144,13 +157,11 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
             />
           </div>
 
-        
-
           <div>
             <Label>Main Image</Label>
             <FileInput
               accept="image/*"
-               key={fileInputKey} 
+              key={fileInputKey}
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
@@ -242,4 +253,3 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
 };
 
 export default AddAdvisor;
-
