@@ -261,7 +261,8 @@ interface AddAdvisorProps {
   params: {
     advisorId?: string; // This will capture the dynamic segment like [advisorId]
   };
-  searchParams: { [key: string]: string | string[] | undefined }; // Added this line
+  // Add this line to satisfy the PageProps constraint
+  searchParams: { [key: string]: string | string[] | undefined }; 
 }
 
 // 2. Adjust the component's prop destructuring
