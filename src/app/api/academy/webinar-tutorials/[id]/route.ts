@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const formData = await req.formData();
-
+    console.log("form data : ",formData)
     const videoIndexStr = formData.get("videoIndex") as string | null;
     const videoName = formData.get("videoName") as string;
     const videoDescription = formData.get("videoDescription") as string;
@@ -88,7 +88,7 @@ export async function PUT(req: NextRequest) {
       targetVideo.videoImageUrl = "";
     }
 
-//     await webinarToUpdate.save();
+    await webinarToUpdate.save();
 
     return NextResponse.json(webinarToUpdate, {
       status: 200,
