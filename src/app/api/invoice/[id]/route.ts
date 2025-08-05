@@ -170,18 +170,26 @@ export async function GET(req: NextRequest) {
       borderWidth: 1,
     });
 
-    const customer = invoice.serviceCustomer || {};
-drawText('Customer Details', 60, y - 20, 14, rgb(0, 0, 0.5), true);
+   const customer = invoice.serviceCustomer || {};
+drawText('Customer Details', 60, y - 10, 14, rgb(0, 0, 0.5), true);
 y -= 35;
 
-// First row
+// First row - Bold Labels
+drawText('Name', 60, y, 10, rgb(0, 0, 0), true);
+drawText('Email', 200, y, 10, rgb(0, 0, 0), true);
+drawText('Phone', 350, y, 10, rgb(0, 0, 0), true);
+drawText('Invoice (INR)', 470, y, 10, rgb(0, 0, 0), true);
+y -= 15; // Move down for values
+
+// Second row - Values
 drawText(customer.name || customer.fullName || '-', 60, y);
 drawText(customer.email || '-', 200, y);
 drawText(customer.mobile || customer.phone || '-', 350, y);
 
 // New column: Invoice (INR)
 const invoiceAmount = invoice.total || 0;
-drawText(`₹${invoiceAmount.toFixed(2)}`, 470, y);
+drawText(`₹${grandTotal.toFixed(2)}`, 470, y, 14, rgb(0, 0.31, 0.615), true); // Bold + Blue (#00509D)
+
 
     y -= 20;
     drawLine(y);
