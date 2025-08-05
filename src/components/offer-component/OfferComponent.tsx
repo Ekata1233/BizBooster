@@ -34,6 +34,7 @@ interface FAQItem {
 interface OfferResponse {
   _id: string;
   bannerImage: string;
+  thumbnailImage: string;
   offerStartTime: string;
   offerEndTime: string;
   galleryImages: string[];
@@ -84,15 +85,13 @@ function parseFaq(raw: string | FAQItem[] | undefined | null): FAQItem[] {
       const parsed = JSON.parse(raw);
       return parseFaq(parsed);
     } catch {
-      return [{ question: 'FAQ', answer: raw }];
+      return [{ question: raw, answer: raw }];
     }
   }
   return [];
 }
 
-/* ------------------------------------------------------------------ */
-/*  ID extraction helper: supports string or populated {_id} object   */
-/* ------------------------------------------------------------------ */
+
 function extractId(v: unknown): string {
   if (!v) return '';
   if (typeof v === 'string') return v;
@@ -121,6 +120,9 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   /* ---------------- Offer Form State ---------------- */
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   const [existingBannerUrl, setExistingBannerUrl] = useState<string | null>(null);
+
+  const [thumbnailImageFile, setThumbnailImageFile] = useState<File | null>(null);
+  const [existingThumbnailUrl, setExistingThumbnailUrl] = useState<string | null>(null);
 
   const [offerStartTime, setOfferStartTime] = useState('');
   const [offerEndTime, setOfferEndTime] = useState('');
@@ -200,6 +202,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
 
       // Basic fields
       setExistingBannerUrl(data.bannerImage || null);
+      setExistingThumbnailUrl(data.thumbnailImage || null);
       setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
       setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
       setExistingGalleryUrls(data.galleryImages || []);
@@ -240,6 +243,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   const resetForm = () => {
     setBannerImageFile(null);
     setExistingBannerUrl(null);
+    setExistingThumbnailUrl(null);
     setOfferStartTime('');
     setOfferEndTime('');
     setGalleryFiles([]);
@@ -259,6 +263,12 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     const file = e.target.files?.[0] || null;
     setBannerImageFile(file);
     if (file) setExistingBannerUrl(null);
+  };
+
+  const handleThumbnailImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setThumbnailImageFile(file);
+    if (file) setExistingThumbnailUrl(null);
   };
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,6 +292,8 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
 
     const fd = new FormData();
     if (bannerImageFile) fd.append('bannerImage', bannerImageFile);
+    if (thumbnailImageFile) fd.append('thumbnailImage', thumbnailImageFile);
+
     fd.append('offerStartTime', startVal);
     fd.append('offerEndTime', endVal);
     galleryFiles.forEach((f) => fd.append('galleryImages', f));
@@ -377,20 +389,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
             </div>
 
             {/* Subcategory */}
-            {/* <div>
-              <Label>Select Subcategory</Label>
-              <Select
-                options={subcategoryOptions}
-                value={selectedSubcategory}
-                placeholder="Select Subcategory"
-                onChange={(value: string) => {
-                  setSelectedSubcategory(value);
-                  setSelectedService('');
-                }}
-              />
-            </div> */}
-
-            {/* Subcategory */}
             <div>
               <Label>Select Subcategory</Label>
               <Select
@@ -401,7 +399,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                   setSelectedSubcategory(value);
                   setSelectedService('');
                 }}
-                // disabled prop removed because Select does not support it
               />
               {subcategoryOptions.length === 0 && (
                 <p className="text-xs text-gray-400 mt-1">No subcategories available.</p>
@@ -439,6 +436,27 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                     className="underline text-blue-600"
                   >
                     View Banner
+                  </a>
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="thumbnailImage">Thumbnail Image</Label>
+              <FileInput id="thumbnailImage" accept="image/*" onChange={handleThumbnailImageChange} />
+              {thumbnailImageFile && (
+                <p className="text-xs text-gray-500 mt-1">New: {thumbnailImageFile.name}</p>
+              )}
+              {existingThumbnailUrl && !thumbnailImageFile && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Current:&nbsp;
+                  <a
+                    href={existingThumbnailUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-600"
+                  >
+                    View Thumbnail
                   </a>
                 </p>
               )}
@@ -522,24 +540,30 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
             <div>
               <Label>Frequently Asked Questions</Label>
               {faqList.map((item, index) => (
-                <div key={index} className="border rounded-md p-4 mb-4">
+                <div key={item._id || index} className="border rounded-md p-4 mb-4">
                   <Input
                     type="text"
                     placeholder="Enter question"
                     value={item.question}
                     onChange={(e) => {
-                      const newFaq = [...faqList];
-                      newFaq[index].question = e.target.value;
-                      setFaqList(newFaq);
+                      // **FIXED:** Use the functional update form of `setFaqList`
+                      setFaqList(prevFaqList => {
+                        const newFaq = [...prevFaqList];
+                        newFaq[index].question = e.target.value;
+                        return newFaq;
+                      });
                     }}
                     className="mb-3"
                   />
                   <ClientSideCustomEditor
                     value={item.answer}
                     onChange={(value) => {
-                      const newFaq = [...faqList];
-                      newFaq[index].answer = value;
-                      setFaqList(newFaq);
+                      // **FIXED:** Use the functional update form of `setFaqList`
+                      setFaqList(prevFaqList => {
+                        const newFaq = [...prevFaqList];
+                        newFaq[index].answer = value;
+                        return newFaq;
+                      });
                     }}
                   />
                   {faqList.length > 1 && (
@@ -547,8 +571,11 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                       type="button"
                       className="mt-2 text-red-600 text-sm"
                       onClick={() => {
-                        const newFaq = faqList.filter((_, i) => i !== index);
-                        setFaqList(newFaq.length ? newFaq : [{ question: '', answer: '' }]);
+                        // **FIXED:** Use the functional update form of `setFaqList`
+                        setFaqList(prevFaqList => {
+                          const newFaq = prevFaqList.filter((_, i) => i !== index);
+                          return newFaq.length ? newFaq : [{ question: '', answer: '' }];
+                        });
                       }}
                     >
                       Remove
@@ -566,7 +593,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
             </div>
 
             <div>
-              <Label>Terms &amp; Conditions</Label>
+              <Label>Terms & Conditions</Label>
               <ClientSideCustomEditor
                 value={termsAndConditions}
                 onChange={setTermsAndConditions}

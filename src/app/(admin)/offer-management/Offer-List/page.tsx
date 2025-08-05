@@ -14,6 +14,7 @@ import Input from '@/components/form/input/InputField'; // your styled input wra
 interface OfferEntry {
   _id: string;
   bannerImage: string;
+  thumbnailImage: string;
   offerStartTime: string;
   offerEndTime: string;
   galleryImages: string[];
@@ -223,6 +224,7 @@ const OfferListPage: React.FC = () => {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className=" text-gray-600">
+                  <th className="px-5 py-3 font-medium text-left">Thumbnail Image</th>
                   <th className="px-5 py-3 font-medium text-left">Banner</th>
                   <th className="px-5 py-3 font-medium text-left">Gallery</th>
                   <th className="px-5 py-3 font-medium text-left">Start</th>
@@ -242,6 +244,19 @@ const OfferListPage: React.FC = () => {
                       key={offer._id}
                       className="border-t border-gray-100 hover:bg-gray-50 transition"
                     >
+                      <td className="px-5 py-3">
+                        {offer.thumbnailImage ? (
+                          <img
+                            src={offer.thumbnailImage}
+                            alt="ThumbnailImage"
+                            className="w-16 h-16 object-cover rounded-md ring-1 ring-gray-200"
+                          />
+                        ) : (
+                          <span className="text-gray-400 italic text-xs">
+                            No Image
+                          </span>
+                        )}
+                      </td>
                       <td className="px-5 py-3">
                         {offer.bannerImage ? (
                           <img

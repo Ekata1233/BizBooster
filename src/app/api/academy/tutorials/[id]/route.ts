@@ -151,3 +151,74 @@ export async function PUT(
     );
   }
 }
+
+
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  await connectToDatabase();
+
+  const { id } = params; // This `id` is the ID of the Certifications document
+
+  try {
+    // Extract videoIndex from the URL's query parameters
+    const { searchParams } = new URL(req.url);
+    const videoIndexStr = searchParams.get("videoIndex");
+
+    if (videoIndexStr === null) {
+      return NextResponse.json(
+        { success: false, message: "videoIndex is required for deleting a video." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const videoIndex = parseInt(videoIndexStr, 10);
+
+    if (isNaN(videoIndex) || videoIndex < 0) {
+      return NextResponse.json(
+        { success: false, message: "Invalid video index provided." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const certification = await Certifications.findById(id);
+
+    if (!certification) {
+      return NextResponse.json(
+        { success: false, message: "Certification not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // Check if the video index is within the bounds of the array
+    if (videoIndex >= certification.video.length) {
+      return NextResponse.json(
+        { success: false, message: "Video index out of bounds." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Remove the video at the specified index
+    // Using splice to remove the item from the array
+    const [deletedVideo] = certification.video.splice(videoIndex, 1);
+
+
+    await certification.save(); // Save the document with the video removed
+
+    return NextResponse.json(
+      { success: true, message: "Video deleted successfully.", deletedVideo },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    console.error("DELETE /api/academy/tutorials/[id] error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: (error as Error).message || "Internal Server Error",
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

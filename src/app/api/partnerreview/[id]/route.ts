@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { writeFile, unlink, mkdir } from "fs/promises";
 import path from "path";
@@ -136,4 +136,34 @@ export async function DELETE(req: Request) {
       { status: 500, headers: corsHeaders }
     );
   }
+}
+
+
+
+
+export async function GET (req: NextRequest, {params} : {params : {id : string }}){
+
+    await connectToDatabase()
+     const partnerReviewId = await params.id;
+    try{
+      const getData = await PartnerReview.findById(partnerReviewId)
+
+      if(!getData){
+        return NextResponse.json(
+            {success: false, message: "Advisor Id not found"},
+            {status: 404, headers: corsHeaders}
+        )
+      }
+         return NextResponse.json(
+                {success: true, data: getData},
+                {status: 200, headers: corsHeaders}
+            )
+   }
+   catch(error){
+      console.error('/api/advisor/[id]/get',error)
+      return NextResponse.json(
+        {success: false, message: (error as Error).message || "Internal Server Error"},
+        {status: 500, headers: corsHeaders}
+      )
+   }
 }

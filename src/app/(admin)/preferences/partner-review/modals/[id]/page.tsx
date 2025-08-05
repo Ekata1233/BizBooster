@@ -57,7 +57,7 @@ const EditPartnerReviewPage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       alert('Partner Review updated successfully!');
-      router.push('/preferences/partner-review');
+      router.push('/preferences/partner-review/entry-list');
     } catch (error) {
       console.error('Error updating review:', error);
       alert('Failed to update review.');
@@ -67,7 +67,7 @@ const EditPartnerReviewPage = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg">
+    <div className="w-full mx-auto p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg">
       <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
         Edit Partner Review
       </h2>
@@ -83,7 +83,7 @@ const EditPartnerReviewPage = () => {
           />
         </div>
 
-        {/* YouTube Video URL */}
+        
         <div>
           <Label>YouTube Video URL</Label>
           <Input
@@ -93,7 +93,7 @@ const EditPartnerReviewPage = () => {
           />
         </div>
 
-        {/* Replace Image */}
+      
         <div>
           <Label>Replace Image (optional)</Label>
           <FileInput
@@ -114,7 +114,7 @@ const EditPartnerReviewPage = () => {
 
       {/* Buttons */}
       <div className="flex justify-end gap-4 mt-10">
-        <Link href="/preferences/partner-review">
+        <Link href="/preferences/partner-review/entry-list">
           <Button variant="outline">Cancel</Button>
         </Link>
         <Button onClick={handleUpdate} disabled={loading}>
