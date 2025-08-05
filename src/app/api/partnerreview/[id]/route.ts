@@ -141,29 +141,41 @@ export async function DELETE(req: Request) {
 
 
 
-export async function GET (req: NextRequest, {params} : {params : {id : string }}){
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
 
-    await connectToDatabase()
-     const partnerReviewId = await params.id;
-    try{
-      const getData = await PartnerReview.findById(partnerReviewId)
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
 
-      if(!getData){
-        return NextResponse.json(
-            {success: false, message: "Advisor Id not found"},
-            {status: 404, headers: corsHeaders}
-        )
-      }
-         return NextResponse.json(
-                {success: true, data: getData},
-                {status: 200, headers: corsHeaders}
-            )
-   }
-   catch(error){
-      console.error('/api/advisor/[id]/get',error)
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        {success: false, message: (error as Error).message || "Internal Server Error"},
-        {status: 500, headers: corsHeaders}
-      )
-   }
+        { success: false, message: 'Invalid Partner Review ID format' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const getData = await PartnerReview.findById(id);
+
+    if (!getData) {
+      return NextResponse.json(
+        { success: false, message: 'Partner Review not found' },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: getData },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error('/api/partner-review/[id]/get', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: (error as Error).message || 'Internal Server Error',
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }

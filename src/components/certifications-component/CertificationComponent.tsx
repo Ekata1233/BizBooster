@@ -22,7 +22,7 @@ interface VideoEntry {
     videoImageUrl: string | null; 
 }
 
-const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }) => {
+const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit }) => {
     const { addCertificate } = useCertificate();
 
     const [name, setName] = useState('');

@@ -26,12 +26,12 @@ export interface ILead extends Document {
   serviceCustomer: mongoose.Types.ObjectId;
   serviceMan: mongoose.Types.ObjectId;
   service: mongoose.Types.ObjectId;
-  amount: number;
+  // amount: number;
 
-  newAmount?: number;
-  newDiscountAmount?: number;
-  afterDicountAmount?: number;
-  newCommission?: string;
+  // newAmount?: number;
+  // newDiscountAmount?: number;
+  // afterDicountAmount?: number;
+  // newCommission?: string;
   extraService?: IExtraService[];
   leads: IStatus[];
   isAdminApproved?: boolean;
@@ -107,24 +107,24 @@ const LeadSchema = new Schema<ILead>(
     //   ref: "Service",
     //   required: true,
     // },
-    amount: {
-      type: Number,
-      // default: 0,
-      // required: true,
-    },
-    newAmount: {
-      type: Number,
-    },
-    newDiscountAmount: {
-      type: Number,
-    },
-    afterDicountAmount: {
-      type: Number,
-    },
-    newCommission: {
-      type: String,
-      default: "0"
-    },
+    // amount: {
+    //   type: Number,
+    //   default: 0,
+    //   required: true,
+    // },
+    // newAmount: {
+    //   type: Number,
+    // },
+    // newDiscountAmount: {
+    //   type: Number,
+    // },
+    // afterDicountAmount: {
+    //   type: Number,
+    // },
+    // newCommission: {
+    //   type: String,
+    //   default: "0"
+    // },
     extraService: [ExtraServiceSchema],
     leads: [StatusSchema], // Embedded status array
     isAdminApproved: {
