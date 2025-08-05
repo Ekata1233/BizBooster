@@ -308,9 +308,9 @@ y -= 20;
       color: rgb(0.95, 0.95, 0.95),
     });
 
-    drawText('bizbooster.lifelinecart.com', 60, y - 15, 10);
+    drawText('fetchtrue.com', 60, y - 15, 10);
     drawText('+91 93096 517500', width / 2 - 30, y - 15, 10);
-    drawText('info@bizbooster2x.com', width - 150, y - 15, 10);
+    drawText('info@fetchtrue.com', width - 150, y - 15, 10);
 
     const pdfBytes = await pdfDoc.save();
 
