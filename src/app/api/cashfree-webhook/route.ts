@@ -115,26 +115,36 @@ export async function POST(req: NextRequest) {
                 ? "partial"
                 : "remaining";
 
-          const hasPaymentRequest = existingLead.leads.some(
-            (l: any) =>
-              (l.statusType || "").toLowerCase() === "payment request (partial/full)" &&
-              (l.paymentType || "") === currentPaymentType
-          );
+          // 1. Find the last Payment Request for this type
+          const lastRequestIndex = existingLead.leads
+            .map((l: any, index: number) => ({ ...l, index }))
+            .reverse()
+            .find(
+              (l: any) =>
+                l.statusType?.toLowerCase() === "payment request (partial/full)" &&
+                l.paymentType === currentPaymentType
+            )?.index;
 
-          const alreadyVerifiedForThisType = existingLead.leads.some(
-            (l: any) =>
-              (l.statusType || "").toLowerCase() === "payment verified" &&
-              (l.paymentType || "") === currentPaymentType
-          );
+          if (lastRequestIndex !== undefined) {
+            // 2. Check if any "Payment verified" with same type exists after that request
+            const hasVerifiedAfterRequest = existingLead.leads
+              .slice(lastRequestIndex + 1)
+              .some(
+                (l: any) =>
+                  l.statusType?.toLowerCase() === "payment verified" &&
+                  l.paymentType === currentPaymentType
+              );
 
-          if (hasPaymentRequest && !alreadyVerifiedForThisType) {
-            existingLead.leads.push({
-              statusType: "Payment verified",
-              description: "Payment verified via Cashfree",
-              paymentType: currentPaymentType,
-            });
+            // 3. If not, add "Payment verified"
+            if (!hasVerifiedAfterRequest) {
+              existingLead.leads.push({
+                statusType: "Payment verified",
+                description: "Payment verified via Cashfree",
+                paymentType: currentPaymentType,
+              });
 
-            await existingLead.save();
+              await existingLead.save();
+            }
           }
         }
 
