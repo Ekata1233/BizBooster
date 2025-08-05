@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/utils/db";
 import Certifications from '@/models/Certifications';
 import imagekit from "@/utils/imagekit"; // Assuming you have imagekit setup
 import { v4 as uuidv4 } from 'uuid'; // For unique file names
+import mongoose from 'mongoose';
 
 // Assuming corsHeaders are defined somewhere accessible, e.g., in a separate file or directly here
 const corsHeaders = {
@@ -134,69 +135,86 @@ export async function PUT(req: NextRequest) {
 
 
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
-  const { id } = params; // This `id` is the ID of the Certifications document
-
   try {
-    // Extract videoIndex from the URL's query parameters
-    const { searchParams } = new URL(req.url);
-    const videoIndexStr = searchParams.get("videoIndex");
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop(); // extract ID from path
+    const videoIndexStr = url.searchParams.get("videoIndex");
 
-    if (videoIndexStr === null) {
+    // Validate ID
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: "videoIndex is required for deleting a video." },
+        { success: false, message: "Invalid tutorial ID format." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const videoIndex = parseInt(videoIndexStr, 10);
+    // If videoIndex is provided, delete the video from the array
+    if (videoIndexStr !== null) {
+      const videoIndex = parseInt(videoIndexStr, 10);
 
-    if (isNaN(videoIndex) || videoIndex < 0) {
+      if (isNaN(videoIndex) || videoIndex < 0) {
+        return NextResponse.json(
+          { success: false, message: "Invalid video index provided." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      const tutorial = await Certifications.findById(id);
+
+      if (!tutorial) {
+        return NextResponse.json(
+          { success: false, message: "Tutorial not found." },
+          { status: 404, headers: corsHeaders }
+        );
+      }
+
+      if (videoIndex >= tutorial.video.length) {
+        return NextResponse.json(
+          { success: false, message: "Video index out of bounds." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      const [deletedVideo] = tutorial.video.splice(videoIndex, 1);
+      await tutorial.save();
+
       return NextResponse.json(
-        { success: false, message: "Invalid video index provided." },
-        { status: 400, headers: corsHeaders }
+        {
+          success: true,
+          message: "Video deleted successfully.",
+          deletedVideo,
+        },
+        { status: 200, headers: corsHeaders }
       );
     }
 
-    const certification = await Certifications.findById(id);
+    // If no videoIndex, delete the entire tutorial
+    const deletedTutorial = await Certifications.findByIdAndDelete(id);
 
-    if (!certification) {
+    if (!deletedTutorial) {
       return NextResponse.json(
-        { success: false, message: "Certification not found." },
+        { success: false, message: "Tutorial not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    // Check if the video index is within the bounds of the array
-    if (videoIndex >= certification.video.length) {
-      return NextResponse.json(
-        { success: false, message: "Video index out of bounds." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // Remove the video at the specified index
-    // Using splice to remove the item from the array
-    const [deletedVideo] = certification.video.splice(videoIndex, 1);
-
-
-    await certification.save(); // Save the document with the video removed
-
     return NextResponse.json(
-      { success: true, message: "Video deleted successfully.", deletedVideo },
+      {
+        success: true,
+        message: "Tutorial deleted successfully.",
+        data: deletedTutorial,
+      },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("DELETE /api/academy/tutorials/[id] error:", error);
     return NextResponse.json(
       {
         success: false,
-        message: (error as Error).message || "Internal Server Error",
+        message: error instanceof Error ? error.message : "Internal Server Error",
       },
       { status: 500, headers: corsHeaders }
     );
