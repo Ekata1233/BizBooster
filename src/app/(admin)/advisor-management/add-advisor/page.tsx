@@ -245,8 +245,6 @@
 
 
 
-
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -258,13 +256,12 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdvisor } from '@/context/Advisor';
 import axios from 'axios';
 
-// 1. Modify the interface to match Next.js App Router page props
+// 1. Modify the interface to fully match Next.js App Router page props
 interface AddAdvisorProps {
   params: {
     advisorId?: string; // This will capture the dynamic segment like [advisorId]
   };
-  // If you also use query parameters (e.g., ?edit=true), you'd add:
-  // searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | string[] | undefined }; // Added this line
 }
 
 // 2. Adjust the component's prop destructuring
