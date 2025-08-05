@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IWalletTransaction {
   type: 'credit' | 'debit';
-  leadId : string;
+  leadId?: string;
   amount: number;
   description?: string;
   referenceId?: string;
