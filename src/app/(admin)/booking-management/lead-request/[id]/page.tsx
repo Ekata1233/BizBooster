@@ -206,9 +206,8 @@ console.log(isCommissionSet);
             </div>
           </ComponentCard>
 
-          <ComponentCard title="Payment Details">
+          {/* <ComponentCard title="Payment Details">
             <div className="grid grid-cols-3 gap-6">
-              {/* Block 1 */}
               <div className="flex flex-col">
                 <Label>Previous Price</Label>
                 <Input
@@ -237,7 +236,6 @@ console.log(isCommissionSet);
               </div>
 
 
-              {/* Block 2 */}
               <div className="flex flex-col">
                 <Label>Updated Price</Label>
                 <Input type="text" placeholder="Updated Price" value={lead.newAmount} />
@@ -249,7 +247,6 @@ console.log(isCommissionSet);
 
             </div>
             <div className="flex items-center gap-4">
-              {/* Input with symbol */}
               <div className="relative w-40">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
                   {newCommissionType === "percentage" ? "%" : "₹"}
@@ -263,7 +260,6 @@ console.log(isCommissionSet);
                 />
               </div>
 
-              {/* Type selector buttons */}
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -288,7 +284,7 @@ console.log(isCommissionSet);
               </div>
             </div>
 
-          </ComponentCard>
+          </ComponentCard> */}
 
 
           {(lead.extraService?.length ?? 0) > 0 && (
