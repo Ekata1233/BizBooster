@@ -177,7 +177,7 @@ interface ICheckout extends Document {
     remainingAmount: number;
     isPartialPayment: boolean;
 
-    cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card';
+    cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card'|'wallet';
     paymentStatus: 'pending' | 'paid' | 'failed' | 'partial';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     cashInHand?: boolean;
@@ -240,7 +240,7 @@ const checkoutSchema = new Schema<ICheckout>({
     remainingAmount: { type: Number, default: 0 },
     cashfreeMethod: {
         type: String,
-        enum: ['credit_card', 'upi', 'net_banking', 'debit_card'],
+        enum: ['credit_card', 'upi', 'net_banking', 'debit_card','wallet'],
         default: null,
     },
     paymentStatus: {

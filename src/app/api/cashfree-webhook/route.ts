@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import axios from "axios";
 import User from "@/models/User";
 import { Package } from "@/models/Package";
+import Lead from "@/models/Lead";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    console.log("✅ Webhook Received:", body);
+    // console.log("✅ Webhook Received:", body);
 
     const {
       order: { order_id },
@@ -81,12 +82,51 @@ export async function POST(req: NextRequest) {
 
         await checkout.save();
 
-        console.log("✅ Updated Checkout:", {
-          checkoutId,
-          paidAmount: checkout.paidAmount,
-          remainingAmount: checkout.remainingAmount,
-          paymentStatus: checkout.paymentStatus,
-        });
+    
+
+        const existingLead = await Lead.findOne({ checkout: checkoutId });
+
+        if (existingLead) {
+          // Normalize and include timestamps
+          const leadUpdates = existingLead.leads.map((l: any) => ({
+            statusType: (l.statusType || "").toLowerCase(),
+            createdAt: new Date(l.createdAt || 0),
+          }));
+
+          // Find all "payment request" entries
+          const paymentRequests = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment request (partial/full)")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime());
+
+          // Find the most recent "payment verified"
+          const latestVerified = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment verified")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+
+          const newestRequest = paymentRequests[0];
+
+          const shouldAddNewVerification =
+            !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified.createdAt);
+
+          if (shouldAddNewVerification) {
+            existingLead.leads.push({
+              statusType: "Payment verified",
+              description: "Payment verified via Cashfree",
+              createdAt: new Date(),
+            });
+
+            await existingLead.save();
+            console.log("✅ New 'Payment verified' added after latest payment request");
+          } else {
+            console.log("ℹ️ Payment already verified for latest request");
+          }
+        }
+
+
+
+
+        console.log("after existing lead : ", existingLead)
+
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
@@ -108,15 +148,15 @@ export async function POST(req: NextRequest) {
 
         const fullPackageAmount = pkg.grandtotal;
 
-        console.log("package amount : ", fullPackageAmount)
+        // console.log("package amount : ", fullPackageAmount)
 
         const user = await User.findById(myCustomerId);
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        console.log("paid amount  : ", newTotalPaid)
+        // console.log("paid amount  : ", newTotalPaid)
         const remaining = fullPackageAmount - newTotalPaid;
-        console.log("remaining amount : ", remaining)
+        // console.log("remaining amount : ", remaining)
 
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
@@ -129,25 +169,25 @@ export async function POST(req: NextRequest) {
               "https://biz-booster.vercel.app/api/distributePackageCommission",
               { userId: user._id }
             );
-            console.log("📤 Commission distribution triggered:", distRes.data);
+            // console.log("📤 Commission distribution triggered:", distRes.data);
           } catch (err: any) {
             console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
           }
         }
 
         await user.save();
-        console.log("✅ User payment info updated");
+        // console.log("✅ User payment info updated");
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
     }
 
 
-    console.log("myOrderId : ", myOrderId)
-    console.log("myCustomerId : ", myCustomerId)
+    // console.log("myOrderId : ", myOrderId)
+    // console.log("myCustomerId : ", myCustomerId)
 
 
-    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
+    // console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);
