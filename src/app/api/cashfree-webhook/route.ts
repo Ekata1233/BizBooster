@@ -105,33 +105,72 @@ export async function POST(req: NextRequest) {
         //   }
         // }
 
-               const existingLead = await Lead.findOne({ checkout: checkoutId });
+        //        const existingLead = await Lead.findOne({ checkout: checkoutId });
 
-        console.log("extisting liead : ", existingLead);
+        // console.log("extisting liead : ", existingLead);
+
+        // if (existingLead) {
+        //   const hasPaymentRequest = existingLead.leads.some(
+        //     (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
+        //   );
+
+        //   const alreadyVerified = existingLead.leads.some(
+        //     (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
+        //   );
+
+        //   if (hasPaymentRequest && !alreadyVerified) {
+        //     existingLead.leads.push({
+        //       statusType: "Payment verified",
+        //       description: "Payment verified via Cashfree",
+        //     });
+
+        //     await existingLead.save();
+        //   }
+        // }
+
+        const existingLead = await Lead.findOne({ checkout: checkoutId });
 
         if (existingLead) {
-          const hasPaymentRequest = existingLead.leads.some(
-            (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
-          );
+          // Normalize and include timestamps
+          const leadUpdates = existingLead.leads.map((l: any) => ({
+            statusType: (l.statusType || "").toLowerCase(),
+            createdAt: new Date(l.createdAt || 0),
+          }));
 
-          const alreadyVerified = existingLead.leads.some(
-            (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
-          );
+          // Find all "payment request" entries
+          const paymentRequests = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment request (partial/full)")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime());
 
-          if (hasPaymentRequest && !alreadyVerified) {
+          // Find the most recent "payment verified"
+          const latestVerified = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment verified")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+
+          const newestRequest = paymentRequests[0];
+
+          const shouldAddNewVerification =
+            !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified.createdAt);
+
+          if (shouldAddNewVerification) {
             existingLead.leads.push({
               statusType: "Payment verified",
               description: "Payment verified via Cashfree",
+              createdAt: new Date(),
             });
 
             await existingLead.save();
+            console.log("✅ New 'Payment verified' added after latest payment request");
+          } else {
+            console.log("ℹ️ Payment already verified for latest request");
           }
         }
 
 
 
+
         console.log("after existing lead : ", existingLead)
-        
+
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
