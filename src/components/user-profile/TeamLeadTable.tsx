@@ -38,9 +38,8 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     }
   }, [userId]);
 
-  if (referredUsersLoading) {
-    return <div className="p-4 text-center text-gray-500">Loading...</div>;
-  }
+
+
 
   const dataTeamLead: TeamLeadData[] =
     referredUsers?.map((user) => ({
@@ -152,6 +151,20 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
       ]
       : []),
   ];
+
+    if (referredUsersLoading) {
+    return <div className="p-4 text-center text-gray-500">Loading...</div>;
+  }
+
+  if (!dataTeamLead.length) {
+    return (
+      <ComponentCard title="Team Lead Table">
+        <div className="p-6 text-gray-600">
+          No team leads found at the moment. Once users join through your referral, they will appear here.
+        </div>
+      </ComponentCard>
+    );
+  }
 
   return (
     <ComponentCard title="Team Lead Table">

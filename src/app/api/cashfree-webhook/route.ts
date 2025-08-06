@@ -70,11 +70,12 @@ export async function POST(req: NextRequest) {
         const total = checkout.totalAmount;
         const remaining = total - paid;
 
-        const isFullPayment = paid >= total;
+        // const isFullPayment = paid >= total;
 
         checkout.cashfreeMethod = payment_group;
         checkout.paidAmount = (checkout.paidAmount || 0) + paid;
         checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+        const isFullPayment = checkout.paidAmount >= total;
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
         checkout.isPartialPayment = !isFullPayment;
 

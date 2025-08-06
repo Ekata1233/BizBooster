@@ -349,6 +349,7 @@ const EditAdvisorPage: React.FC = () => {
 
     try {
       await updateAdvisor(advisorId, dataToSubmit);
+      alert("Edit updated successfully!!")
       router.push("/advisor-management/advisor-list"); // Redirect on success
     } catch (err) {
       console.error("Failed to update advisor.", err);

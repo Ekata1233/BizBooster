@@ -12,11 +12,10 @@ const AddPartnerReviewPage = () => {
     const [title, setTitle] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [videoUrl, setVideoUrl] = useState('');
-    const [fileInputKey, setFileInputKey] = useState(0)
+    // The key state is no longer needed
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-  
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title.trim() || !imageFile || !videoUrl.trim()) {
@@ -36,10 +35,9 @@ const AddPartnerReviewPage = () => {
             });
             alert('Review added successfully!');
             setTitle('');
-            setImageFile(null);
-            setFileInputKey((key)=> key + 1)
+            setImageFile(null); // This is the correct way to clear the file state
             setVideoUrl('');
-            router.push('/preferences/partner-review/entry-list'); 
+            router.push('/preferences/partner-review/entry-list');
         } catch (error) {
             console.error('Error adding review:', error);
             alert('Failed to add review.');
@@ -61,14 +59,13 @@ const AddPartnerReviewPage = () => {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Enter title for the review"
-                        
                     />
                 </div>
                 <div>
                     <Label htmlFor="imageUpload">Upload Image</Label>
                     <FileInput
                         id="imageUpload"
-                        value={fileInputKey}
+                        // Removed the invalid 'value' prop
                         accept="image/*"
                         onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                         required
@@ -81,25 +78,24 @@ const AddPartnerReviewPage = () => {
                     <Label htmlFor="videoUrl">YouTube Video URL</Label>
                     <Input
                         id="videoUrl"
-                        type="url" // Use type="url" for better browser validation
+                        type="url"
                         value={videoUrl}
                         onChange={(e) => setVideoUrl(e.target.value)}
                         placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                        
                     />
                 </div>
                 <div className="flex gap-x-4">
-                <Button type="submit" className="w-1/4 bg-blue-600 text-white " disabled={isLoading}>
-                    {isLoading ? 'Adding Review...' : 'Add Review'}
-                </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push('/preferences/partner-review/entry-list')}
-                    className="w-1/4 "
-                >
-                    Back to List
-                </Button>
+                    <Button type="submit" className="w-1/4 bg-blue-600 text-white " disabled={isLoading}>
+                        {isLoading ? 'Adding Review...' : 'Add Review'}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.push('/preferences/partner-review/entry-list')}
+                        className="w-1/4 "
+                    >
+                        Back to List
+                    </Button>
                 </div>
             </form>
         </div>

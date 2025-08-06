@@ -116,7 +116,7 @@ const handleUpdate = async () => {
 
     try {
         await updateCertificate(editId, fd);
-      alert('Certificate updated successfully');
+      alert('Tutorial updated successfully');
       router.push('/academy/certifications-management/Tutorial-List'); 
     } catch (err) {
         console.error('Error updating webinar:', err);
