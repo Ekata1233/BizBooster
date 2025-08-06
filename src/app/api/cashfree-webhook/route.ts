@@ -82,51 +82,7 @@ export async function POST(req: NextRequest) {
 
         await checkout.save();
 
-        // const existingLead = await Lead.findOne({ checkout: checkoutId });
-
-        // console.log("extisting liead : ", existingLead);
-
-        // if (existingLead) {
-        //   const hasPaymentRequest = existingLead.leads.some(
-        //     (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
-        //   );
-
-        //   const alreadyVerified = existingLead.leads.some(
-        //     (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
-        //   );
-
-        //   if (hasPaymentRequest && !alreadyVerified) {
-        //     existingLead.leads.push({
-        //       statusType: "Payment verified",
-        //       description: "Payment verified via Cashfree",
-        //     });
-
-        //     await existingLead.save();
-        //   }
-        // }
-
-        //        const existingLead = await Lead.findOne({ checkout: checkoutId });
-
-        // console.log("extisting liead : ", existingLead);
-
-        // if (existingLead) {
-        //   const hasPaymentRequest = existingLead.leads.some(
-        //     (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
-        //   );
-
-        //   const alreadyVerified = existingLead.leads.some(
-        //     (l: any) => (l.statusType || "").toLowerCase() === "payment verified"
-        //   );
-
-        //   if (hasPaymentRequest && !alreadyVerified) {
-        //     existingLead.leads.push({
-        //       statusType: "Payment verified",
-        //       description: "Payment verified via Cashfree",
-        //     });
-
-        //     await existingLead.save();
-        //   }
-        // }
+    
 
         const existingLead = await Lead.findOne({ checkout: checkoutId });
 
