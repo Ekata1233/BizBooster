@@ -223,6 +223,10 @@ console.log("Pending withdraw:", newPendingWithdraw);
 
         await providerWallet.save();
 
+
+        console.log("provider wallet : ",providerWallet);
+        
+
         return NextResponse.json(
             {
                 success: true,
