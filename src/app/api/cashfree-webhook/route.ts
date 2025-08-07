@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
         await checkout.save();
 
-    
+
 
         const existingLead = await Lead.findOne({ checkout: checkoutId });
 
@@ -108,23 +108,23 @@ export async function POST(req: NextRequest) {
           const shouldAddNewVerification =
             !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified.createdAt);
 
-         if (shouldAddNewVerification) {
-  const description =
-    checkout.isPartialPayment
-      ? "Payment verified (Partial) via Cashfree"
-      : "Payment verified (Full) via Cashfree";
+          if (shouldAddNewVerification) {
+            const description =
+              checkout.isPartialPayment
+                ? "Payment verified (Partial) via Cashfree"
+                : "Payment verified (Full) via Cashfree";
 
-  existingLead.leads.push({
-    statusType: "Payment verified",
-    description,
-    createdAt: new Date(),
-  });
+            existingLead.leads.push({
+              statusType: "Payment verified",
+              description,
+              createdAt: new Date(),
+            });
 
-  await existingLead.save();
-  console.log("✅ New 'Payment verified' added after latest payment request");
-} else {
-  console.log("ℹ️ Payment already verified for latest request");
-}
+            await existingLead.save();
+            console.log("✅ New 'Payment verified' added after latest payment request");
+          } else {
+            console.log("ℹ️ Payment already verified for latest request");
+          }
 
         }
 

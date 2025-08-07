@@ -116,6 +116,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout";
 import ProviderWallet from "@/models/ProviderWallet";
+import Lead from "@/models/Lead"; // ✅ Ensure Lead model is imported
 import mongoose from "mongoose";
 
 const corsHeaders = {
@@ -127,17 +128,19 @@ const corsHeaders = {
 export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
-
+type LeadEntry = {
+    statusType?: string;
+    description?: string;
+    createdAt?: string | number | Date;
+};
 export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
     try {
         const url = new URL(req.url);
         const id = url.pathname.split("/").pop();
-        const body = await req.json(); // ✅ Get body
+        const body = await req.json();
         const statusTypeFromClient = body.statusType || null;
-        console.log("current status :", body);
-        console.log(statusTypeFromClient);
 
         if (!id) {
             return NextResponse.json(
@@ -155,7 +158,7 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // ✅ 2. Update checkout fields based on statusType
+        // 2. Update checkout fields for cash-in-hand
         const amount = checkout.remainingAmount || 0;
         checkout.paymentStatus = "paid";
         checkout.cashInHand = true;
@@ -168,7 +171,54 @@ export async function PUT(req: NextRequest) {
 
         await checkout.save();
 
-        // 3. Find provider's wallet
+        // 3. Update Lead status if cash-in-hand payment is latest
+        const existingLead = await Lead.findOne({ checkout: id });
+        if (existingLead) {
+            const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
+                statusType: (l.statusType || "").toLowerCase(),
+                createdAt: new Date(l.createdAt ?? 0),
+            }));
+
+            const paymentRequests = leadUpdates
+                .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
+                .sort((a: LeadEntry, b: LeadEntry) => {
+                    const aTime = new Date(a.createdAt ?? 0).getTime();
+                    const bTime = new Date(b.createdAt ?? 0).getTime();
+                    return bTime - aTime;
+                });
+
+            const latestVerified = leadUpdates
+                .filter((l: LeadEntry) => l.statusType === "payment verified")
+                .sort((a: LeadEntry, b: LeadEntry) => {
+                    const aTime = new Date(a.createdAt ?? 0).getTime();
+                    const bTime = new Date(b.createdAt ?? 0).getTime();
+                    return bTime - aTime;
+                })[0];
+
+            const newestRequest = paymentRequests[0];
+
+            const shouldAddNewVerification =
+                !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
+
+            if (shouldAddNewVerification) {
+                const description = checkout.isPartialPayment
+                    ? "Payment verified (Partial) via Customer - Cash in hand"
+                    : "Payment verified (Full) via Customer - Cash in hand";
+
+                existingLead.leads.push({
+                    statusType: "Payment verified",
+                    description,
+                    createdAt: new Date(),
+                });
+
+                await existingLead.save();
+                console.log("✅ New 'Payment verified' added after latest payment request");
+            } else {
+                console.log("ℹ️ Payment already verified for latest request");
+            }
+        }
+
+        // 4. Update provider wallet
         const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
         if (!providerWallet) {
             return NextResponse.json(
@@ -177,11 +227,7 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // Capture previous balance before updates
         const prevBalance = providerWallet.balance || 0;
-
-        // 4. Calculate new balances
-        console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw);
         const newBalance = prevBalance + amount;
         const newCashInHand = (providerWallet.cashInHand || 0) + amount;
         const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - amount, 0);
@@ -191,14 +237,6 @@ export async function PUT(req: NextRequest) {
         providerWallet.withdrawableBalance = newWithdrawableBalance;
         providerWallet.pendingWithdraw = newPendingWithdraw;
 
-        console.log("amount : ", amount);
-        console.log("✅ Updated wallet:");
-        console.log("Cash in hand:", newCashInHand);
-        console.log("Withdrawable balance:", newWithdrawableBalance);
-        console.log("Pending withdraw:", newPendingWithdraw);
-
-
-        // 5. Add transaction
         providerWallet.transactions.push({
             type: "credit",
             amount,
@@ -211,26 +249,15 @@ export async function PUT(req: NextRequest) {
             createdAt: new Date(),
         });
 
-        // 6. Apply balance updates
         providerWallet.balance = newBalance;
         providerWallet.totalCredits += amount;
-        // providerWallet.cashInHand = newCashInHand;
-
-        // <-- Only added/changed lines for withdrawableBalance & pendingWithdraw:
-        // providerWallet.withdrawableBalance = calculatedWithdrawableBalance;
-        // providerWallet.pendingWithdraw = calculatedPendingWithdraw;
-        // <-- end change
 
         await providerWallet.save();
-
-
-        console.log("provider wallet : ", providerWallet);
-
 
         return NextResponse.json(
             {
                 success: true,
-                message: "Checkout and provider wallet updated successfully.",
+                message: "Checkout, provider wallet, and lead status updated successfully.",
                 data: {
                     checkout,
                     providerWallet,
@@ -239,7 +266,7 @@ export async function PUT(req: NextRequest) {
             { status: 200, headers: corsHeaders }
         );
     } catch (error) {
-        console.error("Error updating cash in hand:", error);
+        console.error("❌ Error in PUT handler:", error);
         return NextResponse.json(
             { success: false, message: "Server error." },
             { status: 500, headers: corsHeaders }
