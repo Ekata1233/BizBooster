@@ -116,7 +116,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout";
 import ProviderWallet from "@/models/ProviderWallet";
-import Lead from "@/models/Lead"; // ✅ Ensure Lead model is imported
+import Lead from "@/models/Lead";
 import mongoose from "mongoose";
 
 const corsHeaders = {
@@ -128,11 +128,13 @@ const corsHeaders = {
 export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
+
 type LeadEntry = {
     statusType?: string;
     description?: string;
     createdAt?: string | number | Date;
 };
+
 export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
@@ -158,7 +160,6 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // 2. Update checkout fields for cash-in-hand
         const amount = checkout.remainingAmount || 0;
         checkout.paymentStatus = "paid";
         checkout.cashInHand = true;
@@ -176,6 +177,7 @@ export async function PUT(req: NextRequest) {
         if (existingLead) {
             const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
                 statusType: (l.statusType || "").toLowerCase(),
+                description: l.description,
                 createdAt: new Date(l.createdAt ?? 0),
             }));
 
@@ -201,6 +203,25 @@ export async function PUT(req: NextRequest) {
                 !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
 
             if (shouldAddNewVerification) {
+                const now = new Date();
+
+                // ✅ ✅ Remove any old "Payment request" entries with "Payment Link" in description
+                existingLead.leads = existingLead.leads.filter(
+                    (entry: LeadEntry) =>
+                        !(
+                            entry.statusType?.toLowerCase() === "payment request (partial/full)" &&
+                            entry.description?.toLowerCase().includes("payment link")
+                        )
+                );
+
+                // 1. Push "Payment request (partial/full)" for Cash in Hand
+                existingLead.leads.push({
+                    statusType: "Payment request (partial/full)",
+                    description: "Customer made payment via cash in hand",
+                    createdAt: now,
+                });
+
+                // 2. Then push "Payment verified"
                 const description = checkout.isPartialPayment
                     ? "Payment verified (Partial) via Customer - Cash in hand"
                     : "Payment verified (Full) via Customer - Cash in hand";
@@ -208,13 +229,11 @@ export async function PUT(req: NextRequest) {
                 existingLead.leads.push({
                     statusType: "Payment verified",
                     description,
-                    createdAt: new Date(),
+                    createdAt: now,
                 });
 
                 await existingLead.save();
-                console.log("✅ New 'Payment verified' added after latest payment request");
-            } else {
-                console.log("ℹ️ Payment already verified for latest request");
+                console.log("✅ Old payment link removed. New payment request and verified pushed.");
             }
         }
 
