@@ -184,16 +184,19 @@ export async function PUT(req: NextRequest) {
         console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw);
         const newBalance = prevBalance + amount;
         const newCashInHand = (providerWallet.cashInHand || 0) + amount;
+const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - amount, 0);
+const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - amount, 0);
 
-        // Calculate withdrawableBalance and pendingWithdraw based on previous balance minus amount
-        // (clamped to 0 so it never becomes negative)
-        const calculatedWithdrawableBalance =  (providerWallet.withdrawableBalance || 0) -amount
-        const calculatedPendingWithdraw =  (providerWallet.pendingWithdraw || 0) -amount
+providerWallet.cashInHand = newCashInHand;
+providerWallet.withdrawableBalance = newWithdrawableBalance;
+providerWallet.pendingWithdraw = newPendingWithdraw;
 
         console.log("amount : ", amount);
-        console.log("newCashInHand : ", newCashInHand);
-        console.log("calculatedWithdrawableBalance : ", calculatedWithdrawableBalance);
-        console.log("calculatedPendingWithdraw : ", calculatedPendingWithdraw);
+       console.log("✅ Updated wallet:");
+console.log("Cash in hand:", newCashInHand);
+console.log("Withdrawable balance:", newWithdrawableBalance);
+console.log("Pending withdraw:", newPendingWithdraw);
+
 
         // 5. Add transaction
         providerWallet.transactions.push({
@@ -214,8 +217,8 @@ export async function PUT(req: NextRequest) {
         providerWallet.cashInHand = newCashInHand;
 
         // <-- Only added/changed lines for withdrawableBalance & pendingWithdraw:
-        providerWallet.withdrawableBalance = calculatedWithdrawableBalance;
-        providerWallet.pendingWithdraw = calculatedPendingWithdraw;
+        // providerWallet.withdrawableBalance = calculatedWithdrawableBalance;
+        // providerWallet.pendingWithdraw = calculatedPendingWithdraw;
         // <-- end change
 
         await providerWallet.save();
