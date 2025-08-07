@@ -174,61 +174,37 @@ export async function PUT(req: NextRequest) {
 
         // 3. Update Lead status if cash-in-hand payment is latest
         const existingLead = await Lead.findOne({ checkout: id });
-<<<<<<< HEAD
         if (existingLead) {
             const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
                 statusType: (l.statusType || "").toLowerCase(),
                 description: l.description,
                 createdAt: new Date(l.createdAt ?? 0),
             }));
-=======
->>>>>>> be872a4bc2cff74f1d04e73e27f0dc070a5d1830
 
-if (existingLead) {
-    const leadUpdates = existingLead.leads.map((l: LeadEntry, idx: number) => ({
-        ...l,
-        index: idx,
-        statusType: (l.statusType || "").toLowerCase(),
-        createdAt: new Date(l.createdAt ?? 0),
-    }));
-
-    const paymentRequests = leadUpdates
-        .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
-        .sort((a:LeadEntry, b:LeadEntry) =>  {
+            const paymentRequests = leadUpdates
+                .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
+                .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
                     return bTime - aTime;
                 });
 
-    const latestRequest = paymentRequests[0];
-
-    const latestVerified = leadUpdates
-        .filter((l: LeadEntry) => l.statusType === "payment verified")
-        .sort((a:LeadEntry, b:LeadEntry) => {
+            const latestVerified = leadUpdates
+                .filter((l: LeadEntry) => l.statusType === "payment verified")
+                .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
                     return bTime - aTime;
                 })[0];
 
-    const isVerifiedForRequest =
-        latestVerified &&
-        latestRequest &&
-        latestVerified.createdAt > latestRequest.createdAt;
+            const newestRequest = paymentRequests[0];
 
-    if (latestRequest && !isVerifiedForRequest) {
-        // 1. Update the description
-        existingLead.leads[latestRequest.index] = {
-            ...existingLead.leads[latestRequest.index],
-            description: "Customer made payment via cash in hand",
-        };
+            const shouldAddNewVerification =
+                !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
 
-        // 2. Add "Payment verified"
-        const now = new Date();
-        const description = checkout.isPartialPayment
-            ? "Payment verified (Partial) via Customer - Cash in hand"
-            : "Payment verified (Full) via Customer - Cash in hand";
+            if (shouldAddNewVerification) {
+                const now = new Date();
 
-<<<<<<< HEAD
                 // ✅ ✅ Remove any old "Payment request" entries with "Payment Link" in description
                 existingLead.leads = existingLead.leads.filter(
                     (entry: LeadEntry) =>
@@ -244,22 +220,12 @@ if (existingLead) {
                     description: "Customer made payment via cash in hand",
                     createdAt: now,
                 });
-=======
-        existingLead.leads.push({
-            statusType: "Payment verified",
-            description,
-            createdAt: now,
-        });
->>>>>>> be872a4bc2cff74f1d04e73e27f0dc070a5d1830
 
-        await existingLead.save();
-        console.log("✅ Updated payment request & added payment verified.");
-    } else {
-        console.log("⚠️ Already verified or no valid payment request found.");
-    }
-}
+                // 2. Then push "Payment verified"
+                const description = checkout.isPartialPayment
+                    ? "Payment verified (Partial) via Customer - Cash in hand"
+                    : "Payment verified (Full) via Customer - Cash in hand";
 
-<<<<<<< HEAD
                 existingLead.leads.push({
                     statusType: "Payment verified",
                     description,
@@ -270,8 +236,6 @@ if (existingLead) {
                 console.log("✅ Old payment link removed. New payment request and verified pushed.");
             }
         }
-=======
->>>>>>> be872a4bc2cff74f1d04e73e27f0dc070a5d1830
 
         // 4. Update provider wallet
         const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
