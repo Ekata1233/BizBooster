@@ -118,6 +118,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0, // how much the user has paid in total
   },
+  packagePrice: {
+    type: Number,
+    default: 0,
+  },
   packageType: {
     type: String,
     enum: ['none','partial', 'full'],
