@@ -173,48 +173,62 @@ export async function PUT(req: NextRequest) {
         // 3. Update Lead status if cash-in-hand payment is latest
         const existingLead = await Lead.findOne({ checkout: id });
 
-        if (existingLead) {
-            const leadUpdates = existingLead.leads.map((l: LeadEntry, idx: number) => ({
-                ...l,
-                index: idx, // track index for updating
-                statusType: (l.statusType || "").toLowerCase(),
-                createdAt: new Date(l.createdAt ?? 0),
-            }));
+if (existingLead) {
+    const leadUpdates = existingLead.leads.map((l: LeadEntry, idx: number) => ({
+        ...l,
+        index: idx,
+        statusType: (l.statusType || "").toLowerCase(),
+        createdAt: new Date(l.createdAt ?? 0),
+    }));
 
-            // Get the latest payment request
-            const paymentRequests = leadUpdates
-                .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
-                .sort((a:LeadEntry, b:LeadEntry) =>   {const aTime = new Date(a.createdAt ?? 0).getTime();
+    const paymentRequests = leadUpdates
+        .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
+        .sort((a:LeadEntry, b:LeadEntry) =>  {
+                    const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
-                    return bTime - aTime;});
-
-            const latestRequest = paymentRequests[0];
-
-            if (latestRequest) {
-                // Update the description of latest payment request
-                existingLead.leads[latestRequest.index] = {
-                    ...existingLead.leads[latestRequest.index],
-                    description: "Customer made payment via cash in hand",
-                };
-
-                // Add "payment verified" status
-                const now = new Date();
-                const description = checkout.isPartialPayment
-                    ? "Payment verified (Partial) via Customer - Cash in hand"
-                    : "Payment verified (Full) via Customer - Cash in hand";
-
-                existingLead.leads.push({
-                    statusType: "Payment verified",
-                    description,
-                    createdAt: now,
+                    return bTime - aTime;
                 });
 
-                await existingLead.save();
-                console.log("✅ Payment request updated and payment verified added.");
-            } else {
-                console.log("❌ No existing payment request found to update.");
-            }
-        }
+    const latestRequest = paymentRequests[0];
+
+    const latestVerified = leadUpdates
+        .filter((l: LeadEntry) => l.statusType === "payment verified")
+        .sort((a:LeadEntry, b:LeadEntry) => {
+                    const aTime = new Date(a.createdAt ?? 0).getTime();
+                    const bTime = new Date(b.createdAt ?? 0).getTime();
+                    return bTime - aTime;
+                })[0];
+
+    const isVerifiedForRequest =
+        latestVerified &&
+        latestRequest &&
+        latestVerified.createdAt > latestRequest.createdAt;
+
+    if (latestRequest && !isVerifiedForRequest) {
+        // 1. Update the description
+        existingLead.leads[latestRequest.index] = {
+            ...existingLead.leads[latestRequest.index],
+            description: "Customer made payment via cash in hand",
+        };
+
+        // 2. Add "Payment verified"
+        const now = new Date();
+        const description = checkout.isPartialPayment
+            ? "Payment verified (Partial) via Customer - Cash in hand"
+            : "Payment verified (Full) via Customer - Cash in hand";
+
+        existingLead.leads.push({
+            statusType: "Payment verified",
+            description,
+            createdAt: now,
+        });
+
+        await existingLead.save();
+        console.log("✅ Updated payment request & added payment verified.");
+    } else {
+        console.log("⚠️ Already verified or no valid payment request found.");
+    }
+}
 
 
         // 4. Update provider wallet
