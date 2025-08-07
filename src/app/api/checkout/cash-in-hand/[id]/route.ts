@@ -231,51 +231,29 @@ export async function PUT(req: NextRequest) {
         if (existingLead) {
             const now = new Date();
 
-            const leadUpdates = existingLead.leads.map((l: LeadEntry, index: number) => ({
-                index,
-                statusType: (l.statusType || "").toLowerCase(),
-                createdAt: new Date(l.createdAt ?? 0),
-            }));
+            // Find index of the first "payment request (partial/full)"
+            const firstPaymentRequestIndex = existingLead.leads.findIndex(
+                (l: any) => (l.statusType || "").toLowerCase() === "payment request (partial/full)"
+            );
 
-            const paymentRequests = leadUpdates
-                .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
-                .sort((a: LeadEntry, b: LeadEntry) => {
-                   const aTime = new Date(a.createdAt ?? 0).getTime();
-                    const bTime = new Date(b.createdAt ?? 0).getTime();
-                    return bTime - aTime;
-                });
-
-            const latestVerified = leadUpdates
-                .filter((l: LeadEntry) => l.statusType === "payment verified")
-                .sort((a: LeadEntry, b: LeadEntry) => {
-                    const aTime = new Date(a.createdAt ?? 0).getTime();
-                    const bTime = new Date(b.createdAt ?? 0).getTime();
-                    return bTime - aTime;
-                })[0];
-
-            const newestRequest = paymentRequests[0];
+            // Find latest "payment verified"
+            const latestVerified = [...existingLead.leads]
+                .reverse()
+                .find((l: any) => (l.statusType || "").toLowerCase() === "payment verified");
 
             const shouldAddNewVerification =
-                !latestVerified || (newestRequest && newestRequest.createdAt < now);
+                firstPaymentRequestIndex !== -1 &&
+                (!latestVerified || new Date(existingLead.leads[firstPaymentRequestIndex].createdAt) > new Date(latestVerified.createdAt));
 
             if (shouldAddNewVerification) {
-                if (newestRequest) {
-                    // ✅ Update the existing "Payment request (partial/full)"
-                    existingLead.leads[newestRequest.index] = {
-                        statusType: "Payment request (partial/full)",
-                        description: "Customer made payment via cash in hand",
-                        createdAt: now,
-                    };
-                } else {
-                    // ✅ If no existing one, push new "Payment request"
-                    existingLead.leads.push({
-                        statusType: "Payment request (partial/full)",
-                        description: "Customer made payment via cash in hand",
-                        createdAt: now,
-                    });
-                }
+                // ✅ Update the first "payment request (partial/full)" only
+                existingLead.leads[firstPaymentRequestIndex] = {
+                    ...existingLead.leads[firstPaymentRequestIndex],
+                    description: "Customer made payment via cash in hand",
+                    createdAt: now,
+                };
 
-                // ✅ Push new "Payment verified"
+                // ✅ Add new "payment verified" entry
                 const description = checkout.isPartialPayment
                     ? "Payment verified (Partial) via Customer - Cash in hand"
                     : "Payment verified (Full) via Customer - Cash in hand";
@@ -287,7 +265,7 @@ export async function PUT(req: NextRequest) {
                 });
 
                 await existingLead.save();
-                console.log("✅ Payment request (updated/added) and verified pushed");
+                console.log("✅ First payment request updated, and verified added.");
             }
         }
 
