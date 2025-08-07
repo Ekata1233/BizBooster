@@ -66,11 +66,15 @@ export async function POST(req: NextRequest) {
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("checkout_") && checkoutId) {
       const checkout = await Checkout.findById(checkoutId);
 
+      console.log("payed amount : ", payment_amount);
+
       if (checkout) {
         const paid = Number(payment_amount);
         const total = checkout.totalAmount;
         const remaining = total - paid;
 
+
+        console.log("paid amount before update  : ", checkout.paidAmount);
         // const isFullPayment = paid >= total;
 
         checkout.cashfreeMethod = payment_group;
@@ -81,6 +85,9 @@ export async function POST(req: NextRequest) {
         checkout.isPartialPayment = !isFullPayment;
 
         await checkout.save();
+
+
+        console.log("paid amount after update  : ", checkout.paidAmount);
 
 
 
