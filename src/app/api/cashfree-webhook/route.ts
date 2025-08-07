@@ -75,7 +75,6 @@ export async function POST(req: NextRequest) {
 
 
         console.log("paid amount before update  : ", checkout.paidAmount);
-        // const isFullPayment = paid >= total;
 
         checkout.cashfreeMethod = payment_group;
         checkout.paidAmount = (checkout.paidAmount || 0) + paid;
