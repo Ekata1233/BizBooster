@@ -201,6 +201,16 @@ export async function PUT(req: NextRequest) {
                 !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
 
             if (shouldAddNewVerification) {
+                const now = new Date();
+
+                // 1. Push "Payment request (partial/full)" FIRST
+                existingLead.leads.push({
+                    statusType: "Payment request (partial/full)",
+                    description: "Customer made payment via cash in hand",
+                    createdAt: now,
+                });
+
+                // 2. Then push "Payment verified"
                 const description = checkout.isPartialPayment
                     ? "Payment verified (Partial) via Customer - Cash in hand"
                     : "Payment verified (Full) via Customer - Cash in hand";
@@ -208,14 +218,13 @@ export async function PUT(req: NextRequest) {
                 existingLead.leads.push({
                     statusType: "Payment verified",
                     description,
-                    createdAt: new Date(),
+                    createdAt: now,
                 });
 
                 await existingLead.save();
-                console.log("✅ New 'Payment verified' added after latest payment request");
-            } else {
-                console.log("ℹ️ Payment already verified for latest request");
+                console.log("✅ Payment request and verified pushed in correct order");
             }
+
         }
 
         // 4. Update provider wallet
