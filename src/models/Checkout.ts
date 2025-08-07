@@ -140,7 +140,7 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
 
-interface ICheckout extends Document {
+export interface ICheckout extends Document {
     bookingId: string;
     user: mongoose.Types.ObjectId;
     service: mongoose.Types.ObjectId;
