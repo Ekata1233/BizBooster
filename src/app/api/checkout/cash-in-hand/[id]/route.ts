@@ -177,14 +177,24 @@ export async function PUT(req: NextRequest) {
 
             console.log("existring lead : ", existingLead)
 
+            existingLead.leads.forEach((l:LeadEntry, i:number) => {
+                console.log(`Lead[${i}] statusType: '${l.statusType}'`);
+            });
+
+
             const latestPaymentRequest = existingLead.leads
                 .map((l: LeadEntry, idx: number) => ({ ...l, idx }))
-                .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
+                .filter(
+                    (l: LeadEntry) =>
+                        l.statusType?.toLowerCase().trim() === "payment request (partial/full)"
+                )
                 .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
                     return bTime - aTime;
                 })[0];
+
+                console.log("lated payment request : ", latestPaymentRequest)
 
             if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
                 const idx = latestPaymentRequest.idx;
