@@ -150,6 +150,45 @@ export async function POST(req: NextRequest) {
 
         const amountPaid = Number(payment_amount);
 
+        // const pkg = await Package.findOne();
+        // if (!pkg || typeof pkg.price !== "number") {
+        //   return NextResponse.json(
+        //     { success: false, message: "Valid package not found." },
+        //     { status: 400, headers: corsHeaders }
+        //   );
+        // }
+
+        // const fullPackageAmount = pkg.grandtotal;
+
+        // const user = await User.findById(myCustomerId);
+        // if (!user) throw new Error("User not found");
+
+        // const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
+        // const remaining = fullPackageAmount - newTotalPaid;
+
+        // user.packageAmountPaid = newTotalPaid;
+        // user.remainingAmount = Math.max(remaining, 0);
+        // user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
+        // // Set packagePrice only if it's not already set
+        // if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
+        //   user.packagePrice = fullPackageAmount;
+        // }
+
+
+        // if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
+
+        //   try {
+        //     const distRes = await axios.post(
+        //       "https://biz-booster.vercel.app/api/distributePackageCommission",
+        //       { userId: user._id }
+        //     );
+        //     // console.log("📤 Commission distribution triggered:", distRes.data);
+        //   } catch (err: any) {
+        //     console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
+        //   }
+        // }
+
+        // await user.save();
         const pkg = await Package.findOne();
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(
@@ -164,41 +203,40 @@ export async function POST(req: NextRequest) {
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        const remaining = fullPackageAmount - newTotalPaid;
 
-        user.packageAmountPaid = newTotalPaid;
-        user.remainingAmount = Math.max(remaining, 0);
-        user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
-        if (newTotalPaid < fullPackageAmount) {
+        // ✅ Set packagePrice only once during the first partial payment
+        if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
           user.packagePrice = fullPackageAmount;
         }
 
-        if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
+        // ✅ Ensure remainingAmount is based on the correct packagePrice (even if it was set earlier)
+        const effectivePackagePrice = user.packagePrice > 0 ? user.packagePrice : fullPackageAmount;
+        const remaining = effectivePackagePrice - newTotalPaid;
 
+        user.packageAmountPaid = newTotalPaid;
+        user.remainingAmount = Math.max(remaining, 0);
+        user.packageType = newTotalPaid >= effectivePackagePrice ? "full" : "partial";
+
+        // ✅ Trigger commission only if fully paid and not already active
+        if (newTotalPaid >= effectivePackagePrice && !user.packageActive) {
           try {
-            const distRes = await axios.post(
+            await axios.post(
               "https://biz-booster.vercel.app/api/distributePackageCommission",
               { userId: user._id }
             );
-            // console.log("📤 Commission distribution triggered:", distRes.data);
           } catch (err: any) {
             console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
           }
         }
 
         await user.save();
+
         // console.log("✅ User payment info updated");
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
     }
 
-
-    // console.log("myOrderId : ", myOrderId)
-    // console.log("myCustomerId : ", myCustomerId)
-
-
-    // console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);
