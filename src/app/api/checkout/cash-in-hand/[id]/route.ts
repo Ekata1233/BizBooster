@@ -172,57 +172,7 @@ export async function PUT(req: NextRequest) {
         await checkout.save();
 
         // 3. Update Lead status if cash-in-hand payment is latest
-        //    const existingLead = await Lead.findOne({ checkout: id });
-        //     if (existingLead) {
-        //         const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
-        //             statusType: (l.statusType || "").toLowerCase(),
-        //             createdAt: new Date(l.createdAt ?? 0),
-        //         }));
-
-        //         const paymentRequests = leadUpdates
-        //             .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
-        //             .sort((a: LeadEntry, b: LeadEntry) => {
-        //                 const aTime = new Date(a.createdAt ?? 0).getTime();
-        //                 const bTime = new Date(b.createdAt ?? 0).getTime();
-        //                 return bTime - aTime;
-        //             });
-
-        //         const latestVerified = leadUpdates
-        //             .filter((l: LeadEntry) => l.statusType === "payment verified")
-        //             .sort((a: LeadEntry, b: LeadEntry) => {
-        //                 const aTime = new Date(a.createdAt ?? 0).getTime();
-        //                 const bTime = new Date(b.createdAt ?? 0).getTime();
-        //                 return bTime - aTime;
-        //             })[0];
-
-        //         const newestRequest = paymentRequests[0];
-
-        //         const shouldAddNewVerification =
-        //             !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
-
-        //         if (shouldAddNewVerification) {
-        //             const now = new Date();
-
-
-        //             const description = checkout.isPartialPayment
-        //                 ? "Payment verified (Partial) via Customer - Cash in hand"
-        //                 : "Payment verified (Full) via Customer - Cash in hand";
-
-        //             existingLead.leads.push({
-        //                 statusType: "Payment verified",
-        //                 description,
-        //                 createdAt: now,
-        //             });
-
-        //             await existingLead.save();
-        //             console.log("✅ Payment request and verified pushed in correct order");
-        //         }
-
-        //     }
-
-
         const existingLead = await Lead.findOne({ checkout: id });
-
         if (existingLead) {
             const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
                 statusType: (l.statusType || "").toLowerCase(),
@@ -231,7 +181,7 @@ export async function PUT(req: NextRequest) {
 
             const paymentRequests = leadUpdates
                 .filter((l: LeadEntry) => l.statusType === "payment request (partial/full)")
-                .sort((a:LeadEntry, b:LeadEntry) =>  {
+                .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
                     return bTime - aTime;
@@ -239,7 +189,7 @@ export async function PUT(req: NextRequest) {
 
             const latestVerified = leadUpdates
                 .filter((l: LeadEntry) => l.statusType === "payment verified")
-                .sort((a:LeadEntry, b:LeadEntry) =>  {
+                .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
                     const bTime = new Date(b.createdAt ?? 0).getTime();
                     return bTime - aTime;
@@ -250,10 +200,17 @@ export async function PUT(req: NextRequest) {
             const shouldAddNewVerification =
                 !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified?.createdAt);
 
-            if (shouldAddNewVerification && newestRequest) {
-                // 👇 Ensure createdAt is just after the payment request time
-                const verifiedCreatedAt = new Date(new Date(newestRequest.createdAt).getTime() + 1000); // 1 sec later
+            if (shouldAddNewVerification) {
+                const now = new Date();
 
+                // 1. Push "Payment request (partial/full)" FIRST
+                existingLead.leads.push({
+                    statusType: "Payment request (partial/full)",
+                    description: "Customer made payment via cash in hand",
+                    createdAt: now,
+                });
+
+                // 2. Then push "Payment verified"
                 const description = checkout.isPartialPayment
                     ? "Payment verified (Partial) via Customer - Cash in hand"
                     : "Payment verified (Full) via Customer - Cash in hand";
@@ -261,14 +218,14 @@ export async function PUT(req: NextRequest) {
                 existingLead.leads.push({
                     statusType: "Payment verified",
                     description,
-                    createdAt: verifiedCreatedAt, // 👈 set just after the request
+                    createdAt: now,
                 });
 
                 await existingLead.save();
-                console.log("✅ Payment verified added correctly after the payment request");
+                console.log("✅ Payment request and verified pushed in correct order");
             }
-        }
 
+        }
 
         // 4. Update provider wallet
         const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
