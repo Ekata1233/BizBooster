@@ -177,7 +177,7 @@ export async function PUT(req: NextRequest) {
 
             console.log("existring lead : ", existingLead)
 
-            const latestPaymentRequestIndex = existingLead.leads
+            const latestPaymentRequest = existingLead.leads
                 .map((l: LeadEntry, idx: number) => ({ ...l, idx }))
                 .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
                 .sort((a: LeadEntry, b: LeadEntry) => {
@@ -186,8 +186,10 @@ export async function PUT(req: NextRequest) {
                     return bTime - aTime;
                 })[0];
 
-            if ( latestPaymentRequestIndex) {
-                const idx = latestPaymentRequestIndex.idx;
+            if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
+                const idx = latestPaymentRequest.idx;
+
+                console.log("index of the statis : ", idx);
 
                 // ✅ Update description and blank paymentLink
                 existingLead.leads[idx].description = "Customer made payment to provider via cash in hand";
