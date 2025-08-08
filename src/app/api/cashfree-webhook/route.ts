@@ -237,12 +237,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-
-    // console.log("myOrderId : ", myOrderId)
-    // console.log("myCustomerId : ", myCustomerId)
-
-
-    // console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);
