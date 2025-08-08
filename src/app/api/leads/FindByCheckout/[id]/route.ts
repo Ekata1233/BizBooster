@@ -40,18 +40,7 @@ export async function GET(req: Request) {
         { status: 404, headers: corsHeaders }
       );
     }
-
-    const sortedLeads = [...lead.leads].sort((a, b) => {
-      const aTime = new Date(a.createdAt ?? 0).getTime();
-      const bTime = new Date(b.createdAt ?? 0).getTime();
-      return bTime - aTime;
-    });
-
-    // ✅ Return the sorted leads array along with the lead
-    const result = {
-      ...lead.toObject(),
-      leads: sortedLeads,
-    };
+    
 
     return NextResponse.json(
       { success: true, data: lead },
