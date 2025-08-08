@@ -160,20 +160,18 @@ export async function POST(req: NextRequest) {
 
         const fullPackageAmount = pkg.grandtotal;
 
-        // console.log("package amount : ", fullPackageAmount)
-
         const user = await User.findById(myCustomerId);
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        // console.log("paid amount  : ", newTotalPaid)
         const remaining = fullPackageAmount - newTotalPaid;
-        // console.log("remaining amount : ", remaining)
 
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
         user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
-        user.packagePrice = fullPackageAmount;
+        if (newTotalPaid < fullPackageAmount) {
+          user.packagePrice = fullPackageAmount;
+        }
 
         if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
 
