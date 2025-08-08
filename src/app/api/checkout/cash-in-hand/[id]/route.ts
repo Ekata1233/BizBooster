@@ -178,6 +178,7 @@ export async function PUT(req: NextRequest) {
                 statusType: (l.statusType || "").toLowerCase(),
                 createdAt: new Date(l.createdAt ?? 0),
             }));
+            const now = new Date();
 
             const latestPaymentRequestIndex = existingLead.leads
                 .map((l: LeadEntry, idx: LeadEntry) => ({ ...l, idx }))
@@ -189,12 +190,12 @@ export async function PUT(req: NextRequest) {
                 })[0];
 
             if (typeof latestPaymentRequestIndex === "number") {
-                // ✅ 1. Update description of existing payment request
+                // Update description and createdAt of "Payment request"
                 existingLead.leads[latestPaymentRequestIndex].description = "Customer made payment via cash in hand";
+                existingLead.leads[latestPaymentRequestIndex].createdAt = new Date(now.getTime() - 1000); // make it slightly earlier
             }
 
             // ✅ 2. Add "Payment verified" entry
-            const now = new Date();
 
             if (typeof latestPaymentRequestIndex === "number") {
                 // 1. Update description of the existing "Payment request"
