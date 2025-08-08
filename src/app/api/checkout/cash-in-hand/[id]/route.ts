@@ -179,6 +179,8 @@ export async function PUT(req: NextRequest) {
                 createdAt: new Date(l.createdAt ?? 0),
             }));
 
+            console.log("existring lead : ", existingLead)
+
             const latestPaymentRequestIndex = existingLead.leads
                 .map((l: LeadEntry, idx: LeadEntry) => ({ ...l, idx }))
                 .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
