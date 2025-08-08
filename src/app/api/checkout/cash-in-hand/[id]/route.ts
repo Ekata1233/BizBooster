@@ -180,8 +180,10 @@ export async function PUT(req: NextRequest) {
             }));
             const now = new Date();
             const oneSecondBefore = new Date(now.getTime() - 3000);
-            const latestPaymentRequestIndex = existingLead.leads
-                .map((l: LeadEntry, idx: LeadEntry) => ({ ...l, idx }))
+
+            // ✅ Correct: Get latest payment request and its index
+            const latestPaymentRequest = existingLead.leads
+                .map((l: LeadEntry, idx: number) => ({ ...l, idx }))
                 .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
                 .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
@@ -189,81 +191,81 @@ export async function PUT(req: NextRequest) {
                     return bTime - aTime;
                 })[0];
 
-            if (typeof latestPaymentRequestIndex === "number") {
-                // ✅ 2. Update description and createdAt
-                existingLead.leads[latestPaymentRequestIndex].description = "Customer made payment via cash in hand";
-                existingLead.leads[latestPaymentRequestIndex].createdAt = oneSecondBefore;
+            if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
+                // ✅ Update both description and createdAt to ensure it comes before "payment verified"
+                existingLead.leads[latestPaymentRequest.idx].description = "Customer made payment via cash in hand";
+                existingLead.leads[latestPaymentRequest.idx].createdAt = oneSecondBefore;
             }
 
             const description = checkout.isPartialPayment
                 ? "Payment verified (Partial) via Customer - Cash in hand"
                 : "Payment verified (Full) via Customer - Cash in hand";
 
+            // ✅ Push new "Payment verified"
             existingLead.leads.push({
                 statusType: "Payment verified",
                 description,
                 createdAt: now,
             });
 
-
             await existingLead.save();
             console.log("✅ Updated payment request description and added payment verified status.");
+
         }
 
 
+            // 4. Update provider wallet
+            const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
+            if (!providerWallet) {
+                return NextResponse.json(
+                    { success: false, message: "Provider wallet not found." },
+                    { status: 404, headers: corsHeaders }
+                );
+            }
 
-        // 4. Update provider wallet
-        const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
-        if (!providerWallet) {
+            const prevBalance = providerWallet.balance || 0;
+            const newBalance = prevBalance + amount;
+            const newCashInHand = (providerWallet.cashInHand || 0) + amount;
+            const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - amount, 0);
+            const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - amount, 0);
+
+            providerWallet.cashInHand = newCashInHand;
+            providerWallet.withdrawableBalance = newWithdrawableBalance;
+            providerWallet.pendingWithdraw = newPendingWithdraw;
+
+            providerWallet.transactions.push({
+                type: "credit",
+                amount,
+                description: "Cash in hand received from customer",
+                referenceId: checkout._id.toString(),
+                method: "Cash",
+                source: "checkout",
+                status: "success",
+                balanceAfterTransaction: newBalance,
+                createdAt: new Date(),
+            });
+
+            providerWallet.balance = newBalance;
+            providerWallet.totalCredits += amount;
+
+            await providerWallet.save();
+
             return NextResponse.json(
-                { success: false, message: "Provider wallet not found." },
-                { status: 404, headers: corsHeaders }
+                {
+                    success: true,
+                    message: "Checkout, provider wallet, and lead status updated successfully.",
+                    data: {
+                        checkout,
+                        providerWallet,
+                    },
+                },
+                { status: 200, headers: corsHeaders }
+            );
+        } catch (error) {
+            console.error("❌ Error in PUT handler:", error);
+            return NextResponse.json(
+                { success: false, message: "Server error." },
+                { status: 500, headers: corsHeaders }
             );
         }
-
-        const prevBalance = providerWallet.balance || 0;
-        const newBalance = prevBalance + amount;
-        const newCashInHand = (providerWallet.cashInHand || 0) + amount;
-        const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - amount, 0);
-        const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - amount, 0);
-
-        providerWallet.cashInHand = newCashInHand;
-        providerWallet.withdrawableBalance = newWithdrawableBalance;
-        providerWallet.pendingWithdraw = newPendingWithdraw;
-
-        providerWallet.transactions.push({
-            type: "credit",
-            amount,
-            description: "Cash in hand received from customer",
-            referenceId: checkout._id.toString(),
-            method: "Cash",
-            source: "checkout",
-            status: "success",
-            balanceAfterTransaction: newBalance,
-            createdAt: new Date(),
-        });
-
-        providerWallet.balance = newBalance;
-        providerWallet.totalCredits += amount;
-
-        await providerWallet.save();
-
-        return NextResponse.json(
-            {
-                success: true,
-                message: "Checkout, provider wallet, and lead status updated successfully.",
-                data: {
-                    checkout,
-                    providerWallet,
-                },
-            },
-            { status: 200, headers: corsHeaders }
-        );
-    } catch (error) {
-        console.error("❌ Error in PUT handler:", error);
-        return NextResponse.json(
-            { success: false, message: "Server error." },
-            { status: 500, headers: corsHeaders }
-        );
     }
-}
