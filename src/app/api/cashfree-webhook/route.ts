@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
         user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
-        if (newTotalPaid < fullPackageAmount) {
+        if (!user.packagePrice && newTotalPaid < fullPackageAmount) {
           user.packagePrice = fullPackageAmount;
         }
 
