@@ -179,7 +179,7 @@ export async function PUT(req: NextRequest) {
                 createdAt: new Date(l.createdAt ?? 0),
             }));
             const now = new Date();
-
+            const oneSecondBefore = new Date(now.getTime() - 3000);
             const latestPaymentRequestIndex = existingLead.leads
                 .map((l: LeadEntry, idx: LeadEntry) => ({ ...l, idx }))
                 .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
@@ -190,22 +190,11 @@ export async function PUT(req: NextRequest) {
                 })[0];
 
             if (typeof latestPaymentRequestIndex === "number") {
-                // Update description and createdAt of "Payment request"
+                // ✅ 2. Update description and createdAt
                 existingLead.leads[latestPaymentRequestIndex].description = "Customer made payment via cash in hand";
-                existingLead.leads[latestPaymentRequestIndex].createdAt = new Date(now.getTime() - 1000); // make it slightly earlier
+                existingLead.leads[latestPaymentRequestIndex].createdAt = oneSecondBefore;
             }
 
-            // ✅ 2. Add "Payment verified" entry
-
-            if (typeof latestPaymentRequestIndex === "number") {
-                // 1. Update description of the existing "Payment request"
-                existingLead.leads[latestPaymentRequestIndex].description = "Customer made payment via cash in hand";
-
-                // Optional: also update the timestamp so it's ordered correctly
-                existingLead.leads[latestPaymentRequestIndex].createdAt = now;
-            }
-
-            // 2. Push "Payment verified" with the same timestamp
             const description = checkout.isPartialPayment
                 ? "Payment verified (Partial) via Customer - Cash in hand"
                 : "Payment verified (Full) via Customer - Cash in hand";
