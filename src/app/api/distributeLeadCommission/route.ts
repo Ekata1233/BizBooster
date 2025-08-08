@@ -61,9 +61,6 @@ export async function POST(req: Request) {
                     : rawCommission
                 : rawCommission;
 
-
-
-
         if (!checkout || checkout.commissionDistributed) {
             return NextResponse.json(
                 { success: false, message: "commission already distributed." },
@@ -72,8 +69,6 @@ export async function POST(req: Request) {
         }
 
         const leadAmount = lead?.afterDicountAmount ?? checkout.subtotal;
-
-
         console.log("lead amount : ", leadAmount);
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
