@@ -173,40 +173,41 @@ export async function PUT(req: NextRequest) {
 
         // 3. Update Lead status if cash-in-hand payment is latest
         const existingLead = await Lead.findOne({ checkout: id });
+
         if (existingLead) {
+            console.log("existring lead : ", existingLead);
 
-            console.log("existring lead : ", existingLead)
-
-            existingLead.leads.forEach((l:LeadEntry, i:number) => {
+            existingLead.leads.forEach((l: LeadEntry, i: number) => {
                 console.log(`Lead[${i}] statusType: '${l.statusType}'`);
             });
 
+            type LeadWithIndex = { lead: LeadEntry; idx: number };
 
             const latestPaymentRequest = existingLead.leads
-                .map((l: LeadEntry, idx: number) => ({ ...l, idx }))
+                .map((l: LeadEntry, idx: number) => ({ lead: l, idx }))
                 .filter(
-                    (l: LeadEntry) =>
-                        l.statusType?.toLowerCase().trim() === "payment request (partial/full)"
+                    (entry: LeadWithIndex) =>
+                        entry.lead.statusType?.toLowerCase().trim() === "payment request (partial/full)"
                 )
-                .sort((a: LeadEntry, b: LeadEntry) => {
-                    const aTime = new Date(a.createdAt ?? 0).getTime();
-                    const bTime = new Date(b.createdAt ?? 0).getTime();
+                .sort((a: LeadWithIndex, b: LeadWithIndex) => {
+                    const aTime = new Date(a.lead.createdAt ?? 0).getTime();
+                    const bTime = new Date(b.lead.createdAt ?? 0).getTime();
                     return bTime - aTime;
                 })[0];
 
-                console.log("lated payment request : ", latestPaymentRequest)
+            console.log("latest payment request : ", latestPaymentRequest);
 
             if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
                 const idx = latestPaymentRequest.idx;
 
-                console.log("index of the statis : ", idx);
+                console.log("index of the status : ", idx);
 
                 // ✅ Update description and blank paymentLink
                 existingLead.leads[idx].description = "Customer made payment to provider via cash in hand";
                 existingLead.leads[idx].paymentLink = "";
             }
 
-            // ✅ 2. Add "Payment verified" entry
+            // ✅ Add "Payment verified" entry
             const now = new Date();
             const description = checkout.isPartialPayment
                 ? "Payment verified (Partial) via Customer - Cash in hand"
@@ -221,6 +222,7 @@ export async function PUT(req: NextRequest) {
             await existingLead.save();
             console.log("✅ Updated payment request description and added payment verified status.");
         }
+
 
 
 
