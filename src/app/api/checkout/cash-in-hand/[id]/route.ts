@@ -174,15 +174,11 @@ export async function PUT(req: NextRequest) {
         // 3. Update Lead status if cash-in-hand payment is latest
         const existingLead = await Lead.findOne({ checkout: id });
         if (existingLead) {
-            const leadUpdates = existingLead.leads.map((l: LeadEntry) => ({
-                statusType: (l.statusType || "").toLowerCase(),
-                createdAt: new Date(l.createdAt ?? 0),
-            }));
 
             console.log("existring lead : ", existingLead)
 
             const latestPaymentRequestIndex = existingLead.leads
-                .map((l: LeadEntry, idx: LeadEntry) => ({ ...l, idx }))
+                .map((l: LeadEntry, idx: number) => ({ ...l, idx }))
                 .filter((l: LeadEntry) => l.statusType?.toLowerCase() === "payment request (partial/full)")
                 .sort((a: LeadEntry, b: LeadEntry) => {
                     const aTime = new Date(a.createdAt ?? 0).getTime();
@@ -190,9 +186,12 @@ export async function PUT(req: NextRequest) {
                     return bTime - aTime;
                 })[0];
 
-            if (typeof latestPaymentRequestIndex === "number") {
-                // ✅ 1. Update description of existing payment request
-                existingLead.leads[latestPaymentRequestIndex].description = "Customer made payment via cash in hand";
+            if ( latestPaymentRequestIndex) {
+                const idx = latestPaymentRequestIndex.idx;
+
+                // ✅ Update description and blank paymentLink
+                existingLead.leads[idx].description = "Customer made payment to provider via cash in hand";
+                existingLead.leads[idx].paymentLink = "";
             }
 
             // ✅ 2. Add "Payment verified" entry
