@@ -81,11 +81,6 @@ export async function PUT(req: NextRequest) {
         const existingLead = await Lead.findOne({ checkout: id });
 
         if (existingLead) {
-            console.log("existring lead : ", existingLead);
-
-            existingLead.leads.forEach((l: LeadEntry, i: number) => {
-                console.log(`Lead[${i}] statusType: '${l.statusType}'`);
-            });
 
             type LeadWithIndex = { lead: LeadEntry; idx: number };
 
@@ -101,12 +96,8 @@ export async function PUT(req: NextRequest) {
                     return bTime - aTime;
                 })[0];
 
-            console.log("latest payment request : ", latestPaymentRequest);
-
             if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
                 const idx = latestPaymentRequest.idx;
-
-                console.log("index of the status : ", idx);
 
                 // ✅ Update description and blank paymentLink
                 existingLead.leads[idx].description = "Customer made payment to provider via cash in hand";
@@ -128,7 +119,6 @@ export async function PUT(req: NextRequest) {
             });
 
             await existingLead.save();
-            console.log("✅ Updated payment request description and added payment verified status.");
         }
 
 
