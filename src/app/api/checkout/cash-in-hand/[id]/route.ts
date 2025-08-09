@@ -1,8 +1,122 @@
+// import { NextRequest, NextResponse } from "next/server";
+// import { connectToDatabase } from "@/utils/db";
+// import Checkout from "@/models/Checkout";
+// import ProviderWallet from "@/models/ProviderWallet";
+// import mongoose from "mongoose";
+
+// const corsHeaders = {
+//     "Access-Control-Allow-Origin": "*",
+//     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//     "Access-Control-Allow-Headers": "Content-Type, Authorization",
+// };
+
+// export async function OPTIONS() {
+//     return NextResponse.json({}, { headers: corsHeaders });
+// }
+
+// export async function PUT(req: NextRequest) {
+//     await connectToDatabase();
+
+//     try {
+//         const url = new URL(req.url);
+//         const id = url.pathname.split("/").pop();
+//         const body = await req.json(); // ✅ Get body
+//         const statusTypeFromClient = body.statusType || null;
+//         console.log("current status :", body);
+//         console.log(statusTypeFromClient);
+
+//         if (!id) {
+//             return NextResponse.json(
+//                 { success: false, message: "Missing checkout ID." },
+//                 { status: 400, headers: corsHeaders }
+//             );
+//         }
+
+//         // 1. Find Checkout
+//         const checkout = await Checkout.findById(id);
+//         if (!checkout) {
+//             return NextResponse.json(
+//                 { success: false, message: "Checkout not found." },
+//                 { status: 404, headers: corsHeaders }
+//             );
+//         }
+
+//         // ✅ 2. Update checkout fields based on statusType
+//         const amount = checkout.remainingAmount || 0;
+//         checkout.paymentStatus = "paid";
+//         checkout.cashInHand = true;
+//         checkout.cashInHandAmount = amount;
+
+//         if (statusTypeFromClient === "Lead completed") {
+//             checkout.orderStatus = "completed";
+//             checkout.isCompleted = true;
+//         }
+
+//         await checkout.save();
+
+//         // 3. Find provider's wallet
+//         const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
+//         if (!providerWallet) {
+//             return NextResponse.json(
+//                 { success: false, message: "Provider wallet not found." },
+//                 { status: 404, headers: corsHeaders }
+//             );
+//         }
+
+//         // 4. Calculate new balances
+//         console.log("previous balance of pending withdraw : ", providerWallet.pendingWithdraw);
+//         const newBalance = providerWallet.balance + amount;
+//         const newCashInHand = providerWallet.cashInHand + amount;
+
+//         console.log("ammount : ", amount);
+//         console.log("newCashInHand : ", newCashInHand);
+
+//         // 5. Add transaction
+//         providerWallet.transactions.push({
+//             type: "credit",
+//             amount,
+//             description: "Cash in hand received from customer",
+//             referenceId: checkout._id.toString(),
+//             method: "Cash",
+//             source: "checkout",
+//             status: "success",
+//             balanceAfterTransaction: newBalance,
+//             createdAt: new Date(),
+//         });
+
+//         // 6. Apply balance updates
+//         providerWallet.balance = newBalance;
+//         providerWallet.totalCredits += amount;
+//         providerWallet.cashInHand = newCashInHand;
+
+//         await providerWallet.save();
+
+//         return NextResponse.json(
+//             {
+//                 success: true,
+//                 message: "Checkout and provider wallet updated successfully.",
+//                 data: {
+//                     checkout,
+//                     providerWallet,
+//                 },
+//             },
+//             { status: 200, headers: corsHeaders }
+//         );
+//     } catch (error) {
+//         console.error("Error updating cash in hand:", error);
+//         return NextResponse.json(
+//             { success: false, message: "Server error." },
+//             { status: 500, headers: corsHeaders }
+//         );
+//     }
+// }
+
+
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Checkout from "@/models/Checkout";
 import ProviderWallet from "@/models/ProviderWallet";
-import Lead from "@/models/Lead";
+import Lead from "@/models/Lead"; // ✅ Ensure Lead model is imported
 import mongoose from "mongoose";
 
 const corsHeaders = {
@@ -14,13 +128,11 @@ const corsHeaders = {
 export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
-
 type LeadEntry = {
     statusType?: string;
     description?: string;
     createdAt?: string | number | Date;
 };
-
 export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
@@ -59,64 +171,60 @@ export async function PUT(req: NextRequest) {
 
         await checkout.save();
 
-        // 3. Update Lead status
+        // 3. Update Lead status if cash-in-hand payment is latest
         const existingLead = await Lead.findOne({ checkout: id });
-        if (existingLead) {
-            const leadsArray: LeadEntry[] = existingLead.leads || [];
 
-            // ❗ Stop if already verified
-            const hasPaymentVerified = leadsArray.some(
-                l => (l.statusType || "").toLowerCase() === "payment verified"
-            );
-            if (hasPaymentVerified) {
-                return NextResponse.json(
-                    { success: true, message: "Payment already verified — no new payment request created." },
-                    { status: 200, headers: corsHeaders }
-                );
+        if (existingLead) {
+            console.log("existring lead : ", existingLead);
+
+            existingLead.leads.forEach((l: LeadEntry, i: number) => {
+                console.log(`Lead[${i}] statusType: '${l.statusType}'`);
+            });
+
+            type LeadWithIndex = { lead: LeadEntry; idx: number };
+
+            const latestPaymentRequest = existingLead.leads
+                .map((l: LeadEntry, idx: number) => ({ lead: l, idx }))
+                .filter(
+                    (entry: LeadWithIndex) =>
+                        entry.lead.statusType?.toLowerCase().trim() === "payment request (partial/full)"
+                )
+                .sort((a: LeadWithIndex, b: LeadWithIndex) => {
+                    const aTime = new Date(a.lead.createdAt ?? 0).getTime();
+                    const bTime = new Date(b.lead.createdAt ?? 0).getTime();
+                    return bTime - aTime;
+                })[0];
+
+            console.log("latest payment request : ", latestPaymentRequest);
+
+            if (latestPaymentRequest && typeof latestPaymentRequest.idx === "number") {
+                const idx = latestPaymentRequest.idx;
+
+                console.log("index of the status : ", idx);
+
+                // ✅ Update description and blank paymentLink
+                existingLead.leads[idx].description = "Customer made payment to provider via cash in hand";
+                existingLead.leads[idx].paymentLink = "";
             }
 
-            const latestPaymentRequestIndex = leadsArray
-                .map((l, i) => ({ ...l, i }))
-                .filter(l => (l.statusType || "").toLowerCase() === "payment request (partial/full)")
-                .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())[0]?.i;
-
+            // ✅ Add "Payment verified" entry
             const now = new Date();
-            const paymentRequestDescription = "Customer made payment via cash in hand";
-            const verifiedDescription = checkout.isPartialPayment
+            const description = checkout.isPartialPayment
                 ? "Payment verified (Partial) via Customer - Cash in hand"
                 : "Payment verified (Full) via Customer - Cash in hand";
 
-            if (
-                latestPaymentRequestIndex !== undefined &&
-                !leadsArray.slice(latestPaymentRequestIndex + 1).some(
-                    l => (l.statusType || "").toLowerCase() === "payment verified"
-                )
-            ) {
-                // Update existing payment request description
-                existingLead.leads[latestPaymentRequestIndex].description = paymentRequestDescription;
-
-                // Add verified
-                existingLead.leads.push({
-                    statusType: "Payment verified",
-                    description: verifiedDescription,
-                    createdAt: now,
-                });
-            } else {
-                // No request yet → add both
-                existingLead.leads.push({
-                    statusType: "Payment request (partial/full)",
-                    description: paymentRequestDescription,
-                    createdAt: now,
-                });
-                existingLead.leads.push({
-                    statusType: "Payment verified",
-                    description: verifiedDescription,
-                    createdAt: now,
-                });
-            }
+            existingLead.leads.push({
+                statusType: "Payment verified",
+                description,
+                createdAt: now,
+            });
 
             await existingLead.save();
+            console.log("✅ Updated payment request description and added payment verified status.");
         }
+
+
+
 
         // 4. Update provider wallet
         const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });

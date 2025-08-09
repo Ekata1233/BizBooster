@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
                                 (tx: any) => tx.leadId === lead.bookingId
                             );
                             return {
-                                 checkoutId: lead._id,
+                                checkoutId: lead._id,
                                 leadId: lead.bookingId,
                                 status: lead.orderStatus,
                                 amount: lead.totalAmount,

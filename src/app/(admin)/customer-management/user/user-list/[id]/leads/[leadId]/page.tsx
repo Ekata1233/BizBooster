@@ -72,10 +72,10 @@ const UserDetails = () => {
 
         {/* Tab content */}
         <div className="space-y-6 pt-4">
-          {activeTab === 'selfLead' && <SelfLeadTable  userId={leadUserId || ' '} isAction={false} />}
+          {activeTab === 'selfLead' && <SelfLeadTable  userId={leadUserId || ' '} isAction={true} />}
 
           {activeTab === 'teamLead' && <TeamLeadTable
-            userId={leadUserId || ' '} isAction={false}
+            userId={leadUserId || ' '} isAction={true}
           />}
 
           

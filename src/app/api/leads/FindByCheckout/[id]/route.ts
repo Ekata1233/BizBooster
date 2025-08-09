@@ -40,6 +40,7 @@ export async function GET(req: Request) {
         { status: 404, headers: corsHeaders }
       );
     }
+    
 
     return NextResponse.json(
       { success: true, data: lead },
