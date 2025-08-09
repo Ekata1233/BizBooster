@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest) {
         // checkout.paymentStatus = "paid";
         const total = checkout.totalAmount;
         checkout.cashInHand = true;
-        checkout.cashInHandAmount = fetchedAmount;
+        checkout.cashInHandAmount = (checkout.cashInHandAmount || 0) + fetchedAmount;
         checkout.paidAmount = (checkout.paidAmount || 0) + fetchedAmount;
         checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
         const isFullPayment = checkout.paidAmount >= total;
