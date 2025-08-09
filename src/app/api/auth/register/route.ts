@@ -25,8 +25,6 @@ export const POST = async (req: Request) => {
     const parsedData = userValidationSchema.parse(body);
     console.log("after validation data : ", parsedData)
 
-    // const existingUserByEmail = await User.findOne({ email: parsedData.email });
-    // const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber });
     const existingUserByEmail = await User.findOne({ email: parsedData.email, isDeleted: { $ne: true } });
     const existingUserByMobile = await User.findOne({ mobileNumber: parsedData.mobileNumber, isDeleted: { $ne: true } });
 

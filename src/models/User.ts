@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     lowercase: true,
     trim: true,
     match: [/\S+@\S+\.\S+/, 'Email format is invalid']
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   mobileNumber: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     trim: true,
     match: [/^\+?\d{10,15}$/, 'Mobile number format is invalid']
   },
@@ -110,7 +110,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceCustomer"
   }],
-   packageAmountPaid: {
+  packageAmountPaid: {
     type: Number,
     default: 0, // how much the user has paid in total
   },
@@ -124,8 +124,8 @@ const userSchema = new mongoose.Schema({
   },
   packageType: {
     type: String,
-    enum: ['none','partial', 'full'],
-    default: null, 
+    enum: ['none', 'partial', 'full'],
+    default: null,
   },
   packageActive: {
     type: Boolean,
@@ -143,13 +143,23 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+userSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
+userSchema.index(
+  { mobileNumber: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
 
-   if (!this.userId) {
+  if (!this.userId) {
     const lastUser = await mongoose
       .model('User')
       .findOne({ userId: { $regex: /^FTF\d+$/ } })
