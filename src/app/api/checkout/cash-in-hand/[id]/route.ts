@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
         const body = await req.json();
         const statusTypeFromClient = body.statusType || null;
         const paymentType = body.paymentKind || null; // new
-        const cashInHandAmount = body.amount ?? null;
+        const fetchedAmount = body.amount ?? null;
 
         console.log("body of the cash in hand : ", body)
 
@@ -50,10 +50,16 @@ export async function PUT(req: NextRequest) {
         }
 
         // 2. Update checkout fields for cash-in-hand
-        const amount = checkout.remainingAmount || 0;
-        checkout.paymentStatus = "paid";
+        // const amount = checkout.remainingAmount || 0;
+        // checkout.paymentStatus = "paid";
+        const total = checkout.totalAmount;
         checkout.cashInHand = true;
-        checkout.cashInHandAmount = amount;
+        checkout.cashInHandAmount = fetchedAmount;
+        checkout.paidAmount = (checkout.paidAmount || 0) + fetchedAmount;
+        checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+        const isFullPayment = checkout.paidAmount >= total;
+        checkout.paymentStatus = isFullPayment ? "paid" : "pending";
+        checkout.isPartialPayment = !isFullPayment;
 
         if (statusTypeFromClient === "Lead completed") {
             checkout.orderStatus = "completed";
@@ -100,9 +106,11 @@ export async function PUT(req: NextRequest) {
 
             // ✅ Add "Payment verified" entry
             const now = new Date();
-            const description = checkout.isPartialPayment
-                ? "Payment verified (Partial) via Customer - Cash in hand"
-                : "Payment verified (Full) via Customer - Cash in hand";
+            const description =
+                paymentType === "partial"
+                    ? `Payment verified (Partial - ${fetchedAmount}) via Customer - Cash in hand`
+                    : `Payment verified (Full - ${fetchedAmount}) via Customer - Cash in hand`;
+
 
             existingLead.leads.push({
                 statusType: "Payment verified",
@@ -127,10 +135,10 @@ export async function PUT(req: NextRequest) {
         }
 
         const prevBalance = providerWallet.balance || 0;
-        const newBalance = prevBalance + amount;
-        const newCashInHand = (providerWallet.cashInHand || 0) + amount;
-        const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - amount, 0);
-        const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - amount, 0);
+        const newBalance = prevBalance + fetchedAmount;
+        const newCashInHand = (providerWallet.cashInHand || 0) + fetchedAmount;
+        const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - fetchedAmount, 0);
+        const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - fetchedAmount, 0);
 
         providerWallet.cashInHand = newCashInHand;
         providerWallet.withdrawableBalance = newWithdrawableBalance;
@@ -138,7 +146,7 @@ export async function PUT(req: NextRequest) {
 
         providerWallet.transactions.push({
             type: "credit",
-            amount,
+            fetchedAmount,
             description: "Cash in hand received from customer",
             referenceId: checkout._id.toString(),
             method: "Cash",
@@ -149,7 +157,7 @@ export async function PUT(req: NextRequest) {
         });
 
         providerWallet.balance = newBalance;
-        providerWallet.totalCredits += amount;
+        providerWallet.totalCredits += fetchedAmount;
 
         await providerWallet.save();
 
