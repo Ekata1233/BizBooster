@@ -29,9 +29,18 @@ export async function PUT(req: NextRequest) {
         const body = await req.json();
         const statusTypeFromClient = body.statusType || null;
         const paymentType = body.paymentKind || null; // new
-        const fetchedAmount = body.amount ?? null;
+        const bodyAmount = body.amount ?? null;
 
         console.log("body of the cash in hand : ", body)
+
+        const fetchedAmount =
+            paymentType === "partial"
+                ? (bodyAmount ?? 0) / 2
+                : paymentType === "full"
+                    ? (bodyAmount ?? 0)
+                    : 0;
+
+        console.log("Fetched Amount:", fetchedAmount);
 
         if (!id) {
             return NextResponse.json(
@@ -146,7 +155,7 @@ export async function PUT(req: NextRequest) {
 
         providerWallet.transactions.push({
             type: "credit",
-            amount:fetchedAmount,
+            amount: fetchedAmount,
             description: "Cash in hand received from customer",
             referenceId: checkout._id.toString(),
             method: "Cash",
