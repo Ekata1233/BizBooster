@@ -199,19 +199,31 @@ export async function POST(req: NextRequest) {
 
         const fullPackageAmount = pkg.grandtotal;
 
+        console.log("full packge amount : ", fullPackageAmount)
+
         const user = await User.findById(myCustomerId);
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
 
+        console.log("newTotalPaid : ", newTotalPaid)
+
+
         // ✅ Set packagePrice only once during the first partial payment
         if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
           user.packagePrice = fullPackageAmount;
+                  console.log("packagePrice : ", user.packagePrice)
+
         }
 
         // ✅ Ensure remainingAmount is based on the correct packagePrice (even if it was set earlier)
         const effectivePackagePrice = user.packagePrice > 0 ? user.packagePrice : fullPackageAmount;
+
+        console.log("effectivePackagePrice : ", effectivePackagePrice)
+
         const remaining = effectivePackagePrice - newTotalPaid;
+        console.log("remaining : ", remaining)
+
 
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
