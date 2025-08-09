@@ -146,7 +146,7 @@ export async function PUT(req: NextRequest) {
 
         providerWallet.transactions.push({
             type: "credit",
-            fetchedAmount,
+            amount:fetchedAmount,
             description: "Cash in hand received from customer",
             referenceId: checkout._id.toString(),
             method: "Cash",
