@@ -21,7 +21,7 @@ interface PutRequestBody {
 export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
-  // ✅ Extract the ID from the URL path
+ 
   const url = new URL(req.url);
   const webinarId = url.pathname.split('/').pop() as string;
 

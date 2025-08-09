@@ -4,7 +4,7 @@ interface IVideo {
     videoName: string;
     videoUrl: string;
     videoDescription: string;
-    videoImageUrl: string; 
+    videoImageUrl: string;
 }
 
 interface ICertification extends Document {
@@ -47,17 +47,18 @@ const CertificationsSchema: Schema = new Schema<ICertification>(
                     type: String,
                     required: [true, 'Video description is required'],
                 },
-                videoImageUrl: { // NEW: Added videoImageUrl to the sub-document schema
+                videoImageUrl: {
                     type: String,
                     required: [true, 'Video image is required'],
                 },
             },
         ],
+      
     },
     { timestamps: true }
 );
 
-// Prevent model overwrite upon hot reloads
+
 const Certifications =
     mongoose.models.Certifications ||
     mongoose.model<ICertification>('Certifications', CertificationsSchema);
