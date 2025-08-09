@@ -191,7 +191,7 @@ export async function POST(req: Request) {
         };
 
         if (userC?.packageActive) {
-            await creditWallet(userC._id, C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
+            await creditWallet(userC._id, C_share, "Self Earning Share 1", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userC._id,
@@ -202,7 +202,7 @@ export async function POST(req: Request) {
         }
 
         if (userB) {
-            await creditWallet(userB._id, B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
+            await creditWallet(userB._id, B_share, "Team Revenue Share 2", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userB._id,
@@ -211,7 +211,7 @@ export async function POST(req: Request) {
         }
 
         if (userA) {
-            await creditWallet(userA._id, A_share, "Referral Earning", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
+            await creditWallet(userA._id, A_share, "Team Revenue Share 3", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: userA._id,
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
             });
         }
 
-        await creditWallet(ADMIN_ID, adminShare, "Referral Earning - Admin", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
+        await creditWallet(ADMIN_ID, adminShare, "Team Revenue - Admin", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
         await ReferralCommission.create({
             fromLead: checkout._id,
             receiver: ADMIN_ID,
@@ -255,7 +255,7 @@ export async function POST(req: Request) {
         providerWallet.transactions.push({
             type: "credit",
             amount: providerShare,
-            description: "Provider earning from lead",
+            description: "Team Revenue - Provider",
             referenceId: checkout._id.toString(),
             method: "Wallet",
             source: "checkout",
@@ -316,7 +316,7 @@ export async function POST(req: Request) {
             if (!userA) extra_adminShare += extra_A_share;
 
             if (userC?.packageActive) {
-                await creditWallet(userC._id, extra_C_share, "Self Earning", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
+                await creditWallet(userC._id, extra_C_share, "Self Earning Share 1", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userC._id,
@@ -327,7 +327,7 @@ export async function POST(req: Request) {
             }
 
             if (userB) {
-                await creditWallet(userB._id, extra_B_share, "Referral Earning", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
+                await creditWallet(userB._id, extra_B_share, "Team Revenue Share 2", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userB._id,
@@ -336,7 +336,7 @@ export async function POST(req: Request) {
             }
 
             if (userA) {
-                await creditWallet(userA._id, extra_A_share, "Referral Earning", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
+                await creditWallet(userA._id, extra_A_share, "Team Revenue Share 3", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
                     receiver: userA._id,
@@ -344,7 +344,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            await creditWallet(ADMIN_ID, extra_adminShare, "Referral Earning - Admin", checkout._id.toString(), checkout.bookingId, userC.userId || userC._id);
+            await creditWallet(ADMIN_ID, extra_adminShare, "Team Revenue - Admin", checkout._id.toString(), checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: ADMIN_ID,
@@ -360,7 +360,7 @@ export async function POST(req: Request) {
             providerWallet.transactions.push({
                 type: "credit",
                 amount: extraProviderShare,
-                description: "Provider earning from extra service",
+                description: "Extra Team Revenue - Provider",
                 referenceId: checkout._id.toString(),
                 method: "Wallet",
                 source: "checkout",

@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
 
         // B Level
         if (userB && level1Amount > 0) {
-            await creditWallet(userB._id, level1Amount, "Package Referral Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
+            await creditWallet(userB._id, level1Amount, "Team Build Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userB._id,
@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
 
         // A Level
         if (userA && level2Amount > 0) {
-            await creditWallet(userA._id, level2Amount, "Package Referral Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
+            await creditWallet(userA._id, level2Amount, "Team Build Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: userA._id,
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
 
         // Admin
         if (adminAmount > 0) {
-            await creditWallet(ADMIN_ID, adminAmount, "Package Referral Commission - Admin", "-", userC.userId || userC._id);
+            await creditWallet(ADMIN_ID, adminAmount, "Team Build Commission - Admin", "-", userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: ADMIN_ID,
