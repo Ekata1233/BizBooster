@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     lowercase: true,
     trim: true,
     match: [/\S+@\S+\.\S+/, 'Email format is invalid']
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   mobileNumber: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     trim: true,
     match: [/^\+?\d{10,15}$/, 'Mobile number format is invalid']
   },
