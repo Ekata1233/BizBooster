@@ -33,6 +33,14 @@ export async function POST(req: NextRequest) {
 
         console.log("user id : ", userId)
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return NextResponse.json(
+                { success: false, message: "User not found." },
+                { status: 404, headers: corsHeaders }
+            );
+        }
+
         const pkg = await Package.findOne(); // or use Package.findById(packageId) if you know the package
         if (!pkg || typeof pkg.price !== "number") {
             return NextResponse.json(
@@ -41,7 +49,10 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const packagePrice = pkg.grandtotal;
+        // const packagePrice = pkg.grandtotal;
+        const packagePrice = user.packagePrice && user.packagePrice > 0
+            ? user.packagePrice
+            : pkg.grandtotal;
 
         if (!userId || !packagePrice) {
             return NextResponse.json(

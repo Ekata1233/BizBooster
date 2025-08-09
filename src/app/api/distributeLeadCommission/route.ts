@@ -61,9 +61,6 @@ export async function POST(req: Request) {
                     : rawCommission
                 : rawCommission;
 
-
-
-
         if (!checkout || checkout.commissionDistributed) {
             return NextResponse.json(
                 { success: false, message: "commission already distributed." },
@@ -72,8 +69,6 @@ export async function POST(req: Request) {
         }
 
         const leadAmount = lead?.afterDicountAmount ?? checkout.subtotal;
-
-
         console.log("lead amount : ", leadAmount);
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
@@ -284,7 +279,7 @@ export async function POST(req: Request) {
 
             if (trimmed.endsWith("%")) {
                 const percent = parseFloat(trimmed.replace("%", ""));
-                extraCommissionPool = (leadAmount * percent) / 100;
+                extraCommissionPool = (extraLeadAmount * percent) / 100;
             } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
                 const numericString = trimmed.replace("₹", "").trim();
                 extraCommissionPool = parseFloat(numericString);
@@ -292,10 +287,10 @@ export async function POST(req: Request) {
                 throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
             }
 
-            extraProviderShare = leadAmount - extraCommissionPool;
+            extraProviderShare = extraLeadAmount - extraCommissionPool;
         } else if (typeof extraCommission === "number") {
             extraCommissionPool = extraCommission;
-            extraProviderShare = leadAmount - extraCommissionPool;
+            extraProviderShare = extraLeadAmount - extraCommissionPool;
         } else {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }

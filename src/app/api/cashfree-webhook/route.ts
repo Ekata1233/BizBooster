@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import axios from "axios";
 import User from "@/models/User";
 import { Package } from "@/models/Package";
+import Lead from "@/models/Lead";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    console.log("✅ Webhook Received:", body);
+    // console.log("✅ Webhook Received:", body);
 
     const {
       order: { order_id },
@@ -65,27 +66,79 @@ export async function POST(req: NextRequest) {
     if (payment_status === "SUCCESS" && myOrderId?.startsWith("checkout_") && checkoutId) {
       const checkout = await Checkout.findById(checkoutId);
 
+      console.log("payed amount : ", payment_amount);
+
       if (checkout) {
         const paid = Number(payment_amount);
         const total = checkout.totalAmount;
         const remaining = total - paid;
 
-        const isFullPayment = paid >= total;
+
+        console.log("paid amount before update  : ", checkout.paidAmount);
 
         checkout.cashfreeMethod = payment_group;
         checkout.paidAmount = (checkout.paidAmount || 0) + paid;
         checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+        const isFullPayment = checkout.paidAmount >= total;
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
         checkout.isPartialPayment = !isFullPayment;
 
         await checkout.save();
 
-        console.log("✅ Updated Checkout:", {
-          checkoutId,
-          paidAmount: checkout.paidAmount,
-          remainingAmount: checkout.remainingAmount,
-          paymentStatus: checkout.paymentStatus,
-        });
+
+        console.log("paid amount after update  : ", checkout.paidAmount);
+
+
+
+        const existingLead = await Lead.findOne({ checkout: checkoutId });
+
+        if (existingLead) {
+          // Normalize and include timestamps
+          const leadUpdates = existingLead.leads.map((l: any) => ({
+            statusType: (l.statusType || "").toLowerCase(),
+            createdAt: new Date(l.createdAt || 0),
+          }));
+
+          // Find all "payment request" entries
+          const paymentRequests = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment request (partial/full)")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime());
+
+          // Find the most recent "payment verified"
+          const latestVerified = leadUpdates
+            .filter((l: { statusType: string }) => l.statusType === "payment verified")
+            .sort((a: { createdAt: Date }, b: { createdAt: Date }) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+
+          const newestRequest = paymentRequests[0];
+
+          const shouldAddNewVerification =
+            !latestVerified || (newestRequest && newestRequest.createdAt > latestVerified.createdAt);
+
+          if (shouldAddNewVerification) {
+            const description =
+              checkout.isPartialPayment
+                ? "Payment verified (Partial) via Cashfree"
+                : "Payment verified (Full) via Cashfree";
+
+            existingLead.leads.push({
+              statusType: "Payment verified",
+              description,
+              createdAt: new Date(),
+            });
+
+            await existingLead.save();
+            console.log("✅ New 'Payment verified' added after latest payment request");
+          } else {
+            console.log("ℹ️ Payment already verified for latest request");
+          }
+
+        }
+
+
+
+
+        console.log("after existing lead : ", existingLead)
+
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
       }
@@ -97,6 +150,45 @@ export async function POST(req: NextRequest) {
 
         const amountPaid = Number(payment_amount);
 
+        // const pkg = await Package.findOne();
+        // if (!pkg || typeof pkg.price !== "number") {
+        //   return NextResponse.json(
+        //     { success: false, message: "Valid package not found." },
+        //     { status: 400, headers: corsHeaders }
+        //   );
+        // }
+
+        // const fullPackageAmount = pkg.grandtotal;
+
+        // const user = await User.findById(myCustomerId);
+        // if (!user) throw new Error("User not found");
+
+        // const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
+        // const remaining = fullPackageAmount - newTotalPaid;
+
+        // user.packageAmountPaid = newTotalPaid;
+        // user.remainingAmount = Math.max(remaining, 0);
+        // user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
+        // // Set packagePrice only if it's not already set
+        // if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
+        //   user.packagePrice = fullPackageAmount;
+        // }
+
+
+        // if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
+
+        //   try {
+        //     const distRes = await axios.post(
+        //       "https://biz-booster.vercel.app/api/distributePackageCommission",
+        //       { userId: user._id }
+        //     );
+        //     // console.log("📤 Commission distribution triggered:", distRes.data);
+        //   } catch (err: any) {
+        //     console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
+        //   }
+        // }
+
+        // await user.save();
         const pkg = await Package.findOne();
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(
@@ -107,46 +199,44 @@ export async function POST(req: NextRequest) {
 
         const fullPackageAmount = pkg.grandtotal;
 
-        console.log("package amount : ", fullPackageAmount)
-
         const user = await User.findById(myCustomerId);
         if (!user) throw new Error("User not found");
 
         const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        console.log("paid amount  : ", newTotalPaid)
-        const remaining = fullPackageAmount - newTotalPaid;
-        console.log("remaining amount : ", remaining)
+
+        // ✅ Set packagePrice only once during the first partial payment
+        if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
+          user.packagePrice = fullPackageAmount;
+        }
+
+        // ✅ Ensure remainingAmount is based on the correct packagePrice (even if it was set earlier)
+        const effectivePackagePrice = user.packagePrice > 0 ? user.packagePrice : fullPackageAmount;
+        const remaining = effectivePackagePrice - newTotalPaid;
 
         user.packageAmountPaid = newTotalPaid;
         user.remainingAmount = Math.max(remaining, 0);
-        user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
+        user.packageType = newTotalPaid >= effectivePackagePrice ? "full" : "partial";
 
-        if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
-
+        // ✅ Trigger commission only if fully paid and not already active
+        if (newTotalPaid >= effectivePackagePrice && !user.packageActive) {
           try {
-            const distRes = await axios.post(
+            await axios.post(
               "https://biz-booster.vercel.app/api/distributePackageCommission",
               { userId: user._id }
             );
-            console.log("📤 Commission distribution triggered:", distRes.data);
           } catch (err: any) {
             console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
           }
         }
 
         await user.save();
-        console.log("✅ User payment info updated");
+
+        // console.log("✅ User payment info updated");
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
     }
 
-
-    console.log("myOrderId : ", myOrderId)
-    console.log("myCustomerId : ", myCustomerId)
-
-
-    console.log(`📦 Payment ${payment_status} for order: ${order_id}`);
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("❌ Webhook Error:", error.message);

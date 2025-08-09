@@ -115,6 +115,13 @@ export async function PATCH(req: Request) {
       );
     }
 
+     if (referrer.referredBy?.toString() === user._id.toString()) {
+      return NextResponse.json(
+        { success: false, message: "Circular referrals are not allowed." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     // ✅ 1. Update current user
     user.referredBy = referrer._id;
     await user.save();
