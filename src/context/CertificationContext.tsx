@@ -4,18 +4,39 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 // Define the Certificate type with additional fields
+// type Certificate = {
+//   _id: string;
+//     name: string;
+//     description: string;
+//     imageUrl: string;
+//     videoName: string;
+//     videoDescription: string;
+//      video: Array<{ // Assuming 'video' is an array of objects from backend
+//     videoName: string;
+//     videoDescription: string;
+//     videoUrl: string; // Assuming videoUrl is what comes back from the API
+//   }>;
+//     isDeleted: boolean;
+//     createdAt: string;
+//     updatedAt?: string;
+//     __v?: number;
+// };
+
+// Define the Video type separately for clarity and reusability
+type Video = {
+    _id: string;
+    videoName: string;
+    videoDescription: string;
+    videoUrl: string;
+};
+
+// Now define the Certificate type
 type Certificate = {
-  _id: string;
+    _id: string;
     name: string;
     description: string;
     imageUrl: string;
-    videoName: string;
-    videoDescription: string;
-     video: Array<{ // Assuming 'video' is an array of objects from backend
-    videoName: string;
-    videoDescription: string;
-    videoUrl: string; // Assuming videoUrl is what comes back from the API
-  }>;
+    video: Video[]; // An array of the Video type
     isDeleted: boolean;
     createdAt: string;
     updatedAt?: string;
