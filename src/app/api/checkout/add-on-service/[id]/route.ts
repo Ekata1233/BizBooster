@@ -47,6 +47,7 @@ export async function PATCH(req: NextRequest) {
       {
         extraServicePrice,
         grandTotal,
+         paymentStatus: "pending",
         updatedAt: new Date()
       },
       { new: true }
