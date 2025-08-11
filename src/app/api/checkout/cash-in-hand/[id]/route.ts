@@ -58,10 +58,7 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // 2. Update checkout fields for cash-in-hand
-        // const amount = checkout.remainingAmount || 0;
-        // checkout.paymentStatus = "paid";
-        const total = checkout.totalAmount;
+        const total = Number(checkout.grandTotal ?? checkout.totalAmount ?? 0);
         checkout.cashInHand = true;
         checkout.cashInHandAmount = (checkout.cashInHandAmount || 0) + fetchedAmount;
         checkout.paidAmount = (checkout.paidAmount || 0) + fetchedAmount;
