@@ -34,9 +34,9 @@ export async function PUT(req: NextRequest) {
         console.log("body of the cash in hand : ", body)
 
         const fetchedAmount =
-            paymentType === "partial" || paymentType === "remaining"
+            paymentType === "partial" 
                 ? (bodyAmount ?? 0) / 2
-                : paymentType === "full"
+                : paymentType === "full" || paymentType === "remaining"
                     ? (bodyAmount ?? 0)
                     : 0;
 
