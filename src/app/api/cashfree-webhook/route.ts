@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
       if (checkout) {
         const paid = Number(payment_amount);
-        const total = checkout.totalAmount;
+        const total = checkout.grandtotal ?? checkout.totalAmount;
         const remaining = total - paid;
 
 
@@ -134,9 +134,6 @@ export async function POST(req: NextRequest) {
 
         }
 
-
-
-
         console.log("after existing lead : ", existingLead)
 
       } else {
@@ -150,45 +147,6 @@ export async function POST(req: NextRequest) {
 
         const amountPaid = Number(payment_amount);
 
-        // const pkg = await Package.findOne();
-        // if (!pkg || typeof pkg.price !== "number") {
-        //   return NextResponse.json(
-        //     { success: false, message: "Valid package not found." },
-        //     { status: 400, headers: corsHeaders }
-        //   );
-        // }
-
-        // const fullPackageAmount = pkg.grandtotal;
-
-        // const user = await User.findById(myCustomerId);
-        // if (!user) throw new Error("User not found");
-
-        // const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        // const remaining = fullPackageAmount - newTotalPaid;
-
-        // user.packageAmountPaid = newTotalPaid;
-        // user.remainingAmount = Math.max(remaining, 0);
-        // user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
-        // // Set packagePrice only if it's not already set
-        // if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
-        //   user.packagePrice = fullPackageAmount;
-        // }
-
-
-        // if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
-
-        //   try {
-        //     const distRes = await axios.post(
-        //       "https://biz-booster.vercel.app/api/distributePackageCommission",
-        //       { userId: user._id }
-        //     );
-        //     // console.log("📤 Commission distribution triggered:", distRes.data);
-        //   } catch (err: any) {
-        //     console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
-        //   }
-        // }
-
-        // await user.save();
         const pkg = await Package.findOne();
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(
@@ -212,7 +170,7 @@ export async function POST(req: NextRequest) {
         // ✅ Set packagePrice only once during the first partial payment
         if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
           user.packagePrice = fullPackageAmount;
-                  console.log("packagePrice : ", user.packagePrice)
+          console.log("packagePrice : ", user.packagePrice)
 
         }
 

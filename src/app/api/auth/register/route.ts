@@ -5,6 +5,7 @@ import { userValidationSchema } from '@/validation/userValidation';
 import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 import { generateOtp } from '@/utils/generateOtp';
+import Wallet from '@/models/Wallet';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -108,6 +109,16 @@ export const POST = async (req: Request) => {
       referringUser.myTeams.push(newUser._id);
       await referringUser.save();
     }
+
+    const wallet = new Wallet({
+      userId: newUser._id,
+      balance: 0,
+      transactions: [],
+      totalCredits: 0,
+      totalDebits: 0,
+      lastTransactionAt: null
+    });
+    await wallet.save();
 
     return NextResponse.json(
       { success: true, message: 'Register Successfull' },

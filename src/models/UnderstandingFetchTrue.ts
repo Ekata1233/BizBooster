@@ -1,13 +1,10 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface VideoItem {
-  fileName: string;
-  filePath: string;
-}
-
 export interface IUnderstandingFetchTrue extends Document {
   fullName: string;
-  videoUrl: VideoItem[];
+  imageUrl: string;
+  description: string;
+  videoUrl: string;
   createdAt: Date;
 }
 
@@ -20,15 +17,21 @@ const underStandingFetchTrueSchema = new Schema<IUnderstandingFetchTrue>(
       minlength: 2,
       maxlength: 30,
     },
-    videoUrl: [
-      {
-        fileName: { type: String, required: true },
-        filePath: { type: String, required: true },
-      },
-    ],
+    imageUrl: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    videoUrl: {
+      type: String,
+      required: true,
+    },
   },
   {
-    timestamps: true, // Enables createdAt & updatedAt
+    timestamps: true,
   }
 );
 

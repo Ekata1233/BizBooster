@@ -166,9 +166,10 @@ export interface ICheckout extends Document {
     platformFeePrice: Number;
     assurityChargesPrice: Number;
 
+    extraServicePrice: Number;
 
     totalAmount: number;
-
+    grandTotal: number;
 
     paymentMethod: ('wallet' | 'pac' | 'cashfree')[];
     walletAmount: number;
@@ -177,7 +178,7 @@ export interface ICheckout extends Document {
     remainingAmount: number;
     isPartialPayment: boolean;
 
-    cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card'|'wallet';
+    cashfreeMethod?: 'credit_card' | 'upi' | 'net_banking' | 'debit_card' | 'wallet';
     paymentStatus: 'pending' | 'paid' | 'failed' | 'partial';
     orderStatus: 'processing' | 'in_progress' | 'completed' | 'cancelled';
     cashInHand?: boolean;
@@ -219,12 +220,15 @@ const checkoutSchema = new Schema<ICheckout>({
     serviceDiscountPrice: { type: Number, required: true, min: 0, default: 0 },
     priceAfterDiscount: { type: Number, required: true, min: 0, default: 0 },
     couponDiscountPrice: { type: Number, required: true, min: 0, default: 0 },
-    serviceGSTPrice: { type: Number , required: true, min: 0 },
+    serviceGSTPrice: { type: Number, required: true, min: 0 },
     platformFeePrice: { type: Number, required: true, min: 0, default: 0 },
     assurityChargesPrice: { type: Number, required: true, min: 0, default: 0 },
 
+    extraServicePrice: { type: Number, default: 0},
+
 
     totalAmount: { type: Number, required: true, min: 0 },
+    grandTotal: { type: Number, default: 0 },
 
 
     paymentMethod: {
@@ -240,7 +244,7 @@ const checkoutSchema = new Schema<ICheckout>({
     remainingAmount: { type: Number, default: 0 },
     cashfreeMethod: {
         type: String,
-        enum: ['credit_card', 'upi', 'net_banking', 'debit_card','wallet'],
+        enum: ['credit_card', 'upi', 'net_banking', 'debit_card', 'wallet'],
         default: null,
     },
     paymentStatus: {
