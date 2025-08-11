@@ -9,7 +9,7 @@ export async function GET() {
   await connectToDatabase();
   const providers = await Provider.find().sort().populate({
       path: 'subscribedServices',
-      select: 'serviceName price discountedPrice category isDeleted',
+      select: 'serviceName price discountedPrice category isDeleted providerCommission',
       populate: {
         path: 'category',
         select: 'name' // Only get the category name
