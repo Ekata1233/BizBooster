@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
       if (checkout) {
         const paid = Number(payment_amount);
-        const total = Number(checkout.grandtotal ?? checkout.totalAmount ?? 0);
+        const total = Number(checkout.grandTotal ?? checkout.totalAmount ?? 0);
         const remaining = total - paid;
 
         console.log("paid   : ", paid);
