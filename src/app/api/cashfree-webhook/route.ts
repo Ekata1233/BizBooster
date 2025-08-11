@@ -70,11 +70,11 @@ export async function POST(req: NextRequest) {
 
       if (checkout) {
         const paid = Number(payment_amount);
-        const total = checkout.grandtotal ?? checkout.totalAmount;
+        const total = Number(checkout.grandtotal ?? checkout.totalAmount ?? 0);
         const remaining = total - paid;
 
-
-        console.log("paid amount before update  : ", checkout.paidAmount);
+        console.log("paid   : ", paid);
+        console.log("total   : ", total);
 
         checkout.cashfreeMethod = payment_group;
         checkout.paidAmount = (checkout.paidAmount || 0) + paid;
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         await checkout.save();
 
 
-        console.log("paid amount after update  : ", checkout.paidAmount);
+        console.log("remaining amount  : ", checkout.remainingAmount);
 
 
 
