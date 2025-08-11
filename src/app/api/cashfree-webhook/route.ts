@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
         // ✅ Set packagePrice only once during the first partial payment
         if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
           user.packagePrice = fullPackageAmount;
-                  console.log("packagePrice : ", user.packagePrice)
+          console.log("packagePrice : ", user.packagePrice)
 
         }
 
