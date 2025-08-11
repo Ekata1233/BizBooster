@@ -1,77 +1,63 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/utils/db'; // Assuming correct path
-import UnderStandingFetchTrue from '@/models/UnderstandingFetchTrue'; // Assuming correct path
+import { NextRequest, NextResponse } from "next/server";
+import { connectToDatabase } from "@/utils/db";
+import UnderStandingFetchTrue from "@/models/UnderstandingFetchTrue";
+import imagekit from "@/utils/imagekit";
+import { v4 as uuidv4 } from "uuid";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+// PUT — update entry by ID
 export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const id = url.pathname.split("/").pop();
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: 'Missing ID in URL.' },
+        { success: false, message: "Missing ID in URL." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const body = await req.json();
-    const { fullName, videoIndex, youtubeUrl } = body;
+    const formData = await req.formData();
 
-    if (typeof videoIndex !== 'number' || videoIndex < 0) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid videoIndex provided in body.' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    const fullName = formData.get("fullName") as string | null;
+    const description = formData.get("description") as string | null;
+    const videoUrl = formData.get("videoUrl") as string | null;
+    const imageFile = formData.get("imageFile") as File | null;
 
     const doc = await UnderStandingFetchTrue.findById(id);
     if (!doc) {
       return NextResponse.json(
-        { success: false, message: 'Entry not found.' },
+        { success: false, message: "Entry not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    // Direct check for doc.videoUrl array and index validity
-    if (
-      !doc.videoUrl ||
-      !Array.isArray(doc.videoUrl) ||
-      videoIndex >= doc.videoUrl.length ||
-      videoIndex < 0
-    ) {
-      return NextResponse.json(
-        { success: false, message: 'videoIndex out of range or video array missing.' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // Update fullName if provided and not empty
-    if (fullName !== undefined && typeof fullName === 'string' && fullName.trim() !== '') {
-      // Add validation for fullName here if not already handled by schema's pre-save hooks
-      // Example: if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(fullName.trim())) { /* return error */ }
+    if (fullName && fullName.trim()) {
       doc.fullName = fullName.trim();
     }
+    if (description && description.trim()) {
+      doc.description = description.trim();
+    }
+    if (videoUrl && videoUrl.trim()) {
+      doc.videoUrl = videoUrl.trim();
+    }
 
-    // Update YouTube URL if provided and not empty
-    if (youtubeUrl !== undefined && typeof youtubeUrl === 'string' && youtubeUrl.trim() !== '') {
-      // Update the filePath of the specific video item in videoUrl array
-      doc.videoUrl[videoIndex].filePath = youtubeUrl.trim();
-      // Optionally update fileName, or keep it as 'YouTube Video'
-      // doc.videoUrl[videoIndex].fileName = 'Updated YouTube Video';
-    } else {
-        // If youtubeUrl is explicitly provided but empty, consider it an error as a URL is expected
-        return NextResponse.json(
-            { success: false, message: 'YouTube URL cannot be empty for update.' },
-            { status: 400, headers: corsHeaders }
-        );
+    if (imageFile && imageFile.size > 0) {
+      const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+      const uploadResponse = await imagekit.upload({
+        file: imageBuffer,
+        fileName: `${uuidv4()}-${imageFile.name}`,
+        folder: "/understandingfetchtrue/images",
+      });
+      doc.imageUrl = uploadResponse.url;
     }
 
     const updated = await doc.save();
@@ -81,112 +67,83 @@ export async function PUT(req: NextRequest) {
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    console.error('PUT error:', error); // This log will now show the actual error
+    console.error("PUT error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
+      { success: false, message: error instanceof Error ? error.message : "Internal Server Error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
+// DELETE — remove entry by ID
 export async function DELETE(req: NextRequest) {
   await connectToDatabase();
 
-  const url = new URL(req.url);
-  const id = url.pathname.split('/').pop();
-  const idx = Number(url.searchParams.get('videoIndex')); // Get videoIndex from query param
-
-  if (!id || Number.isNaN(idx)) {
-    return NextResponse.json(
-      { success: false, message: 'Valid ID and videoIndex query param required' },
-      { status: 400, headers: corsHeaders }
-    );
-  }
-
   try {
-    const doc = await UnderStandingFetchTrue.findById(id);
-    if (!doc) {
-      return NextResponse.json(
-        { success: false, message: 'Entry not found' },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-    // Ensure videoUrl array exists and index is valid
-    if (
-      !doc.videoUrl || // Check if videoUrl array exists
-      !Array.isArray(doc.videoUrl) || // Ensure it's an array
-      idx < 0 || // Check if index is non-negative
-      idx >= doc.videoUrl.length // Check if index is within bounds
-    ) {
+    if (!id) {
       return NextResponse.json(
-        { success: false, message: 'videoIndex out of range or video array missing.' },
+        { success: false, message: "Missing ID in URL." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // *** REMOVED ImageKit deletion logic ***
-    // The previous code checked for video.fileId, which is not relevant for YouTube URLs.
-    // YouTube videos are not stored on your ImageKit.
+    const deleted = await UnderStandingFetchTrue.findByIdAndDelete(id);
 
-    doc.videoUrl.splice(idx, 1); // Remove the video item at the specified index
-    const updated = await doc.save(); // Save the updated document
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Entry not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
     return NextResponse.json(
-      { success: true, message: 'Video deleted', data: updated },
+      { success: true, message: "Entry deleted successfully" },
       { status: 200, headers: corsHeaders }
     );
   } catch (err: unknown) {
-    console.error('DELETE error:', err); // More specific error logging
+    console.error("DELETE error:", err);
     return NextResponse.json(
-      {
-        success: false,
-        message: err instanceof Error ? err.message : 'Failed to delete video',
-      },
+      { success: false, message: err instanceof Error ? err.message : "Failed to delete entry" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
 
-
-
+// GET — fetch entry by ID
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop(); // Extract the ID from the URL path
+    const id = url.pathname.split("/").pop();
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: 'Missing entry ID in URL.' },
+        { success: false, message: "Missing entry ID in URL." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Find the entry by its ID
     const entry = await UnderStandingFetchTrue.findById(id);
 
     if (!entry) {
       return NextResponse.json(
-        { success: false, message: 'Entry not found.' },
+        { success: false, message: "Entry not found." },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    // Return the found entry
-    return NextResponse.json({ success: true, data: entry }, { status: 200, headers: corsHeaders });
-  } catch (error: unknown) {
-    console.error('GET /api/academy/understandingfetchtrue/[id] error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Internal Server Error',
-      },
+      { success: true, data: entry },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    console.error("GET /api/academy/understandingfetchtrue/[id] error:", error);
+    return NextResponse.json(
+      { success: false, message: error instanceof Error ? error.message : "Internal Server Error" },
       { status: 500, headers: corsHeaders }
     );
   }
