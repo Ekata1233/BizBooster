@@ -28,6 +28,7 @@ export interface Checkout {
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;
+  gst?:number;
   tax?: number;
   termsCondition?: boolean;
   totalAmount: number;
