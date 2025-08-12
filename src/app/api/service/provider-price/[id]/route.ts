@@ -92,7 +92,12 @@ export async function PUT(req: Request) {
     /* ------------------------------------------------------------------ */
     /* 3. Save with validation ------------------------------------------ */
     /* ------------------------------------------------------------------ */
-    const updated = await service.save();
+   const updated = await Service.findByIdAndUpdate(
+  id,
+  { $set: { providerPrices: service.providerPrices } },
+  { new: true, runValidators: false }
+);
+
 
     return NextResponse.json(
       { success: true, data: updated },
