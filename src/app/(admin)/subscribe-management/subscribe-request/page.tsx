@@ -42,10 +42,16 @@ const SubscribeRequestPage = () => {
     useEffect(() => {
         const pending = services
             .filter((service: any) => {
-                const rawStatus =
-                    service.status ?? service.providerPrices?.[0]?.status ?? '';
-                return rawStatus.toLowerCase() === 'pending';
-            })
+    const rawStatus =
+        service.status ??
+        (service.providerPrices || []).some(
+            (p: any) => (p.status ?? '').toLowerCase() === 'pending'
+        )
+            ? 'pending'
+            : '';
+    return rawStatus.toLowerCase() === 'pending';
+})
+
             .map((service: any) => ({
                 name: service.serviceName,
                 providerId: service.providerPrices?.[0]?.provider?._id || 'N/A',
