@@ -28,16 +28,17 @@ export async function PATCH(req: NextRequest) {
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return NextResponse.json(
-                { success: false, message: "Invalid checkout ID" },
+                { success: false, message: "Invalid booking ID" },
                 { status: 400, headers: corsHeaders }
             );
         }
 
-
-        const updatedCheckout = await Checkout.findByIdAndUpdate(
-            id,
+        // Only cancel if it's NOT already canceled
+        const updatedCheckout = await Checkout.findOneAndUpdate(
+            { _id: id, isCanceled: false }, // condition
             {
                 isCanceled: true,
+                orderStatus: 'cancelled', // set orderStatus to cancelled
                 updatedAt: new Date()
             },
             { new: true }
@@ -45,8 +46,8 @@ export async function PATCH(req: NextRequest) {
 
         if (!updatedCheckout) {
             return NextResponse.json(
-                { success: false, message: "Checkout not found" },
-                { status: 404, headers: corsHeaders }
+                { success: false, message: "Lead not found or already canceled" },
+                { status: 400, headers: corsHeaders }
             );
         }
 
@@ -54,6 +55,7 @@ export async function PATCH(req: NextRequest) {
             { success: true, data: updatedCheckout },
             { status: 200, headers: corsHeaders }
         );
+
     } catch (error: any) {
         return NextResponse.json(
             { success: false, message: error.message || 'Unknown error' },

@@ -96,9 +96,21 @@ const AllBookingsDetails = () => {
     Array.isArray(leadDetails?.extraService) &&
     leadDetails.extraService.length > 0;
 
+
+  const serviceGSTPercent = checkoutDetails?.gst || 0;
+  const platformFeePercent = checkoutDetails?.platformFee || 0;
+  const assurityFeePercent = checkoutDetails?.assurityfee || 0;
+  const value = checkoutDetails?.subtotal ?? 0;
+  const gstValue = (serviceGSTPercent / 100) * value;
+  const platformFeeValue = (platformFeePercent / 100) * value;
+  const assurityFeeValue = (assurityFeePercent / 100) * value;
+
   const baseAmount = leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0;
   const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
   const grandTotal = baseAmount + extraAmount;
+
+  let finalGrandTotal = checkoutDetails?.totalAmount ?? 0;
+
 
   if (!checkoutDetails) {
     return <div className="p-6 text-center">Loading booking details...</div>;
@@ -205,7 +217,7 @@ const AllBookingsDetails = () => {
 
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
-                {[
+                {([
                   ['Listing Price', leadDetails?.newAmount ?? checkoutDetails?.listingPrice],
                   [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
@@ -213,8 +225,9 @@ const AllBookingsDetails = () => {
                   [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
                   [`Platform Fee `, checkoutDetails?.platformFeePrice ?? 0],
                   [`Fetch True Assurity Charges (${checkoutDetails?.assurityfee ?? 0}%)`, checkoutDetails?.assurityChargesPrice ?? 0],
-                  ['Total ',checkoutDetails?.totalAmount ?? 0],
-                ].map(([label, amount]) => (
+                  ['Service Total', checkoutDetails?.totalAmount ?? 0],
+                ] as [string, number][]
+                ).map(([label, amount]) => (
                   <div className="flex justify-between" key={label}>
                     <span className="font-medium">{label} :</span>
                     <span>₹{amount}</span>
@@ -226,7 +239,28 @@ const AllBookingsDetails = () => {
                   const extraServices = leadDetails!.extraService!;
                   const subtotal = extraServices.reduce((acc, service) => acc + (service.price || 0), 0);
                   const totalDiscount = extraServices.reduce((acc, service) => acc + (service.discount || 0), 0);
-                  const grandTotal = extraServices.reduce((acc, service) => acc + (service.total || 0), 0);
+                  const priceAfterDiscount = extraServices.reduce((acc, service) => acc + (service.total || 0), 0);
+
+                  const champaignDiscount = checkoutDetails.champaignDiscount || 0;
+                  const gstPercent = checkoutDetails?.gst ?? gstValue ?? 0;
+
+                  // GST calculated only on priceAfterDiscount
+                  const serviceGST = (gstPercent / 100) * priceAfterDiscount; const platformFee = platformFeeValue || 0;
+                  // percentage value (from checkoutDetails or fallback)
+                  const assurityFeePercent = checkoutDetails?.assurityfee ?? assurityFeeValue ?? 0;
+
+                  // ✅ calculated assurity fee amount
+                  const assurityFee = (assurityFeePercent / 100) * priceAfterDiscount;
+
+                  const grandTotal = subtotal - totalDiscount - (checkoutDetails.couponDiscount || 0) - champaignDiscount + serviceGST + assurityFee;
+                  finalGrandTotal = (checkoutDetails?.totalAmount ?? 0) + (grandTotal || 0);
+                  console.log("subtotal : ", subtotal)
+                  console.log("champaignDiscount : ", champaignDiscount)
+                  console.log("champaignDiscount : ", champaignDiscount)
+                  console.log("serviceGST : ", serviceGST)
+                  console.log("platformFee : ", platformFee)
+                  console.log("assurityFee : ", assurityFee)
+                  console.log("grandTotal : ", grandTotal)
 
                   return (
                     <>
@@ -255,20 +289,23 @@ const AllBookingsDetails = () => {
                       </table>
 
                       {/* Summary section */}
-                      {[
-                        ['Subtotal', subtotal],
-                        ['Discount', totalDiscount],
-                        ['Campaign Discount', 0],
-                        ['Coupon Discount', checkoutDetails.couponDiscount || 0],
-                        ['VAT', 0],
-                        ['Platform Fee', 0],
-                        ['Extra Service Total', grandTotal],
-                      ].map(([label, amount]) => (
+                      {([
+                        ['Listing Price', subtotal],
+                        [`Service Discount `, -(totalDiscount || 0)],
+                        [`Price After Discount`, priceAfterDiscount || 0],
+                        // show coupon if you want to include coupon for extra services — commented out to match previous code
+                        // [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
+                        [`Service GST (${checkoutDetails?.gst ?? 0}%)`, serviceGST || 0],
+                        // [`Platform Fee`, platformFee || 0], // uncomment if platform fee applies to extra services
+                        [`Fetch True Assurity Charges (${assurityFeePercent}%)`, assurityFee || 0],
+                        ['Extra Service Total', grandTotal || 0],
+                      ] as [string, number][]).map(([label, amount]) => (
                         <div className="flex justify-between mb-1" key={label}>
                           <span className="font-medium">{label}:</span>
-                          <span>{formatPrice(amount)}</span>
+                          <span>{formatPrice(Number(amount))}</span>
                         </div>
                       ))}
+
                     </>
                   );
                 })()}
