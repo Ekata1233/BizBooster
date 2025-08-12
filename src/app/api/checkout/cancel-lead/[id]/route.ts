@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest) {
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return NextResponse.json(
-                { success: false, message: "Invalid checkout ID" },
+                { success: false, message: "Invalid booking ID" },
                 { status: 400, headers: corsHeaders }
             );
         }
@@ -36,13 +36,17 @@ export async function PATCH(req: NextRequest) {
         // Only cancel if it's NOT already canceled
         const updatedCheckout = await Checkout.findOneAndUpdate(
             { _id: id, isCanceled: false }, // condition
-            { isCanceled: true, updatedAt: new Date() },
+            {
+                isCanceled: true,
+                orderStatus: 'cancelled', // set orderStatus to cancelled
+                updatedAt: new Date()
+            },
             { new: true }
         );
 
         if (!updatedCheckout) {
             return NextResponse.json(
-                { success: false, message: "Checkout not found or already canceled" },
+                { success: false, message: "Lead not found or already canceled" },
                 { status: 400, headers: corsHeaders }
             );
         }
