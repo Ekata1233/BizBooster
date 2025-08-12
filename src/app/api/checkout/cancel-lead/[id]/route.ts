@@ -33,20 +33,17 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
-
-        const updatedCheckout = await Checkout.findByIdAndUpdate(
-            id,
-            {
-                isCanceled: true,
-                updatedAt: new Date()
-            },
+        // Only cancel if it's NOT already canceled
+        const updatedCheckout = await Checkout.findOneAndUpdate(
+            { _id: id, isCanceled: false }, // condition
+            { isCanceled: true, updatedAt: new Date() },
             { new: true }
         );
 
         if (!updatedCheckout) {
             return NextResponse.json(
-                { success: false, message: "Checkout not found" },
-                { status: 404, headers: corsHeaders }
+                { success: false, message: "Checkout not found or already canceled" },
+                { status: 400, headers: corsHeaders }
             );
         }
 
@@ -54,6 +51,7 @@ export async function PATCH(req: NextRequest) {
             { success: true, data: updatedCheckout },
             { status: 200, headers: corsHeaders }
         );
+
     } catch (error: any) {
         return NextResponse.json(
             { success: false, message: error.message || 'Unknown error' },
