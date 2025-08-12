@@ -29,9 +29,9 @@ const Page = () => {
     const [newCommissionType, setNewCommissionType] = useState<'percentage' | 'amount'>('percentage');
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
-        const router = useRouter();
+    const router = useRouter();
     console.log(isApproving);
-    
+
     console.log("service single : ", singleService)
 
     useEffect(() => {
@@ -64,10 +64,10 @@ const Page = () => {
 
         setIsApproving(true);
         try {
-           const providerCommission =
-            newCommissionType === 'percentage'
-                ? `${newCommissionValue}%`
-                : `₹${newCommissionValue}`;
+            const providerCommission =
+                newCommissionType === 'percentage'
+                    ? `${newCommissionValue}%`
+                    : `₹${newCommissionValue}`;
 
             await approveService(singleService._id, providerId, providerCommission);
 
@@ -87,6 +87,7 @@ const Page = () => {
     const matchedProviderPrice = singleService?.providerPrices?.find(
         (item) => item.provider === providerId
     );
+    console.log("updtaed price 11 :", matchedProviderPrice);
 
     if (singleServiceLoading) return <div>Loading...</div>;
     if (singleServiceError) return <div>Error: {singleServiceError}</div>;
@@ -145,9 +146,21 @@ const Page = () => {
                         <Input
                             type="text"
                             placeholder="Updated Price"
+                            value={`₹${matchedProviderPrice?.providerMRP ?? ''}`} />
+                    </div>
+                    <div className="flex flex-col">
+                        <Label>Updated Price</Label>
+                        <Input
+                            type="text"
+                            placeholder="Updated Price"
+                            value={`₹${matchedProviderPrice?.providerDiscount ?? ''}`} />
+                    </div> <div className="flex flex-col">
+                        <Label>Updated Price</Label>
+                        <Input
+                            type="text"
+                            placeholder="Updated Price"
                             value={`₹${matchedProviderPrice?.providerPrice ?? ''}`} />
                     </div>
-
                     {/* <div className="flex flex-col">
             <Label>Updated After Discount Price</Label>
             <Input
