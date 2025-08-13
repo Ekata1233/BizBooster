@@ -32,6 +32,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    
     const fetchTeam = async () => {
       try {
         const res = await fetch(`/api/team-build/my-team/${userId}`);
