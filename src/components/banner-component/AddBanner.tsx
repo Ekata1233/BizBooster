@@ -31,7 +31,7 @@ const AddBanner = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [referralUrl, setReferralUrl] = useState<string>('');
   const [pageType, setPageType] = useState<PageType>('home');
-    const [selectedService, setSelectedService] = useState('');
+  const [selectedService, setSelectedService] = useState('');
 
 
   const { categories } = useCategory();
@@ -100,7 +100,10 @@ const AddBanner = () => {
 
   const filteredSubcategories = subcategories.filter(sub => sub.category?._id === selectedCat);
 
-  const filteredServices = services.filter(serv => serv.subcategory?._id === selectedSubcategory);
+  const filteredServices =
+    selectedValue === 'service'
+      ? services.filter(serv => serv.category?._id === selectedCat) // ✅ Filter directly by category
+      : services.filter(serv => serv.subcategory?._id === selectedSubcategory);
 
   const categoryOptions = filteredCategories.map(cat => ({
     value: cat._id ?? '',
@@ -150,7 +153,7 @@ const AddBanner = () => {
   }));
 
   const onlyCategoryOptions = categories.map((cat: Category) => ({
-    value: cat._id?? '',
+    value: cat._id ?? '',
     label: cat.name,
   }));
 
