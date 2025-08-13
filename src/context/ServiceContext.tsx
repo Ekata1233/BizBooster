@@ -6,6 +6,8 @@ type ProviderPrice = {
   provider: string; // or ObjectId if using mongoose
   price: number;
   providerPrice: number;
+  providerDiscount:number;
+  providerMRP:number;
 };
 interface ExtraSection {
   title: string;
