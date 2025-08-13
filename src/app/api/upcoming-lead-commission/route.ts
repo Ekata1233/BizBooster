@@ -210,9 +210,9 @@ export async function POST(req: Request) {
     const leadAmount = checkout.subtotal;
     const extraLeadAmount = Array.isArray(lead?.extraService)
       ? lead.extraService.reduce(
-          (sum: number, item: { total?: number }) => sum + (item.total || 0),
-          0
-        )
+        (sum: number, item: { total?: number }) => sum + (item.total || 0),
+        0
+      )
       : 0;
 
     const extraCommission =
@@ -288,6 +288,18 @@ export async function POST(req: Request) {
 
       extra_adminShare = toFixed2(
         extraCommissionPool - (extra_C_share + extra_B_share + extra_A_share)
+      );
+    }
+
+    // ---------------- CHECK IF ALREADY DISTRIBUTED ----------------
+    const existingCommission = await UpcomingCommission.findOne({ checkoutId });
+    if (existingCommission) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Commission already distributed for this Lead.",
+        },
+        { status: 400, headers: corsHeaders }
       );
     }
 
