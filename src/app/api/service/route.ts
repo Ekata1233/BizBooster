@@ -297,7 +297,7 @@ export async function GET(req: NextRequest) {
       .populate({
         path: 'providerPrices.provider',
         model: 'Provider',
-        select: 'storeName',
+        select: 'storeInfo.storeName',
       })
       .sort(sortOption)
       .exec();
