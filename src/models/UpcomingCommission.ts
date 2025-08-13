@@ -20,7 +20,7 @@ export interface ICommissionPreview extends Document {
 
 const CommissionPreviewSchema = new Schema<ICommissionPreview>(
   {
-    leadId: { type: Schema.Types.ObjectId, ref: "Lead", required: true },
+    leadId: { type: Schema.Types.ObjectId, ref: "Lead",  default: null  },
     checkoutId: { type: Schema.Types.ObjectId, ref: "Checkout", required: true },
     share_1: { type: Number, default: 0 },
     share_2: { type: Number, default: 0 },

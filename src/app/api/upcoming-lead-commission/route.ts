@@ -305,7 +305,7 @@ export async function POST(req: Request) {
 
     // ---------------- SAVE ----------------
     await UpcomingCommission.create({
-      leadId: lead._id,
+      leadId: lead ? lead._id : null,
       checkoutId: checkout._id,
       share_1: C_share,
       share_2: B_share,
