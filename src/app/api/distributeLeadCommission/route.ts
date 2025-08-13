@@ -49,17 +49,9 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("checkout details in commission distribute :", checkout);
-
-
         const rawCommission = checkout.service?.franchiseDetails?.commission;
 
-        const commission =
-            lead?.newCommission || lead?.newCommission === 0
-                ? lead?.newCommission > 0
-                    ? lead.newCommission
-                    : rawCommission
-                : rawCommission;
+        const commission = rawCommission;
 
         if (!checkout || checkout.commissionDistributed) {
             return NextResponse.json(
@@ -68,7 +60,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const leadAmount = lead?.afterDicountAmount ?? checkout.subtotal;
+        const leadAmount = checkout.subtotal;
         console.log("lead amount : ", leadAmount);
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
