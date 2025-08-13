@@ -158,7 +158,7 @@ const AllBookings = () => {
       bookingId: checkout.bookingId,
       fullName: checkout.serviceCustomer?.fullName,
       email: checkout.serviceCustomer?.email,
-      totalAmount: checkout.service?.discountedPrice || 0,
+      totalAmount:  checkout.grandTotal ?? checkout.totalAmount,
       paymentStatus: checkout?.paymentStatus || 'unpaid',
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,

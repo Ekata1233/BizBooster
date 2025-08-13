@@ -28,7 +28,7 @@ export interface ICheckout extends Document {
 
     extraServicePrice: Number;
 
-    commission: Number;
+    commission: String;
 
     totalAmount: number;
     grandTotal: number;
@@ -88,7 +88,7 @@ const checkoutSchema = new Schema<ICheckout>({
 
     extraServicePrice: { type: Number, default: 0},
 
-    commission : { type: Number, default: null},
+    commission : { type: String, default: null},
 
 
     totalAmount: { type: Number, required: true, min: 0 },
