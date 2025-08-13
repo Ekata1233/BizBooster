@@ -86,11 +86,25 @@ export async function POST(req: NextRequest) {
         checkout.isPartialPayment = !isFullPayment;
 
         await checkout.save();
+        let leadDoc = await Lead.findOne({ checkout: checkoutId });
 
+        if (!leadDoc) {
+          // Create new Lead if not found
+          leadDoc = new Lead({
+            checkout: checkoutId,
+            leads: [],
+          });
+        }
+
+        leadDoc.leads.push({
+          statusType: "Payment verified",
+          description: `Payment verified ${payment_amount} Rs via Cashfree`,
+          createdAt: new Date(),
+        });
+
+        await leadDoc.save();
 
         console.log("remaining amount  : ", checkout.remainingAmount);
-
-
 
         const existingLead = await Lead.findOne({ checkout: checkoutId });
 
