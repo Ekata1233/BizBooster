@@ -63,7 +63,7 @@ const AllBookings = () => {
     },
 
     // ✅ NEW COLUMN: Booking Status based on isCompleted
-    
+
 
     {
       header: 'Booking Date',
@@ -158,7 +158,9 @@ const AllBookings = () => {
       bookingId: checkout.bookingId,
       fullName: checkout.serviceCustomer?.fullName,
       email: checkout.serviceCustomer?.email,
-      totalAmount:  checkout.grandTotal ?? checkout.totalAmount,
+      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
+        ? Number(checkout.grandTotal)
+        : Number(checkout.totalAmount),
       paymentStatus: checkout?.paymentStatus || 'unpaid',
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,
