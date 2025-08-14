@@ -16,6 +16,7 @@ export interface Checkout {
   isAccepted: boolean;
   isCanceled: boolean;
   isCompleted: boolean;
+  isCancel : boolean;
   isDeleted: boolean;
   isVerified: boolean;
   notes?: string;

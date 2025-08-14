@@ -109,12 +109,21 @@ const AllBookings = () => {
     {
       header: 'Booking Status',
       accessor: 'bookingStatus',
-      render: (row: BookingRow) => {
-        const isCompleted = row.isCompleted;
-        const label = isCompleted ? 'Completed' : 'Pending';
-        const colorClass = isCompleted
-          ? 'bg-green-100 text-green-700 border border-green-300'
-          : 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+      render: (row: BookingRow & { isCancel?: boolean }) => {
+        console.log("row of the booking status : ", row)
+        let label = '';
+        let colorClass = '';
+
+        if (row.isCancel) {
+          label = 'Cancelled';
+          colorClass = 'bg-red-100 text-red-700 border border-red-300';
+        } else if (row.isCompleted) {
+          label = 'Completed';
+          colorClass = 'bg-green-100 text-green-700 border border-green-300';
+        } else {
+          label = 'Pending';
+          colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+        }
 
         return (
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
@@ -123,6 +132,7 @@ const AllBookings = () => {
         );
       },
     },
+
     {
       header: 'Action',
       accessor: 'action',
@@ -166,7 +176,8 @@ const AllBookings = () => {
       orderStatus: checkout.orderStatus,
       _id: checkout._id,
       provider: checkout.provider,
-      isCompleted: checkout.isCompleted, // ✅ mapped for booking status
+      isCompleted: checkout.isCompleted,
+      isCancel: checkout.isCanceled,
     }));
 
   return (

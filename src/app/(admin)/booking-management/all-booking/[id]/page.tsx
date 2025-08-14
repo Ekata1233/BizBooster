@@ -77,10 +77,18 @@ const AllBookingsDetails = () => {
   const getStatusStyle = () => {
     if (checkoutDetails?.isCompleted)
       return { label: 'Completed', color: 'text-green-700 border-green-400 bg-green-50' };
+
+    if (checkoutDetails?.isCanceled === true) // ✅ compare as boolean
+      return { label: 'Cancelled', color: 'text-red-700 border-red-400 bg-red-50' };
+
     if (checkoutDetails?.orderStatus === 'processing')
       return { label: 'Processing', color: 'text-yellow-700 border-yellow-400 bg-yellow-50' };
+
+
+
     return { label: 'Pending', color: 'text-gray-700 border-gray-400 bg-gray-50' };
   };
+
 
   const status = getStatusStyle();
 
@@ -133,8 +141,13 @@ const AllBookingsDetails = () => {
               <h2 className="text-lg font-semibold">
                 Booking ID: <span className="text-blue-600">{checkoutDetails?.bookingId || 'N/A'}</span>
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Status: <span className="font-medium capitalize">{checkoutDetails?.orderStatus || 'N/A'}</span>
+              <p className="text-md text-gray-600 mt-2 flex items-center gap-1">
+                Status :
+                <span
+                  className={`font-medium px-2 py-0.5 rounded-full text-md border ${status.color}`}
+                >
+                  {status.label}
+                </span>
               </p>
             </div>
 
@@ -312,7 +325,7 @@ const AllBookingsDetails = () => {
 
                 <div className="flex justify-between font-bold text-blue-600">
                   <span>Grand Total</span>
-                  <span>{formatPrice(grandTotal || 0)}</span>
+                  <span>{formatPrice(finalGrandTotal || 0)}</span>
                 </div>
               </div>
             </div>
