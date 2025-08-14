@@ -38,14 +38,17 @@ interface AdminTransaction {
 export async function GET() {
   await connectToDatabase();
 
-  const userWallets = await Wallet.find().populate('userId', 'name');
-  const providerWallets = await ProviderWallet.find().populate('providerId', 'name');
+  const userWallets = await Wallet.find().populate('userId');
+  const providerWallets = await ProviderWallet.find().populate('providerId');
+  console.log("provider wallets : ", providerWallets)
 
   const userTxns: AdminTransaction[] = userWallets.flatMap(wallet =>
     wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
       transactionId: txn.referenceId || `U-${wallet.userId._id}-${txn.createdAt.getTime()}`,
       walletType: 'User',
-      to: wallet.userId?.name || 'Unknown User',
+      to: wallet.userId 
+      ? `${wallet.userId.userId} - ${wallet.userId.fullName}` 
+      : 'Unknown User',
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
@@ -61,7 +64,9 @@ export async function GET() {
     wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
       transactionId: txn.referenceId || `P-${wallet.providerId._id}-${txn.createdAt.getTime()}`,
       walletType: 'Provider',
-      to: wallet.providerId?.name || 'Unknown Provider',
+      to:  wallet.providerId
+      ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
+      : 'Unknown Provider',
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
