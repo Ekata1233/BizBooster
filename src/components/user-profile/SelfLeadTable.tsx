@@ -1,22 +1,28 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import ComponentCard from '@/components/common/ComponentCard';
-import BasicTableOne from '@/components/tables/BasicTableOne';
-import { EyeIcon } from '@/icons';
-import { useCheckout } from '@/context/CheckoutContext';
+import React, { useEffect, useState } from "react";
+import ComponentCard from "@/components/common/ComponentCard";
+import BasicTableOne from "@/components/tables/BasicTableOne";
+import { EyeIcon } from "@/icons";
+import { useCheckout } from "@/context/CheckoutContext";
 
 interface SelfLeadProps {
   userId: string;
   isAction: boolean;
 }
 
+interface CommissionData {
+  checkoutId: string;
+  share_1: number;
+}
+
 const columnsSelfLead = [
-  { header: 'Sr', accessor: 'sr' },
-  { header: 'Service Name', accessor: 'serviceName' },
+  { header: "Sr", accessor: "sr" },
+  { header: "Lead Id", accessor: "leadId" },
+  { header: "Service Name", accessor: "serviceName" },
   {
-    header: 'Contact Details',
-    accessor: 'contactDetails',
+    header: "Contact Details",
+    accessor: "contactDetails",
     render: (row: any) => (
       <div className="text-sm text-gray-700">
         <div className="font-semibold">{row.userName}</div>
@@ -25,26 +31,26 @@ const columnsSelfLead = [
       </div>
     ),
   },
-  { header: 'Price', accessor: 'price' },
-  { header: 'My Commission', accessor: 'commission' },
+  { header: "Price", accessor: "price" },
+  { header: "My Commission", accessor: "commission" },
   {
-    header: 'Lead Status',
-    accessor: 'leadStatus',
+    header: "Lead Status",
+    accessor: "leadStatus",
     render: (row: any) => {
       const status = row.leadStatus;
-      let color = '';
+      let color = "";
       switch (status) {
-        case 'completed':
-          color = 'bg-green-100 text-green-600 border-green-300';
+        case "completed":
+          color = "bg-green-100 text-green-600 border-green-300";
           break;
-        case 'pending':
-          color = 'bg-yellow-100 text-yellow-600 border-yellow-300';
+        case "pending":
+          color = "bg-yellow-100 text-yellow-600 border-yellow-300";
           break;
-        case 'ongoing':
-          color = 'bg-blue-100 text-blue-600 border-blue-300';
+        case "ongoing":
+          color = "bg-blue-100 text-blue-600 border-blue-300";
           break;
         default:
-          color = 'bg-gray-100 text-gray-600 border-gray-300';
+          color = "bg-gray-100 text-gray-600 border-gray-300";
       }
       return (
         <span className={`px-2 py-1 rounded-full text-xs border ${color}`}>
@@ -54,8 +60,8 @@ const columnsSelfLead = [
     },
   },
   {
-    header: 'Action',
-    accessor: 'action',
+    header: "Action",
+    accessor: "action",
     render: (row: any) => (
       <div className="flex gap-2">
         <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
@@ -68,12 +74,45 @@ const columnsSelfLead = [
 
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
-
-  console.log("checkout in self lead table : ", checkouts)
+  const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
   useEffect(() => {
     fetchCheckoutByUser(userId);
   }, [userId]);
+
+  // Fetch commission for each checkoutId
+  useEffect(() => {
+    if (!checkouts || checkouts.length === 0) return;
+
+    const fetchCommissions = async () => {
+      const results: CommissionData[] = [];
+
+      await Promise.all(
+        checkouts.map(async (checkout) => {
+          try {
+            const res = await fetch(
+              `/api/upcoming-lead-commission/find-by-checkoutId/${checkout._id}`
+            );
+            const json = await res.json();
+            if (json.success && json.data) {
+              results.push({
+                checkoutId: checkout._id,
+                share_1: json.data.share_1 ?? 0,
+              });
+            } else {
+              results.push({ checkoutId: checkout._id, share_1: 0 });
+            }
+          } catch (err) {
+            results.push({ checkoutId: checkout._id, share_1: 0 });
+          }
+        })
+      );
+
+      setCommissions(results);
+    };
+
+    fetchCommissions();
+  }, [checkouts]);
 
   if (loading) return <p>Loading...</p>;
 
@@ -93,26 +132,31 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
     );
   }
 
-
   const mappedData = checkouts.map((checkout, index) => {
     const customer = checkout?.serviceCustomer || {};
+    const commissionEntry = commissions.find(
+      (c) => c.checkoutId === checkout._id
+    );
+    const myCommission = commissionEntry
+      ? `₹${commissionEntry.share_1.toLocaleString()}`
+      : "₹0";
 
     return {
       sr: index + 1,
-      serviceName: checkout?.service?.serviceName || 'N/A',
-      userName: customer?.fullName || 'N/A',
-      userEmail: customer?.email || 'N/A',
-      userPhone: customer?.phone || 'N/A',
-      price: `₹${checkout?.totalAmount?.toLocaleString() || 0}`,
-      commission: `₹${checkout?.commission?.toLocaleString() || 0}`,
+      leadId: checkout?.bookingId || "N/A",
+      serviceName: checkout?.service?.serviceName || "N/A",
+      userName: customer?.fullName || "N/A",
+      userEmail: customer?.email || "N/A",
+      userPhone: customer?.phone || "N/A",
+      price: `₹${Number(checkout?.totalAmount ?? 0).toLocaleString()}`,
+      commission: myCommission,
       leadStatus: checkout?.isCompleted
-        ? 'completed'
-        : checkout?.orderStatus === 'processing'
-          ? 'ongoing'
-          : 'pending',
+        ? "completed"
+        : checkout?.orderStatus === "processing"
+          ? "ongoing"
+          : "pending",
     };
   });
-
 
   return (
     <ComponentCard title="Self Lead Table">
