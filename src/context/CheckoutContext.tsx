@@ -29,6 +29,7 @@ export interface Checkout {
   commission?: number;
   subtotal?: number;
   gst?:number;
+  grandTotal?: number;
   tax?: number;
   termsCondition?: boolean;
   totalAmount: number;
