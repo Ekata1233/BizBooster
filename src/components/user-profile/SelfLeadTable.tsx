@@ -49,6 +49,9 @@ const columnsSelfLead = [
         case "ongoing":
           color = "bg-blue-100 text-blue-600 border-blue-300";
           break;
+        case "cancelled":
+          color = "bg-red-100 text-red-600 border-red-300";
+          break;
         default:
           color = "bg-gray-100 text-gray-600 border-gray-300";
       }
@@ -154,7 +157,9 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
         ? "completed"
         : checkout?.orderStatus === "processing"
           ? "ongoing"
-          : "pending",
+          : checkout?.isCanceled
+            ? "cancelled"
+            : "pending",
     };
   });
 
