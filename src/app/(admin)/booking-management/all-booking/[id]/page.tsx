@@ -115,8 +115,11 @@ const AllBookingsDetails = () => {
 
   const baseAmount = leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0;
   const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
-  const grandTotal = baseAmount + extraAmount;
-
+  console.log("baseamount : ", baseAmount)
+  console.log("extraAmount : ", extraAmount)
+  const grandTotal = checkoutDetails?.grandTotal && checkoutDetails.grandTotal > 0
+    ? checkoutDetails.grandTotal
+    : checkoutDetails?.totalAmount;
   let finalGrandTotal = checkoutDetails?.totalAmount ?? 0;
 
 
@@ -213,14 +216,17 @@ const AllBookingsDetails = () => {
                   <tbody>
                     <tr>
                       <td className="border px-4 py-2">{checkoutDetails?.service?.serviceName || 'N/A'}</td>
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0)}</td>
-                      {/* <td className="border px-4 py-2">
-                        {lead?.newDiscountAmount != null
-                          ? '₹0'
-                          : `₹${checkoutDetails?.service?.discountedPrice || 0}`}
-                      </td> */}
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newDiscountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0)}</td>
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0)}</td>
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.listingPrice ?? checkoutDetails?.service?.price ?? 0))}
+                      </td>
+
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.serviceDiscountPrice ?? checkoutDetails?.service?.discountedPrice ?? 0))}
+                      </td>
+
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.priceAfterDiscount ?? checkoutDetails?.totalAmount ?? 0))}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -231,8 +237,8 @@ const AllBookingsDetails = () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {([
-                  ['Listing Price', leadDetails?.newAmount ?? checkoutDetails?.listingPrice],
-                  [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
+                  ['Listing Price',  checkoutDetails?.listingPrice ?? 0],
+                  [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
                   [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
@@ -345,7 +351,7 @@ const AllBookingsDetails = () => {
               <div className="flex flex-col md:flex-row justify-between gap-6">
                 <div className="flex-1 space-y-2">
                   <p className="text-gray-700"><strong>Payment Method:</strong> {checkoutDetails?.paymentMethod?.[0] || 'N/A'}</p>
-                  <p className="text-gray-700"><strong>Total Amount:</strong> ₹{checkoutDetails?.totalAmount || 0}</p>
+                  <p className="text-gray-700"><strong>Total Amount :</strong> {formatPrice(grandTotal || 0)}</p>
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-gray-700"><strong>Payment Status:</strong> <span className="text-green-600 capitalize">{checkoutDetails?.paymentStatus || 'N/A'}</span></p>
