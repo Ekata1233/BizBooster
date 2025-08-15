@@ -87,19 +87,6 @@ export async function POST(req: NextRequest) {
 
         const pkgCommission = pkgCommissionList[0]; // pick the first one, or filter if needed
 
-        // const level1Amount = pkgCommission.level1Commission || 0;
-        // const level2Amount = pkgCommission.level2Commission || 0;
-
-
-        // // const level1Amount = pkgCommission.level1Commission || 0;
-        // console.log("level1Amount : ", level1Amount)
-        // // const level2Amount = pkgCommission.level2Commission || 0;
-        // console.log("level2Amount : ", level2Amount)
-        // const totalCommission = level1Amount + level2Amount;
-        // console.log("totalCommission : ", totalCommission)
-        // const adminAmount = packagePrice - totalCommission;
-        // console.log("adminAmount : ", adminAmount)
-
         let level1Amount = 0;
         let level2Amount = 0;
         let adminAmount = 0;

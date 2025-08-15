@@ -1035,6 +1035,7 @@ const advisorItems: NavItem[] = [
 const reportItems: NavItem[] = [
   { icon: <GridIcon />, name: "Transaction Reports", path: "/report-management/transaction-reports" },
   { icon: <GridIcon />, name: "Business Reports", path: "/report-management/business-reports" },
+  { icon: <GridIcon />, name: "Admin Earnings", path: "/report-management/admin-earnings" },
 ];
 
 const systemItems: NavItem[] = [

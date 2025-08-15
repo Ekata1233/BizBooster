@@ -14,7 +14,7 @@ interface WalletTxn {
   description?: string;
   referenceId?: string;
   method: 'UPI' | 'Card' | 'BankTransfer' | 'Cash' | 'Wallet' | 'Other';
-  source: 'checkout' | 'refund' | 'topup' | 'adjustment' | 'withdraw' | 'referral';
+  source: 'checkout' | 'refund' | 'topup' | 'adjustment' | 'withdraw' | 'referral'|'Lead';
   status: 'success' | 'pending' | 'failed';
   balanceAfterTransaction?: number;
   createdAt: Date;

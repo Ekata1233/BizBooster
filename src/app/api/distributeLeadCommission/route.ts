@@ -250,7 +250,7 @@ export async function POST(req: Request) {
             description: "Team Revenue - Provider",
             referenceId: checkout._id.toString(),
             method: "Wallet",
-            source: "checkout",
+            source: "Lead",
             status: "success",
             createdAt: new Date(),
             leadId: checkout.bookingId
@@ -355,7 +355,7 @@ export async function POST(req: Request) {
                 description: "Extra Team Revenue - Provider (Add On Service)",
                 referenceId: checkout._id.toString(),
                 method: "Wallet",
-                source: "checkout",
+                source: "Lead",
                 status: "success",
                 createdAt: new Date(),
                 leadId: checkout.bookingId,
