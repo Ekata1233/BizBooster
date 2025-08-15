@@ -49,7 +49,10 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        const rawCommission = checkout.service?.franchiseDetails?.commission;
+        console.log("checkout details in lead : ",checkout)
+        const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
+
+        console.log("raw commission : ", rawCommission)
 
         const commission = rawCommission;
 
