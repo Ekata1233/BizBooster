@@ -512,12 +512,14 @@ const LeadRequestDetails = () => {
       });
 
       if (checkoutInfo?._id) {
-      const newGrandTotal = extraServiceTotal + (checkoutInfo.totalAmount ?? 0);
+      const newGrandTotal = Number((extraServiceTotal + (checkoutInfo.totalAmount ?? 0)).toFixed(2));
+      const roundedExtraServiceTotal = Number(extraServiceTotal.toFixed(2));
+
       await fetch(`/api/checkout/add-on-service/${checkoutInfo._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          extraServicePrice: extraServiceTotal,
+          extraServicePrice: roundedExtraServiceTotal,
           grandTotal: newGrandTotal
         })
       });
