@@ -55,7 +55,7 @@ export const EcommerceMetrics = () => {
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
       />
       <MetricCard
-        title="Total Bookings"
+        title="Total Bookings (Completed)"
         value={completedCheckouts.length}
         trend="up"
         percentChange="3.27%"

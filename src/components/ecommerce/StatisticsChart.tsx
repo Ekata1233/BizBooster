@@ -78,12 +78,15 @@ export default function StatisticsChart() {
     dataLabels: {
       enabled: false,
     },
-    tooltip: {
-      enabled: true,
-      x: {
-        format: "yyyy-MM-dd",
-      },
+     tooltip: {
+    enabled: true,
+    x: {
+      format: "yyyy-MM-dd",
     },
+    y: {
+      formatter: (val: number) => `₹${val.toFixed(2)}`, // 👈 show 2 decimals in tooltip
+    },
+  },
     xaxis: {
       type: "category",
       categories: categories,
@@ -106,6 +109,7 @@ export default function StatisticsChart() {
           fontSize: "12px",
           colors: ["#6B7280"],
         },
+         formatter: (val: number) => val.toFixed(2),
       },
       title: {
         text: "",

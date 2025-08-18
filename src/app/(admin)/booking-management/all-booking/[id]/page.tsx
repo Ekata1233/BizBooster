@@ -191,7 +191,7 @@ const AllBookingsDetails = () => {
                   <p className="text-gray-700"><strong>Total Amount:</strong> {formatPrice(grandTotal || 0)}</p>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-gray-700"><strong>Payment Status:</strong> <span className={getStatusColor()}>{checkoutDetails.paymentStatus}</span></p>
+                  <p className="text-gray-700"><strong>Payment Status :</strong> <span className={getStatusColor()}>{checkoutDetails.paymentStatus}</span></p>
                   {/* <p className="text-gray-700">
                     <strong>Schedule Date:</strong>{' '}
                     {checkoutDetails.createdAt
