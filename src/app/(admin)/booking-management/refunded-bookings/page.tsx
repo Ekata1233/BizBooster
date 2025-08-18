@@ -26,8 +26,9 @@ interface BookingRow {
 const RefundedBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const { leads, fetchLeads } = useLead();
-
   const [search, setSearch] = useState('');
+
+  console.log("leads data : ", leads)
 
   useEffect(() => {
     fetchCheckouts();
@@ -36,14 +37,7 @@ const RefundedBookings = () => {
     fetchLeads();
   }, []);
 
-  useEffect(() => {
-    if (checkouts.length > 0) {
-      console.log('Checkout Data:', checkouts);
-    }
-    if (error) {
-      console.error('Checkout Error:', error);
-    }
-  }, [checkouts, error]);
+
 
   const columns = [
     {
@@ -116,7 +110,6 @@ const RefundedBookings = () => {
       header: 'Booking Status',
       accessor: 'bookingStatus',
       render: (row: BookingRow & { isCancel?: boolean }) => {
-        console.log("row of the booking status : ", row)
         let label = '';
         let colorClass = '';
 
@@ -144,7 +137,7 @@ const RefundedBookings = () => {
       accessor: 'action',
       render: (row: BookingRow) => (
         <div className="flex gap-2">
-          <Link href={`/booking-management/all-booking/${row._id}`} passHref>
+          <Link href={`/booking-management/refunded-bookings/${row._id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
               <EyeIcon />
             </button>
@@ -166,25 +159,33 @@ const RefundedBookings = () => {
     },
   ];
 
-  const filteredData = checkouts
-    .filter((checkout) =>
-      checkout.bookingId?.toLowerCase().includes(search.toLowerCase())
+  const filteredData = leads
+    .filter((lead) =>
+      // ✅ show only those leads that have a "Refund" status
+      lead.leads?.some((l: any) => l.statusType === "Refund")
     )
-    .map((checkout) => ({
-      bookingId: checkout.bookingId,
-      fullName: checkout.serviceCustomer?.fullName,
-      email: checkout.serviceCustomer?.email,
-      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
-        ? Number(checkout.grandTotal)
-        : Number(checkout.totalAmount),
-      paymentStatus: checkout?.paymentStatus || 'unpaid',
-      bookingDate: checkout?.createdAt,
-      orderStatus: checkout.orderStatus,
-      _id: checkout._id,
-      provider: checkout.provider,
-      isCompleted: checkout.isCompleted,
-      isCancel: checkout.isCanceled,
-    }));
+    .map((lead) => {
+      const checkout = lead.checkout;
+      return {
+        bookingId: checkout.bookingId,
+        fullName: checkout.serviceCustomer?.fullName,
+        email: checkout.serviceCustomer?.email,
+        totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount),
+        paymentStatus: checkout?.paymentStatus || 'unpaid',
+        bookingDate: checkout?.createdAt,
+        orderStatus: checkout.orderStatus,
+        _id: checkout._id,
+        provider: checkout.provider,
+        isCompleted: checkout.isCompleted,
+        isCancel: checkout.isCanceled,
+      };
+    })
+    .filter((row) =>
+      row.bookingId?.toLowerCase().includes(search.toLowerCase())
+    );
+
 
   return (
     <div>
