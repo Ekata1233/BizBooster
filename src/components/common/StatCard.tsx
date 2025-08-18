@@ -8,6 +8,8 @@ interface StatCardProps {
   badgeColor?: BadgeColor;
   badgeValue?: string | number;
   badgeIcon?: React.ComponentType<{ className?: string }>;
+  gradient?: string;   // background gradient
+  textColor?: string;  // text & icon color
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -17,20 +19,27 @@ const StatCard: React.FC<StatCardProps> = ({
   badgeColor = "primary",
   badgeValue,
   badgeIcon: BadgeIcon,
+  gradient = "from-blue-100 to-blue-200",
+  textColor = "text-blue-800",
 }) => {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-      <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-        {Icon && <Icon className="text-gray-800 size-6 dark:text-white/90" />}
+    <div
+      className={`rounded-2xl border border-gray-200 bg-gradient-to-r ${gradient} p-5 shadow-md md:p-6`}
+    >
+      {/* Icon */}
+      <div className="flex items-center justify-center w-12 h-12 bg-white/50 rounded-xl">
+        {Icon && <Icon className={`size-6 ${textColor}`} />}
       </div>
+
+      {/* Text + Badge */}
       <div className="flex items-end justify-between mt-5">
         <div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
-          <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">{value}</h4>
+          <span className={`text-sm font-medium ${textColor}`}>{title}</span>
+          <h4 className={`mt-2 font-bold text-title-sm ${textColor}`}>{value}</h4>
         </div>
         {badgeValue && (
           <Badge color={badgeColor}>
-            {BadgeIcon && <BadgeIcon className=""/>}
+            {BadgeIcon && <BadgeIcon className="mr-1" />}
             {badgeValue}
           </Badge>
         )}
