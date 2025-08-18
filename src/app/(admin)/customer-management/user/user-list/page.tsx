@@ -18,6 +18,8 @@ import { useUserContext } from "@/context/UserContext";
 import Link from "next/link";
 import axios from "axios";
 import UserStatCard from "@/components/user-component/UserStatCard";
+import * as XLSX from "xlsx";   // ✅ for Excel download
+import { FaFileDownload } from "react-icons/fa";
 
 // Define the type for the table data
 interface User {
@@ -45,8 +47,8 @@ interface User {
 }
 
 interface TableData {
-    id: number;
-    user: User;
+    id: number | string;
+    user: User | { image: string; fullName: string };
     email: string;
     mobileNumber: string;
     referredBy: string;
@@ -65,13 +67,13 @@ const columns = [
                     <Image
                         width={40}
                         height={40}
-                        src={row.user.image}
-                        alt={row.user.fullName || "User image"}
+                        src={(row.user as any).image}
+                        alt={(row.user as any).fullName || "User image"}
                     />
                 </div>
                 <div>
                     <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {row.user.fullName}
+                        {(row.user as any).fullName}
                     </span>
                 </div>
             </div>
@@ -255,6 +257,31 @@ const UserList = () => {
         return filteredUsers;
     };
 
+    // ✅ Excel Download function
+    const handleDownload = () => {
+        const dataToExport = getFilteredByStatus().map((u) => ({
+            Name: (u.user as any).fullName,
+            Email: u.email,
+            Mobile: u.mobileNumber,
+            "Referred By": u.referredBy,
+            "Total Bookings": u.totalBookings,
+            "Total Earnings": u.totalEarnings,
+            Status: u.status,
+        }));
+
+        if (dataToExport.length === 0) {
+            alert("No data available for download");
+            return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+        const fileName = `UserList_${activeTab}_${startDate || "all"}_to_${endDate || "all"}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
+
     if (!users) {
         return <div>Loading...</div>;
     }
@@ -321,7 +348,7 @@ const UserList = () => {
 
             <div>
                 <ComponentCard title="User List" className="">
-                    <div className="border-b border-gray-200">
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
                         <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
                             <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
@@ -342,6 +369,15 @@ const UserList = () => {
                                 NonGP
                             </li>
                         </ul>
+
+                        {/* ✅ Download Button */}
+                       <button
+  onClick={handleDownload}
+  className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+>
+  <FaFileDownload className="w-5 h-5" />
+  <span>Download Excel</span>
+</button>
                     </div>
                     {message ? (
                         <p className="text-red-500 text-center my-4">{message}</p>
