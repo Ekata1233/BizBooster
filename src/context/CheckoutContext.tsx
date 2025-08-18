@@ -25,6 +25,7 @@ export interface Checkout {
   partialPaymentLater?: number;
   partialPaymentNow?: number;
   platformFee?: number;
+  isPartialPayment: boolean;
 
   remainingPaymentStatus?: string;
   commission?: number;

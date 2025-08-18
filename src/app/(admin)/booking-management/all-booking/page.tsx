@@ -20,6 +20,7 @@ interface BookingRow {
   orderStatus: string;
   provider?: any;
   isCompleted: boolean; // ✅ new field
+
 }
 
 const AllBookings = () => {
@@ -92,12 +93,26 @@ const AllBookings = () => {
     {
       header: 'Payment Status',
       accessor: 'paymentStatus',
-      render: (row: BookingRow) => {
-        const status = row.paymentStatus;
+      render: (row: BookingRow & { isPartialPayment?: boolean; paidAmount?: number }) => {
+        let status = row.paymentStatus;
+
+        // Rule 1: Unpaid if paidAmount is 0
+        if (row.paidAmount === 0) {
+          status = 'unpaid';
+        }
+        // Rule 2: Part payment if partial payment flag is true
+        else if (row.isPartialPayment) {
+          status = 'partpay';
+        }
+
         const statusColor =
           status === 'paid'
             ? 'bg-green-100 text-green-700 border-green-300'
-            : 'bg-yellow-100 text-yellow-700 border-yellow-300';
+            : status === 'unpaid'
+              ? 'bg-red-100 text-red-700 border-red-300'
+              : status === 'partpay'
+                ? 'bg-purple-100 text-purple-700 border-purple-300'
+                : 'bg-yellow-100 text-yellow-700 border-yellow-300';
 
         return (
           <span className={`px-3 py-1 rounded-full text-sm border ${statusColor}`}>
@@ -109,7 +124,7 @@ const AllBookings = () => {
     {
       header: 'Booking Status',
       accessor: 'bookingStatus',
-      render: (row: BookingRow & { isCancel?: boolean }) => {
+      render: (row: BookingRow & { isCancel?: boolean } & { isAccepted?: boolean }) => {
         let label = '';
         let colorClass = '';
 
@@ -119,6 +134,9 @@ const AllBookings = () => {
         } else if (row.isCompleted) {
           label = 'Completed';
           colorClass = 'bg-green-100 text-green-700 border border-green-300';
+        } else if (row.isAccepted === true && row.isCompleted === false) {
+          label = 'Accepted';
+          colorClass = 'bg-blue-100 text-blue-700 border border-blue-300';
         } else {
           label = 'Pending';
           colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-300';
@@ -170,13 +188,15 @@ const AllBookings = () => {
       totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
         ? Number(checkout.grandTotal)
         : Number(checkout.totalAmount),
-      paymentStatus: checkout?.paymentStatus || 'unpaid',
+      paymentStatus: checkout?.paymentStatus,
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,
       _id: checkout._id,
       provider: checkout.provider,
       isCompleted: checkout.isCompleted,
       isCancel: checkout.isCanceled,
+      isAccepted: checkout.isAccepted,
+      isPartialPayment: checkout.isPartialPayment,
     }));
 
   return (
