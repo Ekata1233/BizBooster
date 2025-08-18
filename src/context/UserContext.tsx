@@ -23,6 +23,7 @@ export interface User {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  packageActive: boolean;
 }
 
 interface UserContextType {
