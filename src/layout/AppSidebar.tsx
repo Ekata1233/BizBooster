@@ -925,6 +925,12 @@ const bookingItems: NavItem[] = [
     name: "Bookings",
     subItems: [
       { name: "All Bookings", path: "/booking-management/all-booking", pro: false },
+      { name: "Customized Requests", path: "/booking-management/customized-requests", pro: false },
+      { name: "Booking Requests", path: "/booking-management/booking-requests", pro: false },
+      { name: "Accepted Bookings", path: "/booking-management/accepted-bookings", pro: false },
+      { name: "Completed Bookings", path: "/booking-management/completed-bookings", pro: false },
+      { name: "Cancelled Bookings", path: "/booking-management/cancelled-bookings", pro: false },
+      { name: "Refunded Bookings", path: "/booking-management/refunded-bookings", pro: false },
     ],
   },
   {
@@ -1263,7 +1269,7 @@ const AppSidebar: React.FC = () => {
 
 
 
-  
+
 
 
 
@@ -1537,19 +1543,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(serviceItems, "service")}
             </div>
 
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                  }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PACKAGE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(packageItems, "package")}
-            </div>
+
 
             <div>
               <h2
@@ -1613,6 +1607,20 @@ const AppSidebar: React.FC = () => {
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
+                  "PACKAGE MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(packageItems, "package")}
+            </div>
+
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
                   "PREFERENCES"
                 ) : (
                   <HorizontaLDots />
@@ -1666,7 +1674,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(academyItems, "academy")}
             </div>
 
-           
+
 
             <div>
               <h2
