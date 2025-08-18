@@ -110,7 +110,6 @@ const CompletedBookings = () => {
       header: 'Booking Status',
       accessor: 'bookingStatus',
       render: (row: BookingRow & { isCancel?: boolean }) => {
-        console.log("row of the booking status : ", row)
         let label = '';
         let colorClass = '';
 
@@ -138,7 +137,7 @@ const CompletedBookings = () => {
       accessor: 'action',
       render: (row: BookingRow) => (
         <div className="flex gap-2">
-          <Link href={`/booking-management/all-booking/${row._id}`} passHref>
+          <Link href={`/booking-management/completed-bookings/${row._id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
               <EyeIcon />
             </button>

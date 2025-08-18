@@ -110,7 +110,6 @@ const AllBookings = () => {
       header: 'Booking Status',
       accessor: 'bookingStatus',
       render: (row: BookingRow & { isCancel?: boolean }) => {
-        console.log("row of the booking status : ", row)
         let label = '';
         let colorClass = '';
 
