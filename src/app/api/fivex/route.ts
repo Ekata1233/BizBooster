@@ -5,8 +5,8 @@ import { connectToDatabase } from "@/utils/db";
 
 export async function GET() {
   await connectToDatabase();
-  const items = await FiveXGuarantee.find().sort({ createdAt: -1 });
-  return NextResponse.json(items);
+  const item = await FiveXGuarantee.findOne(); // always return the first (only) document
+  return NextResponse.json(item || {});
 }
 
 export async function POST(request: Request) {
@@ -15,10 +15,20 @@ export async function POST(request: Request) {
 
   const { leadcount, fixearning } = body;
   if (typeof leadcount !== "number" || typeof fixearning !== "number") {
-    return NextResponse.json({ error: "leadcount and fixearning must be numbers" }, { status: 400 });
+    return NextResponse.json(
+      { error: "leadcount and fixearning must be numbers" },
+      { status: 400 }
+    );
   }
 
   await connectToDatabase();
-  const created = await FiveXGuarantee.create({ leadcount, fixearning });
-  return NextResponse.json(created, { status: 201 });
+
+  // find existing doc, or create new if none
+  const updated = await FiveXGuarantee.findOneAndUpdate(
+    {}, // match first document
+    { $set: { leadcount, fixearning } },
+    { new: true, upsert: true } // upsert: true → insert if not exists
+  );
+
+  return NextResponse.json(updated, { status: 200 });
 }
