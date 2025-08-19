@@ -187,7 +187,7 @@ providerSchema.pre("save", async function (next) {
       const lastUser = await mongoose
         .model('Provider')
         .findOne({ providerId: { $regex: /^FTP\d+$/ } })
-        .sort({ createdAt: -1 })
+        .sort({ providerId: -1 })
         .select('providerId');
   
       let nextId = 1;
