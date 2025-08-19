@@ -1,18 +1,15 @@
-import { UserIcon, CalenderIcon, DollarLineIcon, BoxCubeIcon, ArrowUpIcon } from '@/icons'; // adjust imports as needed 
+import { UserIcon, CalenderIcon, DollarLineIcon, BoxCubeIcon, ArrowUpIcon } from '@/icons'; 
 import StatCard from '../common/StatCard';
 import ComponentCard from '../common/ComponentCard';
 import { Provider } from '@/context/ProviderContext';
 
 type Props = {
   provider: Provider;
-  
 };
-
 
 const ProviderStatsSection = ({ provider }: Props) => {
   console.log("particular providers :", provider);
 
-  // Safely get the subscribed services count
   // const subscribedServicesCount = provider?.subscribedServices?.length || 0;
 
   return (
@@ -26,15 +23,19 @@ const ProviderStatsSection = ({ provider }: Props) => {
             badgeColor="success"
             badgeValue="0.00%"
             badgeIcon={ArrowUpIcon}
+            gradient="from-blue-100 to-blue-200"
+            textColor="text-blue-800"
           />
           <StatCard
             title="Subscribe Services"
             // value={subscribedServicesCount.toString()}
-             value="150"
+            value="150"
             icon={CalenderIcon}
             badgeColor="success"
             badgeValue="0.00%"
             badgeIcon={ArrowUpIcon}
+            gradient="from-green-100 to-green-200"
+            textColor="text-green-800"
           />
           <StatCard
             title="Total Subcategories"
@@ -43,6 +44,8 @@ const ProviderStatsSection = ({ provider }: Props) => {
             badgeColor="success"
             badgeValue="0.00%"
             badgeIcon={ArrowUpIcon}
+            gradient="from-red-100 to-red-200"
+            textColor="text-red-800"
           />
           <StatCard
             title="Total Services"
@@ -51,6 +54,8 @@ const ProviderStatsSection = ({ provider }: Props) => {
             badgeColor="success"
             badgeValue="0.00%"
             badgeIcon={ArrowUpIcon}
+            gradient="from-purple-100 to-purple-200"
+            textColor="text-purple-800"
           />
         </div>
       </ComponentCard>

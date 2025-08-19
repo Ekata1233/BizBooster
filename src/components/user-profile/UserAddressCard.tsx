@@ -42,21 +42,38 @@ export default function UserStatCard({
             title={stat1.title}
             value={stat1.value}
             icon={CalenderIcon}
+             badgeColor="success"
+  badgeValue="0.00%"
+
+  gradient="from-green-100 to-green-200"
+  textColor="text-green-800"
           />
           <StatCard
             title={stat2.title}
             value={stat2.value}
             icon={DollarLineIcon}
+            badgeColor="success"
+            badgeValue="0.00%"
+            gradient="from-blue-100 to-blue-200"
+            textColor="text-blue-800"
           />
           <StatCard
             title={stat3.title}
             value={stat3.value}
             icon={BoxCubeIcon}
+            badgeColor="success"
+            badgeValue="0.00%"
+            gradient="from-red-100 to-red-200"
+            textColor="text-red-800"
           />
           <StatCard
             title={stat4.title}
             value={stat4.value}
             icon={BoxCubeIcon}
+              badgeColor="success"
+            badgeValue="0.00%"
+            gradient="from-purple-100 to-purple-200"
+            textColor="text-purple-800"
           />
         </div>
       </div>
