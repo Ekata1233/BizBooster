@@ -30,13 +30,12 @@ export const EcommerceMetrics = () => {
 
   // ✅ Filter logic
   const activeUsers = users?.filter(user => user.isDeleted === false) || [];
-  // Cast providerDetails to an array of any (or better: unknown/Provider if available)
   const activeProviders = Array.isArray(providerDetails)
     ? providerDetails.filter((p: any) => p.isDeleted === false)
     : [];
-  const completedCheckouts = checkouts?.filter(
-    c => c.isDeleted === false && c.isCompleted === true
-  ) || [];
+  const completedCheckouts =
+    checkouts?.filter(c => c.isDeleted === false && c.isCompleted === true) ||
+    [];
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
@@ -46,6 +45,8 @@ export const EcommerceMetrics = () => {
         trend="up"
         percentChange="2.15%"
         icon={<GroupIcon className="text-gray-800 size-6 dark:text-white/90" />}
+        gradient="from-blue-100 to-blue-200"
+        textColor="text-blue-800"
       />
       <MetricCard
         title="Providers"
@@ -53,6 +54,8 @@ export const EcommerceMetrics = () => {
         trend="up"
         percentChange="1.90%"
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
+        gradient="from-green-100 to-green-200"
+        textColor="text-green-800"
       />
       <MetricCard
         title="Total Bookings (Completed)"
@@ -60,6 +63,8 @@ export const EcommerceMetrics = () => {
         trend="up"
         percentChange="3.27%"
         icon={<GroupIcon className="text-gray-800 size-6 dark:text-white/90" />}
+        gradient="from-red-100 to-red-200"
+        textColor="text-red-800"
       />
       <MetricCard
         title="Total Revenue"
@@ -67,32 +72,44 @@ export const EcommerceMetrics = () => {
         trend="up"
         percentChange=""
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
+        gradient="from-purple-100 to-purple-200"
+        textColor="text-purple-800"
       />
     </div>
   );
 };
 
-const MetricCard = ({ title, value, trend, percentChange, icon }: {
+const MetricCard = ({
+  title,
+  value,
+  trend,
+  percentChange,
+  icon,
+  gradient,
+  textColor,
+}: {
   title: string;
   value: number | string;
   trend: "up" | "down";
   percentChange: string;
   icon: React.ReactNode;
+  gradient: string;
+  textColor: string;
 }) => {
   const TrendIcon = trend === "up" ? ArrowUpIcon : ArrowDownIcon;
   const badgeColor = trend === "up" ? "success" : "error";
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-      <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+    <div
+      className={`rounded-2xl border border-gray-200 bg-gradient-to-br ${gradient} p-5 dark:border-gray-800 md:p-6`}
+    >
+      <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow">
         {icon}
       </div>
       <div className="flex items-end justify-between mt-5">
         <div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {title}
-          </span>
-          <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+          <span className="text-sm text-gray-600">{title}</span>
+          <h4 className={`mt-2 font-bold ${textColor} text-title-sm`}>
             {value}
           </h4>
         </div>
