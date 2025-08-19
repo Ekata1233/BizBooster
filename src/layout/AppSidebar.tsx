@@ -109,15 +109,7 @@ const serviceItems: NavItem[] = [
     ],
   },
 ];
-const packageItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Package",
-    subItems: [
-      { name: "Add New package", path: "/package-management/add-package", pro: false },
-    ],
-  },
-];
+
 const subscribeItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -376,7 +368,6 @@ const AppSidebar: React.FC = () => {
       module: moduleItems,
       provider: providerItems,
       service: serviceItems,
-      package: packageItems,
       booking: bookingItems,
       subscribe: subscribeItems,
       coupon: promotionItems,
@@ -910,19 +901,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(promotionItems, "coupon")}
             </div>
 
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                  }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "PACKAGE MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(packageItems, "package")}
-            </div>
 
             <div>
               <h2
