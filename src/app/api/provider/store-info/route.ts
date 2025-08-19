@@ -95,6 +95,10 @@ export async function PUT(req: NextRequest) {
   try {
     const storeInfo = await parseFormAndUpload(req, providerId);
 
+    console.log("store info : ", storeInfo)
+        console.log("providerId info : ", providerId)
+
+
     const provider = await Provider.findByIdAndUpdate(
       providerId,
       {
