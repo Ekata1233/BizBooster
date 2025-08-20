@@ -275,6 +275,22 @@ const systemItems: NavItem[] = [
   },
 ];
 
+const EmployeeItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Employee Role",
+    path: "/employee-management/employee-role"
+  },
+  {
+    icon: <FolderIcon />,
+    name: "Employees",
+    subItems: [
+      { name: "Add Employee", path: "/employee-management/add-employee", pro: false },
+      { name: "Employee-list", path: "/employee-management/employee-list", pro: false },
+    ],
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
@@ -378,6 +394,7 @@ const AppSidebar: React.FC = () => {
       providerpreferences: providerpreferenceItems,
       report: reportItems,
       offer: offerItems,
+      employee : EmployeeItems,
     };
 
     const newOpenSubmenus: string[] = [];
@@ -843,8 +860,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(serviceItems, "service")}
             </div>
 
-
-
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -901,7 +916,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(promotionItems, "coupon")}
             </div>
 
-
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -930,7 +944,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(offerItems, "offer")}
             </div>
 
-
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -944,8 +957,6 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(providerpreferenceItems, "providerpreferences")}
             </div>
-
-            {/* ACADEMY SECTION - NOW SUPPORTING NESTED STRUCTURE */}
 
             <div>
               <h2
@@ -961,8 +972,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(academyItems, "academy")}
             </div>
 
-
-
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -976,7 +985,6 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(advisorItems, "advisor")}
             </div>
-
 
             <div>
               <h2
@@ -1004,6 +1012,20 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(systemItems, "system")}
+            </div>
+
+             <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "EMPLOYEE MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(EmployeeItems, "employee")}
             </div>
           </div>
         </nav>
