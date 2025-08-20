@@ -72,6 +72,15 @@ async function parseFormAndUpload(
     }
   }
 
+  if (storeInfo.moduleId) {
+    storeInfo.module = storeInfo.moduleId;
+    delete storeInfo.moduleId;
+  }
+  if (storeInfo.zoneId) {
+    storeInfo.zone = storeInfo.zoneId;
+    delete storeInfo.zoneId;
+  }
+
   // Handle logo / cover files
   for (const key of ["logo", "cover"] as const) {
     const maybeFile = fd.get(key);

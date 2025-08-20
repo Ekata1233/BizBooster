@@ -222,6 +222,7 @@ export async function POST(req: NextRequest) {
         console.log("Updated userC package details:");
         userC.packageType = "full";
         userC.packageActive = true;
+        userC.packageActivateDate = new Date();
         userC.isCommissionDistribute = true;
         await userC.save();
 
