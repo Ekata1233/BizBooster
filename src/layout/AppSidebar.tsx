@@ -302,13 +302,13 @@ const AppSidebar: React.FC = () => {
   const { leads, loading, error, fetchLeads } = useLead();
 
   useEffect(() => {
-    console.log("All Checkouts:", checkouts);
+    // console.log("All Checkouts:", checkouts);
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
   useEffect(() => {
     // ✅ Logs whenever leads change
-    console.log("All Leads:", leads);
+    // console.log("All Leads:", leads);
   }, [leads]);
   // Helper function to recursively check if any descendant is active
   // This needs to be defined here or outside, but not inside useCallback that depends on it

@@ -1,24 +1,48 @@
-// app/api/fivex/route.ts
 import { NextResponse } from "next/server";
 import FiveXGuarantee from "@/models/FiveXGuarantee";
 import { connectToDatabase } from "@/utils/db";
 
-export async function GET() {
-  await connectToDatabase();
-  const items = await FiveXGuarantee.find().sort({ createdAt: -1 });
-  return NextResponse.json(items);
+// POST (create)
+export async function POST(req: Request) {
+  try {
+    await connectToDatabase();
+    const body = await req.json();
+
+    const { leadcount, fixearning, months } = body; // ✅ Accept months too
+    if (!leadcount || !fixearning || !months) {
+      return NextResponse.json(
+        { message: "All fields (leadcount, fixearning, months) are required ❌" },
+        { status: 400 }
+      );
+    }
+
+    const newEntry = await FiveXGuarantee.create({ leadcount, fixearning, months });
+
+    return NextResponse.json(
+      {
+        message: "Saved successfully ✅",
+        data: newEntry,
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: "Error saving data", error: error.message },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
-  if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-
-  const { leadcount, fixearning } = body;
-  if (typeof leadcount !== "number" || typeof fixearning !== "number") {
-    return NextResponse.json({ error: "leadcount and fixearning must be numbers" }, { status: 400 });
+// GET (fetch all)
+export async function GET() {
+  try {
+    await connectToDatabase();
+    const entries = await FiveXGuarantee.find({});
+    return NextResponse.json(entries, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: "Error fetching data", error: error.message },
+      { status: 500 }
+    );
   }
-
-  await connectToDatabase();
-  const created = await FiveXGuarantee.create({ leadcount, fixearning });
-  return NextResponse.json(created, { status: 201 });
 }
