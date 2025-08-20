@@ -5,12 +5,13 @@ import PackagesCommissionPage from "../../packages-commission/page";
 import AddPackage from "@/components/system-management/AddPackage";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
+import FiveXGurrentee from "@/components/system-management/FiveXGurrentee";
 
 const tabs = [
   "Business Info",
   "Add Package",
   "Package Commision",
-  "Promotions",
+  "5XGurrentee",
   "Bookings",
   "Customers",
   "Providers",
@@ -148,7 +149,11 @@ function VendorDashboardPage() {
             </div>
           )}
 
-          {activeTab === "Promotions" && <div>Promotions Content</div>}
+          {activeTab === "5XGurrentee" && (
+            <div className="space-y-4">
+              <FiveXGurrentee />
+            </div>
+          )}
           {activeTab === "Bookings" && <div>Bookings Content</div>}
           {activeTab === "Customers" && <div>Customers Content</div>}
           {activeTab === "Providers" && <div>Providers Content</div>}
