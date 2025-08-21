@@ -6,7 +6,7 @@ import { useCheckout } from '@/context/CheckoutContext';
 import { useParams } from 'next/navigation';
 import { useUserWallet } from '@/context/WalletContext';
 import { motion } from 'framer-motion';
-import { BadgeCheck, CheckCircle2 } from 'lucide-react'; // ✅ unique icon
+import { BadgeCheck, CheckCircle2 } from 'lucide-react'; 
 import { useAuthContext } from '@/context/AuthContext';
 import { useUserContext } from '@/context/UserContext';
 
