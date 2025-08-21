@@ -7,10 +7,13 @@ import { useParams } from 'next/navigation';
 import { useUserWallet } from '@/context/WalletContext';
 import { motion } from 'framer-motion';
 import { BadgeCheck, CheckCircle2 } from 'lucide-react'; // ✅ unique icon
+import { useAuthContext } from '@/context/AuthContext';
+import { useUserContext } from '@/context/UserContext';
 
 const FiveXGuarantee = () => {
   const { checkouts, fetchCheckoutByUser } = useCheckout();
   const { wallet, fetchWalletByUser } = useUserWallet();
+  const { fetchSingleUser, singleUser, singleUserLoading, singleUserError } = useUserContext();
   const params = useParams();
   const id = params?.id as string;
 
@@ -18,6 +21,18 @@ const FiveXGuarantee = () => {
   const [targetLeads, setTargetLeads] = useState<number>(0); // from fivex API
   const [fixEarning, setFixEarning] = useState<number>(0); // from fivex API
 
+
+  useEffect(() => {
+    if (id) {
+      fetchSingleUser(id);
+    }
+  }, [id]);
+console.log("userlist",singleUser);
+
+
+  console.log("fiveX -> singleUser", singleUser);
+
+  console.log("user fetch", singleUser);
   // ✅ Fetch user checkouts
   useEffect(() => {
     if (!id) return;
@@ -35,8 +50,12 @@ const FiveXGuarantee = () => {
       try {
         const res = await fetch('/api/fivex');
         const data = await res.json();
-        setTargetLeads(data.leadcount || 0);
-        setFixEarning(data.fixearning || 0);
+        console.log("fivex data:", data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          setTargetLeads(data[0].leadcount || 0);
+          setFixEarning(data[0].fixearning || 0);
+        }
       } catch (err) {
         console.error('Error fetching FiveX data:', err);
       }
@@ -44,10 +63,11 @@ const FiveXGuarantee = () => {
     fetchFiveX();
   }, []);
 
+
+
   useEffect(() => {
     if (id) {
       fetchWalletByUser(id).then(() => {
-        console.log('Fetched Wallet:', wallet);
       });
     }
   }, [id]);
@@ -55,15 +75,17 @@ const FiveXGuarantee = () => {
   // 👇 always logs when wallet updates
   useEffect(() => {
     if (wallet) {
-      console.log('Updated Wallet State:', wallet);
     }
   }, [wallet]);
+
+
+
 
   // ✅ Dynamic values
   const totalLeads = userCheckouts.length; // user's total leads
   const totalEarnings = wallet?.totalCredits || 0; // ✅ use wallet earnings instead of checkout sum
 
-  const targetEarning = fixEarning || 500000; // fallback if API not ready
+  const targetEarning = fixEarning; // fallback if API not ready
   const levelStep = targetLeads / 5 || 1; // avoid division by zero
 
   const leadPercent = Math.min((totalLeads / targetLeads) * 100, 100);
@@ -74,30 +96,30 @@ const FiveXGuarantee = () => {
   if (totalLeads >= targetLeads && targetLeads > 0) {
     return (
       <ComponentCard title="5x Guarantee">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 text-white p-10 shadow-lg">
-        {/* Glow effect background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-40"></div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 text-white p-10 shadow-lg">
+          {/* Glow effect background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-40"></div>
 
-        {/* Icon + Heading */}
-        <div className="flex flex-col items-center text-center relative z-10">
-          <BadgeCheck className="w-16 h-16 text-white drop-shadow-md mb-4" />
+          {/* Icon + Heading */}
+          <div className="flex flex-col items-center text-center relative z-10">
+            <BadgeCheck className="w-16 h-16 text-white drop-shadow-md mb-4" />
 
-          <h2 className="text-3xl font-extrabold tracking-tight mb-2">
-            🎉 You’re Eligible!
-          </h2>
+            <h2 className="text-3xl font-extrabold tracking-tight mb-2">
+              🎉 You’re Eligible!
+            </h2>
 
-          <p className="text-lg font-medium max-w-md">
-            Unlock the <span className="font-bold text-yellow-300">5X Guarantee</span> 🚀 
-            and maximize your <span className="underline">earnings potential</span>.
-          </p>
+            <p className="text-lg font-medium max-w-md">
+              Unlock the <span className="font-bold text-yellow-300">5X Guarantee</span> 🚀
+              and maximize your <span className="underline">earnings potential</span>.
+            </p>
 
-          {/* Call to Action */}
-          <button className="mt-6 px-6 py-3 rounded-full bg-white text-indigo-600 font-semibold shadow hover:scale-105 transition">
-            View Benefits
-          </button>
+            {/* Call to Action */}
+            <button className="mt-6 px-6 py-3 rounded-full bg-white text-indigo-600 font-semibold shadow hover:scale-105 transition">
+              View Benefits
+            </button>
+          </div>
         </div>
-      </div>
-    </ComponentCard>
+      </ComponentCard>
     );
   }
 
