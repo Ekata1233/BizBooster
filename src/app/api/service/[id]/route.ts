@@ -218,14 +218,31 @@ export async function PUT(req: Request) {
     // }
 
     // Extract highlight URLs from formData (not files)
-    const highlightImagesUrls: string[] = [];
-    let highlightIndex = 0;
-    while (true) {
-      const highlightValue = formData.get(`serviceDetails[highlight][${highlightIndex}]`);
-      if (!highlightValue) break;
-      highlightImagesUrls.push(highlightValue.toString());
-      highlightIndex++;
-    }
+// Highlight images
+const highlightImagesUrls: string[] = [];
+let highlightIndex = 0;
+while (true) {
+  const highlightValue = formData.get(`serviceDetails[highlight][${highlightIndex}]`);
+  if (!highlightValue) break;
+
+  if (highlightValue instanceof File) {
+    // New uploaded file → upload to ImageKit
+    const arrayBuffer = await highlightValue.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${highlightValue.name}`,
+      folder: "/services/highlight",
+    });
+    highlightImagesUrls.push(uploadResponse.url);
+  } else if (typeof highlightValue === "string") {
+    // Existing URL → keep it
+    highlightImagesUrls.push(highlightValue);
+  }
+
+  highlightIndex++;
+}
+
 
 
     // Add highlight images into serviceDetails

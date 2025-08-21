@@ -832,6 +832,20 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(customerItems, "customer")}
             </div>
 
+              <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "BOOKING MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(bookingItems, "booking")}
+            </div>
+
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -858,20 +872,6 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(serviceItems, "service")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-                  }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "BOOKING MANAGEMENT"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(bookingItems, "booking")}
             </div>
 
             <div>

@@ -1,113 +1,115 @@
-"use client"
-import React, { useCallback, useState } from "react"
+"use client";
+import React, { useState, useCallback } from "react";
 import {
     GoogleMap,
-    useJsApiLoader,
-    Marker,
-    Polyline,
     Polygon,
-} from "@react-google-maps/api"
-import PageBreadcrumb from "@/components/common/PageBreadCrumb"
-import ComponentCard from "@/components/common/ComponentCard"
-import Label from "@/components/form/Label"
-import Input from "@/components/form/input/InputField"
-import { useZone } from "@/context/ZoneContext"
+    DrawingManager,
+    useJsApiLoader,
+} from "@react-google-maps/api";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/common/ComponentCard";
+import Label from "@/components/form/Label";
+import Input from "@/components/form/input/InputField";
+import { useZone } from "@/context/ZoneContext";
+
+type Zone = {
+    id: number;
+    name: string;
+    coords: google.maps.LatLngLiteral[];
+};
 
 const containerStyle = {
     width: "100%",
     height: "300px",
-}
+};
 
-const center = {
-    lat: 18.525381182655536,
-    lng: 73.87818078880382,
-}
+const center = { lat: 18.525381182655536, lng: 73.87818078880382 };
 
-type LatLng = {
-    lat: number
-    lng: number
-}
+// ✅ valid libraries
+const libraries: (
+    "drawing" | "geometry" | "places" | "visualization"
+)[] = ["drawing", "places", "geometry"];
 
-const Page: React.FC = () => {
-    const [points, setPoints] = useState<LatLng[]>([])
-    const [polygonComplete, setPolygonComplete] = useState<boolean>(false)
-    const [hoverPoint, setHoverPoint] = useState<LatLng | null>(null)
-    const [zoneName, setZoneName] = useState<string>("")
-    const { addZone } = useZone();
-    
-
+export default function ZoneMap() {
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-        libraries: ["places"],
-    })
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
+        libraries,
+    });
 
-    const handleMapClick = useCallback(
-        (event: google.maps.MapMouseEvent) => {
-            if (polygonComplete || !event.latLng) return
-            
+    const { addZone } = useZone();
+    const [zones, setZones] = useState<Zone[]>([]);
+    const [activeZone, setActiveZone] = useState<Zone | null>(null);
+    const [zoneName, setZoneName] = useState<string>("");
 
-            const lat = event.latLng.lat()
-            const lng = event.latLng.lng()
+    // ✅ handle polygon created
+    const handlePolygonComplete = useCallback(
+        (polygon: google.maps.Polygon) => {
+            const path = polygon
+                .getPath()
+                .getArray()
+                .map((latLng) => ({
+                    lat: latLng.lat(),
+                    lng: latLng.lng(),
+                }));
 
-            if (points.length >= 3) {
-                const firstPoint = points[0]
-                const distance = Math.sqrt(
-                    (firstPoint.lat - lat) ** 2 + (firstPoint.lng - lng) ** 2
-                )
+            const newZone: Zone = {
+                id: Date.now(),
+                name: `Zone ${zones.length + 1}`,
+                coords: path,
+            };
 
-                // Allow closure if clicked near the starting point (approx ~100m)
-                if (distance < 0.01) {
-                    setPolygonComplete(true)
-                    console.log("Zone created:", points)
-                    return
-                }
-            }
+            setZones((prev) => [...prev, newZone]);
+            setActiveZone(newZone);
 
-            setPoints((prev) => [...prev, { lat, lng }])
+            polygon.setMap(null); // remove temporary polygon
         },
-        [points, polygonComplete]
-    )
+        [zones]
+    );
 
-    const handleMouseMove = useCallback(
-        (e: google.maps.MapMouseEvent) => {
-            if (polygonComplete || !e.latLng) return
-            const lat = e.latLng.lat()
-            const lng = e.latLng.lng()
-            setHoverPoint({ lat, lng })
-        },
-        [polygonComplete]
-    )
+    // ✅ handle polygon edit
+    const handlePolygonEdit = (polygon: google.maps.Polygon, zoneId: number) => {
+        const path = polygon
+            .getPath()
+            .getArray()
+            .map((latLng) => ({
+                lat: latLng.lat(),
+                lng: latLng.lng(),
+            }));
+
+        setZones((prev) =>
+            prev.map((z) => (z.id === zoneId ? { ...z, coords: path } : z))
+        );
+    };
 
     const handleReset = () => {
-        setPoints([])
-        setPolygonComplete(false)
-        setHoverPoint(null)
-    }
+        setZones([]);
+        setActiveZone(null);
+        setZoneName("");
+    };
 
     const handleSubmit = async () => {
-        if (!polygonComplete || !zoneName.trim()) {
-            alert("Please complete the zone and enter a name.")
-            return
+        if (!activeZone || !zoneName.trim()) {
+            alert("Please draw a zone and enter a name.");
+            return;
         }
 
         try {
-            await addZone({ name: zoneName.trim(), coordinates: points })
-            alert("Zone submitted successfully!")
+            await addZone({ name: zoneName.trim(), coordinates: activeZone.coords });
+            alert("Zone submitted successfully!");
             handleReset();
-            setZoneName("");
         } catch (error) {
-            console.error("Failed to submit zone:", error)
-            alert("Something went wrong while submitting.")
+            console.error("Failed to submit zone:", error);
+            alert("Something went wrong while submitting.");
         }
-    }
+    };
 
-    const previewPath = hoverPoint ? [...points, hoverPoint] : [...points]
+    if (!isLoaded) return <p>Loading map...</p>;
 
     return (
         <div className="p-4 space-y-4">
             <PageBreadcrumb pageTitle="Add New Zone" />
             <ComponentCard title="Zone Setup">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-1 p-4">
                         <h2 className="text-lg font-semibold mb-4">Instructions</h2>
                         <p className="mb-4">
@@ -116,69 +118,69 @@ const Page: React.FC = () => {
 
                         <div className="mb-4 flex items-center gap-2">
                             {/* <Image src="/drag-icon.png" alt="Drag map icon" width={40} height={40} /> */}
-                            <span>Use this to drag map to find proper area</span>
+                            <span>Use Arrow icon to drag map to find proper area</span>
                         </div>
 
                         <div className="mb-4 flex items-start gap-2">
                             {/* <Image src="/pin-icon.png" alt="Pin icon" width={40} height={40} /> */}
                             <span>
-                                Click this icon to start pin points in the map and connect them to draw a zone.
+                                Click Arrow icon to start pin points in the map and connect them to draw a zone.
                                 <br />
                                 Minimum 3 points required.
                             </span>
                         </div>
                     </div>
 
+
+                    {/* Map + Form */}
                     <div className="sm:col-span-2 p-4">
                         <div className="mb-4">
-                            <Label className="block mb-1 font-medium text-gray-700">Enter Zone Name</Label>
+                            <Label className="block mb-1 font-medium text-gray-700">
+                                Enter Zone Name
+                            </Label>
                             <Input
                                 type="text"
                                 placeholder="Enter Zone Name"
                                 value={zoneName}
                                 onChange={(e) => setZoneName(e.target.value)}
                             />
-
                         </div>
 
                         <div className="border border-gray-300 rounded shadow overflow-hidden">
-                            {isLoaded && (
-                                <GoogleMap
-                                    mapContainerStyle={containerStyle}
-                                    center={center}
-                                    zoom={13}
-                                    onClick={handleMapClick}
-                                    onMouseMove={handleMouseMove}
-                                >
-                                    {points.map((point, idx) => (
-                                        <Marker key={idx} position={point} />
-                                    ))}
+                            <GoogleMap
+                                mapContainerStyle={containerStyle}
+                                center={activeZone ? activeZone.coords[0] : center}
+                                zoom={13}
+                            >
+                                {/* Drawing Manager */}
+                                <DrawingManager
+                                    options={{
+                                        drawingControl: true,
+                                        drawingControlOptions: {
+                                            position: google.maps.ControlPosition.TOP_CENTER,
+                                            drawingModes: ["polygon"] as google.maps.drawing.OverlayType[],
+                                        },
+                                        polygonOptions: { editable: true, draggable: true },
+                                    }}
+                                    onPolygonComplete={handlePolygonComplete}
+                                />
 
-                                    {!polygonComplete && points.length >= 1 && (
-                                        <Polyline
-                                            path={previewPath}
-                                            options={{
-                                                strokeColor: "#2563eb",
-                                                strokeOpacity: 1.0,
-                                                strokeWeight: 2,
-                                            }}
-                                        />
-                                    )}
+                                {/* Show saved polygons */}
+                                {zones.map((zone) => (
+                                    <Polygon
+                                        key={zone.id}
+                                        paths={zone.coords}
+                                        editable={activeZone?.id === zone.id}
+                                        draggable={activeZone?.id === zone.id}
+                                        onLoad={(polygon) => {
+                                            // store polygon instance inside zone object (optional)
+                                            polygon.addListener("mouseup", () => handlePolygonEdit(polygon, zone.id));
+                                            polygon.addListener("dragend", () => handlePolygonEdit(polygon, zone.id));
+                                        }}
+                                    />
+                                ))}
 
-                                    {polygonComplete && (
-                                        <Polygon
-                                            path={[...points, points[0]]}
-                                            options={{
-                                                fillColor: "gray",
-                                                fillOpacity: 0.4,
-                                                strokeColor: "#2563eb",
-                                                strokeOpacity: 0.8,
-                                                strokeWeight: 2,
-                                            }}
-                                        />
-                                    )}
-                                </GoogleMap>
-                            )}
+                            </GoogleMap>
                         </div>
 
                         <div className="flex gap-4 my-4">
@@ -191,8 +193,8 @@ const Page: React.FC = () => {
 
                             <button
                                 onClick={handleSubmit}
-                                disabled={!polygonComplete}
-                                className={`${!polygonComplete
+                                disabled={!activeZone}
+                                className={`${!activeZone
                                     ? "bg-gray-400 cursor-not-allowed"
                                     : "bg-blue-600 hover:bg-blue-700"
                                     } text-white px-4 py-2 rounded transition`}
@@ -200,20 +202,9 @@ const Page: React.FC = () => {
                                 Submit
                             </button>
                         </div>
-
-                        {/* {polygonComplete && (
-                            <div className="mt-4 bg-gray-100 p-4 rounded">
-                                <h3 className="text-lg font-medium mb-2">Zone Coordinates:</h3>
-                                <pre className="text-sm text-gray-700 overflow-auto">
-                                    {JSON.stringify(points, null, 2)}
-                                </pre>
-                            </div>
-                        )} */}
                     </div>
                 </div>
             </ComponentCard>
         </div>
-    )
+    );
 }
-
-export default Page

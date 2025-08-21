@@ -74,7 +74,7 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  // console.log("console service : ", service);
+  console.log("console service : ", service);
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -247,25 +247,25 @@ const EditService: React.FC = () => {
 
 
       formDataToSend.append('serviceDetails[overview]', formData.service.overview);
-      // if (formData.service.highlight) {
-      //   const filesArray = Array.isArray(formData.service.highlight)
-      //     ? formData.service.highlight
-      //     : Array.from(formData.service.highlight);
-      //   filesArray.forEach((file, index) => {
-      //     formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
-      //   });
-      // }
       if (formData.service.highlight) {
-        const highlightsArray = Array.isArray(formData.service.highlight)
+        const filesArray = Array.isArray(formData.service.highlight)
           ? formData.service.highlight
           : Array.from(formData.service.highlight);
-
-        highlightsArray.forEach((item, index) => {
-          // if (item instanceof File) {
-          formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
-          // }
+        filesArray.forEach((file, index) => {
+          formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
         });
       }
+      // if (formData.service.highlight) {
+      //   const highlightsArray = Array.isArray(formData.service.highlight)
+      //     ? formData.service.highlight
+      //     : Array.from(formData.service.highlight);
+
+      //   highlightsArray.forEach((item, index) => {
+      //     // if (item instanceof File) {
+      //     formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
+      //     // }
+      //   });
+      // }
 
 
       formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
