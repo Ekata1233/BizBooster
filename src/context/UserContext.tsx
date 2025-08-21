@@ -24,6 +24,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   packageActive: boolean;
+  packageActivateDate:Date;
 }
 
 interface UserContextType {
