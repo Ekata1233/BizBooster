@@ -43,7 +43,7 @@ const FiveXGuarantee = () => {
   // fetch checkout
   useEffect(() => {
     if (id) fetchCheckoutByUser(id);
-  }, [id, fetchCheckoutByUser]);
+  }, [id]);
 
   useEffect(() => {
     setUserCheckouts(checkouts);
@@ -70,7 +70,7 @@ const FiveXGuarantee = () => {
   // fetch wallet
   useEffect(() => {
     if (id) fetchWalletByUser(id);
-  }, [id, fetchWalletByUser]);
+  }, [id]);
 
   // calculate remaining months/days
   useEffect(() => {
