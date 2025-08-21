@@ -22,12 +22,12 @@ const FiveXGuarantee = () => {
   const [fixEarning, setFixEarning] = useState<number>(0); // from fivex API
 
 
-  useEffect(() => {
-    if (id) {
-      fetchSingleUser(id);
-    }
-  }, [id]);
-console.log("userlist",singleUser);
+//   useEffect(() => {
+//     if (id) {
+//       fetchSingleUser(id);
+//     }
+//   }, [id]);
+// console.log("userlist",singleUser);
 
 
   console.log("fiveX -> singleUser", singleUser);
