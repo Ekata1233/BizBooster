@@ -123,7 +123,7 @@ const kycSchema = new Schema<KYC>(
 
 const providerSchema = new Schema<ProviderDocument>(
   {
-    /* ––– Step-1 fields ––– */
+
     providerId: { type: String, unique: true },
     fullName: { type: String, required: true, trim: true },
     phoneNo: { type: String, required: true, trim: true },
@@ -139,14 +139,8 @@ const providerSchema = new Schema<ProviderDocument>(
     referralCode: { type: String, unique: true, sparse: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     galleryImages: { type: [String], default: [] },
-
-    /* ––– Step-2 – Store Info ––– */
     storeInfo: storeInfoSchema,
-
-    /* ––– Step-3 – KYC ––– */
     kyc: kycSchema,
-
-    /* ––– Other business fields ––– */
     setBusinessPlan: { type: String, enum: ["commission base", "other"] },
     subscribedServices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
     averageRating: {
@@ -175,9 +169,6 @@ const providerSchema = new Schema<ProviderDocument>(
   { timestamps: true }
 );
 
-/* ─────────────── Hooks & Methods ──────────────── */
-
-// Hash password before save / update
 providerSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password as string, 10);
