@@ -50,55 +50,56 @@ export async function POST(req: Request) {
     const allZones = await Zone.find({ isDeleted: false });
     let matchedZone: any = null;
 
-    for (const zone of allZones) {
-      if (isPointInPolygon({ lat, lng }, zone.coordinates)) {
+      for (const zone of allZones) {
+      if (!zone.isPanIndia && isPointInPolygon({ lat, lng }, zone.coordinates)) {
         matchedZone = zone;
         break;
       }
     }
 
-    if (!matchedZone) {
-      return NextResponse.json(
-        { success: false, message: "No services available in this location" },
-        { status: 404, headers: corsHeaders }
-      );
+    // 2️⃣ Get providers in the matched zone (if any)
+    let zoneProviders: any[] = [];
+    if (matchedZone) {
+      zoneProviders = await Provider.find({
+        "storeInfo.zone": matchedZone._id,
+        isApproved: true,
+        isDeleted: false,
+      }).populate("subscribedServices");
     }
 
-    // 2️⃣ Get all providers in this zone
-    const providers = await Provider.find({
-      "storeInfo.zone": matchedZone._id,
-      isApproved: true,
-      isDeleted: false,
-    }).populate("subscribedServices");
-
-    if (!providers.length) {
-      return NextResponse.json(
-        {
-          success: true,
-          zone: matchedZone.name,
-          data: [],
-          message: "No services found in this zone",
-        },
-        { status: 200, headers: corsHeaders }
-      );
+    // 3️⃣ Get PAN INDIA providers
+    const panIndiaZone = allZones.find((z) => z.isPanIndia);
+    let panIndiaProviders: any[] = [];
+    if (panIndiaZone) {
+      panIndiaProviders = await Provider.find({
+        "storeInfo.zone": panIndiaZone._id,
+        isApproved: true,
+        isDeleted: false,
+      }).populate("subscribedServices");
     }
 
-    // 3️⃣ Collect all services
+    // 4️⃣ Merge services from both sets of providers
     const services: any[] = [];
-    providers.forEach((provider: any) => {
+
+    const allProviders = [...zoneProviders, ...panIndiaProviders];
+    allProviders.forEach((provider) => {
       provider.subscribedServices.forEach((service: any) => {
         services.push(service.toObject ? service.toObject() : service);
       });
     });
 
-    // 4️⃣ Remove duplicates (by service _id)
+    // 5️⃣ Remove duplicates (by service _id)
     const uniqueServices = Array.from(
       new Map(services.map((s) => [s._id.toString(), s])).values()
     );
 
-    // 5️⃣ Return FULL service documents
+    // 6️⃣ Return response
     return NextResponse.json(
-      { success: true, data: uniqueServices },
+      {
+        success: true,
+        zone: matchedZone ? matchedZone.name : "PAN INDIA",
+        data: uniqueServices,
+      },
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
