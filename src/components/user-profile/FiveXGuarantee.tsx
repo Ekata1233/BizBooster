@@ -18,8 +18,8 @@ const FiveXGuarantee = () => {
   const id = params?.id as string;
 
   const [userCheckouts, setUserCheckouts] = useState<any[]>([]);
-  const [targetLeads, setTargetLeads] = useState<number>(0); // from fivex API
-  const [fixEarning, setFixEarning] = useState<number>(0); // from fivex API
+  const [targetLeads, setTargetLeads] = useState<number>(0); 
+  const [fixEarning, setFixEarning] = useState<number>(0); 
 
 
 //   useEffect(() => {
