@@ -7,12 +7,33 @@ import "@/models/Category";      // registers the Category model
 import "@/models/Subcategory";
 import "@/models/WhyChoose";
 import "@/models/Provider";
+import Zone from "@/models/Zone";
+import Provider from "@/models/Provider";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+function isPointInPolygon(
+  point: { lat: number; lng: number },
+  polygon: { lat: number; lng: number }[]
+) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].lng,
+      yi = polygon[i].lat;
+    const xj = polygon[j].lng,
+      yj = polygon[j].lat;
+
+    const intersect =
+      yi > point.lat !== yj > point.lat &&
+      point.lng < ((xj - xi) * (point.lat - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
@@ -237,77 +258,205 @@ export async function POST(req: NextRequest) {
 }
 
 // GET all services with optional search by serviceName
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const search = searchParams.get('search');
+//     const category = searchParams.get('category');
+//     const subcategory = searchParams.get('subcategory');
+//     const sort = searchParams.get('sort');
+
+//     // Build filter
+//     const filter: Record<string, unknown> = { isDeleted: false };
+
+//     if (search) {
+//       // filter.serviceName = { $regex: search, $options: 'i' };
+//       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
+//     }
+
+//     if (category) {
+//       filter.category = category; // should be ObjectId string
+//     }
+
+//     if (subcategory) {
+//       filter.subcategory = subcategory;
+//     }
+
+//     // Build query
+//     let sortOption: Record<string, 1 | -1> = {};
+
+//     switch (sort) {
+//       case 'latest':
+//         sortOption = { createdAt: -1 };
+//         break;
+//       case 'oldest':
+//         sortOption = { createdAt: 1 };
+//         break;
+//       case 'ascending':
+//         sortOption = { serviceName: 1 };
+//         break;
+//       case 'descending':
+//         sortOption = { serviceName: -1 };
+//         break;
+//       case 'asc':
+//         sortOption = { price: 1 };
+//         break;
+//       case 'desc':
+//         sortOption = { price: -1 };
+//         break;
+//       default:
+//         sortOption = { createdAt: -1 };
+//     }
+
+//     // Build query with filter and sort
+//     const services = await Service.find(filter)
+//       .populate('category')
+//       .populate('subcategory')
+//       .populate('serviceDetails.whyChoose')
+//       .populate({
+//         path: 'providerPrices.provider',
+//         model: 'Provider',
+//         select: 'fullName storeInfo.storeName storeInfo.logo',
+//       })
+//       .sort(sortOption)
+//       .exec();
+
+//     return NextResponse.json(
+//       { success: true, data: services },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : 'Unknown error';
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
-    const subcategory = searchParams.get('subcategory');
-    const sort = searchParams.get('sort');
+    const search = searchParams.get("search");
+    const category = searchParams.get("category");
+    const subcategory = searchParams.get("subcategory");
+    const sort = searchParams.get("sort");
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
 
-    // Build filter
+    // Build filter (for fallback all-services query)
     const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
-      // filter.serviceName = { $regex: search, $options: 'i' };
-      filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
+      filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: "i" };
     }
+    if (category) filter.category = category;
+    if (subcategory) filter.subcategory = subcategory;
 
-    if (category) {
-      filter.category = category; // should be ObjectId string
-    }
-
-    if (subcategory) {
-      filter.subcategory = subcategory;
-    }
-
-    // Build query
+    // Sorting options
     let sortOption: Record<string, 1 | -1> = {};
-
     switch (sort) {
-      case 'latest':
+      case "latest":
         sortOption = { createdAt: -1 };
         break;
-      case 'oldest':
+      case "oldest":
         sortOption = { createdAt: 1 };
         break;
-      case 'ascending':
+      case "ascending":
         sortOption = { serviceName: 1 };
         break;
-      case 'descending':
+      case "descending":
         sortOption = { serviceName: -1 };
         break;
-      case 'asc':
+      case "asc":
         sortOption = { price: 1 };
         break;
-      case 'desc':
+      case "desc":
         sortOption = { price: -1 };
         break;
       default:
         sortOption = { createdAt: -1 };
     }
 
-    // Build query with filter and sort
-    const services = await Service.find(filter)
-      .populate('category')
-      .populate('subcategory')
-      .populate('serviceDetails.whyChoose')
-      .populate({
-        path: 'providerPrices.provider',
-        model: 'Provider',
-        select: 'fullName storeInfo.storeName storeInfo.logo',
-      })
-      .sort(sortOption)
-      .exec();
+    let services: any[] = [];
+
+    // ─────────────── Zone-based logic if lat/lng present ───────────────
+    if (lat && lng) {
+      const allZones = await Zone.find({ isDeleted: false });
+      let matchedZone: any = null;
+
+      for (const zone of allZones) {
+        if (
+          !zone.isPanIndia &&
+          isPointInPolygon({ lat: +lat, lng: +lng }, zone.coordinates)
+        ) {
+          matchedZone = zone;
+          break;
+        }
+      }
+
+      // Providers in matched zone
+      let zoneProviders: any[] = [];
+      if (matchedZone) {
+        zoneProviders = await Provider.find({
+          "storeInfo.zone": matchedZone._id,
+          isApproved: true,
+          isDeleted: false,
+        }).populate("subscribedServices");
+      }
+
+      // Providers in PAN INDIA
+      const panIndiaZone = allZones.find((z) => z.isPanIndia);
+      let panIndiaProviders: any[] = [];
+      if (panIndiaZone) {
+        panIndiaProviders = await Provider.find({
+          "storeInfo.zone": panIndiaZone._id,
+          isApproved: true,
+          isDeleted: false,
+        }).populate("subscribedServices");
+      }
+
+      // Merge all services
+      const combinedServices: any[] = [];
+      const allProviders = [...zoneProviders, ...panIndiaProviders];
+      allProviders.forEach((provider) => {
+        provider.subscribedServices.forEach((service: any) => {
+          combinedServices.push(
+            service.toObject ? service.toObject() : service
+          );
+        });
+      });
+
+      // Remove duplicates
+      services = Array.from(
+        new Map(combinedServices.map((s) => [s._id.toString(), s])).values()
+      );
+    } else {
+      // ─────────────── Fallback: get all services ───────────────
+      services = await Service.find(filter)
+        .populate("category")
+        .populate("subcategory")
+        .populate("serviceDetails.whyChoose")
+        .populate({
+          path: "providerPrices.provider",
+          model: "Provider",
+          select: "fullName storeInfo.storeName storeInfo.logo",
+        })
+        .sort(sortOption)
+        .exec();
+    }
 
     return NextResponse.json(
       { success: true, data: services },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { success: false, message },
       { status: 500, headers: corsHeaders }
