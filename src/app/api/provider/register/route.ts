@@ -4,6 +4,7 @@ import Provider from "@/models/Provider";
 import { z } from "zod";
 import { connectToDatabase } from "@/utils/db";
 import { signToken } from "@/utils/auth";
+import ProviderWallet from "@/models/ProviderWallet";
 
 // const corsHeaders = {
 //   'Access-Control-Allow-Origin': '*',
@@ -92,6 +93,21 @@ export async function POST(req: NextRequest) {
       password,
       step1Completed: true,
       registrationStatus: "basic",
+    });
+
+    await ProviderWallet.create({
+      providerId: provider._id,
+      isActive: true,
+      balance: 0,
+      receivableBalance: 0,
+      withdrawableBalance: 0,
+      pendingWithdraw: 0,
+      alreadyWithdrawn: 0,
+      totalEarning: 0,
+      totalCredits: 0,
+      totalDebits: 0,
+      cashInHand: 0,
+      transactions: [],
     });
 
     const token = signToken(provider._id.toString());

@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        console.log("pakcage price : ",pkg)
+
         // const packagePrice = pkg.grandtotal;
         const packagePrice = user.packagePrice && user.packagePrice > 0
             ? user.packagePrice
