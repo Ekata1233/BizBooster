@@ -20,7 +20,7 @@ const Page = () => {
         if (userId) {
             fetchWalletByUser(userId);
         }
-    }, [userId, fetchWalletByUser]);
+    }, [userId]);
 
     const isWalletAvailable = !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
 
@@ -52,8 +52,13 @@ const Page = () => {
     // Filter transactions by tab
     const filteredTransactions = useMemo(() => {
         if (!wallet?.transactions) return [];
-        if (activeTab === "all") return wallet.transactions;
-        return wallet.transactions.filter((txn) => txn.type === activeTab);
+        let txns =
+        activeTab === "all"
+            ? wallet.transactions
+            : wallet.transactions.filter((txn) => txn.type === activeTab);
+
+    // ✅ Reverse to show latest first
+    return [...txns].reverse();
     }, [wallet, activeTab]);
 
     // Pagination
