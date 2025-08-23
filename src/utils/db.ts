@@ -13,7 +13,10 @@ const connectToDatabase = async () => {
 
   try {
     // Connect to MongoDB without deprecated options
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // fail fast if cannot connect
+      ssl: true, // force TLS
+    });
     isConnected = true;
     console.log('Connected to MongoDB');
     await ensurePanIndiaZone();

@@ -71,12 +71,12 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment', 'referral'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment', 'referral','payout'],
       default: 'checkout',
     },
     status: {
       type: String,
-      enum: ['success', 'failed', 'pending'],
+      enum: ['success', 'failed', 'pending','received'],
       default: 'success',
     },
     balanceAfterTransaction: {
