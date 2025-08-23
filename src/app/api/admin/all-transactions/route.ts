@@ -48,7 +48,7 @@ export async function GET() {
       walletType: 'User',
       to: wallet.userId 
       ? `${wallet.userId.userId} - ${wallet.userId.fullName}` 
-      : 'Unknown User',
+      : 'Admin',
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
