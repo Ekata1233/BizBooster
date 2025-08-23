@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { useUserWallet } from '@/context/WalletContext';
 import { BadgeCheck } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
+import { startOfDay } from 'date-fns';
 
 const FiveXGuarantee = () => {
   const { checkouts, fetchCheckoutByUser } = useCheckout();
@@ -38,6 +39,8 @@ const FiveXGuarantee = () => {
     if (!singleUser || singleUser._id !== id) {
       fetchSingleUser(id);
     }
+    console.log("user data",singleUser);
+    
   }, [id, singleUser, fetchSingleUser]);
 
   // fetch checkout
@@ -154,6 +157,21 @@ const FiveXGuarantee = () => {
     <ComponentCard title="5x Guarantee">
       {/* show remaining only if package is still active */}
       
+   {/* Package Activated Date */}
+{singleUser?.packageActivateDate && (
+  <div className="flex justify-center mb-6">
+    <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-xl shadow-sm">
+      <span className="text-blue-600 font-medium">📅 Package Activated:</span>
+      <span className="text-gray-700 font-semibold">
+        {new Date(singleUser.packageActivateDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
+      </span>
+    </div>
+  </div>
+)}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
         {/* Level Progress */}
@@ -203,11 +221,18 @@ const FiveXGuarantee = () => {
         </div>
       </div>
 {singleUser?.packageActive && (remainingMonths > 0 || remainingDays > 0) && (
-        <div className="text-center mb-4">
-          <p className="text-lg font-bold text-yellow-600 bg-yellow-100 px-4 py-2 rounded-full inline-block shadow">
-            ⏳ You are eligible — Remaining {remainingMonths} Months
-          </p>
-        </div>
+       <div className="text-center mb-4">
+  {remainingMonths > 0 ? (
+    <p className="text-lg font-bold text-yellow-600 bg-yellow-100 px-4 py-2 rounded-full inline-block shadow">
+      ⏳ Are you eligible? — Yes, Remaining {remainingMonths} {remainingMonths === 1 ? "Month" : "Months"}
+    </p>
+  ) : (
+    <p className="text-lg font-bold text-red-600 bg-red-100 px-4 py-2 rounded-full inline-block shadow">
+      ❌ Are you eligible? — No, Period Completed
+    </p>
+  )}
+</div>
+
       )}
       {/* Summary Info */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
