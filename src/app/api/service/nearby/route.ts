@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const allZones = await Zone.find({ isDeleted: false });
     let matchedZone: any = null;
 
-      for (const zone of allZones) {
+    for (const zone of allZones) {
       if (!zone.isPanIndia && isPointInPolygon({ lat, lng }, zone.coordinates)) {
         matchedZone = zone;
         break;
