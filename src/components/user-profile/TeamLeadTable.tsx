@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -16,7 +16,7 @@ interface TeamLeadData {
   userEmail: string;
   userPhone: string;
   joinDate: string;
-  status: string;
+  status: string; // 'GP' | 'Non-GP'
   teamCount: number;
   myEarnings: string;
   leadCount: number;
@@ -27,46 +27,116 @@ interface TeamLeadProps {
   isAction: boolean;
 }
 
+/** Local typing to fix "never" issues without touching your context code */
+type AppUser = {
+  _id: string;
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  createdAt: string;
+  packageActive?: boolean;
+  profilePhoto?: string;
+  referredBy?: string | null;
+};
+
 const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
+  const { users: ctxUsers } = useUserContext() as unknown as { users: unknown };
   const [dataTeamLead, setDataTeamLead] = useState<TeamLeadData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /** Safely coerce context users into AppUser[] */
+  const users: AppUser[] = useMemo(() => {
+    if (Array.isArray(ctxUsers)) {
+      return (ctxUsers as any[]).filter(Boolean) as AppUser[];
+    }
+    return [];
+  }, [ctxUsers]);
+
+  /** Build team list from context as a fallback (match referredBy === current userId) */
+  const buildFromContext = React.useCallback(
+    (rootUserId: string): TeamLeadData[] => {
+      if (!rootUserId) return [];
+
+      // Direct referrals: users whose referredBy equals the current user's _id (param id)
+      const directTeam = users.filter(u => (u?.referredBy ?? null) === rootUserId);
+
+      // For each member, compute how many people THEY referred (1-level deep)
+      const asTableRows: TeamLeadData[] = directTeam.map(member => {
+        const memberDirects = users.filter(u => (u?.referredBy ?? null) === member._id);
+        return {
+          id: member._id,
+          userPhoto: member.profilePhoto || img.src,
+          userName: member.fullName,
+          userEmail: member.email,
+          userPhone: member.mobileNumber,
+          joinDate: new Date(member.createdAt).toLocaleDateString('en-IN'),
+          status: member.packageActive ? 'GP' : 'Non-GP',
+          teamCount: memberDirects.length, // 1-level sub-team count
+          myEarnings: `₹${(0).toLocaleString()}`, // no earnings data in context
+          leadCount: 0, // no lead data in context
+        };
+      });
+
+      return asTableRows;
+    },
+    [users]
+  );
+
   useEffect(() => {
-    
+    let cancelled = false;
+
     const fetchTeam = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/team-build/my-team/${userId}`);
         const json = await res.json();
 
-        if (json.success && Array.isArray(json.team)) {
-          const formatted = json.team.map((member: any) => {
-            const user = member.user;
-
-            return {
+        if (!cancelled && json?.success && Array.isArray(json?.team) && json.team.length > 0) {
+          // Map API response first (keep your original logic intact)
+          const mappedFromApi: TeamLeadData[] = json.team.map((member: any) => {
+            const user = member?.user ?? {};
+            const base: TeamLeadData = {
               id: user._id,
               userPhoto: user.profilePhoto || img.src,
               userName: user.fullName,
               userEmail: user.email,
               userPhone: user.mobileNumber,
-              joinDate: new Date(user.createdAt).toLocaleDateString('en-IN'),
+              joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : '',
               status: user.packageActive ? 'GP' : 'Non-GP',
-              teamCount: member.team?.length || 0,
-              myEarnings: `₹${(member.totalEarningsFromShare_2 || 0).toLocaleString()}`,
-              leadCount: member.leads?.length || 0,
+              teamCount: Number(member?.team?.length || 0),
+              myEarnings: `₹${Number(member?.totalEarningsFromShare_2 || 0).toLocaleString()}`,
+              leadCount: Number(member?.leads?.length || 0),
             };
+
+            // Augment counts from context if API returned zeros
+            if (base.teamCount === 0 && users.length) {
+              const memberDirects = users.filter((u) => (u?.referredBy ?? null) === base.id);
+              base.teamCount = memberDirects.length;
+            }
+
+            return base;
           });
 
-          setDataTeamLead(formatted);
+          setDataTeamLead(mappedFromApi);
+        } else {
+          // Fallback: build from UserContext if API has nothing or not successful
+          const built = buildFromContext(userId);
+          setDataTeamLead(built);
         }
-      } catch (error) {
-        console.error('Failed to fetch team data', error);
+      } catch (_err) {
+        // On any fetch error, fallback to context
+        const built = buildFromContext(userId);
+        setDataTeamLead(built);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     if (userId) fetchTeam();
-  }, [userId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, buildFromContext, users]);
 
   const columnsTeamLead = [
     {
@@ -119,9 +189,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     {
       header: 'My Earnings',
       accessor: 'myEarnings',
-      render: (row: TeamLeadData) => (
-        <div className="text-sm">{row.myEarnings}</div>
-      ),
+      render: (row: TeamLeadData) => <div className="text-sm">{row.myEarnings}</div>,
     },
     {
       header: 'Lead',
@@ -133,10 +201,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
             header: 'Action',
             accessor: 'action',
             render: (row: TeamLeadData) => (
-              <Link
-                href={`/customer-management/user/user-list/${userId}/leads/${row.id}`}
-                passHref
-              >
+              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}`} passHref>
                 <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                   <EyeIcon />
                 </button>
@@ -155,7 +220,8 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     return (
       <ComponentCard title="Team Lead Table">
         <div className="p-6 text-gray-600">
-          No team leads found at the moment. Once users join through your referral, they will appear here.
+          No team leads found at the moment. Once users join through your referral, they will appear
+          here.
         </div>
       </ComponentCard>
     );
