@@ -73,7 +73,11 @@ export default function MonthlySalesChart() {
       horizontalAlign: "left",
       fontFamily: "Outfit",
     },
-    yaxis: { title: { text: undefined } },
+    yaxis: {
+    labels: {
+      formatter: (val: number) => val.toFixed(2), // 👈 only 2 decimals
+    },
+  },
     grid: {
       yaxis: { lines: { show: true } },
     },
@@ -81,7 +85,7 @@ export default function MonthlySalesChart() {
     tooltip: {
       x: { show: false },
       y: {
-        formatter: (val: number) => `₹${val.toLocaleString()}`,
+        formatter: (val: number) => `₹${val.toFixed(2)}`,
       },
     },
   };

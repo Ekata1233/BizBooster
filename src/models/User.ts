@@ -135,6 +135,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+ packageActivateDate: {
+  type: Date,   // <-- Capital D
+  default: null // or Date.now if you want the current timestamp
+},
+
   favoriteServices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
   favoriteProviders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' }],
   isDeleted: {

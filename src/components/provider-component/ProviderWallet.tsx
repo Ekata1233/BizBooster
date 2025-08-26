@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import ComponentCard from '../common/ComponentCard'
 import { Provider, useProvider } from '@/context/ProviderContext';
 import WalletStats from './WalletStats';
+import WalletTransaction from './WalletTransaction';
 
 interface Props {
     provider: Provider;
@@ -45,6 +46,9 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
                         totalEarning: finalWallet.totalEarning,
                     }}
                 />
+            </ComponentCard>
+            <ComponentCard title="Transaction ">
+               <WalletTransaction wallet={wallet} loading={loading} error={error} />
             </ComponentCard>
         </div>
     )

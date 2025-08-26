@@ -70,11 +70,13 @@ export async function POST(req: NextRequest) {
 
       if (checkout) {
         const paid = Number(payment_amount);
-        const total = checkout.totalAmount;
+        const total = checkout.grandTotal && checkout.grandTotal > 0
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount ?? 0);
         const remaining = total - paid;
 
-
-        console.log("paid amount before update  : ", checkout.paidAmount);
+        console.log("paid   : ", paid);
+        console.log("total   : ", total);
 
         checkout.cashfreeMethod = payment_group;
         checkout.paidAmount = (checkout.paidAmount || 0) + paid;
@@ -84,11 +86,25 @@ export async function POST(req: NextRequest) {
         checkout.isPartialPayment = !isFullPayment;
 
         await checkout.save();
+        let leadDoc = await Lead.findOne({ checkout: checkoutId });
 
+        if (!leadDoc) {
+          // Create new Lead if not found
+          leadDoc = new Lead({
+            checkout: checkoutId,
+            leads: [],
+          });
+        }
 
-        console.log("paid amount after update  : ", checkout.paidAmount);
+        leadDoc.leads.push({
+          statusType: "Payment verified",
+          description: `Payment verified ${payment_amount} Rs via Cashfree`,
+          createdAt: new Date(),
+        });
 
+        await leadDoc.save();
 
+        console.log("remaining amount  : ", checkout.remainingAmount);
 
         const existingLead = await Lead.findOne({ checkout: checkoutId });
 
@@ -134,9 +150,6 @@ export async function POST(req: NextRequest) {
 
         }
 
-
-
-
         console.log("after existing lead : ", existingLead)
 
       } else {
@@ -150,45 +163,6 @@ export async function POST(req: NextRequest) {
 
         const amountPaid = Number(payment_amount);
 
-        // const pkg = await Package.findOne();
-        // if (!pkg || typeof pkg.price !== "number") {
-        //   return NextResponse.json(
-        //     { success: false, message: "Valid package not found." },
-        //     { status: 400, headers: corsHeaders }
-        //   );
-        // }
-
-        // const fullPackageAmount = pkg.grandtotal;
-
-        // const user = await User.findById(myCustomerId);
-        // if (!user) throw new Error("User not found");
-
-        // const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
-        // const remaining = fullPackageAmount - newTotalPaid;
-
-        // user.packageAmountPaid = newTotalPaid;
-        // user.remainingAmount = Math.max(remaining, 0);
-        // user.packageType = newTotalPaid >= fullPackageAmount ? "full" : "partial";
-        // // Set packagePrice only if it's not already set
-        // if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
-        //   user.packagePrice = fullPackageAmount;
-        // }
-
-
-        // if (newTotalPaid >= fullPackageAmount && !user.packageActive) {
-
-        //   try {
-        //     const distRes = await axios.post(
-        //       "https://biz-booster.vercel.app/api/distributePackageCommission",
-        //       { userId: user._id }
-        //     );
-        //     // console.log("📤 Commission distribution triggered:", distRes.data);
-        //   } catch (err: any) {
-        //     console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
-        //   }
-        // }
-
-        // await user.save();
         const pkg = await Package.findOne();
         if (!pkg || typeof pkg.price !== "number") {
           return NextResponse.json(

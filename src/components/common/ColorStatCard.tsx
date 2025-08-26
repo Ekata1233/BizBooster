@@ -17,19 +17,20 @@ const ColorStatCard: React.FC<ColorStatCard> = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl px-8 py-6 shadow-md bg-gradient-to-r ${gradient} flex items-center justify-between`}
+      className={`bg-gradient-to-r ${gradient} ${textColor} p-6 rounded-xl shadow flex justify-between items-center`}
     >
       {/* Left: Icon */}
-      <div className={`${textColor} flex-shrink-0`}>
+      <div className="text-3xl bg-white/40 p-3 rounded-full">
         {icon}
       </div>
 
       {/* Right: Title & Value */}
-      <div className="flex flex-col items-end gap-2">
-        <h2 className={`text-lg  ${textColor}`}>{title}</h2>
-        <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
+      <div className="text-right">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-lg font-bold">{value}</div>
       </div>
     </div>
+
   );
 };
 

@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     const endDate = formData.get("endDate") as string;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
+     const file = formData.get("fileUrl") as File;
 
     if (!addType || !category || !service || !startDate || !endDate || !title || !providerId) {
       return NextResponse.json(
@@ -35,8 +36,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const fileUrl = formData.get("fileUrl") as string;
+ if (!file) {
+      return NextResponse.json(
+        { success: false, message: "File is required" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to ImageKit
+    const uploadRes = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${file.name}`,
+    });
     const newAd = await Ad.create({
       addType,
       category,
@@ -45,7 +60,7 @@ export async function POST(req: Request) {
       endDate,
       title,
       description,
-      fileUrl,
+      fileUrl: uploadRes.url,
       provider: providerId,
     });
 

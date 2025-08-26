@@ -22,6 +22,9 @@ interface TableData {
     categoryName: string;
     subCategoryName: string;
     status: string;
+     price: string | number;              // added
+    discountedPrice: string | number;    // added
+    providerPrice: string | number;   
     id: string;
 }
 
@@ -39,28 +42,33 @@ const SubscribeRequestPage = () => {
 
     // console.log("service in subsribe request : ", services)
     /* build (or rebuild) the list any time `services` changes */
-    useEffect(() => {
-        const pending = services
-            .filter((service: any) => {
-                const rawStatus =
-                    service.status ?? service.providerPrices?.[0]?.status ?? '';
-                return rawStatus.toLowerCase() === 'pending';
-            })
-            .map((service: any) => ({
-                name: service.serviceName,
-                providerId: service.providerPrices?.[0]?.provider?._id || 'N/A',
-                providerName: service.providerPrices?.[0]?.provider?.fullName || 'N/A',
-                price: service.price || "N/A",
-                discountedPrice: service.discountedPrice || "N/A",
-                providerPrice: service.providerPrices?.[0]?.providerPrice || "N/A",
-                categoryName: service.category?.name || 'N/A',
-                subCategoryName: service.subcategory?.name || 'N/A',
-                status: service.status ?? service.providerPrices?.[0]?.status ?? 'Accept',
-                id: service._id,
-            }));
+ useEffect(() => {
+    const pending: TableData[] = [];
 
-        setTableData(pending);
-    }, [services]);
+    services.forEach((service: any) => {
+        (service.providerPrices || []).forEach((p: any) => {
+            const rawStatus = service.status ?? p.status ?? '';
+            if (rawStatus.toLowerCase() === 'pending') {
+                pending.push({
+                    name: service.serviceName,
+                    providerId: p?.provider?._id || 'N/A',
+                    providerName: p?.provider?.fullName || 'N/A',
+                    price: service.price || "N/A",
+                    discountedPrice: service.discountedPrice || "N/A",
+                    providerPrice: p?.providerPrice || "N/A",
+                    categoryName: service.category?.name || 'N/A',
+                    subCategoryName: service.subcategory?.name || 'N/A',
+                    status: service.status ?? p.status ?? 'Accept',
+                    id: service._id,
+                });
+            }
+        });
+    });
+
+    setTableData(pending);
+}, [services]);
+
+
 
     /* ------------ handlers ------------- */
     const handleAccept = async (serviceId: string, providerId: string) => {

@@ -6,7 +6,7 @@ import UserInfoCard from '@/components/user-profile/UserInfoCard';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/context/UserContext';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 // import ComponentCard from '@/components/common/ComponentCard';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
@@ -28,6 +28,9 @@ const UserDetails = () => {
   const params = useParams();
   const userId = params?.id as string;
 
+  const pathname = usePathname();
+  const isRootUser = !pathname.includes('/leads/');
+
   const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
@@ -35,6 +38,7 @@ const UserDetails = () => {
       fetchSingleUser(userId);
     }
   }, [userId]);
+console.log("userlist",singleUser);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;

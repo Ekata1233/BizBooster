@@ -34,9 +34,9 @@ export async function PUT(req: NextRequest) {
         console.log("body of the cash in hand : ", body)
 
         const fetchedAmount =
-            paymentType === "partial" || paymentType === "remaining"
+            paymentType === "partial"
                 ? (bodyAmount ?? 0) / 2
-                : paymentType === "full"
+                : paymentType === "full" || paymentType === "remaining"
                     ? (bodyAmount ?? 0)
                     : 0;
 
@@ -58,10 +58,10 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        // 2. Update checkout fields for cash-in-hand
-        // const amount = checkout.remainingAmount || 0;
-        // checkout.paymentStatus = "paid";
-        const total = checkout.totalAmount;
+        const total =
+            checkout.grandTotal && checkout.grandTotal > 0
+                ? Number(checkout.grandTotal)
+                : Number(checkout.totalAmount ?? 0);
         checkout.cashInHand = true;
         checkout.cashInHandAmount = (checkout.cashInHandAmount || 0) + fetchedAmount;
         checkout.paidAmount = (checkout.paidAmount || 0) + fetchedAmount;

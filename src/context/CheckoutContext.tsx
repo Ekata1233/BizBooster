@@ -16,6 +16,7 @@ export interface Checkout {
   isAccepted: boolean;
   isCanceled: boolean;
   isCompleted: boolean;
+  isCancel : boolean;
   isDeleted: boolean;
   isVerified: boolean;
   notes?: string;
@@ -24,10 +25,13 @@ export interface Checkout {
   partialPaymentLater?: number;
   partialPaymentNow?: number;
   platformFee?: number;
+  isPartialPayment: boolean;
 
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;
+  gst?:number;
+  grandTotal?: number;
   tax?: number;
   termsCondition?: boolean;
   totalAmount: number;

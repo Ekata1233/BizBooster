@@ -77,10 +77,18 @@ const AllBookingsDetails = () => {
   const getStatusStyle = () => {
     if (checkoutDetails?.isCompleted)
       return { label: 'Completed', color: 'text-green-700 border-green-400 bg-green-50' };
+
+    if (checkoutDetails?.isCanceled === true) // ✅ compare as boolean
+      return { label: 'Cancelled', color: 'text-red-700 border-red-400 bg-red-50' };
+
     if (checkoutDetails?.orderStatus === 'processing')
       return { label: 'Processing', color: 'text-yellow-700 border-yellow-400 bg-yellow-50' };
+
+
+
     return { label: 'Pending', color: 'text-gray-700 border-gray-400 bg-gray-50' };
   };
+
 
   const status = getStatusStyle();
 
@@ -96,9 +104,24 @@ const AllBookingsDetails = () => {
     Array.isArray(leadDetails?.extraService) &&
     leadDetails.extraService.length > 0;
 
+
+  const serviceGSTPercent = checkoutDetails?.gst || 0;
+  const platformFeePercent = checkoutDetails?.platformFee || 0;
+  const assurityFeePercent = checkoutDetails?.assurityfee || 0;
+  const value = checkoutDetails?.subtotal ?? 0;
+  const gstValue = (serviceGSTPercent / 100) * value;
+  const platformFeeValue = (platformFeePercent / 100) * value;
+  const assurityFeeValue = (assurityFeePercent / 100) * value;
+
   const baseAmount = leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0;
   const extraAmount = leadDetails?.extraService?.reduce((sum, service) => sum + (service.total || 0), 0) ?? 0;
-  const grandTotal = baseAmount + extraAmount;
+  console.log("baseamount : ", baseAmount)
+  console.log("extraAmount : ", extraAmount)
+  const grandTotal = checkoutDetails?.grandTotal && checkoutDetails.grandTotal > 0
+    ? checkoutDetails.grandTotal
+    : checkoutDetails?.totalAmount;
+  let finalGrandTotal = checkoutDetails?.totalAmount ?? 0;
+
 
   if (!checkoutDetails) {
     return <div className="p-6 text-center">Loading booking details...</div>;
@@ -121,8 +144,13 @@ const AllBookingsDetails = () => {
               <h2 className="text-lg font-semibold">
                 Booking ID: <span className="text-blue-600">{checkoutDetails?.bookingId || 'N/A'}</span>
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Status: <span className="font-medium capitalize">{checkoutDetails?.orderStatus || 'N/A'}</span>
+              <p className="text-md text-gray-600 mt-2 flex items-center gap-1">
+                Status :
+                <span
+                  className={`font-medium px-2 py-0.5 rounded-full text-md border ${status.color}`}
+                >
+                  {status.label}
+                </span>
               </p>
             </div>
 
@@ -163,7 +191,7 @@ const AllBookingsDetails = () => {
                   <p className="text-gray-700"><strong>Total Amount:</strong> {formatPrice(grandTotal || 0)}</p>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-gray-700"><strong>Payment Status:</strong> <span className={getStatusColor()}>{checkoutDetails.paymentStatus}</span></p>
+                  <p className="text-gray-700"><strong>Payment Status :</strong> <span className={getStatusColor()}>{checkoutDetails.paymentStatus}</span></p>
                   {/* <p className="text-gray-700">
                     <strong>Schedule Date:</strong>{' '}
                     {checkoutDetails.createdAt
@@ -188,14 +216,17 @@ const AllBookingsDetails = () => {
                   <tbody>
                     <tr>
                       <td className="border px-4 py-2">{checkoutDetails?.service?.serviceName || 'N/A'}</td>
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0)}</td>
-                      {/* <td className="border px-4 py-2">
-                        {lead?.newDiscountAmount != null
-                          ? '₹0'
-                          : `₹${checkoutDetails?.service?.discountedPrice || 0}`}
-                      </td> */}
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.newDiscountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0)}</td>
-                      <td className="border px-4 py-2">{formatPrice(leadDetails?.afterDicountAmount ?? checkoutDetails?.totalAmount ?? 0)}</td>
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.listingPrice ?? checkoutDetails?.service?.price ?? 0))}
+                      </td>
+
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.serviceDiscountPrice ?? checkoutDetails?.service?.discountedPrice ?? 0))}
+                      </td>
+
+                      <td className="border px-4 py-2">
+                        {formatPrice(Number(checkoutDetails?.priceAfterDiscount ?? checkoutDetails?.totalAmount ?? 0))}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -205,16 +236,17 @@ const AllBookingsDetails = () => {
 
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
-                {[
-                  ['Listing Price', leadDetails?.newAmount ?? checkoutDetails?.listingPrice],
-                  [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(leadDetails?.newDiscountAmount ?? checkoutDetails?.serviceDiscountPrice ?? 0)],
+                {([
+                  ['Listing Price',  checkoutDetails?.listingPrice ?? 0],
+                  [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
                   [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
                   [`Platform Fee `, checkoutDetails?.platformFeePrice ?? 0],
                   [`Fetch True Assurity Charges (${checkoutDetails?.assurityfee ?? 0}%)`, checkoutDetails?.assurityChargesPrice ?? 0],
-                  ['Total ',checkoutDetails?.totalAmount ?? 0],
-                ].map(([label, amount]) => (
+                  ['Service Total', checkoutDetails?.totalAmount ?? 0],
+                ] as [string, number][]
+                ).map(([label, amount]) => (
                   <div className="flex justify-between" key={label}>
                     <span className="font-medium">{label} :</span>
                     <span>₹{amount}</span>
@@ -226,7 +258,28 @@ const AllBookingsDetails = () => {
                   const extraServices = leadDetails!.extraService!;
                   const subtotal = extraServices.reduce((acc, service) => acc + (service.price || 0), 0);
                   const totalDiscount = extraServices.reduce((acc, service) => acc + (service.discount || 0), 0);
-                  const grandTotal = extraServices.reduce((acc, service) => acc + (service.total || 0), 0);
+                  const priceAfterDiscount = extraServices.reduce((acc, service) => acc + (service.total || 0), 0);
+
+                  const champaignDiscount = checkoutDetails.champaignDiscount || 0;
+                  const gstPercent = checkoutDetails?.gst ?? gstValue ?? 0;
+
+                  // GST calculated only on priceAfterDiscount
+                  const serviceGST = (gstPercent / 100) * priceAfterDiscount; const platformFee = platformFeeValue || 0;
+                  // percentage value (from checkoutDetails or fallback)
+                  const assurityFeePercent = checkoutDetails?.assurityfee ?? assurityFeeValue ?? 0;
+
+                  // ✅ calculated assurity fee amount
+                  const assurityFee = (assurityFeePercent / 100) * priceAfterDiscount;
+
+                  const grandTotal = subtotal - totalDiscount - (checkoutDetails.couponDiscount || 0) - champaignDiscount + serviceGST + assurityFee;
+                  finalGrandTotal = (checkoutDetails?.totalAmount ?? 0) + (grandTotal || 0);
+                  console.log("subtotal : ", subtotal)
+                  console.log("champaignDiscount : ", champaignDiscount)
+                  console.log("champaignDiscount : ", champaignDiscount)
+                  console.log("serviceGST : ", serviceGST)
+                  console.log("platformFee : ", platformFee)
+                  console.log("assurityFee : ", assurityFee)
+                  console.log("grandTotal : ", grandTotal)
 
                   return (
                     <>
@@ -255,27 +308,30 @@ const AllBookingsDetails = () => {
                       </table>
 
                       {/* Summary section */}
-                      {[
-                        ['Subtotal', subtotal],
-                        ['Discount', totalDiscount],
-                        ['Campaign Discount', 0],
-                        ['Coupon Discount', checkoutDetails.couponDiscount || 0],
-                        ['VAT', 0],
-                        ['Platform Fee', 0],
-                        ['Extra Service Total', grandTotal],
-                      ].map(([label, amount]) => (
+                      {([
+                        ['Listing Price', subtotal],
+                        [`Service Discount `, -(totalDiscount || 0)],
+                        [`Price After Discount`, priceAfterDiscount || 0],
+                        // show coupon if you want to include coupon for extra services — commented out to match previous code
+                        // [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
+                        [`Service GST (${checkoutDetails?.gst ?? 0}%)`, serviceGST || 0],
+                        // [`Platform Fee`, platformFee || 0], // uncomment if platform fee applies to extra services
+                        [`Fetch True Assurity Charges (${assurityFeePercent}%)`, assurityFee || 0],
+                        ['Extra Service Total', grandTotal || 0],
+                      ] as [string, number][]).map(([label, amount]) => (
                         <div className="flex justify-between mb-1" key={label}>
                           <span className="font-medium">{label}:</span>
-                          <span>{formatPrice(amount)}</span>
+                          <span>{formatPrice(Number(amount))}</span>
                         </div>
                       ))}
+
                     </>
                   );
                 })()}
 
                 <div className="flex justify-between font-bold text-blue-600">
                   <span>Grand Total</span>
-                  <span>{formatPrice(grandTotal || 0)}</span>
+                  <span>{formatPrice(finalGrandTotal || 0)}</span>
                 </div>
               </div>
             </div>
@@ -295,7 +351,7 @@ const AllBookingsDetails = () => {
               <div className="flex flex-col md:flex-row justify-between gap-6">
                 <div className="flex-1 space-y-2">
                   <p className="text-gray-700"><strong>Payment Method:</strong> {checkoutDetails?.paymentMethod?.[0] || 'N/A'}</p>
-                  <p className="text-gray-700"><strong>Total Amount:</strong> ₹{checkoutDetails?.totalAmount || 0}</p>
+                  <p className="text-gray-700"><strong>Total Amount :</strong> {formatPrice(grandTotal || 0)}</p>
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-gray-700"><strong>Payment Status:</strong> <span className="text-green-600 capitalize">{checkoutDetails?.paymentStatus || 'N/A'}</span></p>

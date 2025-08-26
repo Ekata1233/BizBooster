@@ -49,6 +49,12 @@ const serviceSchema = new mongoose.Schema({
       ref: 'Provider',
       required: true
     },
+     providerMRP: {
+      type: String,
+    },
+     providerDiscount: {
+      type: String,
+    },
     providerPrice: {
       type: Number,
     },

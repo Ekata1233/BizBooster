@@ -6,6 +6,8 @@ type ProviderPrice = {
   provider: string; // or ObjectId if using mongoose
   price: number;
   providerPrice: number;
+  providerDiscount: number;
+  providerMRP: number;
 };
 interface ExtraSection {
   title: string;
@@ -26,16 +28,16 @@ export interface Service {
   serviceName: string;
   thumbnailImage: string;
   bannerImages: string[];
-  category: { _id: string,name: string };
-  subcategory: {_id: string, name: string };
+  category: { _id: string, name: string };
+  subcategory: { _id: string, name: string };
   price: number;
   discount: number;
   discountedPrice: number;
   gst?: number;
   includeGst?: boolean;
-   gstInRupees?: number;       // ✅ newly added
+  gstInRupees?: number;       // ✅ newly added
   totalWithGst?: number;
-keyValues:string;
+  keyValues: string;
   tags?: string[];
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
@@ -56,7 +58,7 @@ type UpdateServiceResponse = {
 type ServiceContextType = {
   services: Service[];
   createService: (formData: FormData) => Promise<Service | undefined>;
-updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
+  updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
   fetchSingleService: (id: string) => Promise<void>;
   singleService: Service | null;
@@ -106,10 +108,10 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
       await fetchServices();
       return res.data;
     } catch (error: any) {
-    const message = error?.response?.data?.message || "Unknown error";
-    console.error("Failed to create service:", message);
-    throw new Error(message); // ⬅️ THROW here so caller can catch
-  }
+      const message = error?.response?.data?.message || "Unknown error";
+      console.error("Failed to create service:", message);
+      throw new Error(message); // ⬅️ THROW here so caller can catch
+    }
   };
 
   // const updateService = async (id: string, data: Partial<Service> | FormData) => {
@@ -131,25 +133,25 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   // };
 
   const updateService = async (
-  id: string,
-  data: Partial<Service> | FormData
-): Promise<UpdateServiceResponse | undefined> => {
-  try {
-    const res = await axios.put<UpdateServiceResponse>(
-      `/api/service/${id}`,
-      data instanceof FormData ? data : data,
-      {
-        headers: data instanceof FormData
-          ? undefined
-          : { "Content-Type": "application/json" },
-      }
-    );
-    fetchServices();
-    return res.data;
-  } catch (error) {
-    console.error("Failed to update service:", error);
-  }
-};
+    id: string,
+    data: Partial<Service> | FormData
+  ): Promise<UpdateServiceResponse | undefined> => {
+    try {
+      const res = await axios.put<UpdateServiceResponse>(
+        `/api/service/${id}`,
+        data instanceof FormData ? data : data,
+        {
+          headers: data instanceof FormData
+            ? undefined
+            : { "Content-Type": "application/json" },
+        }
+      );
+      fetchServices();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to update service:", error);
+    }
+  };
 
 
 

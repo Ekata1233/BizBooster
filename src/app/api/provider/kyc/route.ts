@@ -102,6 +102,10 @@ export async function PUT(req: NextRequest) {
   try {
     const kyc = await parseKycForm(req, providerId);
 
+    console.log("Kyc data : ", kyc);
+    console.log("providerId info : ", providerId)
+
+
     const provider = await Provider.findByIdAndUpdate(
       providerId,
       {

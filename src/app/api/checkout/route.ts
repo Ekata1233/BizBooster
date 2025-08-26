@@ -73,6 +73,8 @@ export async function POST(req: NextRequest) {
       platformFeePrice,
       assurityChargesPrice,
 
+      commission,
+
       totalAmount,
 
       termsCondition,
@@ -136,6 +138,8 @@ export async function POST(req: NextRequest) {
       serviceGSTPrice,
       platformFeePrice,
       assurityChargesPrice,
+
+      commission,
 
       totalAmount,
 
