@@ -38,7 +38,7 @@ const UserDetails = () => {
 
   const tabButtons = [
     { key: 'selfLead', label: 'Self Lead' },
-    { key: 'teamLead', label: 'Team Lead' },
+    { key: 'teamLead', label: 'Team Lead11' },
   ];
 
   return (

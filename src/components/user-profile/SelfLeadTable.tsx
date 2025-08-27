@@ -77,11 +77,22 @@ const columnsSelfLead = [
 
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
-  const [commissions, setCommissions] = useState<CommissionData[]>([]);
+const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
-  useEffect(() => {
-    fetchCheckoutByUser(userId);
-  }, [userId]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const data = await fetchCheckoutByUser(userId);
+      console.log("Checkout data by user:", data);
+    } catch (err) {
+      console.error("Error fetching checkout:", err);
+    }
+  };
+
+  if (userId) {
+    fetchData();
+  }
+}, [userId]);
 
   // Fetch commission for each checkoutId
   useEffect(() => {
