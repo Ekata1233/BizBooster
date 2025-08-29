@@ -17,7 +17,7 @@ export async function GET(req: Request) {
         const forceRun = searchParams.get("forceRun") === "true";
 
         // Only run on 11th (or if forceRun=true)
-        if (!forceRun && today.getDate() !== 29) {
+        if (!forceRun && today.getDate() !== 11) {
             return NextResponse.json({ message: "Not 11th today. Skipping." });
         }
 
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
                 firstCreditYear += 1;
             }
 
-            const firstCreditDate = new Date(firstCreditYear, firstCreditMonth, 29);
+            const firstCreditDate = new Date(firstCreditYear, firstCreditMonth, 11);
             const payoutDate = new Date(firstCreditDate);
             payoutDate.setMonth(firstCreditDate.getMonth() + depositsCount);
 
