@@ -14,7 +14,7 @@ interface WalletTxn {
   description?: string;
   referenceId?: string;
   method: 'UPI' | 'Card' | 'BankTransfer' | 'Cash' | 'Wallet' | 'Other';
-  source: 'checkout' | 'refund' | 'topup' | 'adjustment' | 'withdraw' | 'referral'|'Lead';
+  source: 'checkout' | 'refund' | 'topup' | 'adjustment' | 'withdraw' | 'referral' | 'Lead';
   status: 'success' | 'pending' | 'failed';
   balanceAfterTransaction?: number;
   createdAt: Date;
@@ -42,40 +42,83 @@ export async function GET() {
   const providerWallets = await ProviderWallet.find().populate('providerId');
   console.log("provider wallets : ", providerWallets)
 
+  // const userTxns: AdminTransaction[] = userWallets.flatMap(wallet =>
+  //   wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
+  //     transactionId: txn.referenceId || `U-${wallet.userId._id}-${txn.createdAt.getTime()}`,
+  //     walletType: 'User',
+  //     to: wallet.userId 
+  //     ? `${wallet.userId.userId} - ${wallet.userId.fullName}` 
+  //     : 'Admin',
+  //     date: txn.createdAt,
+  //     type: txn.type,
+  //     source: txn.source,
+  //     method: txn.method,
+  //     status: txn.status,
+  //     credit: txn.type === 'credit' ? txn.amount : 0,
+  //     debit: txn.type === 'debit' ? txn.amount : 0,
+  //     balance: txn.balanceAfterTransaction ?? '-',
+  //   }))
+  // );
+
+  // const providerTxns: AdminTransaction[] = providerWallets.flatMap(wallet =>
+  //   wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
+  //     transactionId: txn.referenceId || `P-${wallet.providerId._id}-${txn.createdAt.getTime()}`,
+  //     walletType: 'Provider',
+  //     to:  wallet.providerId
+  //     ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
+  //     : 'Unknown Provider',
+  //     date: txn.createdAt,
+  //     type: txn.type,
+  //     source: txn.source,
+  //     method: txn.method,
+  //     status: txn.status,
+  //     credit: txn.type === 'credit' ? txn.amount : 0,
+  //     debit: txn.type === 'debit' ? txn.amount : 0,
+  //     balance: '-', // no balanceAfterTransaction stored in provider wallet
+  //   }))
+  // );
+
+
   const userTxns: AdminTransaction[] = userWallets.flatMap(wallet =>
-    wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
-      transactionId: txn.referenceId || `U-${wallet.userId._id}-${txn.createdAt.getTime()}`,
-      walletType: 'User',
-      to: wallet.userId 
-      ? `${wallet.userId.userId} - ${wallet.userId.fullName}` 
-      : 'Admin',
-      date: txn.createdAt,
-      type: txn.type,
-      source: txn.source,
-      method: txn.method,
-      status: txn.status,
-      credit: txn.type === 'credit' ? txn.amount : 0,
-      debit: txn.type === 'debit' ? txn.amount : 0,
-      balance: txn.balanceAfterTransaction ?? '-',
-    }))
+    wallet.transactions.map((txn: WalletTxn): AdminTransaction => {
+      const createdAt = txn.createdAt ? new Date(txn.createdAt) : new Date(); // ensure Date
+      return {
+        transactionId: txn.referenceId || `U-${wallet.userId._id}-${createdAt.getTime()}`,
+        walletType: 'User',
+        to: wallet.userId
+          ? `${wallet.userId.userId} - ${wallet.userId.fullName}`
+          : 'Admin',
+        date: createdAt,
+        type: txn.type,
+        source: txn.source,
+        method: txn.method,
+        status: txn.status,
+        credit: txn.type === 'credit' ? txn.amount : 0,
+        debit: txn.type === 'debit' ? txn.amount : 0,
+        balance: txn.balanceAfterTransaction ?? '-',
+      };
+    })
   );
 
   const providerTxns: AdminTransaction[] = providerWallets.flatMap(wallet =>
-    wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
-      transactionId: txn.referenceId || `P-${wallet.providerId._id}-${txn.createdAt.getTime()}`,
-      walletType: 'Provider',
-      to:  wallet.providerId
-      ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
-      : 'Unknown Provider',
-      date: txn.createdAt,
-      type: txn.type,
-      source: txn.source,
-      method: txn.method,
-      status: txn.status,
-      credit: txn.type === 'credit' ? txn.amount : 0,
-      debit: txn.type === 'debit' ? txn.amount : 0,
-      balance: '-', // no balanceAfterTransaction stored in provider wallet
-    }))
+    wallet.transactions.map((txn: WalletTxn): AdminTransaction => {
+      const createdAt = txn.createdAt ? new Date(txn.createdAt) : new Date();
+      return {
+        transactionId: txn.referenceId || `P-${wallet.providerId._id}-${createdAt.getTime()}`,
+        walletType: 'Provider',
+        to: wallet.providerId
+          ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
+          : 'Unknown Provider',
+        date: createdAt,
+        type: txn.type,
+        source: txn.source,
+        method: txn.method,
+        status: txn.status,
+        credit: txn.type === 'credit' ? txn.amount : 0,
+        debit: txn.type === 'debit' ? txn.amount : 0,
+        balance: '-', // no balanceAfterTransaction stored in provider wallet
+      };
+    })
   );
 
   const allTransactions = [...userTxns, ...providerTxns].sort(
