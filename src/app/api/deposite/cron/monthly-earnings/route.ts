@@ -4,8 +4,13 @@ import Wallet from "@/models/Wallet";
 import Deposite from "@/models/Deposite";
 import { connectToDatabase } from "@/utils/db"; 
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+
+    const { searchParams } = new URL(req.url);
+    if (searchParams.get("health") === "true") {
+      return NextResponse.json({ status: "ok", message: "Cron endpoint reachable" });
+    }
     await connectToDatabase();
     const today = new Date();
 
