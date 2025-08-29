@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
 
         await user.save();
 
-        // console.log("✅ User payment info updated");
+        
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
