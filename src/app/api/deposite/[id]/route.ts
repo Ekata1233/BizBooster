@@ -14,7 +14,7 @@ export async function OPTIONS() {
 
 // ================== GET ==================
 export async function GET(req: Request) {
-  await connectToDatabase();
+  await connectToDatabase(); 
 
   try {
     const url = new URL(req.url);

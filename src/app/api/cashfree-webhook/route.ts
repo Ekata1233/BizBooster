@@ -96,9 +96,9 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        leadDoc.leads.push({
+         leadDoc.leads.push({
           statusType: "Payment verified",
-          description: `Payment verified ${payment_amount} Rs via Cashfree`,
+          description: `Payment verified ${payment_amount} Rs (${checkout.isPartialPayment ? "Partial" : "Full"}) via Cashfree`,
           createdAt: new Date(),
         });
 

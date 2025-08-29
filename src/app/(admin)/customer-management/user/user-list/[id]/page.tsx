@@ -18,6 +18,7 @@ import UserWallet from '@/components/user-profile/UserWallet';
 
 const UserDetails = () => {
   const {
+    users,
     fetchSingleUser,
     singleUser,
     singleUserLoading,
@@ -38,7 +39,9 @@ const UserDetails = () => {
       fetchSingleUser(userId);
     }
   }, [userId]);
-console.log("userlist",singleUser);
+console.log("single user",singleUser);
+console.log("user list",users);
+
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
