@@ -22,7 +22,8 @@ import * as XLSX from "xlsx";   // ✅ for Excel download
 import { FaFileDownload } from "react-icons/fa";
 
 // Define the type for the table data
-interface User {
+
+export interface User {
     _id: string;
     id: string;
     image: string;

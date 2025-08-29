@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import FiveXGuarantee from "@/models/FiveXGuarantee";
 import { connectToDatabase } from "@/utils/db";
 
-// POST (create)
+// POST (create or update single entry)
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
@@ -16,12 +16,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const newEntry = await FiveXGuarantee.create({ leadcount, fixearning, months });
+    // ✅ Always keep only one record → update if exists, else create
+    const updatedEntry = await FiveXGuarantee.findOneAndUpdate(
+      {}, // match first (or only) document
+      { leadcount, fixearning, months },
+      { new: true, upsert: true } // update if exists, insert if not
+    );
 
     return NextResponse.json(
       {
-        message: "Saved successfully ✅",
-        data: newEntry,
+        message: "Saved/Updated successfully ✅",
+        data: updatedEntry,
       },
       { status: 201 }
     );
@@ -33,7 +38,7 @@ export async function POST(req: Request) {
   }
 }
 
-// GET (fetch all)
+// GET (fetch all → but only one will exist)
 export async function GET() {
   try {
     await connectToDatabase();

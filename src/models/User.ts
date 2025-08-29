@@ -135,10 +135,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
- packageActivateDate: {
-  type: Date,   // <-- Capital D
-  default: null // or Date.now if you want the current timestamp
-},
+  packageActivateDate: {
+    type: Date,
+    default: null
+  },
+  packageStatus: { type: String, enum: ["nonGP", "GP", "SGP", "PGP"], default: "nonGP" },
 
   favoriteServices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
   favoriteProviders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' }],

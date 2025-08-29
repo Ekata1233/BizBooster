@@ -1,13 +1,10 @@
-
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
-import Module from "@/models/Module";
+import Deposite from "@/models/Deposite";
 import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
@@ -15,6 +12,44 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// ================== GET ==================
+export async function GET(req: Request) {
+  await connectToDatabase(); 
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const deposite = await Deposite.findById(id);
+
+    if (!deposite) {
+      return NextResponse.json(
+        { success: false, message: "Deposite not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: deposite },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+// ================== PUT ==================
 export async function PUT(req: Request) {
   await connectToDatabase();
 
@@ -22,52 +57,41 @@ export async function PUT(req: Request) {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
 
-    const formData = await req.formData();
-
-    console.log("update module : ", formData);
-
-    const name = formData.get("name") as string;
-
-    if (!name || !id) {
+    if (!id) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields." },
+        { success: false, message: "Missing ID parameter." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let imageUrl = "";
-    const file = formData.get("image") as File | null;
+    const body = await req.json();
 
-    if (file && file instanceof File) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    const updates: Record<string, any> = {};
+    if (body.packagePrice != null) updates.packagePrice = Number(body.packagePrice);
+    if (body.monthlyEarnings != null) updates.monthlyEarnings = Number(body.monthlyEarnings);
+    if (body.lockInPeriod != null) updates.lockInPeriod = Number(body.lockInPeriod);
+    if (body.deposite != null) updates.deposite = Number(body.deposite);
+    if (body.user != null) updates.user = body.user;
+    if (body.packageActivateDate != null) updates.packageActivateDate = new Date(body.packageActivateDate);
 
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/banner",
-      });
-
-      imageUrl = uploadResponse.url;
-    }
-
-    const updateData: Record<string, unknown> = {
-      name,
-      isDeleted: false,
-    };
-    if (imageUrl) updateData.image = imageUrl;
-
-    const updatedModule = await Module.findByIdAndUpdate(id, updateData, {
+    const updatedDeposite = await Deposite.findByIdAndUpdate(id, updates, {
       new: true,
+      runValidators: true,
     });
 
+    if (!updatedDeposite) {
+      return NextResponse.json(
+        { success: false, message: "Deposite not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     return NextResponse.json(
-      { success: true, data: updatedModule },
+      { success: true, data: updatedDeposite },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
@@ -75,6 +99,57 @@ export async function PUT(req: Request) {
   }
 }
 
+// ================== PATCH ==================
+export async function PATCH(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const body = await req.json();
+
+    const updates: Record<string, any> = {};
+    if (body.packagePrice != null) updates.packagePrice = Number(body.packagePrice);
+    if (body.monthlyEarnings != null) updates.monthlyEarnings = Number(body.monthlyEarnings);
+    if (body.lockInPeriod != null) updates.lockInPeriod = Number(body.lockInPeriod);
+    if (body.deposite != null) updates.deposite = Number(body.deposite);
+    if (body.user != null) updates.user = body.user;
+    if (body.packageActivateDate != null) updates.packageActivateDate = new Date(body.packageActivateDate);
+
+    const updatedDeposite = await Deposite.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedDeposite) {
+      return NextResponse.json(
+        { success: false, message: "Deposite not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: updatedDeposite },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+}
+
+// ================== DELETE ==================
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
@@ -89,26 +164,24 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deletedModule = await Module.findByIdAndDelete(id);
+    const deletedDeposite = await Deposite.findByIdAndDelete(id);
 
-    if (!deletedModule) {
+    if (!deletedDeposite) {
       return NextResponse.json(
-        { success: false, message: "Module not found" },
+        { success: false, message: "Deposite not found" },
         { status: 404, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: "Module permanently deleted successfully" },
+      { success: true, message: "Deposite permanently deleted" },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message },
       { status: 500, headers: corsHeaders }
     );
   }
 }
-

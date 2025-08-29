@@ -91,7 +91,6 @@ const CouponSchema = new Schema<ICoupon>(
   { timestamps: true }
 );
 
-CouponSchema.index({ couponCode: 1 }, { unique: true });
 CouponSchema.index({ startDate: 1, endDate: 1 });
 CouponSchema.pre('validate', function (next) {
   if (this.discountAmountType === 'Percentage' && this.maxDiscount == null) {
