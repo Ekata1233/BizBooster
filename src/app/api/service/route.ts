@@ -257,7 +257,101 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET all services with optional search by serviceName
+// PAGINATION
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const search = searchParams.get('search');
+//     const category = searchParams.get('category');
+//     const subcategory = searchParams.get('subcategory');
+//     const sort = searchParams.get('sort');
+//     const page = parseInt(searchParams.get("page") || "1", 10); // default page = 1
+//     const limit = parseInt(searchParams.get("limit") || "20", 10); // default limit = 20
+//     const skip = (page - 1) * limit;
+
+//     // Build filter
+//     const filter: Record<string, unknown> = { isDeleted: false };
+
+//     if (search) {
+//       // filter.serviceName = { $regex: search, $options: 'i' };
+//       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
+//     }
+
+//     if (category) {
+//       filter.category = category; // should be ObjectId string
+//     }
+
+//     if (subcategory) {
+//       filter.subcategory = subcategory;
+//     }
+
+//     // Build query
+//     let sortOption: Record<string, 1 | -1> = {};
+
+//     switch (sort) {
+//       case 'latest':
+//         sortOption = { createdAt: -1 };
+//         break;
+//       case 'oldest':
+//         sortOption = { createdAt: 1 };
+//         break;
+//       case 'ascending':
+//         sortOption = { serviceName: 1 };
+//         break;
+//       case 'descending':
+//         sortOption = { serviceName: -1 };
+//         break;
+//       case 'asc':
+//         sortOption = { price: 1 };
+//         break;
+//       case 'desc':
+//         sortOption = { price: -1 };
+//         break;
+//       default:
+//         sortOption = { createdAt: -1 };
+//     }
+
+//      const total = await Service.countDocuments(filter);
+
+//     // Build query with filter and sort
+//     const services = await Service.find(filter)
+//       .populate('category')
+//       .populate('subcategory')
+//       .populate('serviceDetails.whyChoose')
+//       .populate({
+//         path: 'providerPrices.provider',
+//         model: 'Provider',
+//         select: 'fullName storeInfo.storeName storeInfo.logo',
+//       })
+//       .sort(sortOption)
+//        .skip(skip)
+//       .limit(limit)
+//       .exec();
+
+//     return NextResponse.json(
+//       { 
+//          success: true,
+//         page,
+//         limit,
+//         total,
+//         totalPages: Math.ceil(total / limit),
+//         data: services,
+//        },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : 'Unknown error';
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
+
+// NO CHANGE (PRODUCTION LEVEL)
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
@@ -267,9 +361,6 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
-    const page = parseInt(searchParams.get("page") || "1", 10); // default page = 1
-    const limit = parseInt(searchParams.get("limit") || "20", 10); // default limit = 20
-    const skip = (page - 1) * limit;
 
     // Build filter
     const filter: Record<string, unknown> = { isDeleted: false };
@@ -313,8 +404,6 @@ export async function GET(req: NextRequest) {
         sortOption = { createdAt: -1 };
     }
 
-     const total = await Service.countDocuments(filter);
-
     // Build query with filter and sort
     const services = await Service.find(filter)
       .populate('category')
@@ -326,19 +415,10 @@ export async function GET(req: NextRequest) {
         select: 'fullName storeInfo.storeName storeInfo.logo',
       })
       .sort(sortOption)
-       .skip(skip)
-      .limit(limit)
       .exec();
 
     return NextResponse.json(
-      { 
-         success: true,
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        data: services,
-       },
+      { success: true, data: services },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
