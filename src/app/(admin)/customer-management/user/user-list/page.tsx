@@ -57,96 +57,7 @@ interface TableData {
     status: string;
 }
 
-const columns = [
-    {
-        header: "User",
-        accessor: "user",
-        render: (row: TableData) => (
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 overflow-hidden rounded-full">
-                    <Image
-                        width={40}
-                        height={40}
-                        src={(row.user as any).image}
-                        alt={(row.user as any).fullName || "User image"}
-                    />
-                </div>
-                <div>
-                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {(row.user as any).fullName}
-                    </span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        header: "Contact Info",
-        accessor: "contactInfo",
-        render: (row: TableData) => {
-            return (
-                <div className="text-sm text-gray-700">
-                    <div>{row?.email || 'N/A'}</div>
-                    <div>{row?.mobileNumber || 'N/A'}</div>
-                </div>
-            );
-        },
-    },
-    {
-        header: "Referred By",
-        accessor: "referredBy",
-    },
-    {
-        header: "Total Bookings",
-        accessor: "totalBookings",
-    },
-    {
-        header: "Total Earnings",
-        accessor: "totalEarnings",
-    },
-    {
-        header: "Status",
-        accessor: "status",
-        render: (row: TableData) => {
-            const status = row.status;
-            let colorClass = "";
 
-            switch (status) {
-                case "Deleted":
-                    colorClass = "text-red-500 bg-red-100 border border-red-300";
-                    break;
-                case "GP":
-                    colorClass = "text-green-600 bg-green-100 border border-green-300";
-                    break;
-                case "NonGP":
-                    colorClass = "text-yellow-600 bg-yellow-100 border border-yellow-300";
-                    break;
-                default:
-                    colorClass = "text-gray-600 bg-gray-100 border border-gray-300";
-            }
-
-            return (
-                <span className={`px-2 py-1 rounded-full text-xs  ${colorClass}`}>
-                    {status}
-                </span>
-            );
-        },
-    },
-    {
-        header: "Action",
-        accessor: "action",
-        render: (row: TableData) => {
-            return (
-                <div className="flex gap-2">
-                    <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
-                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                            <EyeIcon />
-                        </button>
-                    </Link>
-                </div>
-            )
-        },
-    },
-];
 
 const UserList = () => {
     const { users } = useUserContext();
@@ -157,7 +68,6 @@ const UserList = () => {
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
-
     console.log("user list : ", users)
 
     const options = [
@@ -166,7 +76,106 @@ const UserList = () => {
         { value: "ascending", label: "Ascending" },
         { value: "descending", label: "Descending" },
     ];
+    const columns = [
+        {
+            header: "S.No",
+            accessor: "serial",
+            render: (row: TableData) => {
+                // Find the index of the row in filteredUsers
+                const serial =
+                    filteredUsers.findIndex((u) => u.id === row.id) + 1;
+                return <span>{serial}</span>;
+            },
+        },
+        {
+            header: "User",
+            accessor: "user",
+            render: (row: TableData) => (
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 overflow-hidden rounded-full">
+                        <Image
+                            width={40}
+                            height={40}
+                            src={(row.user as any).image}
+                            alt={(row.user as any).fullName || "User image"}
+                        />
+                    </div>
+                    <div>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                            {(row.user as any).fullName}
+                        </span>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            header: "Contact Info",
+            accessor: "contactInfo",
+            render: (row: TableData) => {
+                return (
+                    <div className="text-sm text-gray-700">
+                        <div>{row?.email || 'N/A'}</div>
+                        <div>{row?.mobileNumber || 'N/A'}</div>
+                    </div>
+                );
+            },
+        },
+        {
+            header: "Referred By",
+            accessor: "referredBy",
+        },
+        {
+            header: "Total Bookings",
+            accessor: "totalBookings",
+        },
+        {
+            header: "Total Earnings",
+            accessor: "totalEarnings",
+        },
+        {
+            header: "Status",
+            accessor: "status",
+            render: (row: TableData) => {
+                const status = row.status;
+                let colorClass = "";
 
+                switch (status) {
+                    case "Deleted":
+                        colorClass = "text-red-500 bg-red-100 border border-red-300";
+                        break;
+                    case "GP":
+                        colorClass = "text-green-600 bg-green-100 border border-green-300";
+                        break;
+                    case "NonGP":
+                        colorClass = "text-yellow-600 bg-yellow-100 border border-yellow-300";
+                        break;
+                    default:
+                        colorClass = "text-gray-600 bg-gray-100 border border-gray-300";
+                }
+
+                return (
+                    <span className={`px-2 py-1 rounded-full text-xs  ${colorClass}`}>
+                        {status}
+                    </span>
+                );
+            },
+        },
+        {
+            header: "Action",
+            accessor: "action",
+            render: (row: TableData) => {
+                return (
+                    <div className="flex gap-2">
+                        <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                                <EyeIcon />
+                            </button>
+                        </Link>
+                    </div>
+                )
+            },
+        },
+    ];
     const fetchFilteredUsers = async () => {
         try {
             const isValidDate = (date: string | null) => {
@@ -355,20 +364,30 @@ const UserList = () => {
                                 onClick={() => setActiveTab('all')}
                             >
                                 All
+                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                    {filteredUsers.length}
+                                </span>
                             </li>
                             <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'gp' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
                                 onClick={() => setActiveTab('gp')}
                             >
                                 GP
+                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                    {filteredUsers.filter((user) => user.status === 'GP').length}
+                                </span>
                             </li>
                             <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'nonGP' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
                                 onClick={() => setActiveTab('nonGP')}
                             >
                                 NonGP
+                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                    {filteredUsers.filter((user) => user.status === 'NonGP').length}
+                                </span>
                             </li>
                         </ul>
+
 
                         {/* ✅ Download Button */}
                         <button
@@ -382,7 +401,7 @@ const UserList = () => {
                     {message ? (
                         <p className="text-red-500 text-center my-4">{message}</p>
                     ) : (
-                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
+                        <BasicTableOne columns={columns} data={[...getFilteredByStatus()].reverse()} />
                     )}
                 </ComponentCard>
             </div>
