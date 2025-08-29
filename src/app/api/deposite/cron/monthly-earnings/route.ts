@@ -56,11 +56,11 @@ export async function GET(req: Request) {
             ) {
                 const depositeData = await Deposite.findOne({ user: user._id }).sort({ createdAt: -1 });
 
-                console.log("depositeData : ",depositeData )
+                console.log("depositeData : ", depositeData)
 
                 // If deposit exists, take its monthlyEarnings, else fallback
                 const amount = depositeData?.monthlyEarnings || 3000;
-                                console.log("amount : ",amount )
+                console.log("amount : ", amount)
 
 
                 if (amount <= 0) continue;
