@@ -14,8 +14,10 @@ export async function GET(req: Request) {
     await connectToDatabase();
     const today = new Date();
 
-    // Only run on 11th
-    if (today.getDate() !== 11) {
+    const forceRun = searchParams.get("forceRun") === "true";
+
+    // Only run on 11th (or if forceRun=true)
+    if (!forceRun && today.getDate() !== 11) {
       return NextResponse.json({ message: "Not 11th today. Skipping." });
     }
 
