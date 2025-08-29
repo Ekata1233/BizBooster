@@ -16,6 +16,8 @@ export async function GET() {
 
     const users = await User.find({ packageActive: true });
 
+    console.log("users data : ", users)
+
     for (const user of users) {
       if (!user.packageActivateDate) continue;
 
