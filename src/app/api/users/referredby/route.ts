@@ -115,7 +115,16 @@ export async function PATCH(req: Request) {
       );
     }
 
-     if (referrer.referredBy?.toString() === user._id.toString()) {
+    if (referrer._id.toString() === user._id.toString()) {
+      return NextResponse.json(
+        { success: false, message: "You cannot use your own referral code." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+
+    if (referrer.referredBy?.toString() === user._id.toString() ||
+    user.referredBy?.toString() === referrer._id.toString()) {
       return NextResponse.json(
         { success: false, message: "Circular referrals are not allowed." },
         { status: 400, headers: corsHeaders }
