@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Pagination from '@/components/tables/Pagination';
+import { FaFileDownload } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 interface Transaction {
   transactionId: string;
@@ -122,27 +124,66 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     },
   ];
 
+  // ✅ Excel download function
+  const handleDownload = () => {
+    const exportData = filteredTransactions.map((row) => ({
+      Date: new Date(row.date).toLocaleString(),
+      TransactionID: row.transactionId,
+      To: row.to,
+      Wallet: row.walletType,
+      Source: row.source,
+      Method: row.method,
+      Type: row.type,
+      Credit: row.credit || "-",
+      Debit: row.debit || "-",
+      Balance: row.balance,
+      Status: row.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, `${activeTab}-transactions`);
+    XLSX.writeFile(workbook, `${activeTab}-transactions.xlsx`);
+  };
+
   return (
     <div className="my-5">
       <ComponentCard title="Transactions">
-        {/* Tabs */}
-        <div className="grid grid-cols-8 gap-2 pt-2 px-4">
-          {tabButtons.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setCurrentPage(1); // reset to first page on tab switch
-                setActiveTab(tab.key);
-              }}
-              className={`w-full px-4 py-2 text-sm font-medium rounded-md border ${
-                activeTab === tab.key
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* ✅ Tabs + Download Button in same row */}
+        <div className="flex justify-between items-center border-b border-gray-200 pb-2 px-4">
+          {/* Tabs */}
+          <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+            {tabButtons.map((tab) => (
+              <li
+                key={tab.key}
+                onClick={() => {
+                  setCurrentPage(1); 
+                  setActiveTab(tab.key);
+                }}
+                className={`cursor-pointer px-4 py-2 ${
+                  activeTab === tab.key
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : ''
+                }`}
+              >
+                {tab.label}
+                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                  {tab.key === 'all'
+                    ? filteredTransactions.length
+                    : transactions.filter((t) => t.type === tab.key).length}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {/* ✅ Download Button */}
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+          >
+            <FaFileDownload className="w-5 h-5" />
+            <span>Download Excel</span>
+          </button>
         </div>
 
         {/* Table */}
