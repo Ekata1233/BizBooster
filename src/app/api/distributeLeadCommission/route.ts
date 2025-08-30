@@ -204,7 +204,7 @@ export async function POST(req: Request) {
             adminShare += C_share;
         }
 
-        if (userB) {
+        if (userB && !userB.isDeleted) {
             await creditWallet(userB._id, B_share, "Team Revenue Share 2", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -213,7 +213,7 @@ export async function POST(req: Request) {
             });
         }
 
-        if (userA) {
+        if (userA && !userA.isDeleted) {
             await creditWallet(userA._id, A_share, "Team Revenue Share 3", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
