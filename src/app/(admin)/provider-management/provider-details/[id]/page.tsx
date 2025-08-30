@@ -87,6 +87,7 @@ interface Provider {
   updatedAt: string;
   isDeleted?: boolean;
   isVerified?: boolean;
+  providerId: string;
 }
 
 export interface TableData {
@@ -196,13 +197,15 @@ const ProviderDetailsPage = () => {
       <div className="space-y-6">
         <div className="">
           <UserMetaCard
-          userId={provider._id}
+            userId={provider._id}
             imageSrc={provider.storeInfo?.logo || "/images/logo/default-provider.webp"}
             name={provider.fullName || provider.storeInfo?.storeName || "No Name"}
             role={provider.email}
             location={provider.storeInfo?.address || "No address provided"}
             isCommissionDistribute={false}
             isToggleButton={false}
+            franchiseId={provider.providerId}
+
           />
         </div>
 

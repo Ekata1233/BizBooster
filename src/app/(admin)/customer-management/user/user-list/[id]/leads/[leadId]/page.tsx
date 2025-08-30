@@ -16,16 +16,16 @@ const UserDetails = () => {
     singleUserLoading,
     singleUserError,
   } = useUserContext();
-  
+
   const params = useParams();
   const userId = params?.id as string;
   const leadUserId = params?.leadId as string;
-  
+
   console.log("leadUserId Id : ", leadUserId);
-  console.log("all users",users);
-  
+  console.log("all users", users);
+
   const [activeTab, setActiveTab] = useState('selfLead');
-  
+
   useEffect(() => {
     if (leadUserId) {
       fetchSingleUser(leadUserId);
@@ -44,9 +44,9 @@ const UserDetails = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="User Details" />
-      
+
       <div className="space-y-6">
-        <UserMetaCard 
+        <UserMetaCard
           userId={singleUser._id}
           imageSrc="/images/logo/user1.webp"
           name={singleUser.fullName}
@@ -54,38 +54,39 @@ const UserDetails = () => {
           location="Amanora Chember, Hadapsar, Pune"
           isCommissionDistribute={singleUser.isCommissionDistribute}
           isToggleButton={false}
+          franchiseId={singleUser.userId}
+
         />
-        
+
         {/* Tabs */}
         <div className="grid grid-cols-7 gap-2 pt-2">
           {tabButtons.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`w-full px-4 py-2 text-sm font-medium rounded-md border ${
-                activeTab === tab.key 
-                  ? 'bg-blue-600 text-white border-blue-600' 
+              className={`w-full px-4 py-2 text-sm font-medium rounded-md border ${activeTab === tab.key
+                  ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        
+
         {/* Tab content */}
         <div className="space-y-6 pt-4">
           {activeTab === 'selfLead' && (
-            <SelfLeadTable 
-              userId={leadUserId || ' '} 
-              isAction={true} 
+            <SelfLeadTable
+              userId={leadUserId || ' '}
+              isAction={true}
             />
           )}
-          
+
           {activeTab === 'teamLead' && (
-            <TeamLeadTable 
-              userId={leadUserId || ' '} 
-              isAction={true} 
+            <TeamLeadTable
+              userId={leadUserId || ' '}
+              isAction={true}
             />
           )}
         </div>

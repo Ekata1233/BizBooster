@@ -26,6 +26,8 @@ export default function Profile() {
             location="Amanora Chember, Hadapsar, Pune"
             isCommissionDistribute={false}
             isToggleButton={false}
+            franchiseId={"Fetch_True_001"}
+
           />
           <UserInfoCard
             fullName="BizBooster Admin"
