@@ -65,22 +65,22 @@ const summaryCards = useMemo(() => {
             title: "Lead Earnings",
             amount: `₹${leadEarningsTotal.toLocaleString()}`,
             icon: <FaWallet />,
-            gradient: "from-green-100 to-green-200",
-            textColor: "text-green-800",
+            gradient: "from-yellow-100 to-yellow-200",
+            textColor: "text-yellow-800",
         },
         {
             title: "Package Earnings",
             amount: `₹${packageEarningsTotal.toLocaleString()}`,
             icon: <FaMoneyBillWave />,
-            gradient: "from-blue-100 to-blue-200",
-            textColor: "text-blue-800",
+            gradient: "from-purple-100 to-purple-200",
+            textColor: "text-purple-800",
         },
         {
             title: "Deposite Collections",
             amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
             icon: <FaMoneyBillWave />,
-            gradient: "from-red-100 to-red-200",
-            textColor: "text-red-800",
+            gradient: "from-teal-100 to-teal-200",
+            textColor: "text-teal-800",
         },
     ];
 }, [wallet]);
