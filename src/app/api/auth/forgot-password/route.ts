@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     const { email, mobileNumber, newPassword } = await req.json();
+    console.log("new mobileNumber : ", mobileNumber)
 
     console.log("new password : ", newPassword)
 
@@ -28,8 +29,13 @@ export async function POST(req: Request) {
     }
 
     const user = await User.findOne({
-      $or: [{ email }, { mobileNumber }],
+      $and: [
+        { isDeleted: false },
+        { $or: [{ email }, { mobileNumber: Number(mobileNumber) }] }
+      ]
     });
+
+
 
     if (!user) {
       return NextResponse.json({ error: "User not found." }, { status: 404, headers: corsHeaders });
