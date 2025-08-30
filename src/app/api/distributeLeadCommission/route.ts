@@ -49,7 +49,7 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("checkout details in lead : ",checkout)
+        console.log("checkout details in lead : ", checkout)
         const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
 
         console.log("raw commission : ", rawCommission)
@@ -130,8 +130,16 @@ export async function POST(req: Request) {
         console.log("A_share commission : ", A_share);
         console.log("adminShare commission : ", adminShare);
 
-        if (!userB) adminShare += B_share;
-        if (!userA) adminShare += A_share;
+        // if (!userB) adminShare += B_share;
+        // if (!userA) adminShare += A_share;
+
+        if (!userB || userB.isDeleted) {
+            adminShare += B_share;
+        }
+        if (!userA || userA.isDeleted) {
+            adminShare += A_share;
+        }
+
 
         const creditWallet = async (
             userId: Types.ObjectId,
@@ -307,8 +315,11 @@ export async function POST(req: Request) {
             console.log("extra A_share commission : ", extra_A_share);
             console.log("extra adminShare commission : ", extra_adminShare);
 
-            if (!userB) extra_adminShare += extra_B_share;
-            if (!userA) extra_adminShare += extra_A_share;
+            // if (!userB) extra_adminShare += extra_B_share;
+            // if (!userA) extra_adminShare += extra_A_share;
+
+            if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
+            if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
 
             if (userC?.packageActive) {
                 await creditWallet(userC._id, extra_C_share, "Self Earning Share 1 (Add On Service)", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
