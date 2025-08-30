@@ -6,6 +6,8 @@ import Pagination from "@/components/tables/Pagination";
 import { useUserWallet } from "@/context/WalletContext";
 import React, { useEffect, useMemo, useState } from "react";
 import { FaMoneyBillWave, FaWallet } from "react-icons/fa";
+import { FaFileDownload } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const Page = () => {
     const userId = "444c44d4444be444d4444444";
@@ -91,6 +93,27 @@ const Page = () => {
         createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
     }));
 
+    // ✅ Excel download function
+    const handleDownload = () => {
+        if (!wallet?.transactions) return;
+
+        const exportData = filteredTransactions.map((txn) => ({
+            Type: txn.type,
+            Amount: txn.amount,
+            Description: txn.description,
+            LeadID: txn.leadId,
+            CommissionFrom: txn.commissionFrom,
+            Method: txn.method,
+            Status: txn.status,
+            Date: new Date(txn.createdAt).toLocaleString(),
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, `${activeTab}-wallet`);
+        XLSX.writeFile(workbook, `${activeTab}-wallet.xlsx`);
+    };
+
     return (
         <div>
             <ComponentCard title="Wallet">
@@ -123,23 +146,40 @@ const Page = () => {
                     </div>
                 ) : (
                     <>
-                        {/* Tabs */}
-                        <div className="flex gap-2 mb-4">
-                            {["all", "credit", "debit"].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => {
-                                        setActiveTab(tab as "all" | "credit" | "debit");
-                                        setCurrentPage(1); // Reset to first page
-                                    }}
-                                    className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${activeTab === tab
-                                            ? "bg-blue-600 text-white border-blue-600"
-                                            : "bg-white text-gray-700 border-gray-100 hover:bg-blue-50"
+                        {/* ✅ Tabs + Download Button */}
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
+                            <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+                                {["all"].map((tab) => (
+                                    <li
+                                        key={tab}
+                                        onClick={() => {
+                                            setActiveTab(tab as "all" | "credit" | "debit");
+                                            setCurrentPage(1);
+                                        }}
+                                        className={`cursor-pointer px-4 py-2 ${
+                                            activeTab === tab
+                                                ? "border-b-2 border-blue-600 text-blue-600"
+                                                : ""
                                         }`}
-                                >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                </button>
-                            ))}
+                                    >
+                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                            {tab === "all"
+                                                ? wallet.transactions.length
+                                                : wallet.transactions.filter((txn) => txn.type === tab).length}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {/* Download Button */}
+                            <button
+                                onClick={handleDownload}
+                                className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                            >
+                                <FaFileDownload className="w-5 h-5" />
+                                <span>Download Excel</span>
+                            </button>
                         </div>
 
                         {/* Transactions Table */}
