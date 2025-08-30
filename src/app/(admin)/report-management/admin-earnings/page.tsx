@@ -43,7 +43,28 @@ const Page = () => {
             textColor: "text-blue-800",
         },
         {
-            title: "Total Debits",
+            title: "Extra Fee",
+            amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
+            icon: <FaMoneyBillWave />,
+            gradient: "from-red-100 to-red-200",
+            textColor: "text-red-800",
+        },
+         {
+            title: "Lead Earnings",
+            amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
+            icon: <FaWallet />,
+            gradient: "from-green-100 to-green-200",
+            textColor: "text-green-800",
+        },
+        {
+            title: "Package Earnings",
+            amount: `₹${wallet?.totalCredits?.toLocaleString() || 0}`,
+            icon: <FaMoneyBillWave />,
+            gradient: "from-blue-100 to-blue-200",
+            textColor: "text-blue-800",
+        },
+        {
+            title: "Deposite Collections",
             amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
             icon: <FaMoneyBillWave />,
             gradient: "from-red-100 to-red-200",
@@ -92,7 +113,8 @@ const Page = () => {
         status: txn.status || "-",
         createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
     }));
-
+    console.log("Transaction data :", transactionData);
+    
     // ✅ Excel download function
     const handleDownload = () => {
         if (!wallet?.transactions) return;
