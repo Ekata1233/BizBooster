@@ -223,7 +223,7 @@ const transactionData = currentRows.map((txn, index) => {
                         {/* Tabs + Download */}
                         <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                             <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                                {["all", "package", "lead", "deposit"].map((tab) => (
+                                {["all", "lead", "package", "deposit"].map((tab) => (
                                     <li
                                         key={tab}
                                         onClick={() => {
