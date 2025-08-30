@@ -3,6 +3,7 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
+import { useCheckout } from "@/context/CheckoutContext";
 import { useUserWallet } from "@/context/WalletContext";
 import React, { useEffect, useMemo, useState } from "react";
 import { FaMoneyBillWave, FaWallet } from "react-icons/fa";
@@ -12,8 +13,11 @@ import * as XLSX from "xlsx";
 const Page = () => {
     const userId = "444c44d4444be444d4444444";
     const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
+    const { checkouts } = useCheckout();
 
-    const [activeTab, setActiveTab] = useState<"all" | "credit" | "debit">("all");
+    const [activeTab, setActiveTab] = useState<
+        "all" | "credit" | "debit" | "package" | "lead" | "deposit"
+    >("all");
     const [currentPage, setCurrentPage] = useState(1);
 
     const rowsPerPage = 10;
@@ -24,43 +28,100 @@ const Page = () => {
         }
     }, [userId]);
 
-    const isWalletAvailable = !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
+    const isWalletAvailable =
+        !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
 
-    // Summary Cards
-    const summaryCards = useMemo(() => [
-        {
-            title: "Balance",
-            amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
-            icon: <FaWallet />,
-            gradient: "from-green-100 to-green-200",
-            textColor: "text-green-800",
-        },
-        {
-            title: "Total Credits",
-            amount: `₹${wallet?.totalCredits?.toLocaleString() || 0}`,
-            icon: <FaMoneyBillWave />,
-            gradient: "from-blue-100 to-blue-200",
-            textColor: "text-blue-800",
-        },
-        {
-            title: "Total Debits",
-            amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
-            icon: <FaMoneyBillWave />,
-            gradient: "from-red-100 to-red-200",
-            textColor: "text-red-800",
-        },
-    ], [wallet]);
+    // ✅ Summary Cards
+    const summaryCards = useMemo(() => {
+        const packageEarningsTotal =
+            wallet?.transactions
+                ?.filter(
+                    (txn) => txn.description?.trim() === "Team Build Commission - Admin"
+                )
+                .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
-    // Filter transactions by tab
+        const leadEarningsTotal =
+            wallet?.transactions
+                ?.filter((txn) => txn.description?.trim() === "Team Revenue - Admin")
+                .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+
+        const depositTotal =
+            wallet?.transactions
+                ?.filter((txn) => txn.description?.trim() === "Deposit")
+                .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+
+        return [
+            {
+                title: "Balance",
+                amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
+                icon: <FaWallet />,
+                gradient: "from-green-100 to-green-200",
+                textColor: "text-green-800",
+            },
+            {
+                title: "Total Credits",
+                amount: `₹${wallet?.totalCredits?.toLocaleString() || 0}`,
+                icon: <FaMoneyBillWave />,
+                gradient: "from-blue-100 to-blue-200",
+                textColor: "text-blue-800",
+            },
+            {
+                title: "Extra Fee",
+                amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
+                icon: <FaMoneyBillWave />,
+                gradient: "from-red-100 to-red-200",
+                textColor: "text-red-800",
+            },
+            {
+                title: "Lead Earnings",
+                amount: `₹${leadEarningsTotal.toLocaleString()}`,
+                icon: <FaWallet />,
+                gradient: "from-yellow-100 to-yellow-200",
+                textColor: "text-yellow-800",
+            },
+            {
+                title: "Package Earnings",
+                amount: `₹${packageEarningsTotal.toLocaleString()}`,
+                icon: <FaMoneyBillWave />,
+                gradient: "from-purple-100 to-purple-200",
+                textColor: "text-purple-800",
+            },
+            {
+                title: "Deposite Collections",
+                amount: `₹${depositTotal.toLocaleString()}`,
+                icon: <FaMoneyBillWave />,
+                gradient: "from-teal-100 to-teal-200",
+                textColor: "text-teal-800",
+            },
+        ];
+    }, [wallet]);
+
+    // ✅ Filter + reverse transactions
     const filteredTransactions = useMemo(() => {
         if (!wallet?.transactions) return [];
-        let txns =
-        activeTab === "all"
-            ? wallet.transactions
-            : wallet.transactions.filter((txn) => txn.type === activeTab);
 
-    // ✅ Reverse to show latest first
-    return [...txns].reverse();
+        let txns: typeof wallet.transactions = [];
+
+        if (activeTab === "all") {
+            txns = wallet.transactions;
+        } else if (activeTab === "credit" || activeTab === "debit") {
+            txns = wallet.transactions.filter((txn) => txn.type === activeTab);
+        } else if (activeTab === "package") {
+            txns = wallet.transactions.filter(
+                (txn) => txn.description?.trim() === "Team Build Commission - Admin"
+            );
+        } else if (activeTab === "lead") {
+            txns = wallet.transactions.filter(
+                (txn) => txn.description?.trim() === "Team Revenue - Admin"
+            );
+        } else if (activeTab === "deposit") {
+            txns = wallet.transactions.filter(
+                (txn) => txn.description?.trim() === "Deposit"
+            );
+        }
+
+        // ✅ Reverse order so newest is first
+        return [...txns].reverse();
     }, [wallet, activeTab]);
 
     // Pagination
@@ -69,8 +130,9 @@ const Page = () => {
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = filteredTransactions.slice(indexOfFirstRow, indexOfLastRow);
 
-    // Table columns
+    // ✅ Table columns (with Serial No)
     const columnsWallet = [
+        { header: "S.No", accessor: "serial" },
         { header: "Type", accessor: "type" },
         { header: "Amount", accessor: "amount" },
         { header: "Description", accessor: "description" },
@@ -81,8 +143,17 @@ const Page = () => {
         { header: "Date", accessor: "createdAt" },
     ];
 
-    // Table data
-    const transactionData = currentRows.map((txn) => ({
+    // ✅ Table data with serial numbers
+  // ✅ Table data with serial numbers in reverse
+const transactionData = currentRows.map((txn, index) => {
+    // Calculate global index
+    const globalIndex = (currentPage - 1) * rowsPerPage + index;
+
+    // ✅ Serial number reversed
+    const serial = filteredTransactions.length - globalIndex;
+
+    return {
+        serial,
         type: txn.type || "-",
         amount: `₹${txn.amount?.toLocaleString() || 0}`,
         description: txn.description || "-",
@@ -91,13 +162,16 @@ const Page = () => {
         method: txn.method || "-",
         status: txn.status || "-",
         createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
-    }));
+    };
+});
 
-    // ✅ Excel download function
+
+    // ✅ Excel download
     const handleDownload = () => {
         if (!wallet?.transactions) return;
 
-        const exportData = filteredTransactions.map((txn) => ({
+        const exportData = filteredTransactions.map((txn, index) => ({
+            "S.No": index + 1,
             Type: txn.type,
             Amount: txn.amount,
             Description: txn.description,
@@ -146,14 +220,22 @@ const Page = () => {
                     </div>
                 ) : (
                     <>
-                        {/* ✅ Tabs + Download Button */}
+                        {/* Tabs + Download */}
                         <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                             <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                                {["all"].map((tab) => (
+                                {["all", "lead", "package", "deposit"].map((tab) => (
                                     <li
                                         key={tab}
                                         onClick={() => {
-                                            setActiveTab(tab as "all" | "credit" | "debit");
+                                            setActiveTab(
+                                                tab as
+                                                    | "all"
+                                                    | "credit"
+                                                    | "debit"
+                                                    | "package"
+                                                    | "lead"
+                                                    | "deposit"
+                                            );
                                             setCurrentPage(1);
                                         }}
                                         className={`cursor-pointer px-4 py-2 ${
@@ -162,17 +244,41 @@ const Page = () => {
                                                 : ""
                                         }`}
                                     >
-                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                        {tab === "package"
+                                            ? "Package Earnings"
+                                            : tab === "lead"
+                                            ? "Lead Earnings"
+                                            : tab === "deposit"
+                                            ? "Deposit Collections"
+                                            : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                         <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                                             {tab === "all"
                                                 ? wallet.transactions.length
-                                                : wallet.transactions.filter((txn) => txn.type === tab).length}
+                                                : tab === "package"
+                                                ? wallet.transactions.filter(
+                                                      (txn) =>
+                                                          txn.description ===
+                                                          "Team Build Commission - Admin"
+                                                  ).length
+                                                : tab === "lead"
+                                                ? wallet.transactions.filter(
+                                                      (txn) =>
+                                                          txn.description ===
+                                                          "Team Revenue - Admin"
+                                                  ).length
+                                                : tab === "deposit"
+                                                ? wallet.transactions.filter(
+                                                      (txn) =>
+                                                          txn.description === "Deposit"
+                                                  ).length
+                                                : wallet.transactions.filter(
+                                                      (txn) => txn.type === tab
+                                                  ).length}
                                         </span>
                                     </li>
                                 ))}
                             </ul>
 
-                            {/* Download Button */}
                             <button
                                 onClick={handleDownload}
                                 className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
@@ -196,7 +302,10 @@ const Page = () => {
                             </div>
                         ) : (
                             <>
-                                <BasicTableOne columns={columnsWallet} data={transactionData} />
+                                <BasicTableOne
+                                    columns={columnsWallet}
+                                    data={transactionData}
+                                />
                                 <div className="flex justify-center mt-4">
                                     <Pagination
                                         currentPage={currentPage}
