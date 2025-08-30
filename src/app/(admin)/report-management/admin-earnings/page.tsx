@@ -13,7 +13,7 @@ const Page = () => {
     const userId = "444c44d4444be444d4444444";
     const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
 
-    const [activeTab, setActiveTab] = useState<"all" | "credit" | "debit">("all");
+    const [activeTab, setActiveTab] = useState<"all" | "credit" | "debit" | "package" | "lead">("all");
     const [currentPage, setCurrentPage] = useState(1);
 
     const rowsPerPage = 10;
@@ -24,10 +24,22 @@ const Page = () => {
         }
     }, [userId]);
 
-    const isWalletAvailable = !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
+    const isWalletAvailable =
+        !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
 
     // Summary Cards
-    const summaryCards = useMemo(() => [
+   // Summary Cards
+const summaryCards = useMemo(() => {
+    // ✅ Calculate totals for package & lead earnings
+    const packageEarningsTotal = wallet?.transactions
+        ?.filter((txn) => txn.description?.trim() === "Team Build Commission - Admin")
+        .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+
+    const leadEarningsTotal = wallet?.transactions
+        ?.filter((txn) => txn.description?.trim() === "Team Revenue - Admin")
+        .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+
+    return [
         {
             title: "Balance",
             amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
@@ -49,16 +61,16 @@ const Page = () => {
             gradient: "from-red-100 to-red-200",
             textColor: "text-red-800",
         },
-         {
+        {
             title: "Lead Earnings",
-            amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
+            amount: `₹${leadEarningsTotal.toLocaleString()}`,
             icon: <FaWallet />,
             gradient: "from-green-100 to-green-200",
             textColor: "text-green-800",
         },
         {
             title: "Package Earnings",
-            amount: `₹${wallet?.totalCredits?.toLocaleString() || 0}`,
+            amount: `₹${packageEarningsTotal.toLocaleString()}`,
             icon: <FaMoneyBillWave />,
             gradient: "from-blue-100 to-blue-200",
             textColor: "text-blue-800",
@@ -70,19 +82,35 @@ const Page = () => {
             gradient: "from-red-100 to-red-200",
             textColor: "text-red-800",
         },
-    ], [wallet]);
+    ];
+}, [wallet]);
+
 
     // Filter transactions by tab
-    const filteredTransactions = useMemo(() => {
-        if (!wallet?.transactions) return [];
-        let txns =
-        activeTab === "all"
-            ? wallet.transactions
-            : wallet.transactions.filter((txn) => txn.type === activeTab);
+   // Filter transactions by tab
+const filteredTransactions = useMemo(() => {
+    if (!wallet?.transactions) return [];
+
+    let txns: typeof wallet.transactions = [];
+
+    if (activeTab === "all") {
+        txns = wallet.transactions;
+    } else if (activeTab === "credit" || activeTab === "debit") {
+        txns = wallet.transactions.filter((txn) => txn.type === activeTab);
+    } else if (activeTab === "package") {
+        txns = wallet.transactions.filter(
+            (txn) => txn.description?.trim() === "Team Build Commission - Admin"
+        );
+    } else if (activeTab === "lead") {
+        txns = wallet.transactions.filter(
+            (txn) => txn.description?.trim() === "Team Revenue - Admin"
+        );
+    }
 
     // ✅ Reverse to show latest first
     return [...txns].reverse();
-    }, [wallet, activeTab]);
+}, [wallet, activeTab]);
+
 
     // Pagination
     const totalPages = Math.ceil(filteredTransactions.length / rowsPerPage);
@@ -114,7 +142,7 @@ const Page = () => {
         createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
     }));
     console.log("Transaction data :", transactionData);
-    
+
     // ✅ Excel download function
     const handleDownload = () => {
         if (!wallet?.transactions) return;
@@ -171,11 +199,13 @@ const Page = () => {
                         {/* ✅ Tabs + Download Button */}
                         <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                             <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                                {["all"].map((tab) => (
+                                {["all", "package", "lead"].map((tab) => (
                                     <li
                                         key={tab}
                                         onClick={() => {
-                                            setActiveTab(tab as "all" | "credit" | "debit");
+                                            setActiveTab(
+                                                tab as "all" | "credit" | "debit" | "package" | "lead"
+                                            );
                                             setCurrentPage(1);
                                         }}
                                         className={`cursor-pointer px-4 py-2 ${
@@ -184,11 +214,29 @@ const Page = () => {
                                                 : ""
                                         }`}
                                     >
-                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                        {tab === "package"
+                                            ? "Package Earnings"
+                                            : tab === "lead"
+                                            ? "Lead Earnings"
+                                            : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                         <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                                             {tab === "all"
                                                 ? wallet.transactions.length
-                                                : wallet.transactions.filter((txn) => txn.type === tab).length}
+                                                : tab === "package"
+                                                ? wallet.transactions.filter(
+                                                      (txn) =>
+                                                          txn.description ===
+                                                          "Team Build Commission - Admin"
+                                                  ).length
+                                                : tab === "lead"
+                                                ? wallet.transactions.filter(
+                                                      (txn) =>
+                                                          txn.description ===
+                                                          "Team Revenue - Admin"
+                                                  ).length
+                                                : wallet.transactions.filter(
+                                                      (txn) => txn.type === tab
+                                                  ).length}
                                         </span>
                                     </li>
                                 ))}
