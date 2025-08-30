@@ -21,7 +21,8 @@ const Page = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const rowsPerPage = 10;
-
+    console.log("All Checkouts : ",checkouts);
+    
     useEffect(() => {
         if (userId) {
             fetchWalletByUser(userId);

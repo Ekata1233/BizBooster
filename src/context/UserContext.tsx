@@ -41,6 +41,7 @@ export interface User {
   workAddress?: Address;
   otherAddress?: Address;
   addressCompleted?: boolean;
+  userId: string;
 }
 
 interface UserContextType {

@@ -7,7 +7,7 @@ import Wallet from "@/models/Wallet";
 import { Types } from "mongoose";
 import { Package } from "@/models/Package";
 import AdminEarnings from "@/models/AdminEarnings";
-import Deposite from "@/models/Deposite";   // ✅ added import
+import Deposite from "@/models/Deposite";
 import { checkAndUpdateReferralStatus } from "@/utils/packageStatus";
 
 // Enable CORS
@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { userId } = body;
 
-        console.log("user id : ", userId)
 
         const user = await User.findById(userId);
         if (!user) {
@@ -50,7 +49,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        console.log("pakcage price : ", pkg)
 
         // const packagePrice = pkg.grandtotal;
         const packagePrice = user.packagePrice && user.packagePrice > 0
@@ -64,7 +62,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        console.log("packages ", pkg);
 
         const userC = await User.findById(userId);
         if (!userC) throw new Error("User not found");
@@ -92,11 +89,24 @@ export async function POST(req: NextRequest) {
         const baseLevel1 = pkgCommission.level1Commission || 0;
         const baseLevel2 = pkgCommission.level2Commission || 0;
 
-        if (userB) level1Amount = baseLevel1;
-        else adminAmount += baseLevel1;
+        // if (userB) level1Amount = baseLevel1;
+        // else adminAmount += baseLevel1;
 
-        if (userA) level2Amount = baseLevel2;
-        else adminAmount += baseLevel2;
+        // if (userA) level2Amount = baseLevel2;
+        // else adminAmount += baseLevel2;
+
+        if (userB && !userB.isDeleted) {
+            level1Amount = baseLevel1;
+        } else {
+            adminAmount += baseLevel1; // userB missing or deleted
+        }
+
+        if (userA && !userA.isDeleted) {
+            level2Amount = baseLevel2;
+        } else {
+            adminAmount += baseLevel2; // userA missing or deleted
+        }
+
 
         adminAmount += packagePrice - (baseLevel1 + baseLevel2);
 
@@ -105,7 +115,7 @@ export async function POST(req: NextRequest) {
             amount: number,
             description: string,
             referenceId?: string,
-            level?: "A" | "B" | "C",
+            level?: "A" | "B" | "C" | "Admin",
             leadId?: string,
             commissionFrom?: string
         ) => {
@@ -149,7 +159,7 @@ export async function POST(req: NextRequest) {
         };
 
         // distribute commissions
-        if (userB && level1Amount > 0) {
+        if (userB && !userB.isDeleted && level1Amount > 0) {
             await creditWallet(userB._id, level1Amount, "Team Build Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
             await ReferralCommission.create({ fromLead: userC._id, receiver: userB._id, amount: level1Amount });
         }
@@ -159,9 +169,42 @@ export async function POST(req: NextRequest) {
             await ReferralCommission.create({ fromLead: userC._id, receiver: userA._id, amount: level2Amount });
         }
 
-        if (adminAmount > 0) {
-            await creditWallet(ADMIN_ID, adminAmount, "Team Build Commission - Admin", "-", userC.userId || userC._id);
-            await ReferralCommission.create({ fromLead: userC._id, receiver: ADMIN_ID, amount: adminAmount });
+        const adminDeposit = pkg.deposit;
+        const adminTeamBuildCommission =
+            (pkg.discountedPrice || 0) - (level1Amount + level2Amount);
+
+        console.log("level1Amount : ", level1Amount)
+        console.log("level2Amount : ", level2Amount)
+        console.log("depostie : ", adminDeposit)
+        console.log("adminTeamBuildCommission : ", adminTeamBuildCommission)
+
+        if (adminDeposit > 0) {
+            await creditWallet(
+                ADMIN_ID,
+                adminDeposit,
+                "Deposit", userId, "Admin", "-",
+                userC.userId || userC._id
+            );
+            await ReferralCommission.create({
+                fromLead: userC._id,
+                receiver: ADMIN_ID,
+                amount: adminDeposit,
+            });
+        }
+
+        // Remaining discountedPrice after userA & userB commissions
+        if (adminTeamBuildCommission > 0) {
+            await creditWallet(
+                ADMIN_ID,
+                adminTeamBuildCommission,
+                "Team Build Commission - Admin", userId, "Admin", "-",
+                userC.userId || userC._id
+            );
+            await ReferralCommission.create({
+                fromLead: userC._id,
+                receiver: ADMIN_ID,
+                amount: adminTeamBuildCommission,
+            });
         }
 
         const todayDate = new Date().toISOString().split("T")[0];
@@ -198,7 +241,7 @@ export async function POST(req: NextRequest) {
         userC.isCommissionDistribute = true;
         await userC.save();
 
-         await checkAndUpdateReferralStatus(userId);
+        await checkAndUpdateReferralStatus(userId);
 
         return NextResponse.json(
             { success: true, message: "Package commission distributed & deposit saved successfully." },

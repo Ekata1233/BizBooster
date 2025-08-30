@@ -69,10 +69,11 @@ console.log("user list",users);
           imageSrc="/images/logo/user1.webp"
           name={singleUser.fullName}
           role={singleUser.email}
-          location="Amanora Chember, Hadapsar, Pune"
+          location={singleUser?.homeAddress?.fullAddress || singleUser?.workAddress?.fullAddress || "No Address"}
           userId={singleUser._id}
           isCommissionDistribute={singleUser.isCommissionDistribute}
           isToggleButton={true}
+          franchiseId={singleUser.userId}
         />
 
         {/* Tabs */}
@@ -99,7 +100,7 @@ console.log("user list",users);
               email={singleUser.email}
               phone={singleUser.mobileNumber}
               referralCode={singleUser.referralCode || ' '}
-              address="Amanora Chember, Hadapsar, Pune"
+              address={singleUser?.homeAddress?.fullAddress || singleUser?.workAddress?.fullAddress || "No Address"}
             />
           )}
 

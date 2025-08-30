@@ -82,7 +82,7 @@ export async function GET() {
     wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
       transactionId: txn.referenceId ||
         (wallet.userId
-          ? `U-${wallet.userId._id}-${txn.createdAt.getTime()}`
+          ? `${wallet.userId._id}-${txn.createdAt.getTime()}`
           : `U-unknown-${txn.createdAt.getTime()}`),
       walletType: 'User',
       to: wallet.userId
@@ -103,7 +103,7 @@ export async function GET() {
     wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({
       transactionId: txn.referenceId ||
         (wallet.providerId
-          ? `P-${wallet.providerId._id}-${txn.createdAt.getTime()}`
+          ? `${wallet.providerId._id}-${txn.createdAt.getTime()}`
           : `P-unknown-${txn.createdAt.getTime()}`),
       walletType: 'Provider',
       to: wallet.providerId
