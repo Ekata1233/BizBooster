@@ -3,6 +3,7 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
+import { useCheckout } from "@/context/CheckoutContext";
 import { useUserWallet } from "@/context/WalletContext";
 import React, { useEffect, useMemo, useState } from "react";
 import { FaMoneyBillWave, FaWallet } from "react-icons/fa";
@@ -12,12 +13,16 @@ import * as XLSX from "xlsx";
 const Page = () => {
     const userId = "444c44d4444be444d4444444";
     const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
+    const {checkouts}=useCheckout()
 
     const [activeTab, setActiveTab] = useState<"all" | "credit" | "debit" | "package" | "lead">("all");
     const [currentPage, setCurrentPage] = useState(1);
 
     const rowsPerPage = 10;
-
+    console.log("All Checkouts : ",checkouts);
+    console.log("Wallet :",wallet);
+    
+    
     useEffect(() => {
         if (userId) {
             fetchWalletByUser(userId);
