@@ -201,7 +201,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
             header: 'Action',
             accessor: 'action',
             render: (row: TeamLeadData) => (
-              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}`} passHref>
+              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}/subleads/${row.id}`} passHref>
                 <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                   <EyeIcon />
                 </button>
