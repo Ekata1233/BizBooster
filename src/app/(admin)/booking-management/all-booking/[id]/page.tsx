@@ -18,7 +18,8 @@ const AllBookingsDetails = () => {
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
-
+  console.log("checkout details : ",checkoutDetails);
+  
 
   const {
     fetchServiceCustomer,

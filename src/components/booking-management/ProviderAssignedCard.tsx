@@ -46,7 +46,7 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
     }
     setLoading(false);
   };
-  
+
   const handleAssign = async () => {
     if (!providerId) {
       alert('Please select a provider');
@@ -65,7 +65,7 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
       setLoading(false);
     }
   };
-  console.log("Provider card ",providers);
+  console.log("Provider card ", providers);
 
   const displayedProviders = showAll ? providers : providers.slice(0, 2);
 
@@ -111,10 +111,10 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
                 className="form-checkbox h-5 w-5 text-blue-600"
               />
               <img
-  src={provider?.storeInfo?.logo || "/default-profile.png"}
-  alt={provider.fullName}
-  className="w-14 h-12 rounded-full object-cover border border-gray-300"
-/>
+                src={provider?.storeInfo?.logo || "/default-profile.png"}
+                alt={provider.fullName}
+                className="w-14 h-12 rounded-full object-cover border border-gray-300"
+              />
 
             </div>
             <div className="space-y-1">

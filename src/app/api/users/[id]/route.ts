@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
     const user = await User.findById(id);
 
-    if (!user || user.isDeleted) {
+    if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
         { status: 404, headers: corsHeaders }
