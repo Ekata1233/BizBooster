@@ -68,7 +68,7 @@ export const EcommerceMetrics = () => {
       />
       <MetricCard
         title="Total Revenue"
-        value={`₹${summary.totalRevenue.toLocaleString("en-IN")}`}
+        value={`₹${(summary?.totalRevenue ?? 0).toLocaleString("en-IN")}`}
         trend="up"
         percentChange=""
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}

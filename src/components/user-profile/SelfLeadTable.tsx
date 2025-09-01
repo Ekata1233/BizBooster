@@ -49,6 +49,9 @@ const columnsSelfLead = [
         case "ongoing":
           color = "bg-blue-100 text-blue-600 border-blue-300";
           break;
+        case "Accepted":
+          color = "bg-blue-100 text-blue-600 border-blue-300";
+          break;
         case "cancelled":
           color = "bg-red-100 text-red-600 border-red-300";
           break;
@@ -77,22 +80,22 @@ const columnsSelfLead = [
 
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
-const [commissions, setCommissions] = useState<CommissionData[]>([]);
+  const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const data = await fetchCheckoutByUser(userId);
-      console.log("Checkout data by user:", data);
-    } catch (err) {
-      console.error("Error fetching checkout:", err);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchCheckoutByUser(userId);
+        console.log("Checkout data by user:", data);
+      } catch (err) {
+        console.error("Error fetching checkout:", err);
+      }
+    };
+
+    if (userId) {
+      fetchData();
     }
-  };
-
-  if (userId) {
-    fetchData();
-  }
-}, [userId]);
+  }, [userId]);
 
   // Fetch commission for each checkoutId
   useEffect(() => {
@@ -166,11 +169,13 @@ useEffect(() => {
       commission: myCommission,
       leadStatus: checkout?.isCompleted
         ? "completed"
-        : checkout?.orderStatus === "processing"
-          ? "ongoing"
-          : checkout?.isCanceled
-            ? "cancelled"
-            : "pending",
+        : checkout?.isAccepted
+          ? "Accepted"
+          : checkout?.orderStatus === "processing"
+            ? "ongoing"
+            : checkout?.isCanceled
+              ? "cancelled"
+              : "pending",
     };
   });
 
