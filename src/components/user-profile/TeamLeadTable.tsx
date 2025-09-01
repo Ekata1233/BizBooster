@@ -16,7 +16,7 @@ interface TeamLeadData {
   userEmail: string;
   userPhone: string;
   joinDate: string;
-  status: string; // 'GP' | 'Non-GP'
+  status: string; // 'Deleted' | 'GP' | 'SGP' | 'PGP' | 'NonGP'
   teamCount: number;
   myEarnings: string;
   leadCount: number;
@@ -34,7 +34,8 @@ type AppUser = {
   email: string;
   mobileNumber: string;
   createdAt: string;
-  packageActive?: boolean;
+  packageStatus?: 'GP' | 'SGP' | 'PGP' | 'NonGP';
+  isDeleted?: boolean;
   profilePhoto?: string;
   referredBy?: string | null;
 };
@@ -52,17 +53,27 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     return [];
   }, [ctxUsers]);
 
-  /** Build team list from context as a fallback (match referredBy === current userId) */
+  /** Build team list from context as a fallback */
   const buildFromContext = React.useCallback(
     (rootUserId: string): TeamLeadData[] => {
       if (!rootUserId) return [];
 
-      // Direct referrals: users whose referredBy equals the current user's _id (param id)
       const directTeam = users.filter(u => (u?.referredBy ?? null) === rootUserId);
 
-      // For each member, compute how many people THEY referred (1-level deep)
-      const asTableRows: TeamLeadData[] = directTeam.map(member => {
+      return directTeam.map(member => {
         const memberDirects = users.filter(u => (u?.referredBy ?? null) === member._id);
+
+        let status: string = "NonGP";
+        if (member.isDeleted) {
+          status = "Deleted";
+        } else if (member.packageStatus === "GP") {
+          status = "GP";
+        } else if (member.packageStatus === "SGP") {
+          status = "SGP";
+        } else if (member.packageStatus === "PGP") {
+          status = "PGP";
+        }
+
         return {
           id: member._id,
           userPhoto: member.profilePhoto || img.src,
@@ -70,14 +81,12 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
           userEmail: member.email,
           userPhone: member.mobileNumber,
           joinDate: new Date(member.createdAt).toLocaleDateString('en-IN'),
-          status: member.packageActive ? 'GP' : 'Non-GP',
-          teamCount: memberDirects.length, // 1-level sub-team count
-          myEarnings: `₹${(0).toLocaleString()}`, // no earnings data in context
-          leadCount: 0, // no lead data in context
+          status,
+          teamCount: memberDirects.length,
+          myEarnings: `₹${(0).toLocaleString()}`,
+          leadCount: 0,
         };
       });
-
-      return asTableRows;
     },
     [users]
   );
@@ -92,9 +101,20 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
         const json = await res.json();
 
         if (!cancelled && json?.success && Array.isArray(json?.team) && json.team.length > 0) {
-          // Map API response first (keep your original logic intact)
           const mappedFromApi: TeamLeadData[] = json.team.map((member: any) => {
             const user = member?.user ?? {};
+
+            let status: string = "NonGP";
+            if (user.isDeleted) {
+              status = "Deleted";
+            } else if (user.packageStatus === "GP") {
+              status = "GP";
+            } else if (user.packageStatus === "SGP") {
+              status = "SGP";
+            } else if (user.packageStatus === "PGP") {
+              status = "PGP";
+            }
+
             const base: TeamLeadData = {
               id: user._id,
               userPhoto: user.profilePhoto || img.src,
@@ -102,13 +122,12 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
               userEmail: user.email,
               userPhone: user.mobileNumber,
               joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : '',
-              status: user.packageActive ? 'GP' : 'Non-GP',
+              status,
               teamCount: Number(member?.team?.length || 0),
               myEarnings: `₹${Number(member?.totalEarningsFromShare_2 || 0).toLocaleString()}`,
               leadCount: Number(member?.leads?.length || 0),
             };
 
-            // Augment counts from context if API returned zeros
             if (base.teamCount === 0 && users.length) {
               const memberDirects = users.filter((u) => (u?.referredBy ?? null) === base.id);
               base.teamCount = memberDirects.length;
@@ -119,12 +138,10 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
 
           setDataTeamLead(mappedFromApi);
         } else {
-          // Fallback: build from UserContext if API has nothing or not successful
           const built = buildFromContext(userId);
           setDataTeamLead(built);
         }
       } catch (_err) {
-        // On any fetch error, fallback to context
         const built = buildFromContext(userId);
         setDataTeamLead(built);
       } finally {
@@ -163,19 +180,36 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     {
       header: 'Status',
       accessor: 'status',
-      render: (row: TeamLeadData) => (
-        <div>
+      render: (row: TeamLeadData) => {
+        let colorClass = '';
+        switch (row.status) {
+          case 'Deleted':
+            colorClass = 'text-red-600 bg-red-100 border border-red-300';
+            break;
+          case 'GP':
+            colorClass = 'text-green-600 bg-green-100 border border-green-300';
+            break;
+          case 'SGP':
+            colorClass = 'text-blue-600 bg-blue-100 border border-blue-300';
+            break;
+          case 'PGP':
+            colorClass = 'text-purple-600 bg-purple-100 border border-purple-300';
+            break;
+          case 'NonGP':
+            colorClass = 'text-yellow-600 bg-yellow-100 border border-yellow-300';
+            break;
+          default:
+            colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
+        }
+
+        return (
           <div
-            className={`${
-              row.status === 'GP'
-                ? 'bg-green-100 border-green-300 text-green-600'
-                : 'bg-red-100 border-red-300 text-red-600'
-            } border px-3 py-1 text-xs rounded-full text-center leading-tight`}
+            className={`${colorClass} border px-3 py-1 text-xs rounded-full text-center leading-tight`}
           >
             {row.status}
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       header: 'Team Count',
