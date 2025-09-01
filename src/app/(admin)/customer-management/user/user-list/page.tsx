@@ -45,6 +45,7 @@ export interface User {
     packageActive?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
+    packageStatus?: string;
 }
 
 interface TableData {
@@ -147,6 +148,12 @@ const UserList = () => {
                     case "GP":
                         colorClass = "text-green-600 bg-green-100 border border-green-300";
                         break;
+                    case "SGP":
+                        colorClass = "text-blue-600 bg-blue-100 border border-blue-300";
+                        break;
+                    case "PGP":
+                        colorClass = "text-purple-600 bg-purple-100 border border-purple-300";
+                        break;
                     case "NonGP":
                         colorClass = "text-yellow-600 bg-yellow-100 border border-yellow-300";
                         break;
@@ -155,12 +162,13 @@ const UserList = () => {
                 }
 
                 return (
-                    <span className={`px-2 py-1 rounded-full text-xs  ${colorClass}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${colorClass}`}>
                         {status}
                     </span>
                 );
             },
         },
+
         {
             header: "Action",
             accessor: "action",
@@ -237,9 +245,13 @@ const UserList = () => {
                             totalEarnings: walletBalance.toString(),
                             status: user.isDeleted
                                 ? "Deleted"
-                                : user.packageActive
+                                : user.packageStatus === "GP"
                                     ? "GP"
-                                    : "NonGP",
+                                    : user.packageStatus === "SGP"
+                                        ? "SGP"
+                                        : user.packageStatus === "PGP"
+                                            ? "PGP"
+                                            : "NonGP",
                         };
                     })
                 );
