@@ -115,26 +115,25 @@ export async function GET(req: NextRequest) {
 
     try {
         const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('user');
+                const userId = searchParams.get('user');
 
-        if (!userId) {
-            return NextResponse.json(
-                { success: false, message: 'Missing user query parameter' },
-                { status: 400, headers: corsHeaders }
-            );
-        }
-
-        const wallet = await Wallet.findOne({ userId }).populate('userId');
-
-        if (!wallet) {
-            return NextResponse.json(
-                { success: false, message: 'Wallet not found' },
-                { status: 404, headers: corsHeaders }
-            );
+        let wallets;
+        if (userId) {
+            // Fetch single user's wallet
+            wallets = await Wallet.findOne({ userId }).populate('userId');
+            if (!wallets) {
+                return NextResponse.json(
+                    { success: false, message: 'Wallet not found' },
+                    { status: 404, headers: corsHeaders }
+                );
+            }
+        } else {
+            // Fetch all wallets
+            wallets = await Wallet.find({}).populate('userId');
         }
 
         return NextResponse.json(
-            { success: true, data: wallet },
+            { success: true, data: wallets },
             { status: 200, headers: corsHeaders }
         );
     } catch (error: unknown) {
