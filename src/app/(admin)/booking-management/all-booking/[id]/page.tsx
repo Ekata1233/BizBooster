@@ -27,7 +27,8 @@ const AllBookingsDetails = () => {
     loading,
     error,
   } = useServiceCustomer();
-
+  console.log("service customer :",serviceCustomer);
+  
 
   useEffect(() => {
     const fetchLead = async () => {
