@@ -181,14 +181,29 @@ export async function POST(req: Request) {
       );
 
       if (txn) {
-        txn.status = data.status?.toLowerCase() || "pending"; // success | failed | pending
-        txn.leadId = data.cf_transfer_id || null; // store Cashfree ID
-        txn.description =
-          data.status_description || "No description provided";
+        const cashfreeStatus = data.status?.toUpperCase() || "PENDING";
+
+        if (cashfreeStatus === "SUCCESS") {
+          // ✅ Final debit when Cashfree confirms success
+          wallet.balance -= txn.amount;
+          wallet.totalDebits += txn.amount;
+          wallet.lastTransactionAt = new Date();
+
+          txn.status = "success";
+          txn.balanceAfterTransaction = wallet.balance;
+        } else if (cashfreeStatus === "FAILED") {
+          txn.status = "failed";
+        } else {
+          txn.status = "pending";
+        }
+
+        txn.leadId = data.cf_transfer_id || null;
+        txn.description = data.status_description || "No description provided";
 
         await wallet.save();
       }
     }
+
 
     return NextResponse.json(data, {
       status: res.status,
