@@ -239,6 +239,7 @@ export async function POST(req: NextRequest) {
         userC.packageActive = true;
         userC.packageActivateDate = new Date();
         userC.isCommissionDistribute = true;
+        userC.packageStatus = "GP"
         await userC.save();
 
         await checkAndUpdateReferralStatus(userId);
