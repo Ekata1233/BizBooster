@@ -6,8 +6,6 @@ import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import {
     EyeIcon,
-    TrashBinIcon,
-    PencilIcon,
     ChevronDownIcon,
 } from "../../../../../icons/index";
 import DatePicker from '@/components/form/date-picker';
@@ -20,8 +18,6 @@ import axios from "axios";
 import UserStatCard from "@/components/user-component/UserStatCard";
 import * as XLSX from "xlsx";   // ✅ for Excel download
 import { FaFileDownload } from "react-icons/fa";
-
-// Define the type for the table data
 
 export interface User {
     _id: string;
@@ -45,6 +41,7 @@ export interface User {
     packageActive?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
+    packageStatus?: string;
 }
 
 interface TableData {
@@ -58,8 +55,6 @@ interface TableData {
     status: string;
 }
 
-
-
 const UserList = () => {
     const { users } = useUserContext();
     const [startDate, setStartDate] = useState<string | null>(null);
@@ -69,7 +64,6 @@ const UserList = () => {
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
-    console.log("user list : ", users)
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -77,12 +71,12 @@ const UserList = () => {
         { value: "ascending", label: "Ascending" },
         { value: "descending", label: "Descending" },
     ];
+
     const columns = [
         {
             header: "S.No",
             accessor: "serial",
             render: (row: TableData) => {
-                // Find the index of the row in filteredUsers
                 const serial =
                     filteredUsers.findIndex((u) => u.id === row.id) + 1;
                 return <span>{serial}</span>;
@@ -112,14 +106,12 @@ const UserList = () => {
         {
             header: "Contact Info",
             accessor: "contactInfo",
-            render: (row: TableData) => {
-                return (
-                    <div className="text-sm text-gray-700">
-                        <div>{row?.email || 'N/A'}</div>
-                        <div>{row?.mobileNumber || 'N/A'}</div>
-                    </div>
-                );
-            },
+            render: (row: TableData) => (
+                <div className="text-sm text-gray-700">
+                    <div>{row?.email || 'N/A'}</div>
+                    <div>{row?.mobileNumber || 'N/A'}</div>
+                </div>
+            ),
         },
         {
             header: "Referred By",
@@ -147,6 +139,12 @@ const UserList = () => {
                     case "GP":
                         colorClass = "text-green-600 bg-green-100 border border-green-300";
                         break;
+                    case "SGP":
+                        colorClass = "text-blue-600 bg-blue-100 border border-blue-300";
+                        break;
+                    case "PGP":
+                        colorClass = "text-purple-600 bg-purple-100 border border-purple-300";
+                        break;
                     case "NonGP":
                         colorClass = "text-yellow-600 bg-yellow-100 border border-yellow-300";
                         break;
@@ -155,7 +153,7 @@ const UserList = () => {
                 }
 
                 return (
-                    <span className={`px-2 py-1 rounded-full text-xs  ${colorClass}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${colorClass}`}>
                         {status}
                     </span>
                 );
@@ -164,19 +162,18 @@ const UserList = () => {
         {
             header: "Action",
             accessor: "action",
-            render: (row: TableData) => {
-                return (
-                    <div className="flex gap-2">
-                        <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
-                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                                <EyeIcon />
-                            </button>
-                        </Link>
-                    </div>
-                )
-            },
+            render: (row: TableData) => (
+                <div className="flex gap-2">
+                    <Link href={`/customer-management/user/user-list/${row.id}`} passHref>
+                        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                            <EyeIcon />
+                        </button>
+                    </Link>
+                </div>
+            ),
         },
     ];
+
     const fetchFilteredUsers = async () => {
         try {
             const isValidDate = (date: string | null) => {
@@ -191,7 +188,6 @@ const UserList = () => {
             };
 
             const response = await axios.get('/api/users', { params });
-
             const data = response.data;
 
             if (data.users.length === 0) {
@@ -202,7 +198,6 @@ const UserList = () => {
                     data.users.map(async (user: User) => {
                         const referrer = data.users.find((u: User) => u._id === user.referredBy);
 
-                        // Fetch lead count for this user
                         let totalLeads = 0;
                         try {
                             const res = await axios.get(`/api/checkout/lead-by-user/${user._id}`);
@@ -213,7 +208,6 @@ const UserList = () => {
                             console.error(`Error fetching leads for user ${user._id}:`, err);
                         }
 
-                        // ✅ Fetch wallet balance for this user
                         let walletBalance = 0;
                         try {
                             const walletRes = await axios.get(`/api/wallet/fetch-by-user/${user._id}`);
@@ -237,9 +231,13 @@ const UserList = () => {
                             totalEarnings: walletBalance.toString(),
                             status: user.isDeleted
                                 ? "Deleted"
-                                : user.packageActive
+                                : user.packageStatus === "GP"
                                     ? "GP"
-                                    : "NonGP",
+                                    : user.packageStatus === "SGP"
+                                        ? "SGP"
+                                        : user.packageStatus === "PGP"
+                                            ? "PGP"
+                                            : "NonGP",
                         };
                     })
                 );
@@ -261,13 +259,16 @@ const UserList = () => {
     const getFilteredByStatus = () => {
         if (activeTab === 'gp') {
             return filteredUsers.filter(user => user.status === 'GP');
+        } else if (activeTab === 'sgp') {
+            return filteredUsers.filter(user => user.status === 'SGP');
+        } else if (activeTab === 'pgp') {
+            return filteredUsers.filter(user => user.status === 'PGP');
         } else if (activeTab === 'nonGP') {
             return filteredUsers.filter(user => user.status === 'NonGP');
         }
         return filteredUsers;
     };
 
-    // ✅ Excel Download function
     const handleDownload = () => {
         const dataToExport = getFilteredByStatus().map((u) => ({
             Name: (u.user as any).fullName,
@@ -379,6 +380,24 @@ const UserList = () => {
                                 </span>
                             </li>
                             <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'sgp' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('sgp')}
+                            >
+                                SGP
+                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                    {filteredUsers.filter((user) => user.status === 'SGP').length}
+                                </span>
+                            </li>
+                            <li
+                                className={`cursor-pointer px-4 py-2 ${activeTab === 'pgp' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                                onClick={() => setActiveTab('pgp')}
+                            >
+                                PGP
+                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                    {filteredUsers.filter((user) => user.status === 'PGP').length}
+                                </span>
+                            </li>
+                            <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'nonGP' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
                                 onClick={() => setActiveTab('nonGP')}
                             >
@@ -388,7 +407,6 @@ const UserList = () => {
                                 </span>
                             </li>
                         </ul>
-
 
                         {/* ✅ Download Button */}
                         <button

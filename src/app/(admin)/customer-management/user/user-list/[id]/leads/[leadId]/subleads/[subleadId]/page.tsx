@@ -7,7 +7,6 @@ import { useUserContext } from '@/context/UserContext';
 import { useParams } from 'next/navigation';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
-import LeadTeam from '@/components/user-profile/team-details/LeadTeam';
 
 const UserDetails = () => {
   const {
@@ -39,7 +38,6 @@ const UserDetails = () => {
 
   const tabButtons = [
     { key: 'selfLead', label: 'Self Lead' },
-    { key: 'teamLead', label: 'Team Lead' },
   ];
 
   return (
@@ -84,16 +82,7 @@ const UserDetails = () => {
             />
           )}
 
-          {activeTab === 'teamLead' && (
-            // <TeamLeadTable
-            //   userId={leadUserId || ' '}
-            //   isAction={true}
-            // />
-            <LeadTeam
-              userId={leadUserId || ' '}
-              isAction={true}
-            />
-          )}
+          
         </div>
       </div>
     </div>

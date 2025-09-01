@@ -6,7 +6,7 @@ import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
-import img from '../../../public/images/logo/user1.webp';
+import img from '../../../../public/images/logo/user1.webp';
 import { useUserContext } from '@/context/UserContext';
 
 interface TeamLeadData {
@@ -40,7 +40,7 @@ type AppUser = {
   referredBy?: string | null;
 };
 
-const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
+const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const { users: ctxUsers } = useUserContext() as unknown as { users: unknown };
   const [dataTeamLead, setDataTeamLead] = useState<TeamLeadData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -235,7 +235,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
             header: 'Action',
             accessor: 'action',
             render: (row: TeamLeadData) => (
-              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}`} passHref>
+              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}/subleads/${row.id}`} passHref>
                 <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                   <EyeIcon />
                 </button>
@@ -268,4 +268,4 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
   );
 };
 
-export default TeamLeadTable;
+export default LeadTeam;

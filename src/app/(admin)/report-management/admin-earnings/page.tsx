@@ -22,11 +22,46 @@ const Page = () => {
 
     const rowsPerPage = 10;
 
+    console.log("All Checkouts : ", checkouts);
+
+    const leadEarningsTransactions =
+        wallet?.transactions?.filter(
+            (txn) => txn.description?.trim() === "Team Revenue - Admin"
+        ) || [];
+
+    console.log("Lead Earnings Transactions:", leadEarningsTransactions);
+
     useEffect(() => {
         if (userId) {
             fetchWalletByUser(userId);
         }
     }, [userId]);
+    useEffect(() => {
+  if (checkouts && wallet?.transactions) {
+    // ✅ Match wallet.leadId ↔ checkout.bookingId
+    const matchedCheckouts = checkouts.filter((checkout) =>
+      wallet.transactions.some(
+        (txn) =>
+          txn.leadId &&
+          txn.leadId.trim() === checkout.bookingId.trim() &&
+          txn.description?.trim() === "Team Revenue - Admin"
+      )
+    );
+
+    // ✅ Map to only required fields
+    const checkoutDetails = matchedCheckouts.map((c) => ({
+      bookingId: c.bookingId,
+      platformFeePrice: c.platformFeePrice,
+      assurityChargesPrice: c.assurityChargesPrice,
+      totalExtraFee: (c.platformFeePrice || 0) + (c.assurityChargesPrice || 0),
+      user: c.user?.fullName || "N/A",
+      service: c.service?.serviceName || "N/A",
+      createdAt: c.createdAt,
+    }));
+
+    console.log("✅ Matched Checkouts Data:", checkoutDetails);
+  }
+}, [checkouts, wallet]);
 
     const isWalletAvailable =
         !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
@@ -50,6 +85,27 @@ const Page = () => {
                 ?.filter((txn) => txn.description?.trim() === "Deposit")
                 .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
+        // ✅ NEW: Calculate Extra Fee only for matching Lead ↔ Checkout
+        const matchingExtraFee =
+            wallet?.transactions
+                ?.filter(
+                    (txn) =>
+                        txn.leadId && txn.description?.trim() === "Team Revenue - Admin"
+                )
+                ?.reduce((acc, txn) => {
+                    const relatedCheckout = checkouts?.find(
+                        (c) => c.bookingId === txn.leadId
+                    );
+                    if (relatedCheckout) {
+                        return (
+                            acc +
+                            (relatedCheckout.platformFeePrice || 0) +
+                            (relatedCheckout.assurityChargesPrice || 0)
+                        );
+                    }
+                    return acc;
+                }, 0) || 0;
+
         return [
             {
                 title: "Balance",
@@ -67,7 +123,7 @@ const Page = () => {
             },
             {
                 title: "Extra Fee",
-                amount: `₹${wallet?.totalDebits?.toLocaleString() || 0}`,
+                amount: `₹${matchingExtraFee.toLocaleString()}`,
                 icon: <FaMoneyBillWave />,
                 gradient: "from-red-100 to-red-200",
                 textColor: "text-red-800",
@@ -94,7 +150,7 @@ const Page = () => {
                 textColor: "text-teal-800",
             },
         ];
-    }, [wallet]);
+    }, [wallet, checkouts]);
 
     // ✅ Filter + reverse transactions
     const filteredTransactions = useMemo(() => {
@@ -143,28 +199,28 @@ const Page = () => {
         { header: "Date", accessor: "createdAt" },
     ];
 
-    // ✅ Table data with serial numbers
-  // ✅ Table data with serial numbers in reverse
-const transactionData = currentRows.map((txn, index) => {
-    // Calculate global index
-    const globalIndex = (currentPage - 1) * rowsPerPage + index;
+    // ✅ Table data with serial numbers in reverse
+    const transactionData = currentRows.map((txn, index) => {
+        // Calculate global index
+        const globalIndex = (currentPage - 1) * rowsPerPage + index;
 
-    // ✅ Serial number reversed
-    const serial = filteredTransactions.length - globalIndex;
+        // ✅ Serial number reversed
+        const serial = filteredTransactions.length - globalIndex;
 
-    return {
-        serial,
-        type: txn.type || "-",
-        amount: `₹${txn.amount?.toLocaleString() || 0}`,
-        description: txn.description || "-",
-        leadId: txn.leadId || "-",
-        commissionFrom: txn.commissionFrom || "-",
-        method: txn.method || "-",
-        status: txn.status || "-",
-        createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
-    };
-});
-
+        return {
+            serial,
+            type: txn.type || "-",
+            amount: `₹${txn.amount?.toLocaleString() || 0}`,
+            description: txn.description || "-",
+            leadId: txn.leadId || "-",
+            commissionFrom: txn.commissionFrom || "-",
+            method: txn.method || "-",
+            status: txn.status || "-",
+            createdAt: txn.createdAt
+                ? new Date(txn.createdAt).toLocaleString()
+                : "-",
+        };
+    });
 
     // ✅ Excel download
     const handleDownload = () => {
