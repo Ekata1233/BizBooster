@@ -72,7 +72,7 @@ const columnsWallet = [
 const UserWallet = ({ userId }: UserWalletProps) => {
   const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' | 'withdraw'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
 
   useEffect(() => {
     if (userId) {
