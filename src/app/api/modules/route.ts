@@ -65,36 +65,92 @@ export async function POST(req: Request) {
 }
 
 // ✅ Get All Modules
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   const { searchParams } = new URL(req.url);
+//   console.log("search params in module : ", searchParams);
+//   const search = searchParams.get('search');
+
+//   const filter: {
+//     $or?: { [key: string]: { $regex: string; $options: string } }[];
+//   } = {};
+
+//   if (search) {
+//     const searchRegex = { $regex: search, $options: 'i' };
+//     filter.$or = [
+//       { name: searchRegex },
+//     ];
+//   }
+
+//   try {
+//     const modules = await Module.find(filter);
+//      const modulesWithCategoryCount = await Promise.all(modules.map(async (module) => {
+//       // Count categories related to each module
+//       const categoryCount = await Category.countDocuments({ module: module._id});
+      
+//       // Add category count to each module
+//       return {
+//         ...module.toObject(),
+//         categoryCount,
+//       };
+//     }));
+//     return NextResponse.json(
+//       { success: true, data: modulesWithCategoryCount },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : "Unknown error";
+//     return NextResponse.json(
+//       { success: false, message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   const { searchParams } = new URL(req.url);
-  console.log("search params in module : ", searchParams);
-  const search = searchParams.get('search');
+  const search = searchParams.get("search");
 
   const filter: {
     $or?: { [key: string]: { $regex: string; $options: string } }[];
   } = {};
 
   if (search) {
-    const searchRegex = { $regex: search, $options: 'i' };
-    filter.$or = [
-      { name: searchRegex },
-    ];
+    const searchRegex = { $regex: search, $options: "i" };
+    filter.$or = [{ name: searchRegex }];
   }
 
   try {
-    const modules = await Module.find(filter);
-     const modulesWithCategoryCount = await Promise.all(modules.map(async (module) => {
-      // Count categories related to each module
-      const categoryCount = await Category.countDocuments({ module: module._id});
-      
-      // Add category count to each module
-      return {
-        ...module.toObject(),
-        categoryCount,
-      };
-    }));
+    // 👇 add sorting (Franchise = 0, others = 1)
+    const modules = await Module.aggregate([
+      { $match: filter },
+      {
+        $addFields: {
+          sortKey: {
+            $cond: [{ $eq: ["$name", "Franchise"] }, 0, 1],
+          },
+        },
+      },
+      { $sort: { sortKey: 1, createdAt: 1 } },
+    ]);
+
+    // Count categories for each module
+    const modulesWithCategoryCount = await Promise.all(
+      modules.map(async (module) => {
+        const categoryCount = await Category.countDocuments({
+          module: module._id,
+        });
+
+        return {
+          ...module,
+          categoryCount,
+        };
+      })
+    );
+
     return NextResponse.json(
       { success: true, data: modulesWithCategoryCount },
       { status: 200, headers: corsHeaders }
@@ -107,4 +163,5 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
 
