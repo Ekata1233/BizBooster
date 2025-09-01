@@ -182,7 +182,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
         <>
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-4">
-            {['all', 'credit', 'debit', 'withdraw'].map((tab) => (
+            {['all', 'credit', 'debit'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
