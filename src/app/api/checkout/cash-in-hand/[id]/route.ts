@@ -134,7 +134,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const prevBalance = providerWallet.balance || 0;
-        const newBalance = prevBalance + fetchedAmount;
+        const newBalance = prevBalance - fetchedAmount;
         const newCashInHand = (providerWallet.cashInHand || 0) + fetchedAmount;
         const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - fetchedAmount, 0);
         const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - fetchedAmount, 0);

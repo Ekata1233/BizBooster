@@ -16,6 +16,8 @@ const SummaryCards: React.FC<Props> = ({ summary }) => {
       maximumFractionDigits: 2,
     })}`;
 
+    console.log("summary : ", summary)
+
   const cards = [
     {
       title: 'Total Revenue',
@@ -39,14 +41,14 @@ const SummaryCards: React.FC<Props> = ({ summary }) => {
       textColor: 'text-green-800',
     },
     {
-      title: 'Payable to Vendor',
+      title: 'Provider Earnings',
       value: formatAmount(summary.providerEarnings),
       icon: <FaTools size={48} />,
       gradient: 'from-yellow-100 to-yellow-200',
       textColor: 'text-yellow-800',
     },
     {
-      title: 'Payable to Franchise',
+      title: 'Franchise Earnings',
       value: formatAmount(summary.franchiseEarnings),
       icon: <FaStore size={48} />,
       gradient: 'from-purple-100 to-purple-200',

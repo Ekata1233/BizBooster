@@ -415,10 +415,15 @@ export async function POST(req: Request) {
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
-        const totalRevenue = adminCommissionTotal;
         const franchiseEarningsTotal =
             C_share + B_share + A_share +
             (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
+        const totalRevenue =
+            adminCommissionTotal +
+            providerEarningsTotal +
+            franchiseEarningsTotal;
+
+        const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
@@ -427,8 +432,7 @@ export async function POST(req: Request) {
                     adminCommission: adminCommissionTotal,
                     providerEarnings: providerEarningsTotal,
                     totalRevenue: totalRevenue,
-                    // Optional fields:
-                    extraFees: 0,
+                    extraFees: extraFee,
                     pendingPayouts: 0,
                     franchiseEarnings: franchiseEarningsTotal,
                     refundsToUsers: 0,

@@ -208,13 +208,14 @@ export async function POST(req: NextRequest) {
         }
 
         const todayDate = new Date().toISOString().split("T")[0];
+        const totalRevenue = adminAmount + level1Amount + level2Amount;
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
             {
                 $inc: {
                     adminCommission: adminAmount,
                     providerEarnings: 0,
-                    totalRevenue: adminAmount,
+                    totalRevenue: totalRevenue,
                     extraFees: 0,
                     pendingPayouts: 0,
                     franchiseEarnings: level1Amount + level2Amount,
