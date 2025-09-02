@@ -58,10 +58,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                             <p className="text-sm text-gray-500 whitespace-nowrap">Phone:</p>
                             <p className="font-medium">{provider.phoneNo || provider.storeInfo?.storePhone || '-'}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-500 whitespace-nowrap">Referral Code:</p>
-                            <p className="font-medium">{provider.referralCode || '-'}</p>
-                        </div>
+                       
                     </div>
                 </ComponentCard>
             </div>
@@ -93,10 +90,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Country:</p>
                                     <p className="font-medium">{provider.storeInfo?.country || '-'}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-sm text-gray-500 whitespace-nowrap">Office Number:</p>
-                                    <p className="font-medium">{provider.storeInfo?.officeNo || '-'}</p>
-                                </div>
+                                
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Store Email:</p>
                                     <p className="font-medium">{provider.storeInfo?.storeEmail || '-'}</p>
@@ -105,20 +99,12 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Store Phone:</p>
                                     <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-sm text-gray-500 whitespace-nowrap">Tax:</p>
-                                    <p className="font-medium">{provider.storeInfo?.tax || '-'}</p>
-                                </div>
+                                
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
                                     <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
                                 </div>
-                                <div className="flex items-start gap-2">
-                                    <p className="text-sm text-gray-500 whitespace-nowrap">Location:</p>
-                                    <div className="font-medium">
-                                        {renderLocation(provider.storeInfo?.location)}
-                                    </div>
-                                </div>
+                                
                             </div>
 
                         )}
