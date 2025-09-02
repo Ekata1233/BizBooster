@@ -23,6 +23,7 @@ export interface StoreInfo {
   city?: string;
   state?: string;
   country?: string;
+  postalCode?: string;
 }
 
 export interface KYC {
@@ -35,6 +36,7 @@ export interface KYC {
 
 export interface ProviderDocument extends Document {
   /* step-1 */
+  _id : string;
   providerId: string;
   fullName: string;
   phoneNo: string;
