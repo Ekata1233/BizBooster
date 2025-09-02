@@ -27,7 +27,29 @@ const ProviderBankInfo = () => {
         {loadingBankDetails ? (
           <p className="text-gray-500">Loading bank details...</p>
         ) : errorBankDetails ? (
-          <p className="text-red-500">{errorBankDetails}</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-12 w-12 text-gray-400 mb-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="text-base font-medium text-gray-700">
+              No bank details available
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              We couldn’t find any bank information for this provider.
+            </p>
+          </div>
+
         ) : singleBankDetails ? (
           <div className="space-y-6">
             {/* Row 1: Bank Name + Branch */}
@@ -73,11 +95,10 @@ const ProviderBankInfo = () => {
               <div>
                 <p className="text-sm font-semibold text-gray-900">Status</p>
                 <p
-                  className={`text-base ${
-                    singleBankDetails.isActive
+                  className={`text-base ${singleBankDetails.isActive
                       ? "text-green-600"
                       : "text-red-600"
-                  }`}
+                    }`}
                 >
                   {singleBankDetails.isActive ? "Active" : "Inactive"}
                 </p>

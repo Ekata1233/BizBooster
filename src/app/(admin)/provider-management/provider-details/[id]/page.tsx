@@ -63,7 +63,7 @@ interface Module {
   __v?: number;
 }
 
-interface SubscribedService {
+export interface SubscribedService {
   _id: string;
   serviceName: string;
   price: number;
@@ -88,6 +88,7 @@ interface Provider {
   isDeleted?: boolean;
   isVerified?: boolean;
   providerId: string;
+  
 }
 
 export interface TableData {
