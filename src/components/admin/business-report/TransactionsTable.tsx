@@ -37,6 +37,15 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     { key: 'debit', label: 'Debit' },
   ] as const;
 
+  // ✅ Precompute counts for tabs
+  const tabCounts = useMemo(() => {
+    return {
+      all: transactions.length,
+      credit: transactions.filter((t) => t.type === 'credit').length,
+      debit: transactions.filter((t) => t.type === 'debit').length,
+    };
+  }, [transactions]);
+
   // Filtered Transactions
   const filteredTransactions = useMemo(() => {
     if (activeTab === 'credit') {
@@ -168,9 +177,7 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
               >
                 {tab.label}
                 <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {tab.key === 'all'
-                    ? filteredTransactions.length
-                    : transactions.filter((t) => t.type === tab.key).length}
+                  {tabCounts[tab.key]}
                 </span>
               </li>
             ))}
