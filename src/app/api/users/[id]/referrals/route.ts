@@ -3,17 +3,16 @@ import mongoose from "mongoose";
 import User from "@/models/User";
 import { connectToDatabase } from "@/utils/db";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
   try {
     await connectToDatabase();
 
-    const { id } = params;
+    // Extract `id` from the URL
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
     // Check if valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, message: "Invalid user id" },
         { status: 400 }
