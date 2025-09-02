@@ -246,7 +246,7 @@ const Page = () => {
 
     return (
         <div>
-            <ComponentCard title="Wallet">
+            <ComponentCard title="Admin Earnings">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     {summaryCards.map((card) => (

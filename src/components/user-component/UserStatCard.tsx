@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import StatCard from '../common/StatCard'
 import {
   BoxCubeIcon,
@@ -8,9 +8,39 @@ import {
   DollarLineIcon,
 } from "../../icons/index";
 import { useUserContext } from '@/context/UserContext';
+import { useCheckout } from '@/context/CheckoutContext';
+import { useUserWallet } from '@/context/WalletContext';
 
 const UserStatCard = () => {
   const { users } = useUserContext();
+  const { checkouts } = useCheckout();
+  const { allWallets, fetchAllWallets } = useUserWallet();
+
+  console.log("wallet detials : ", allWallets)
+  useEffect(() => {
+    fetchAllWallets();
+  }, []);
+
+const excludedUserId = '444c44d4444be444d4444444';
+
+const filteredWallets = allWallets.filter(
+  wallet =>
+    wallet.userId?._id &&
+    wallet.userId._id.toString() !== excludedUserId // convert ObjectId to string
+);
+
+const totalWalletBalance = filteredWallets.reduce(
+  (sum, wallet) => sum + (wallet.balance || 0),
+  0
+);
+
+
+const totalEarnings = filteredWallets.reduce(
+  (sum, wallet) => sum + (wallet.totalCredits || 0),
+  0
+);
+
+
 
   if (!users) {
     return <div>Loading...</div>;
@@ -19,7 +49,7 @@ const UserStatCard = () => {
   return (
     <div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
-        
+
         <StatCard
           title="Total Users"
           value={users.length}
@@ -33,7 +63,7 @@ const UserStatCard = () => {
 
         <StatCard
           title="Total Booking"
-          value="20"
+          value={checkouts?.length || 0}
           icon={CalenderIcon}
           badgeColor="success"
           badgeValue="6.88%"
@@ -43,8 +73,8 @@ const UserStatCard = () => {
         />
 
         <StatCard
-          title="Total Revenue"
-          value="₹8420"
+          title="Total Earnings"
+          value={`₹${totalEarnings}`}
           icon={DollarLineIcon}
           badgeColor="success"
           badgeValue="6.88%"
@@ -54,8 +84,8 @@ const UserStatCard = () => {
         />
 
         <StatCard
-          title="Revenue"
-          value="₹8420"
+          title="Total Wallet Balance"
+          value={`₹${totalWalletBalance}`}
           icon={BoxCubeIcon}
           badgeColor="success"
           badgeValue="6.88%"
