@@ -1,138 +1,53 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/utils/db";
+import mongoose from "mongoose";
 import User from "@/models/User";
+import { connectToDatabase } from "@/utils/db";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
-
-// ✅ GET Specific User
 export async function GET(req: Request) {
-  await connectToDatabase();
-
   try {
+    await connectToDatabase();
+
+    // Extract `id` from the URL
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
 
-    if (!id) {
+    // Check if valid ObjectId
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: "Missing ID parameter." },
-        { status: 400, headers: corsHeaders }
+        { success: false, message: "Invalid user id" },
+        { status: 400 }
       );
     }
 
+    // Find the user by ObjectId
     const user = await User.findById(id);
-
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404, headers: corsHeaders }
+        { status: 404 }
       );
     }
 
-    return NextResponse.json(
-      { success: true, data: user },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json(
-      { success: false, message },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-
-// ✅ PUT Update User
-export async function PUT(req: Request) {
-  await connectToDatabase();
-
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
-
-    const formData = await req.formData();
-
-    const fullName = formData.get("fullName") as string;
-    const email = formData.get("email") as string;
-    const mobileNumber = formData.get("mobileNumber") as string;
-
-    if (!id || !fullName || !email || !mobileNumber) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const updateData: Record<string, unknown> = {
-      fullName,
-      email,
-      mobileNumber,
-    };
-
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
-      new: true,
+    // Count how many users used this user's referral
+    const count = await User.countDocuments({
+      referredBy: user._id,
+      isDeleted: false,
     });
 
+    // Optional: get details of referred users
+    const users = await User.find({
+      referredBy: user._id,
+      isDeleted: false,
+    })
+      .select("fullName email mobileNumber createdAt")
+      .lean();
+
+    return NextResponse.json({ success: true, count, users });
+  } catch (err) {
+    console.error("Referral count API error:", err);
     return NextResponse.json(
-      { success: true, data: updatedUser },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json(
-      { success: false, message },
-      { status: 400, headers: corsHeaders }
-    );
-  }
-}
-
-// ✅ DELETE (Soft Delete) User
-export async function DELETE(req: Request) {
-  await connectToDatabase();
-
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Missing ID parameter." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const deletedUser = await User.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true }
-    );
-
-    if (!deletedUser) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, message: "User soft-deleted successfully" },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json(
-      { success: false, message },
-      { status: 500, headers: corsHeaders }
+      { success: false, message: "Server error" },
+      { status: 500 }
     );
   }
 }
