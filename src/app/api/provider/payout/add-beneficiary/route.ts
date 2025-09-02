@@ -81,6 +81,8 @@ import mongoose from "mongoose";
 import User from "@/models/User"; // adjust the path
 import { User as IUserContext } from "@/context/UserContext";
 import UserBankDetails from "@/models/UserBankDetails";
+import ProviderBankDetails from "@/models/ProviderBankDetails";
+import Provider, { ProviderDocument } from "@/models/Provider";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,15 +98,15 @@ export async function OPTIONS() {
 // POST (Add Beneficiary)
 export async function POST(req: Request) {
   try {
-    const { userId, accountNumber, ifsc, bankName, branchName } = await req.json();
+    const { providerId, accountNumber, ifsc, bankName, branchName } = await req.json();
 
-    console.log("Received userId:", userId);
+    console.log("Received providerId:", providerId);
     console.log("Received accountNumber:", accountNumber);
     console.log("Received IFSC:", ifsc);
 
-    if (!userId || !accountNumber || !ifsc) {
+    if (!providerId || !accountNumber || !ifsc) {
       return NextResponse.json(
-        { error: "userId, accountNumber, and ifsc are required" },
+        { error: "providerId, accountNumber, and ifsc are required" },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -115,18 +117,18 @@ export async function POST(req: Request) {
     }
 
     // Fetch user details from DB
-    const user = await User.findOne({ _id: userId }).lean() as IUserContext | null;
-    if (!user) {
+    const provider = await Provider.findOne({ _id: providerId }).lean() as ProviderDocument | null;
+    if (!provider) {
       return NextResponse.json(
-        { error: "User not found" },
+        { error: "Provider not found" },
         { status: 404, headers: corsHeaders }
       );
     }
 
-    const bankDetails = await UserBankDetails.findOneAndUpdate(
-      { userId },
+    const bankDetails = await ProviderBankDetails.findOneAndUpdate(
+      { providerId },
       {
-        userId,
+        providerId,
         accountNumber,
         ifsc,
         bankName: bankName || "Unknown Bank",
@@ -137,25 +139,25 @@ export async function POST(req: Request) {
     );
 
     // Use user._id as beneficiary_id
-    const beneficiary_id = user._id.toString();
+    const beneficiary_id = provider._id.toString();
 
     // Build request body according to Cashfree API
     const body = {
       beneficiary_id,
-      beneficiary_name: user.fullName,
+      beneficiary_name: provider.fullName,
       beneficiary_instrument_details: {
         bank_account_number: accountNumber,
         bank_ifsc: ifsc,
         vpa: "", // optional UPI
       },
       beneficiary_contact_details: {
-        beneficiary_email: user.email,
-        beneficiary_phone: user.mobileNumber,
+        beneficiary_email: provider.email,
+        beneficiary_phone: provider.phoneNo,
         beneficiary_country_code: "+91",
-        beneficiary_address: user.homeAddress?.fullAddress || user.workAddress?.fullAddress || "-",
-        beneficiary_city: user.homeAddress?.city || user.workAddress?.city || "-",
-        beneficiary_state: user.homeAddress?.state || user.workAddress?.state || "-",
-        beneficiary_postal_code: user.homeAddress?.pinCode || user.workAddress?.pinCode || "000000",
+        beneficiary_address:  provider.storeInfo?.address || "",
+        beneficiary_city: provider.storeInfo?.city || "",
+        beneficiary_state: provider.storeInfo?.state || "",
+        beneficiary_postal_code: provider.storeInfo?.postalCode || "000000",
       },
     };
 
