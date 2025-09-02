@@ -3,28 +3,32 @@ import mongoose from "mongoose";
 import User from "@/models/User";
 import { connectToDatabase } from "@/utils/db";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 export async function GET(req: Request) {
+  await connectToDatabase();
+
   try {
-    await connectToDatabase();
-
-    // Extract `id` from the URL
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+    const parts = url.pathname.split("/");
+    const id = parts[parts.length - 2]; // 👈 second last segment (the userId)
 
-    // Check if valid ObjectId
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: "Invalid user id" },
-        { status: 400 }
+        { success: false, message: "Invalid or missing user id" },
+        { status: 400, headers: corsHeaders }
       );
     }
 
-    // Find the user by ObjectId
     const user = await User.findById(id);
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -42,12 +46,16 @@ export async function GET(req: Request) {
       .select("fullName email mobileNumber createdAt")
       .lean();
 
-    return NextResponse.json({ success: true, count, users });
-  } catch (err) {
-    console.error("Referral count API error:", err);
     return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
+      { success: true, count, users },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
