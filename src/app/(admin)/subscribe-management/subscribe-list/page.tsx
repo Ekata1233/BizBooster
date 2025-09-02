@@ -30,6 +30,7 @@ const SubscribeRequestPage = () => {
     const { isOpen, openModal, closeModal } = useModal();
     const { approveService, deleteService } = useSubscribe();
     const [tableData, setTableData] = useState<TableData[]>([]);
+       const [filteredProviders, setFilteredProviders] = useState<TableData[]>([]);
     const [providerCommission, setProviderCommission] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedService, setSelectedService] = useState<TableData | null>(null);
@@ -56,6 +57,7 @@ const SubscribeRequestPage = () => {
             }));
 
         setTableData(pending);
+         setFilteredProviders(pending); 
     }, [services]);
 
     /* ------------ handlers ------------- */
@@ -104,6 +106,15 @@ const SubscribeRequestPage = () => {
 
     /* ------------- columns -------------- */
     const columns = [
+        {
+            header: "S.No",
+            accessor: "serial",
+            render: (row: TableData) => {
+                const serial =
+                    filteredProviders.findIndex((u) => u.id === row.id) + 1;
+                return <span>{serial}</span>;
+            },
+        },
         { header: 'Provider Name', accessor: 'providerName' },
         { header: 'Service Name', accessor: 'name' },
         { header: 'Price', accessor: 'price' },
@@ -128,32 +139,32 @@ const SubscribeRequestPage = () => {
                 );
             },
         },
-        {
-            header: 'Action',
-            accessor: 'action',
-            render: (row: TableData) => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => handleAccept(row.id, row.providerId)}
-                        className="text-green-600 border border-green-600 rounded-md px-3 py-1 hover:bg-green-600 hover:text-white"
-                    >
-                        Approve
-                    </button>
-                    <button
-                        onClick={() => handleEdit(row)}
-                        className="text-blue-500 border border-blue-500 rounded-md px-3 py-1 hover:bg-blue-500 hover:text-white"
-                    >
-                        <PencilIcon />
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row.id)}
-                        className="text-red-500 border border-red-500 rounded-md px-3 py-1 hover:bg-red-500 hover:text-white"
-                    >
-                        <TrashBinIcon />
-                    </button>
-                </div>
-            ),
-        },
+        // {
+        //     header: 'Action',
+        //     accessor: 'action',
+        //     render: (row: TableData) => (
+        //         <div className="flex gap-2">
+        //             <button
+        //                 onClick={() => handleAccept(row.id, row.providerId)}
+        //                 className="text-green-600 border border-green-600 rounded-md px-3 py-1 hover:bg-green-600 hover:text-white"
+        //             >
+        //                 Approve
+        //             </button>
+        //             <button
+        //                 onClick={() => handleEdit(row)}
+        //                 className="text-blue-500 border border-blue-500 rounded-md px-3 py-1 hover:bg-blue-500 hover:text-white"
+        //             >
+        //                 <PencilIcon />
+        //             </button>
+        //             <button
+        //                 onClick={() => handleDelete(row.id)}
+        //                 className="text-red-500 border border-red-500 rounded-md px-3 py-1 hover:bg-red-500 hover:text-white"
+        //             >
+        //                 <TrashBinIcon />
+        //             </button>
+        //         </div>
+        //     ),
+        // },
     ];
 
     /* ------------- render -------------- */
@@ -163,7 +174,8 @@ const SubscribeRequestPage = () => {
             <div className="my-5">
                 <ComponentCard title="Subscribe List">
                     {tableData.length > 0 ? (
-                        <BasicTableOne columns={columns} data={tableData} />
+                        <BasicTableOne columns={columns} data={[...filteredProviders].reverse()} />
+
                     ) : (
                         /* fallback when nothing to review */
                         <p className="text-center py-8 text-gray-500">

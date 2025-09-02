@@ -125,12 +125,12 @@ const SubscribeRequestPage = () => {
             accessor: 'action',
             render: (row: TableData) => (
                 <div className="flex gap-2">
-                    <button
+                    {/* <button
                         onClick={() => handleAccept(row.id, row.providerId)}
                         className="text-green-600 border border-green-600 rounded-md px-3 py-2 hover:bg-green-600 hover:text-white"
                     >
                         Approve
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => handleNavigate(row)}
                         className="text-blue-500 border border-blue-500 rounded-md px-3 py-2 hover:bg-blue-500 hover:text-white"
