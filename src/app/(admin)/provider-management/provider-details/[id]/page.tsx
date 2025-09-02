@@ -284,7 +284,7 @@ const ProviderDetailsPage = () => {
           {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}
           {activeTab === 'bookings' && <ProviderBookings provider={provider} />}
           {activeTab === 'serviceMan' && <ProviderServiceMan provider={provider} />}
-          {activeTab === 'bank' && <ProviderBankInfo />}
+          {activeTab === 'bank' && <ProviderBankInfo  />}
           {activeTab === 'wallet' && <ProviderWallet provider={provider} />}
         </div>
       </div>

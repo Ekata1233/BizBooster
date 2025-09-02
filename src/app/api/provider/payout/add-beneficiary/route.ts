@@ -83,6 +83,7 @@ import { User as IUserContext } from "@/context/UserContext";
 import UserBankDetails from "@/models/UserBankDetails";
 import ProviderBankDetails from "@/models/ProviderBankDetails";
 import Provider, { ProviderDocument } from "@/models/Provider";
+import { connectToDatabase } from "@/utils/db";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -194,5 +195,17 @@ export async function POST(req: Request) {
       { error: "Beneficiary add failed", details: error },
       { status: 500, headers: corsHeaders }
     );
+  }
+}
+
+
+export async function GET() {
+  try {
+    await connectToDatabase()
+    const bankDetails = await ProviderBankDetails.find()
+    return NextResponse.json({ data: bankDetails }, { status: 200, headers: corsHeaders })
+  } catch (error) {
+    console.error("Error fetching bankDetails:", error)
+    return NextResponse.json({ message: "Server Error" }, { status: 500, headers: corsHeaders })
   }
 }
