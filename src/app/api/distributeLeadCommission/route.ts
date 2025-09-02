@@ -418,12 +418,13 @@ export async function POST(req: Request) {
         const franchiseEarningsTotal =
             C_share + B_share + A_share +
             (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
+        const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
+
         const totalRevenue =
             adminCommissionTotal +
             providerEarningsTotal +
-            franchiseEarningsTotal;
+            franchiseEarningsTotal + extraFee;
 
-        const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
