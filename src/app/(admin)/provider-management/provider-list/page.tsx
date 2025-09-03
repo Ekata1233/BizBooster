@@ -38,9 +38,8 @@ const sortOptions = [
 
 const statusOptions = [
   { value: "all", label: "All Status" },
-  { value: "completed", label: "Completed" },
-  { value: "pending", label: "Pending" },
-  
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const ProviderList = () => {
@@ -288,23 +287,24 @@ const ProviderList = () => {
       <ComponentCard title="Provider List Table">
         <div className="flex justify-between items-center border-b border-gray-200 pb-2">
           <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-            {["all", "pending", "approved"].map((tab) => (
-              <li
-                key={tab}
-                className={`cursor-pointer px-4 py-2 ${
-                  activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {providers.filter(
-                    (p) => tab === "all" || p.status.toLowerCase() === tab
-                  ).length}
-                </span>
-              </li>
-            ))}
-          </ul>
+  {["all", "pending", "approved", "rejected"].map((tab) => (
+    <li
+      key={tab}
+      className={`cursor-pointer px-4 py-2 ${
+        activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+      }`}
+      onClick={() => setActiveTab(tab)}
+    >
+      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+      <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+        {providers.filter(
+          (p) => tab === "all" || p.status.toLowerCase() === tab
+        ).length}
+      </span>
+    </li>
+  ))}
+</ul>
+
         </div>
 
         {loading ? (
