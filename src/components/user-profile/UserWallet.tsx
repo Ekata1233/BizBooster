@@ -119,7 +119,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
   });
 
   // Now reverse it back to show newest first
-  const enrichedTransactions = enrichedAscending;
+const enrichedTransactions = [...enrichedAscending].reverse();
 
 
   const summaryCards = [

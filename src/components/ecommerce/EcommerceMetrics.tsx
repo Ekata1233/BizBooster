@@ -25,7 +25,7 @@ export const EcommerceMetrics = () => {
   const isLoading =
     userLoading || providerLoading || checkoutLoading || summaryLoading;
 
-  if (isLoading) return <p>Loading Data...</p>;
+  // if (isLoading) return <p>Loading Data...</p>;
   if (!summary) return <p>No earnings summary available.</p>;
 
   // ✅ Filter logic
