@@ -12,6 +12,7 @@ import { useModule } from "@/context/ModuleContext";
 import Link from "next/link";
 import axios from "axios";
 import { debounce } from "lodash";
+import Image from "next/image";
 
 interface ProviderTableData {
   id: string;
@@ -20,6 +21,7 @@ interface ProviderTableData {
   phone: string;
   storeName: string;
   storePhone: string;
+   logo?: string; 
   city: string;
   status: "Completed" | "Pending" | "Approved" | "Rejected";
   isApproved: boolean;
@@ -54,7 +56,8 @@ const ProviderList = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-
+  console.log("providerlist",providers);
+  
   const fetchProviders = async () => {
     setLoading(true);
     try {
@@ -87,6 +90,7 @@ const ProviderList = () => {
           storeName: storeInfo.storeName || "-",
           storePhone: storeInfo.storePhone || "-",
           city: storeInfo.city || "-",
+           logo: storeInfo.logo || "", 
           isRejected: provider.isRejected || false,
           isApproved: provider.isApproved || false,
           status,
@@ -172,11 +176,39 @@ const ProviderList = () => {
         return <span>{serial}</span>;
       },
     },
+    {
+  header: "Store Info",
+  accessor: "store",
+  render: (row: ProviderTableData) => (
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 overflow-hidden rounded-full">
+        <Image
+          width={40}
+          height={40}
+          src={row.logo || "/default-logo.png"} // 👈 fallback if no logo
+          alt={row.storeName || "Store logo"}
+        />
+      </div>
+      <div>
+        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+          {row.storeName || "N/A"}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.city || ""}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.storePhone || ""}
+        </span>
+      </div>
+    </div>
+  ),
+},
+
     { header: "Name", accessor: "fullName" },
     { header: "Email", accessor: "email" },
     { header: "Phone", accessor: "phone" },
-    { header: "Store Name", accessor: "storeName" },
-    { header: "Store Phone", accessor: "storePhone" },
+
+    // { header: "Store Phone", accessor: "storePhone" },
     { header: "City", accessor: "city" },
     {
       header: "Status",
