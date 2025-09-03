@@ -3,6 +3,14 @@
 import { IProviderWallet } from '@/models/ProviderWallet';
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+export interface SubscribedService {
+  _id: string;
+  serviceName: string;
+  price: number;
+  discountedPrice: number;
+  isDeleted: boolean;
+}
 export interface Provider {
   _id: string;
   fullName: string;
@@ -10,6 +18,7 @@ export interface Provider {
   phoneNo?: string;
   password?: string;
   referralCode?: string | null;
+  subscribedServices?: SubscribedService[];
 
   storeInfo?: Record<string, any>;
   kyc?: Record<string, any>;

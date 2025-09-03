@@ -248,12 +248,19 @@ export async function POST(req: Request) {
             });
         }
 
-        providerWallet.balance += providerShare;
-        providerWallet.withdrawableBalance += providerShare;
-        providerWallet.pendingWithdraw += providerShare;
-        providerWallet.totalCredits += providerShare;
-        providerWallet.totalEarning += providerShare;
+        // providerWallet.balance += providerShare;
+        // providerWallet.withdrawableBalance += providerShare;
+        // providerWallet.pendingWithdraw += providerShare;
+        // providerWallet.totalCredits += providerShare;
+        // providerWallet.totalEarning += providerShare;
+        // providerWallet.updatedAt = new Date();
+        providerWallet.balance = Number((providerWallet.balance + providerShare).toFixed(2));
+        providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + providerShare).toFixed(2));
+        providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + providerShare).toFixed(2));
+        providerWallet.totalCredits = Number((providerWallet.totalCredits + providerShare).toFixed(2));
+        providerWallet.totalEarning = Number((providerWallet.totalEarning + providerShare).toFixed(2));
         providerWallet.updatedAt = new Date();
+
 
         providerWallet.transactions.push({
             type: "credit",
@@ -357,12 +364,19 @@ export async function POST(req: Request) {
                 amount: extra_adminShare,
             });
 
-            providerWallet.balance += extraProviderShare;
-            providerWallet.withdrawableBalance += extraProviderShare;
-            providerWallet.pendingWithdraw += extraProviderShare;
-            providerWallet.totalCredits += extraProviderShare;
-            providerWallet.totalEarning += extraProviderShare;
+            // providerWallet.balance += extraProviderShare;
+            // providerWallet.withdrawableBalance += extraProviderShare;
+            // providerWallet.pendingWithdraw += extraProviderShare;
+            // providerWallet.totalCredits += extraProviderShare;
+            // providerWallet.totalEarning += extraProviderShare;
+            // providerWallet.updatedAt = new Date();
+            providerWallet.balance = Number((providerWallet.balance + extraProviderShare).toFixed(2));
+            providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + extraProviderShare).toFixed(2));
+            providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + extraProviderShare).toFixed(2));
+            providerWallet.totalCredits = Number((providerWallet.totalCredits + extraProviderShare).toFixed(2));
+            providerWallet.totalEarning = Number((providerWallet.totalEarning + extraProviderShare).toFixed(2));
             providerWallet.updatedAt = new Date();
+
             providerWallet.transactions.push({
                 type: "credit",
                 amount: extraProviderShare,
