@@ -15,11 +15,11 @@ interface AdType {
   fileUrl: string;
   addType: string;
   category?: {
-    _id: string;
+    _id?: string;   // 👈 make optional
     name: string;
   };
   service?: {
-    _id: string;
+    _id?: string;   // 👈 make optional
     serviceName: string;
   };
   provider?: string;
