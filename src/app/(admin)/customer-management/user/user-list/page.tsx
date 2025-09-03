@@ -30,6 +30,7 @@ export interface User {
     referralCode?: string;
     referredBy: string | null;
     isAgree: boolean;
+    profilePhoto:string;
     otp: {
         code: string;
         expiresAt: Date;
@@ -64,6 +65,7 @@ const UserList = () => {
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
+console.log("userlist",users);
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -221,7 +223,7 @@ const UserList = () => {
                         return {
                             id: user._id,
                             user: {
-                                image: user.image || "/images/logo/user1.webp",
+                                image: user.profilePhoto  || "/images/logo/user1.webp",
                                 fullName: user.fullName,
                             },
                             email: user.email,
