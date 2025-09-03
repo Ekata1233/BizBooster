@@ -101,19 +101,19 @@ const AdListPage = () => {
             accessor: 'action',
             render: (row: AdTableData) => (
                 <div className="flex gap-2">
-                    <button
+                    {/* <button
                         onClick={() => alert(`Edit Ad ID: ${row.id}`)}
                         className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
                     >
                         <PencilIcon size={16} />
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => alert(`Delete Ad ID: ${row.id}`)}
                         className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
                     >
                         <TrashBinIcon size={16} />
                     </button>
-                    <Link href={`/ad-management/ad-detail/${row.id}`} passHref>
+                    <Link href={`/adds-management/adds-list/${row.id}`} passHref>
                         <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                             <EyeIcon size={16} />
                         </button>
