@@ -16,7 +16,7 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
   loading,
   error
 }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' | 'withdraw'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' >('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   if (loading) return <p>Loading transactions...</p>;
@@ -102,10 +102,10 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
 
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
-        {['all', 'credit', 'debit', 'withdraw'].map((tab) => (
+        {['all', 'credit', 'debit'].map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit' | 'withdraw')}
+            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit' )}
             className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
               activeTab === tab
                 ? 'bg-blue-600 text-white border-blue-600'
