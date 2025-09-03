@@ -12,6 +12,7 @@ import { useModule } from "@/context/ModuleContext";
 import Link from "next/link";
 import axios from "axios";
 import { debounce } from "lodash";
+import Image from "next/image";
 
 interface ProviderTableData {
   id: string;
@@ -20,6 +21,7 @@ interface ProviderTableData {
   phone: string;
   storeName: string;
   storePhone: string;
+   logo?: string; 
   city: string;
   status: "Completed" | "Pending" | "Approved" | "Rejected";
   isApproved: boolean;
@@ -38,9 +40,8 @@ const sortOptions = [
 
 const statusOptions = [
   { value: "all", label: "All Status" },
-  { value: "completed", label: "Completed" },
-  { value: "pending", label: "Pending" },
-  
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const ProviderList = () => {
@@ -55,7 +56,8 @@ const ProviderList = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-
+  console.log("providerlist",providers);
+  
   const fetchProviders = async () => {
     setLoading(true);
     try {
@@ -88,6 +90,7 @@ const ProviderList = () => {
           storeName: storeInfo.storeName || "-",
           storePhone: storeInfo.storePhone || "-",
           city: storeInfo.city || "-",
+           logo: storeInfo.logo || "", 
           isRejected: provider.isRejected || false,
           isApproved: provider.isApproved || false,
           status,
@@ -173,11 +176,39 @@ const ProviderList = () => {
         return <span>{serial}</span>;
       },
     },
+    {
+  header: "Store Info",
+  accessor: "store",
+  render: (row: ProviderTableData) => (
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 overflow-hidden rounded-full">
+        <Image
+          width={40}
+          height={40}
+          src={row.logo || "/default-logo.png"} // 👈 fallback if no logo
+          alt={row.storeName || "Store logo"}
+        />
+      </div>
+      <div>
+        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+          {row.storeName || "N/A"}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.city || ""}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.storePhone || ""}
+        </span>
+      </div>
+    </div>
+  ),
+},
+
     { header: "Name", accessor: "fullName" },
     { header: "Email", accessor: "email" },
     { header: "Phone", accessor: "phone" },
-    { header: "Store Name", accessor: "storeName" },
-    { header: "Store Phone", accessor: "storePhone" },
+
+    // { header: "Store Phone", accessor: "storePhone" },
     { header: "City", accessor: "city" },
     {
       header: "Status",
@@ -288,23 +319,24 @@ const ProviderList = () => {
       <ComponentCard title="Provider List Table">
         <div className="flex justify-between items-center border-b border-gray-200 pb-2">
           <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-            {["all", "pending", "approved"].map((tab) => (
-              <li
-                key={tab}
-                className={`cursor-pointer px-4 py-2 ${
-                  activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {providers.filter(
-                    (p) => tab === "all" || p.status.toLowerCase() === tab
-                  ).length}
-                </span>
-              </li>
-            ))}
-          </ul>
+  {["all", "pending", "approved", "rejected"].map((tab) => (
+    <li
+      key={tab}
+      className={`cursor-pointer px-4 py-2 ${
+        activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+      }`}
+      onClick={() => setActiveTab(tab)}
+    >
+      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+      <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+        {providers.filter(
+          (p) => tab === "all" || p.status.toLowerCase() === tab
+        ).length}
+      </span>
+    </li>
+  ))}
+</ul>
+
         </div>
 
         {loading ? (

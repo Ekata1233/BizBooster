@@ -32,7 +32,7 @@ import Zone from "@/models/Zone";
 
 const MONGODB_URI =
   process.env.MONGO_URI ||
-  "mongodb+srv://ftfltechnology:ftfltechnology@bizboostercluster.o31hnq3.mongodb.net/?retryWrites=true&w=majority&appName=BizBoosterCluster";
+  "mongodb+srv://ftfltechnology:ftfltechnology@bizboostercluster.o31hnq3.mongodb.net/test?retryWrites=true&w=majority&appName=BizBoosterCluster";
 
 // Prevent multiple connections in dev / serverless
 let cached = (global as any).mongoose;

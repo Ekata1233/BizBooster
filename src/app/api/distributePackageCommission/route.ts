@@ -146,11 +146,18 @@ export async function POST(req: NextRequest) {
                     lastTransactionAt: new Date(),
                 });
             } else {
-                wallet.balance += amount;
-                wallet.totalCredits += amount;
+                // wallet.balance += amount;
+                // wallet.totalCredits += amount;
+                // wallet.lastTransactionAt = new Date();
+                // if (level === "C") wallet.selfEarnings += amount;
+                // else if (level === "A" || level === "B") wallet.referralEarnings += amount;
+                // transaction.balanceAfterTransaction = wallet.balance;
+                // wallet.transactions.push(transaction);
+                wallet.balance = Number((wallet.balance + amount).toFixed(2));   // ✅ ensure 2 decimals
+                wallet.totalCredits = Number((wallet.totalCredits + amount).toFixed(2));
                 wallet.lastTransactionAt = new Date();
-                if (level === "C") wallet.selfEarnings += amount;
-                else if (level === "A" || level === "B") wallet.referralEarnings += amount;
+                if (level === "C") wallet.selfEarnings = Number((wallet.selfEarnings + amount).toFixed(2));
+                else if (level === "A" || level === "B") wallet.referralEarnings = Number((wallet.referralEarnings + amount).toFixed(2));
                 transaction.balanceAfterTransaction = wallet.balance;
                 wallet.transactions.push(transaction);
             }
@@ -227,10 +234,16 @@ export async function POST(req: NextRequest) {
 
         /* ---------------- ✅ New: Save package into Deposite ---------------- */
         await Deposite.create({
+            // user: userC._id,
+            // packagePrice: pkg.discountedPrice || pkg.grandtotal,
+            // deposite: pkg.deposit,
+            // monthlyEarnings: pkg.monthlyEarnings,
+            // lockInPeriod: pkg.lockInPeriod,
+            // packageActivateDate: new Date()
             user: userC._id,
-            packagePrice: pkg.discountedPrice || pkg.grandtotal,
-            deposite: pkg.deposit,
-            monthlyEarnings: pkg.monthlyEarnings,
+            packagePrice: Number((pkg.discountedPrice || pkg.grandtotal).toFixed(2)),
+            deposite: Number(pkg.deposit.toFixed(2)),
+            monthlyEarnings: Number(pkg.monthlyEarnings.toFixed(2)),
             lockInPeriod: pkg.lockInPeriod,
             packageActivateDate: new Date()
         });
