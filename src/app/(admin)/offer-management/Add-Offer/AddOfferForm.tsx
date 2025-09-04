@@ -27,7 +27,7 @@
 //       </h1>
 
 //       <div className="bg-white p-6 rounded shadow mb-10">
-       
+
 //         <OfferComponent offerIdToEdit={offerId} />
 //       </div>
 //     </div>
@@ -46,6 +46,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 
 // Loading component for suspense fallback
 const LoadingSpinner = () => (
@@ -57,7 +58,7 @@ const LoadingSpinner = () => (
 // Dynamically import the main component with no SSR
 const OfferComponent = dynamic(
   () => import('@/components/offer-component/OfferComponent'),
-  { 
+  {
     ssr: false,
     loading: () => <LoadingSpinner />
   }
@@ -81,11 +82,11 @@ const AddOfferFormContent: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {offerId ? 'Edit Offer' : 'Add New Offer'}
-      </h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="container mx-auto px-4 ">
+      <PageBreadcrumb pageTitle={offerId ? "Edit Offer" : "Add New Offer"} />
+
+
+      <div className="bg-white rounded-lg shadow-md">
         <OfferComponent offerIdToEdit={offerId} />
       </div>
     </div>

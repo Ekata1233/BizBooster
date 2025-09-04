@@ -10,6 +10,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import StatCard from '@/components/common/StatCard';
 import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField'; // your styled input wrapper
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 
 interface OfferEntry {
   _id: string;
@@ -132,8 +133,8 @@ const OfferListPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Offers List</h1>
+    <div className="container mx-auto px-4">
+      <PageBreadcrumb pageTitle="Offers List" />
 
       {error && (
         <p className="bg-red-100 text-red-700 px-4 py-2 mb-4 rounded">
@@ -196,6 +197,8 @@ const OfferListPage: React.FC = () => {
         </div>
       </div>
 
+      <ComponentCard title="All Offers">
+
       {/* Tabs */}
       <div className="flex gap-6 mb-5 border-b border-gray-200">
         {['All', 'Active', 'Upcoming', 'Expired'].map((tab) => {
@@ -204,9 +207,8 @@ const OfferListPage: React.FC = () => {
             <button
               key={tab}
               onClick={() => setSelectedTab(tab as 'All' | OfferStatus)}
-              className={`relative pb-3 text-sm font-medium transition-colors ${
-                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`relative pb-3 text-sm font-medium transition-colors ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               {tab}
               {active && (
@@ -218,7 +220,6 @@ const OfferListPage: React.FC = () => {
       </div>
 
       {/* All Offers Table */}
-      <ComponentCard title="All Offers">
         {!loading ? (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
