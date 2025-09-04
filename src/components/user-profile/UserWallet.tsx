@@ -55,12 +55,6 @@ const columnsWallet = [
       row.type === 'credit' ? `₹${row.amount}` : '-',
   },
   {
-    header: 'Withdraw',
-    accessor: 'withdraw',
-    render: (row: IWalletTransaction) =>
-      row.source === 'withdraw' ? `₹${row.amount}` : '-',
-  },
-  {
     header: 'Balance',
     accessor: 'balance',
     render: (row: IWalletTransaction & { runningBalance?: number }) => (
@@ -73,6 +67,8 @@ const UserWallet = ({ userId }: UserWalletProps) => {
   const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
+
+  console.log("ujser wallet ; ", wallet)
 
   useEffect(() => {
     if (userId) {
@@ -112,14 +108,24 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
+  // let runningBalance = 0;
+  // const enrichedAscending = sortedByDateAsc.map((txn) => {
+  //   runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
+  //   return { ...txn, runningBalance };
+  // });
+
   let runningBalance = 0;
   const enrichedAscending = sortedByDateAsc.map((txn) => {
-    runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
-    return { ...txn, runningBalance };
+    runningBalance += txn.type === "credit" ? txn.amount : -txn.amount;
+    return {
+      ...txn,
+      runningBalance: Number(runningBalance.toFixed(2))
+    };
   });
 
+
   // Now reverse it back to show newest first
-const enrichedTransactions = [...enrichedAscending].reverse();
+  const enrichedTransactions = [...enrichedAscending].reverse();
 
 
   const summaryCards = [
@@ -146,9 +152,9 @@ const enrichedTransactions = [...enrichedAscending].reverse();
     },
   ];
 
-    if (loading) return <p>Loading wallet...</p>;
+  if (loading) return <p>Loading wallet...</p>;
 
-    
+
   return (
     <ComponentCard title="Wallet">
       {/* Summary Cards */}
