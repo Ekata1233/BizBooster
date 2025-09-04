@@ -253,12 +253,15 @@ const CouponList: React.FC = () => {
       accessor: 'action',
       render: (row: TableData) => (
         <div className="flex gap-2">
+          <Link href={`/coupons-management/coupons-list/update-coupon/${row.id}`} passHref>
+
           <button
-            onClick={() => handleEdit(row.id)}
+            
             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
           >
             <PencilIcon />
           </button>
+          </Link>
           <button
             onClick={() => handleDelete(row.id)}
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
