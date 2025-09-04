@@ -43,7 +43,7 @@ export const EcommerceMetrics = () => {
         title="Users"
         value={activeUsers.length}
         trend="up"
-        percentChange="2.15%"
+        // percentChange="2.15%"
         icon={<GroupIcon className="text-gray-800 size-6 dark:text-white/90" />}
         gradient="from-blue-100 to-blue-200"
         textColor="text-blue-800"
@@ -52,7 +52,7 @@ export const EcommerceMetrics = () => {
         title="Providers"
         value={activeProviders.length}
         trend="up"
-        percentChange="1.90%"
+        // percentChange="1.90%"
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
         gradient="from-green-100 to-green-200"
         textColor="text-green-800"
@@ -61,7 +61,7 @@ export const EcommerceMetrics = () => {
         title="Total Bookings (Completed)"
         value={completedCheckouts.length}
         trend="up"
-        percentChange="3.27%"
+        // percentChange="3.27%"
         icon={<GroupIcon className="text-gray-800 size-6 dark:text-white/90" />}
         gradient="from-red-100 to-red-200"
         textColor="text-red-800"
@@ -70,7 +70,7 @@ export const EcommerceMetrics = () => {
         title="Total Revenue"
         value={`₹${(summary?.totalRevenue ?? 0).toLocaleString("en-IN")}`}
         trend="up"
-        percentChange=""
+        // percentChange=""
         icon={<BoxIconLine className="text-gray-800 dark:text-white/90" />}
         gradient="from-purple-100 to-purple-200"
         textColor="text-purple-800"
@@ -83,7 +83,7 @@ const MetricCard = ({
   title,
   value,
   trend,
-  percentChange,
+
   icon,
   gradient,
   textColor,
@@ -91,7 +91,7 @@ const MetricCard = ({
   title: string;
   value: number | string;
   trend: "up" | "down";
-  percentChange: string;
+  // percentChange: string;
   icon: React.ReactNode;
   gradient: string;
   textColor: string;
@@ -113,10 +113,10 @@ const MetricCard = ({
             {value}
           </h4>
         </div>
-        <Badge color={badgeColor}>
+        {/* <Badge color={badgeColor}>
           <TrendIcon className={trend === "down" ? "text-error-500" : ""} />
-          {percentChange}
-        </Badge>
+          // {percentChange}
+        </Badge> */}
       </div>
     </div>
   );

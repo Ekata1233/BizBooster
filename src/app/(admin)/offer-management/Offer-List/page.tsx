@@ -36,7 +36,6 @@ function getOfferStatus(startISO: string, endISO: string): OfferStatus {
   return 'Active';
 }
 
-
 function StatusBadge({ status }: { status: OfferStatus }) {
   let styles = '';
 
@@ -61,7 +60,6 @@ function StatusBadge({ status }: { status: OfferStatus }) {
   );
 }
 
-
 const OfferListPage: React.FC = () => {
   const [offers, setOffers] = useState<OfferEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +70,6 @@ const OfferListPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  
   const fetchOffers = async () => {
     setLoading(true);
     try {
@@ -90,7 +87,6 @@ const OfferListPage: React.FC = () => {
     fetchOffers();
   }, []);
 
-  
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this offer?')) return;
     try {
@@ -126,7 +122,15 @@ const OfferListPage: React.FC = () => {
     });
   }, [offers, selectedTab, searchTerm, selectedDate]);
 
- 
+  // ✅ Date formatter function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Offers List</h1>
@@ -186,14 +190,14 @@ const OfferListPage: React.FC = () => {
             value={offers.length}
             icon={UserIcon}
             badgeColor="success"
-            badgeValue="0.00%"        
+            badgeValue="0.00%"
             badgeIcon={ArrowUpIcon}
           />
         </div>
       </div>
 
       {/* Tabs */}
-        <div className="flex gap-6 mb-5 border-b border-gray-200">
+      <div className="flex gap-6 mb-5 border-b border-gray-200">
         {['All', 'Active', 'Upcoming', 'Expired'].map((tab) => {
           const active = selectedTab === tab;
           return (
@@ -201,9 +205,7 @@ const OfferListPage: React.FC = () => {
               key={tab}
               onClick={() => setSelectedTab(tab as 'All' | OfferStatus)}
               className={`relative pb-3 text-sm font-medium transition-colors ${
-                active
-                  ? 'text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               {tab}
@@ -213,9 +215,7 @@ const OfferListPage: React.FC = () => {
             </button>
           );
         })}
-      </div> 
-     
-     
+      </div>
 
       {/* All Offers Table */}
       <ComponentCard title="All Offers">
@@ -280,10 +280,10 @@ const OfferListPage: React.FC = () => {
                         )}
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
-                        {new Date(offer.offerStartTime).toLocaleString()}
+                        {formatDate(offer.offerStartTime)}
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
-                        {new Date(offer.offerEndTime).toLocaleString()}
+                        {formatDate(offer.offerEndTime)}
                       </td>
                       <td className="px-5 py-3">
                         <StatusBadge status={status} />

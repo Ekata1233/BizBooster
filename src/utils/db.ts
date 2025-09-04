@@ -49,7 +49,7 @@ export async function connectToDatabase() {
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 30000,
       })
       .then(async (mongooseInstance) => {
         console.log("✅ Connected to MongoDB");

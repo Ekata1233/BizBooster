@@ -313,81 +313,81 @@ export async function GET() {
   try {
     const wallets = await Wallet.find({ balance: { $gt: 0 } }).populate("userId");
 
-for (const wallet of wallets) {
-  const user = wallet.userId;
-  const amount = wallet.balance;
+    for (const wallet of wallets) {
+      const user = wallet.userId;
+      const amount = wallet.balance;
 
-  if (!user || amount <= 0 || user._id.equals(ADMIN_ID)) continue;
+      if (!user || amount <= 0 || user._id.equals(ADMIN_ID)) continue;
 
-  const beneficiaryId = user._id.toString();
+      const beneficiaryId = user._id.toString();
 
-  // 🔹 Step 1: Check if beneficiary exists
-  const checkRes = await fetch(
-    `https://sandbox.cashfree.com/payout/beneficiaries/${beneficiaryId}`,
-    {
-      method: "GET",
-      headers: {
-        "x-api-version": "2024-01-01",
-        "x-client-id": process.env.CASHFREE_PAYOUT_ID!,
-        "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_KEY!,
-      },
+      // 🔹 Step 1: Check if beneficiary exists
+      const checkRes = await fetch(
+        `https://sandbox.cashfree.com/payout/beneficiaries/${beneficiaryId}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-version": "2024-01-01",
+            "x-client-id": process.env.CASHFREE_PAYOUT_ID!,
+            "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_KEY!,
+          },
+        }
+      );
+
+      if (checkRes.status !== 200) {
+        console.log(`⚠️ Skipping payout: Beneficiary ${beneficiaryId} not found`);
+        continue; // ❌ skip, don't push transaction
+      }
+
+      const transferId = `${Date.now()}${beneficiaryId
+        .slice(-6)
+        .replace(/\D/g, "")}`;
+
+      // 🔹 Step 2: Initiate payout
+      const res = await fetch("https://sandbox.cashfree.com/payout/transfers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-version": "2024-01-01",
+          "x-client-id": process.env.CASHFREE_PAYOUT_ID!,
+          "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_KEY!,
+        },
+        body: JSON.stringify({
+          transfer_id: transferId,
+          transfer_amount: amount,
+          transfer_currency: "INR",
+          beneficiary_details: { beneficiary_id: beneficiaryId },
+        }),
+      });
+
+      const data = await res.json();
+      console.log("data : ", data);
+
+      // ✅ Only push transaction if payout API did not return an error
+      if (!data.type && data.transfer_id) {
+        wallet.transactions.push({
+          type: "debit",
+          amount,
+          from: "wallet",
+          description: "Weekly auto-withdrawal",
+          referenceId: transferId,
+          method: "BankTransfer",
+          source: "payout",
+          status:
+            data.status?.toUpperCase() === "RECEIVED" ? "pending" : "failed",
+          createdAt: new Date(),
+          balanceAfterTransaction: wallet.balance,
+          leadId: "",
+          commissionFrom: "",
+        });
+
+        await wallet.save({ session });
+      } else {
+        console.log(
+          `⚠️ Skipping transaction push for ${beneficiaryId}, reason: ${data.message}`
+        );
+      }
     }
-  );
-
-  if (checkRes.status !== 200) {
-    console.log(`⚠️ Skipping payout: Beneficiary ${beneficiaryId} not found`);
-    continue; // ❌ skip, don't push transaction
-  }
-
-  const transferId = `${Date.now()}${beneficiaryId
-    .slice(-6)
-    .replace(/\D/g, "")}`;
-
-  // 🔹 Step 2: Initiate payout
-  const res = await fetch("https://sandbox.cashfree.com/payout/transfers", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-version": "2024-01-01",
-      "x-client-id": process.env.CASHFREE_PAYOUT_ID!,
-      "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_KEY!,
-    },
-    body: JSON.stringify({
-      transfer_id: transferId,
-      transfer_amount: amount,
-      transfer_currency: "INR",
-      beneficiary_details: { beneficiary_id: beneficiaryId },
-    }),
-  });
-
-  const data = await res.json();
-  console.log("data : ", data);
-
-  // ✅ Only push transaction if payout API did not return an error
-  if (!data.type && data.transfer_id) {
-    wallet.transactions.push({
-      type: "debit",
-      amount,
-      from: "wallet",
-      description: "Weekly auto-withdrawal",
-      referenceId: transferId,
-      method: "BankTransfer",
-      source: "payout",
-      status:
-        data.status?.toUpperCase() === "RECEIVED" ? "pending" : "failed",
-      createdAt: new Date(),
-      balanceAfterTransaction: wallet.balance,
-      leadId: "",
-      commissionFrom: "",
-    });
-
-    await wallet.save({ session });
-  } else {
-    console.log(
-      `⚠️ Skipping transaction push for ${beneficiaryId}, reason: ${data.message}`
-    );
-  }
-}
 
 
     await session.commitTransaction();
