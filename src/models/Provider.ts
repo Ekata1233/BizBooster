@@ -132,7 +132,6 @@ const providerSchema = new Schema<ProviderDocument>(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -169,6 +168,24 @@ const providerSchema = new Schema<ProviderDocument>(
     },
   },
   { timestamps: true }
+);
+
+// Email unique for non-deleted providers
+providerSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
+// Phone number unique for non-deleted providers
+providerSchema.index(
+  { phoneNo: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
+// Referral code unique only if it exists
+providerSchema.index(
+  { referralCode: 1 },
+  { unique: true, sparse: true }
 );
 
 providerSchema.pre("save", async function (next) {
