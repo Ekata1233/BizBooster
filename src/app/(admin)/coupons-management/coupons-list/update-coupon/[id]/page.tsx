@@ -14,6 +14,8 @@ import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
 import Radio from "@/components/form/input/Radio";
 import Button from "@/components/ui/button/Button";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/common/ComponentCard";
 
 /* ─── option lists ───────────────────────────────────────────── */
 const couponTypeOptions = [
@@ -287,149 +289,150 @@ const EditCouponPage: React.FC = () => {
 
   /* ─── ui ─────────────────────────────────────────────────── */
   return (
-    <div className="w-full bg-white p-4 dark:bg-gray-900 lg:p-11">
-      <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-        Edit Coupon
-      </h4>
+    <div className="w-full dark:bg-gray-900 ">
+      <PageBreadcrumb pageTitle="Edit Coupon" />
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Coupon Type & Code */}
-          <div className="relative">
-            <Label>Select Coupon Type</Label>
-            <Select
-              options={couponTypeOptions}
-              placeholder="Select coupon type"
-              value={form.couponType}
-              onChange={(val) => handleChange("couponType", val)}
-              className="w-full dark:bg-dark-900"
-            />
-            <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-              <ChevronDownIcon />
-            </span>
-          </div>
-          <div>
-            <Label>Coupon Code</Label>
-            <Input
-              type="text"
-              placeholder="Enter coupon code"
-              value={form.couponCode ?? ""}
-              onChange={(e) => handleChange("couponCode", e.target.value)}
-            />
-          </div>
+      <ComponentCard title="Edit Coupon" className=" h-full">
 
-          <div className="md:col-span-2 flex flex-wrap items-center gap-8">
-            {form.couponType === "customerWise" && (
-              <div className="w-full">
-                <Label>Select Customer</Label>
-                <Select
-                  options={customersOptions}
-                  placeholder="Select customer"
-                  value={form.customer?._id}
-                  onChange={(val) => handleChange("customer", val)}
-                  className="w-full dark:bg-dark-900"
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Coupon Type & Code */}
+            <div className="relative">
+              <Label>Select Coupon Type</Label>
+              <Select
+                options={couponTypeOptions}
+                placeholder="Select coupon type"
+                value={form.couponType}
+                onChange={(val) => handleChange("couponType", val)}
+                className="w-full dark:bg-dark-900"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <ChevronDownIcon />
+              </span>
+            </div>
+            <div>
+              <Label>Coupon Code</Label>
+              <Input
+                type="text"
+                placeholder="Enter coupon code"
+                value={form.couponCode ?? ""}
+                onChange={(e) => handleChange("couponCode", e.target.value)}
+              />
+            </div>
+
+            <div className="md:col-span-2 flex flex-wrap items-center gap-8">
+              {form.couponType === "customerWise" && (
+                <div className="w-full">
+                  <Label>Select Customer</Label>
+                  <Select
+                    options={customersOptions}
+                    placeholder="Select customer"
+                    value={form.customer?._id}
+                    onChange={(val) => handleChange("customer", val)}
+                    className="w-full dark:bg-dark-900"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Discount Type */}
+            <div className="md:col-span-2 flex flex-wrap items-center gap-8">
+              <Label>Discount Type</Label>
+              {discountTypes.map((t, idx) => (
+                <Radio
+                  key={idx}
+                  id={`discountType-${idx}`}
+                  name="discountType"
+                  value={t}
+                  checked={form.discountType === t}
+                  onChange={() => handleDiscountTypeChange(t)}
+                  label={t}
                 />
+              ))}
+            </div>
+
+            {/* Discount Title */}
+            <div className="md:col-span-2">
+              <Label>Discount Title</Label>
+              <Input
+                type="text"
+                placeholder="Enter discount title"
+                value={form.discountTitle ?? ""}
+                onChange={(e) => handleChange("discountTitle", e.target.value)}
+              />
+            </div>
+
+            {/* Category / Service / Zone */}
+            {renderDynamicSelects()}
+
+            {/* Amount Type */}
+            <div className="md:col-span-2 flex flex-wrap items-center gap-8">
+              <Label>Discount Amount Type</Label>
+              {amountTypes.map((t, idx) => (
+                <Radio
+                  key={idx}
+                  id={`amountType-${idx}`}
+                  name="amountType"
+                  value={t}
+                  checked={form.discountAmountType === t}
+                  onChange={() => handleAmountTypeChange(t)}
+                  label={t}
+                />
+              ))}
+            </div>
+
+            {/* Amount / Date / Limits */}
+            {renderAmountFields()}
+
+            {/* Cost bearer & applies to */}
+            <div className="md:col-span-2 grid gap-6 md:grid-cols-2">
+              <div className="flex flex-col gap-3">
+                <Label>Discount Cost&nbsp;Bearer</Label>
+                <div className="flex flex-wrap items-center gap-6">
+                  {costBearers.map((cb, idx) => (
+                    <Radio
+                      key={idx}
+                      id={`costBearer-${idx}`}
+                      name="discountCostBearer"
+                      value={cb}
+                      checked={form.discountCostBearer === cb}
+                      onChange={() => handleChange("discountCostBearer", cb)}
+                      label={cb}
+                    />
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Discount Type */}
-          <div className="md:col-span-2 flex flex-wrap items-center gap-8">
-            <Label>Discount Type</Label>
-            {discountTypes.map((t, idx) => (
-              <Radio
-                key={idx}
-                id={`discountType-${idx}`}
-                name="discountType"
-                value={t}
-                checked={form.discountType === t}
-                onChange={() => handleDiscountTypeChange(t)}
-                label={t}
-              />
-            ))}
-          </div>
-
-          {/* Discount Title */}
-          <div className="md:col-span-2">
-            <Label>Discount Title</Label>
-            <Input
-              type="text"
-              placeholder="Enter discount title"
-              value={form.discountTitle ?? ""}
-              onChange={(e) => handleChange("discountTitle", e.target.value)}
-            />
-          </div>
-
-          {/* Category / Service / Zone */}
-          {renderDynamicSelects()}
-
-          {/* Amount Type */}
-          <div className="md:col-span-2 flex flex-wrap items-center gap-8">
-            <Label>Discount Amount Type</Label>
-            {amountTypes.map((t, idx) => (
-              <Radio
-                key={idx}
-                id={`amountType-${idx}`}
-                name="amountType"
-                value={t}
-                checked={form.discountAmountType === t}
-                onChange={() => handleAmountTypeChange(t)}
-                label={t}
-              />
-            ))}
-          </div>
-
-          {/* Amount / Date / Limits */}
-          {renderAmountFields()}
-
-          {/* Cost bearer & applies to */}
-          <div className="md:col-span-2 grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-3">
-              <Label>Discount Cost&nbsp;Bearer</Label>
-              <div className="flex flex-wrap items-center gap-6">
-                {costBearers.map((cb, idx) => (
-                  <Radio
-                    key={idx}
-                    id={`costBearer-${idx}`}
-                    name="discountCostBearer"
-                    value={cb}
-                    checked={form.discountCostBearer === cb}
-                    onChange={() => handleChange("discountCostBearer", cb)}
-                    label={cb}
-                  />
-                ))}
+              <div className="flex flex-col gap-3">
+                <Label>Coupon&nbsp;Applies&nbsp;To</Label>
+                <div className="flex flex-wrap items-center gap-6">
+                  {appliesTo.map((ap, idx) => (
+                    <Radio
+                      key={idx}
+                      id={`appliesTo-${idx}`}
+                      name="couponAppliesTo"
+                      value={ap}
+                      checked={form.couponAppliesTo === ap}
+                      onChange={() => handleChange("couponAppliesTo", ap)}
+                      label={ap}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <Label>Coupon&nbsp;Applies&nbsp;To</Label>
-              <div className="flex flex-wrap items-center gap-6">
-                {appliesTo.map((ap, idx) => (
-                  <Radio
-                    key={idx}
-                    id={`appliesTo-${idx}`}
-                    name="couponAppliesTo"
-                    value={ap}
-                    checked={form.couponAppliesTo === ap}
-                    onChange={() => handleChange("couponAppliesTo", ap)}
-                    label={ap}
-                  />
-                ))}
-              </div>
+            {/* Submit */}
+            <div className="flex justify-end gap-3 pt-2 md:col-span-2">
+              <Button variant="outline" size="sm" type="button">
+                Cancel
+              </Button>
+              <Button size="sm" type="submit">
+                Update Changes
+              </Button>
             </div>
           </div>
-
-          {/* Submit */}
-          <div className="flex justify-end gap-3 pt-2 md:col-span-2">
-            <Button variant="outline" size="sm" type="button">
-              Cancel
-            </Button>
-            <Button size="sm" type="submit">
-              Update Changes
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </ComponentCard>
     </div>
   );
 };
