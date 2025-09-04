@@ -12,10 +12,10 @@ const tabs = [
   "Add Package",
   "Package Commision",
   "5XGurrentee",
-  "Bookings",
-  "Customers",
-  "Providers",
-  "Servicemen",
+  // "Bookings",
+  // "Customers",
+  // "Providers",
+  // "Servicemen",
 ];
 
 function VendorDashboardPage() {
@@ -154,10 +154,10 @@ function VendorDashboardPage() {
               <FiveXGurrentee />
             </div>
           )}
-          {activeTab === "Bookings" && <div>Bookings Content</div>}
+          {/* {activeTab === "Bookings" && <div>Bookings Content</div>}
           {activeTab === "Customers" && <div>Customers Content</div>}
           {activeTab === "Providers" && <div>Providers Content</div>}
-          {activeTab === "Servicemen" && <div>Servicemen Content</div>}
+          {activeTab === "Servicemen" && <div>Servicemen Content</div>} */}
         </div>
       </ComponentCard>
     </div>
