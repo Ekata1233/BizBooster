@@ -5,27 +5,18 @@ import "@/models/Category";
 import "@/models/Service";
 import "@/models/Zone";
 
-/* ───────────────────────────────────────────────
- *  CORS headers (same pattern you’re using)
- * ───────────────────────────────────────────── */
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-/* ───────────────────────────────────────────────
- *  OPTIONS  →  handle pre-flight
- * ───────────────────────────────────────────── */
+
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-/* ───────────────────────────────────────────────
- *  PUT  /api/coupon/:id  →  update coupon
- *    expects multipart/form-data (same fields as POST)
- *    only updates the fields you send
- * ───────────────────────────────────────────── */
+
 export async function PUT(req: Request) {
   await connectToDatabase();
 
@@ -111,10 +102,7 @@ export async function PUT(req: Request) {
   }
 }
 
-/* ───────────────────────────────────────────────
- *  DELETE  /api/coupon/:id  →  soft-delete
- *    sets isActive:false
- * ───────────────────────────────────────────── */
+
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
