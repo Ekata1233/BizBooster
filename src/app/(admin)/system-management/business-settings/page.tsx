@@ -12,10 +12,10 @@ const tabs = [
   "Add Package",
   "Package Commision",
   "5XGurrentee",
-  "Bookings",
-  "Customers",
-  "Providers",
-  "Servicemen",
+  // "Bookings",
+  // "Customers",
+  // "Providers",
+  // "Servicemen",
 ];
 
 function VendorDashboardPage() {
