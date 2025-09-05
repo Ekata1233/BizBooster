@@ -60,7 +60,27 @@ const BookingRequestsDetails = () => {
     }
   }, [checkoutDetails]);
 
+const handleDownload = async () => {
+    if (!checkoutDetails?._id) return;
 
+    try {
+      const response = await fetch(`/api/invoice/${checkoutDetails._id}`);
+      if (!response.ok) throw new Error('Failed to fetch invoice');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${checkoutDetails.bookingId || checkoutDetails._id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      alert('Failed to download invoice. Please try again.');
+    }
+  };
   const { fetchCheckoutById } = useCheckout();
   const params = useParams();
   const id = params?.id as string;
@@ -156,10 +176,9 @@ const BookingRequestsDetails = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-2 mt-4">
 
-              <InvoiceDownload
-                checkoutDetails={checkoutDetails}
-                serviceCustomer={serviceCustomer}
-              />
+               <button onClick={handleDownload} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Download Invoice
+              </button>
             </div>
           </div>
         </ComponentCard>
