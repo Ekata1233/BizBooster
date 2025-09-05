@@ -27,7 +27,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const deposite = await Deposite.findById(id);
+    const deposite = await Deposite.find({ user: id });
 
     if (!deposite) {
       return NextResponse.json(
