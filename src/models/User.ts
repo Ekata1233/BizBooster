@@ -146,7 +146,12 @@ const userSchema = new mongoose.Schema({
   isDeleted: {
     type: Boolean,
     default: false
-  }
+  },
+  fcmTokens: {
+  type: [String],  // array of tokens
+  default: []
+}
+
 }, { timestamps: true });
 
 userSchema.index(

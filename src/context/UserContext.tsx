@@ -36,12 +36,13 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   packageActive: boolean;
-  packageActivateDate:Date;
-   homeAddress?: Address;
+  packageActivateDate: Date;
+  homeAddress?: Address;
   workAddress?: Address;
   otherAddress?: Address;
   addressCompleted?: boolean;
   userId: string;
+  fcmTokens: string[];
 }
 
 interface UserContextType {

@@ -146,7 +146,7 @@ export async function PUT(req: NextRequest) {
         providerWallet.pendingWithdraw = newPendingWithdraw;
 
         providerWallet.transactions.push({
-            type: "credit",
+            type: "debit",
             amount: round2(fetchedAmount),
             description: "Cash in hand received from customer",
             referenceId: checkout._id.toString(),

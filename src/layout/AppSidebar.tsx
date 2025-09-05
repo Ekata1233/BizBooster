@@ -264,6 +264,9 @@ const reportItems: NavItem[] = [
   { icon: <GridIcon />, name: "Business Reports", path: "/report-management/business-reports" },
   { icon: <GridIcon />, name: "Admin Earnings", path: "/report-management/admin-earnings" },
 ];
+const notificationItems: NavItem[] = [
+  { icon: <GridIcon />, name: "Send Notification", path: "/notification-management/send-notification" },
+];
 
 const systemItems: NavItem[] = [
   {
@@ -393,8 +396,9 @@ const AppSidebar: React.FC = () => {
       advisor: advisorItems,
       providerpreferences: providerpreferenceItems,
       report: reportItems,
+      notification : notificationItems,
       offer: offerItems,
-      employee : EmployeeItems,
+      employee: EmployeeItems,
     };
 
     const newOpenSubmenus: string[] = [];
@@ -539,8 +543,8 @@ const AppSidebar: React.FC = () => {
                   <button
                     onClick={() => handleSubmenuToggle(currentKey)}
                     className={`menu-dropdown-item group flex justify-between items-center w-full ${shouldBeActiveSubParent
-                        ? "menu-dropdown-item-active"
-                        : "menu-dropdown-item-inactive"
+                      ? "menu-dropdown-item-active"
+                      : "menu-dropdown-item-inactive"
                       }`}
                   >
                     <span className="menu-item-text">{subItem.name}</span>
@@ -571,8 +575,8 @@ const AppSidebar: React.FC = () => {
                   <Link
                     href={subItem.path}
                     className={`menu-dropdown-item flex justify-between items-center w-full ${isActiveLink
-                        ? "menu-dropdown-item-active"
-                        : "menu-dropdown-item-inactive"
+                      ? "menu-dropdown-item-active"
+                      : "menu-dropdown-item-inactive"
                       }`}
                   >
                     <span className="flex-grow">{subItem.name}</span>
@@ -582,8 +586,8 @@ const AppSidebar: React.FC = () => {
                       {subItem.new && (
                         <span
                           className={`menu-dropdown-badge ${isActiveLink
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
+                            ? "menu-dropdown-badge-active"
+                            : "menu-dropdown-badge-inactive"
                             }`}
                         >
                           new
@@ -592,8 +596,8 @@ const AppSidebar: React.FC = () => {
                       {subItem.pro && (
                         <span
                           className={`menu-dropdown-badge ${isActiveLink
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
+                            ? "menu-dropdown-badge-active"
+                            : "menu-dropdown-badge-inactive"
                             }`}
                         >
                           pro
@@ -615,39 +619,39 @@ const AppSidebar: React.FC = () => {
                           )?.length || 0}
                         </span>
                       )}
-                       {subItem.name === "Accepted Bookings" && (
-                          <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {checkouts?.filter(
-                              (checkout) =>
-                                checkout.isAccepted === true &&
-                                checkout.isCompleted === false &&
-                                checkout.isCanceled === false
-                            )?.length || 0}
-                          </span>
-                        )}
-                         {subItem.name === "Completed Bookings" && (
-                          <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {checkouts?.filter(
-                              (checkout) =>
-                                checkout.isCompleted === true &&
-                                checkout.isCanceled === false
-                            )?.length || 0}
-                          </span>
-                        )}
-                         {subItem.name === "Cancelled Bookings" && (
-                          <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {checkouts?.filter(
-                              (checkout) => checkout.isCanceled === true
-                            )?.length || 0}
-                          </span>
-                        )}
-                        {subItem.name === "Refunded Bookings" && (
-                          <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {leads?.filter((lead) =>
-                              lead.leads?.some((l) => l.statusType === "Refund")
-                            )?.length || 0}
-                          </span>
-                        )}
+                      {subItem.name === "Accepted Bookings" && (
+                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {checkouts?.filter(
+                            (checkout) =>
+                              checkout.isAccepted === true &&
+                              checkout.isCompleted === false &&
+                              checkout.isCanceled === false
+                          )?.length || 0}
+                        </span>
+                      )}
+                      {subItem.name === "Completed Bookings" && (
+                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {checkouts?.filter(
+                            (checkout) =>
+                              checkout.isCompleted === true &&
+                              checkout.isCanceled === false
+                          )?.length || 0}
+                        </span>
+                      )}
+                      {subItem.name === "Cancelled Bookings" && (
+                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {checkouts?.filter(
+                            (checkout) => checkout.isCanceled === true
+                          )?.length || 0}
+                        </span>
+                      )}
+                      {subItem.name === "Refunded Bookings" && (
+                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {leads?.filter((lead) =>
+                            lead.leads?.some((l) => l.statusType === "Refund")
+                          )?.length || 0}
+                        </span>
+                      )}
                     </span>
                   </Link>
                 )
@@ -832,7 +836,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(customerItems, "customer")}
             </div>
 
-              <div>
+            <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
@@ -1000,6 +1004,20 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(reportItems, "report")}
             </div>
 
+             <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                  }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "NOTIFICATION MANAGEMENT"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(notificationItems, "notification")}
+            </div>
+
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -1014,7 +1032,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(systemItems, "system")}
             </div>
 
-             <div>
+            <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
