@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { PencilIcon, } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
 
 const RefundPolicyPage = dynamic(
     () => import('@/components/providerpreferences-components/ProvideRefundPolicyPage'),
@@ -107,19 +109,19 @@ const AdminProviderRefundPolicyPage: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-4xl font-bold mb-6 text-center">Manage Provider Refund Policy</h1>
+            <PageBreadcrumb pageTitle="Manage Provider Refund Policy" />
+
 
             {saveSuccess && <p className="bg-green-100 text-green-700 px-4 py-2 mb-4 rounded">Content saved!</p>}
             {isSaving && <p className="bg-blue-100 text-blue-700 px-4 py-2 mb-4 rounded">Processing...</p>}
             {error && <p className="bg-red-100 text-red-700 px-4 py-2 mb-4 rounded">{error}</p>}
 
-        
 
-           
-                <div className="bg-white p-6 rounded shadow mb-10">
-                    <h2 className="text-2xl font-semibold mb-4">
-                        {currentFormEntry._id ? 'Edit Refund Entry' : 'Add New Refund Entry'}
-                    </h2>
+
+
+            <div className="mb-10">
+
+                <ComponentCard title={currentFormEntry._id ? 'Edit Refund Entry' : 'Add New Refund Entry'}>
 
                     <div className="mb-4">
                         <label className="block mb-1 font-medium">Select Module</label>
@@ -140,88 +142,90 @@ const AdminProviderRefundPolicyPage: React.FC = () => {
                         onSave={handleSave}
                         onCancel={() => setEditingEntry(null)}
                     />
-                </div>
-        
-
-
-
-            <h2 className="text-2xl font-bold mb-4">Existing Entries</h2>
-            <div className="overflow-x-auto">
-         
-
-                <table className="min-w-full table-auto text-sm bg-white shadow-md rounded-lg overflow-hidden">
-                    <thead className="bg-gray-100 text-left">
-                        <tr>
-                            <th className="p-3 font-semibold text-gray-700">Module Name</th>
-                            <th className="p-3 font-semibold text-gray-700">Module Image</th>
-                            <th className="p-3 font-semibold text-gray-700">Content</th>
-                            <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-gray-100">
-                        {entries.map((entry) => {
-                            const moduleData =
-                                typeof entry.module === "object" && entry.module !== null
-                                    ? entry.module
-                                    : null;
-                            return (
-                                <tr key={entry._id} className="hover:bg-gray-50 transition">
-                                    {/* Name */}
-                                    <td className="p-3 font-medium text-gray-800">
-                                        {moduleData && "name" in moduleData ? moduleData.name : "N/A"}
-                                    </td>
-
-                                    {/* Image */}
-                                    <td className="p-3">
-                                        {moduleData?.image ? (
-                                            <img
-                                                src={moduleData.image}
-                                                alt="Module"
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        ) : (
-                                            <span className="text-gray-500 italic">No Image</span>
-                                        )}
-                                    </td>
-
-                                    {/* Content */}
-                                    <td className="p-3 max-w-xs">
-                                        <div
-                                            className="prose text-gray-700 max-h-48 overflow-y-auto"
-                                            dangerouslySetInnerHTML={{ __html: entry.content }}
-                                        />
-                                    </td>
-
-                                    {/* Actions */}
-                                    <td className="p-3 text-center">
-                                        <div className="flex justify-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingEntry(entry);
-                                                    setSelectedModule(moduleData?._id || "");
-                                                }}
-                                                className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white transition"
-                                                aria-label="Edit"
-                                            >
-                                                <PencilIcon size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(entry._id)}
-                                                className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white transition"
-                                                aria-label="Delete"
-                                            >
-                                                <TrashBinIcon />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-
+                </ComponentCard>
             </div>
+
+
+
+
+            <ComponentCard title="Existing Entries">
+                <div className="overflow-x-auto">
+
+
+                    <table className="min-w-full table-auto text-sm bg-white shadow-md rounded-lg overflow-hidden">
+                        <thead className="bg-gray-100 text-left">
+                            <tr>
+                                <th className="p-3 font-semibold text-gray-700">Module Name</th>
+                                <th className="p-3 font-semibold text-gray-700">Module Image</th>
+                                <th className="p-3 font-semibold text-gray-700">Content</th>
+                                <th className="p-3 font-semibold text-gray-700 text-center">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-gray-100">
+                            {entries.map((entry) => {
+                                const moduleData =
+                                    typeof entry.module === "object" && entry.module !== null
+                                        ? entry.module
+                                        : null;
+                                return (
+                                    <tr key={entry._id} className="hover:bg-gray-50 transition">
+                                        {/* Name */}
+                                        <td className="p-3 font-medium text-gray-800">
+                                            {moduleData && "name" in moduleData ? moduleData.name : "N/A"}
+                                        </td>
+
+                                        {/* Image */}
+                                        <td className="p-3">
+                                            {moduleData?.image ? (
+                                                <img
+                                                    src={moduleData.image}
+                                                    alt="Module"
+                                                    className="w-12 h-12 object-cover rounded-full"
+                                                />
+                                            ) : (
+                                                <span className="text-gray-500 italic">No Image</span>
+                                            )}
+                                        </td>
+
+                                        {/* Content */}
+                                        <td className="p-3 max-w-xs">
+                                            <div
+                                                className="prose text-gray-700 max-h-48 overflow-y-auto"
+                                                dangerouslySetInnerHTML={{ __html: entry.content }}
+                                            />
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td className="p-3 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingEntry(entry);
+                                                        setSelectedModule(moduleData?._id || "");
+                                                    }}
+                                                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white transition"
+                                                    aria-label="Edit"
+                                                >
+                                                    <PencilIcon size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(entry._id)}
+                                                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white transition"
+                                                    aria-label="Delete"
+                                                >
+                                                    <TrashBinIcon />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+
+                </div>
+            </ComponentCard>
 
         </div>
     );

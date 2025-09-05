@@ -1,118 +1,79 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import Label from '@/components/form/Label';
-import Input from '@/components/form/input/InputField';
-import Select from '@/components/form/Select';
-import Radio from '@/components/form/input/Radio';
-import Button from '@/components/ui/button/Button';
-import { Modal } from '@/components/ui/modal';
-import { ChevronDownIcon } from '@/icons';
+import React, { useEffect, useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { CouponType } from "../../page";
+import { useServiceCustomer } from "@/context/ServiceCustomerContext";
+import { useCategory } from "@/context/CategoryContext";
+import { useSubcategory } from "@/context/SubcategoryContext";
+import { useCoupon } from "@/context/CouponContext";
+import { useZone } from "@/context/ZoneContext";
+import Label from "@/components/form/Label";
+import Select from "@/components/form/Select";
+import Input from "@/components/form/input/InputField";
+import Radio from "@/components/form/input/Radio";
+import Button from "@/components/ui/button/Button";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/common/ComponentCard";
 
-import { useCategory } from '@/context/CategoryContext';
-import { useSubcategory } from '@/context/SubcategoryContext';
-import { useZone } from '@/context/ZoneContext';                // ⬅️ if you have one
-
-import type { CouponType } from '@/app/(admin)/coupons-management/coupons-list/page';
-import { useServiceCustomer } from '@/context/ServiceCustomerContext';
-
-/* -------------------------------------------------------------------------- */
-/* 🔖 constants                                                               */
-/* -------------------------------------------------------------------------- */
-
+/* ─── option lists ───────────────────────────────────────────── */
 const couponTypeOptions = [
-  { value: 'default', label: 'Default' },
-  { value: 'firstBooking', label: 'First Booking' },
-  { value: 'customerWise', label: 'Customer Wise' },
+  { value: "default", label: "Default" },
+  { value: "firstBooking", label: "First Booking" },
+  { value: "customerWise", label: "Customer Wise" },
 ];
 
-const discountTypes: CouponType['discountType'][] = [
-  'Category Wise',
-  'Service Wise',
-  'Mixed',
+const discountTypes: CouponType["discountType"][] = [
+  "Category Wise",
+  "Service Wise",
+  "Mixed",
 ];
 
-const amountTypes: CouponType['discountAmountType'][] = [
-
-  'Percentage',
-  'Fixed Amount',
+const amountTypes: CouponType["discountAmountType"][] = [
+  "Percentage",
+  "Fixed Amount",
 ];
 
-const costBearers: CouponType['discountCostBearer'][] = [
-  'Provider',
-  'Customer',
+const costBearers: CouponType["discountCostBearer"][] = [
+  "Provider",
+  "Customer",
 ];
 
 const appliesTo = ["Growth Partner", "Customer"] as const;
 
-/* -------------------------------------------------------------------------- */
-/* 🔖 component                                                               */
-/* -------------------------------------------------------------------------- */
-
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  coupon: CouponType | null;
-  onSave: (payload: Partial<CouponType>) => Promise<void>;
-}
-
-const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) => {
+/* ─── component ─────────────────────────────────────────────── */
+const EditCouponPage: React.FC = () => {
   const [form, setForm] = useState<Partial<CouponType>>({});
-  /* ─── external lists ──────────────────────────────────────────────────── */
+  const params = useParams();
+  const couponId = params.id;
+  const router = useRouter();
+
+  console.log("form ", form);
+
+
   const { customers } = useServiceCustomer();
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-  const { zones = [] } = useZone?.() ?? { zones: [] };       // optional
+  const { coupons, deleteCoupon, updateCoupon } = useCoupon();
+  const { zones = [] } = useZone?.() ?? { zones: [] };
 
-  console.log("formdata of the edit : ", form)
-
-  /* ▶︎ map to Select-friendly [{value,label}] once, memoised */
-  const categoryOptions = useMemo(
-    () =>
-      categories.map(c => ({
-        value: c._id ?? "", // fallback to empty string if _id is undefined
-        label: c.name,
-      })),
-    [categories]
-  );
-
- const customersOptions = useMemo(() => {
-  if (!Array.isArray(customers)) return [];
-
-  return customers.map(cus => ({
-    value: String(cus._id),
-    label: cus.fullName,
-  }));
-}, [customers]);
-
-
-
-  const serviceOptions = useMemo(
-    () =>
-      subcategories
-        .filter(sc => sc.category?._id === (form.category as any)?.value)
-        .map(sc => ({ value: sc._id, label: sc.name })),
-    [subcategories, form.category]                // ⬅️ depend on form.category
-  );
-
-  const zoneOptions = useMemo(
-    () => zones.map(z => ({ value: z._id, label: z.name })),
-    [zones]
-  );
-
-  /* ─── local form state ────────────────────────────────────────────────── */
-
-
+  /* ─── load coupon data into form ───────────────────────────── */
   useEffect(() => {
-    if (coupon) setForm(coupon);
-  }, [coupon]);
+    if (coupons && couponId) {
+      const found = coupons.find((c) => c._id === couponId);
+      if (found) {
+        setForm(found as Partial<CouponType>);
+      }
+    }
+  }, [coupons, couponId]);
 
-  /* ─── helpers ─────────────────────────────────────────────────────────── */
+  /* ─── helpers ─────────────────────────────────────────────── */
   const handleChange = (field: keyof CouponType, value: any) =>
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleDiscountTypeChange = (val: CouponType['discountType']) => {
-    setForm(prev => ({
+  const handleDiscountTypeChange = (val: CouponType["discountType"]) => {
+    setForm((prev) => ({
       ...prev,
       discountType: val,
       category: undefined,
@@ -120,26 +81,88 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
     }));
   };
 
-  const handleAmountTypeChange = (val: CouponType['discountAmountType']) => {
-    setForm(prev => ({
+  const handleAmountTypeChange = (val: CouponType["discountAmountType"]) => {
+    setForm((prev) => ({
       ...prev,
       discountAmountType: val,
       maxDiscount: undefined,
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!coupon) return;
-    await onSave(form);
-    onClose();
+    if (!form?._id) return;
+
+    const formData = new FormData();
+
+    if (form.couponType) formData.append("couponType", form.couponType);
+    if (form.couponCode) formData.append("couponCode", form.couponCode);
+    if (form.discountType) formData.append("discountType", form.discountType);
+    if (form.discountAmountType) formData.append("discountAmountType", form.discountAmountType);
+    if (form.discountCostBearer) formData.append("discountCostBearer", form.discountCostBearer);
+    if (form.discountTitle) formData.append("discountTitle", form.discountTitle);
+
+    if (form.amount !== undefined) formData.append("amount", String(form.amount));
+    if (form.maxDiscount !== undefined) formData.append("maxDiscount", String(form.maxDiscount));
+    if (form.minPurchase !== undefined) formData.append("minPurchase", String(form.minPurchase));
+    if (form.limitPerUser !== undefined) formData.append("limitPerUser", String(form.limitPerUser));
+
+    if (form.startDate) formData.append("startDate", form.startDate);
+    if (form.endDate) formData.append("endDate", form.endDate);
+    if (form.isActive !== undefined) formData.append("isActive", String(form.isActive));
+
+    if (form.zone?._id) formData.append("zone", form.zone._id);
+    if (form.category?._id) formData.append("category", form.category._id);
+    if (form.service?._id) formData.append("service", form.service._id);
+    if (form.customer?._id) formData.append("customer", form.customer._id);
+    if (form.couponAppliesTo) formData.append("couponAppliesTo", form.couponAppliesTo);
+    try {
+      await updateCoupon(form._id, formData);
+      alert("Coupon updated successfully! ✅");
+      router.push("/coupons-management/coupons-list");
+    } catch (error) {
+      console.error("Failed to update coupon:", error);
+      alert("Failed to update coupon ❌");
+    }
   };
 
-  /* ─── dynamic inputs (Category / Service / Zone) ──────────────────────── */
+
+  /* ─── memoized options ────────────────────────────────────── */
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((c) => ({
+        value: c._id ?? "",
+        label: c.name,
+      })),
+    [categories]
+  );
+
+  const customersOptions = useMemo(() => {
+    if (!Array.isArray(customers)) return [];
+    return customers.map((cus) => ({
+      value: String(cus._id),
+      label: cus.fullName,
+    }));
+  }, [customers]);
+
+  const serviceOptions = useMemo(
+    () =>
+      subcategories
+        .filter((sc) => sc.category?._id === (form.category as any)?._id)
+        .map((sc) => ({ value: sc._id, label: sc.name })),
+    [subcategories, form.category]
+  );
+
+  const zoneOptions = useMemo(
+    () => zones.map((z) => ({ value: z._id, label: z.name })),
+    [zones]
+  );
+
+  /* ─── dynamic selects ─────────────────────────────────────── */
   const renderDynamicSelects = () => {
     const selects = [] as React.ReactElement[];
 
-    if (form.discountType === 'Category Wise' || form.discountType === 'Mixed') {
+    if (form.discountType === "Category Wise" || form.discountType === "Mixed") {
       selects.push(
         <div key="category" className="md:col-span-2 relative">
           <Label>Select Category</Label>
@@ -147,32 +170,31 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
             options={categoryOptions}
             placeholder="Select category"
             value={form.category?._id}
-            onChange={val => handleChange('category', val)}
+            onChange={(val) => handleChange("category", val)}
             className="w-full dark:bg-dark-900"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             <ChevronDownIcon />
           </span>
-        </div>,
+        </div>
       );
     }
 
-    if (form.discountType === 'Service Wise' || form.discountType === 'Mixed') {
+    if (form.discountType === "Service Wise" || form.discountType === "Mixed") {
       selects.push(
         <div key="service" className="md:col-span-2 relative">
           <Label>Select Service</Label>
           <Select
             options={serviceOptions}
             placeholder="Select service"
-            value={(form.service as any)?.value ?? form.service?._id}
-
-            onChange={val => handleChange('service', val)}
+            value={(form.service as any)?._id}
+            onChange={(val) => handleChange("service", val)}
             className="w-full dark:bg-dark-900"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             <ChevronDownIcon />
           </span>
-        </div>,
+        </div>
       );
     }
 
@@ -182,76 +204,72 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
         <Select
           options={zoneOptions}
           placeholder="Select zone"
-         value={form.zone?._id}
-      
-
-          onChange={val => handleChange('zone', val)}
+          value={form.zone?._id}
+          onChange={(val) => handleChange("zone", val)}
           className="w-full dark:bg-dark-900"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
           <ChevronDownIcon />
         </span>
-      </div>,
+      </div>
     );
 
     return selects;
   };
 
-  /* ─── amount / date / limit block ─────────────────────────────────────── */
+  /* ─── amount fields ───────────────────────────────────────── */
   const renderAmountFields = () => (
     <>
-      {/* Amount + dates */}
       <div className="md:col-span-2 grid gap-6 md:grid-cols-3">
         <div>
           <Label>
             Amount&nbsp;
-            {form.discountAmountType === 'Percentage' ? '(%)' : '(₹)'}
+            {form.discountAmountType === "Percentage" ? "(%)" : "(₹)"}
           </Label>
           <Input
             type="number"
             placeholder="Enter amount"
-            value={form.amount ?? ''}
-            onChange={e => handleChange('amount', +e.target.value)}
+            value={form.amount ?? ""}
+            onChange={(e) => handleChange("amount", +e.target.value)}
           />
         </div>
         <div>
           <Label>Start Date</Label>
           <Input
             type="date"
-            value={form.startDate ?? ''}
-            onChange={e => handleChange('startDate', e.target.value)}
+            value={form.startDate?.slice(0, 10) ?? ""}
+            onChange={(e) => handleChange("startDate", e.target.value)}
           />
         </div>
         <div>
           <Label>End Date</Label>
           <Input
             type="date"
-            value={form.endDate ?? ''}
-            onChange={e => handleChange('endDate', e.target.value)}
+            value={form.endDate?.slice(0, 10) ?? ""}
+            onChange={(e) => handleChange("endDate", e.target.value)}
           />
         </div>
       </div>
 
-      {/* minPurchase, maxDiscount (conditional), limitPerUser */}
       <div className="md:col-span-2 grid gap-6 md:grid-cols-3">
         <div>
           <Label>Min&nbsp;Purchase&nbsp;(₹)</Label>
           <Input
             type="number"
             placeholder="Order amount to qualify"
-            value={form.minPurchase ?? ''}
-            onChange={e => handleChange('minPurchase', +e.target.value)}
+            value={form.minPurchase ?? ""}
+            onChange={(e) => handleChange("minPurchase", +e.target.value)}
           />
         </div>
 
-        {form.discountAmountType === 'Percentage' && (
+        {form.discountAmountType === "Percentage" && (
           <div>
             <Label>Max Discount&nbsp;(₹)</Label>
             <Input
               type="number"
               placeholder="Upper cap"
-              value={form.maxDiscount ?? ''}
-              onChange={e => handleChange('maxDiscount', +e.target.value)}
+              value={form.maxDiscount ?? ""}
+              onChange={(e) => handleChange("maxDiscount", +e.target.value)}
             />
           </div>
         )}
@@ -261,21 +279,20 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
           <Input
             type="number"
             placeholder="Uses allowed for same user"
-            value={form.limitPerUser ?? ''}
-            onChange={e => handleChange('limitPerUser', +e.target.value)}
+            value={form.limitPerUser ?? ""}
+            onChange={(e) => handleChange("limitPerUser", +e.target.value)}
           />
         </div>
       </div>
     </>
   );
 
-  /* ─── ui ──────────────────────────────────────────────────────────────── */
+  /* ─── ui ─────────────────────────────────────────────────── */
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-[770px] m-4">
-      <div className="w-full max-h-[80vh] overflow-y-auto  bg-white p-4 dark:bg-gray-900 lg:p-11 scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600">
-        <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-          Edit Coupon
-        </h4>
+    <div className="w-full dark:bg-gray-900 ">
+      <PageBreadcrumb pageTitle="Edit Coupon" />
+
+      <ComponentCard title="Edit Coupon" className=" h-full">
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 md:grid-cols-2">
@@ -286,7 +303,7 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
                 options={couponTypeOptions}
                 placeholder="Select coupon type"
                 value={form.couponType}
-                onChange={val => handleChange('couponType', val)}
+                onChange={(val) => handleChange("couponType", val)}
                 className="w-full dark:bg-dark-900"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -298,29 +315,27 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
               <Input
                 type="text"
                 placeholder="Enter coupon code"
-                value={form.couponCode ?? ''}
-                onChange={e => handleChange('couponCode', e.target.value)}
+                value={form.couponCode ?? ""}
+                onChange={(e) => handleChange("couponCode", e.target.value)}
               />
             </div>
 
             <div className="md:col-span-2 flex flex-wrap items-center gap-8">
               {form.couponType === "customerWise" && (
-                <div className="w-full">            {/* or: basis-full */}
+                <div className="w-full">
                   <Label>Select Customer</Label>
                   <Select
                     options={customersOptions}
                     placeholder="Select customer"
                     value={form.customer?._id}
-
-                    onChange={val => handleChange("customer", val)}
+                    onChange={(val) => handleChange("customer", val)}
                     className="w-full dark:bg-dark-900"
                   />
-
                 </div>
               )}
             </div>
 
-            {/* Discount Type (radio) */}
+            {/* Discount Type */}
             <div className="md:col-span-2 flex flex-wrap items-center gap-8">
               <Label>Discount Type</Label>
               {discountTypes.map((t, idx) => (
@@ -342,15 +357,15 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
               <Input
                 type="text"
                 placeholder="Enter discount title"
-                value={form.discountTitle ?? ''}
-                onChange={e => handleChange('discountTitle', e.target.value)}
+                value={form.discountTitle ?? ""}
+                onChange={(e) => handleChange("discountTitle", e.target.value)}
               />
             </div>
 
             {/* Category / Service / Zone */}
             {renderDynamicSelects()}
 
-            {/* Amount Type (radio) */}
+            {/* Amount Type */}
             <div className="md:col-span-2 flex flex-wrap items-center gap-8">
               <Label>Discount Amount Type</Label>
               {amountTypes.map((t, idx) => (
@@ -381,7 +396,7 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
                       name="discountCostBearer"
                       value={cb}
                       checked={form.discountCostBearer === cb}
-                      onChange={() => handleChange('discountCostBearer', cb)}
+                      onChange={() => handleChange("discountCostBearer", cb)}
                       label={cb}
                     />
                   ))}
@@ -397,34 +412,29 @@ const EditCouponModal: React.FC<Props> = ({ isOpen, onClose, coupon, onSave }) =
                       id={`appliesTo-${idx}`}
                       name="couponAppliesTo"
                       value={ap}
-                      checked={(form as CouponType).couponAppliesTo === ap}
-                      onChange={() => handleChange('couponAppliesTo' as keyof CouponType, ap)}
+                      checked={form.couponAppliesTo === ap}
+                      onChange={() => handleChange("couponAppliesTo", ap)}
                       label={ap}
                     />
                   ))}
                 </div>
-
-
               </div>
             </div>
 
-
             {/* Submit */}
             <div className="flex justify-end gap-3 pt-2 md:col-span-2">
-              <Button variant="outline" size="sm" onClick={onClose}>
-                Close
+              <Button variant="outline" size="sm" type="button">
+                Cancel
               </Button>
-              <Button size="sm" >
-                Save Changes
+              <Button size="sm" type="submit">
+                Update Changes
               </Button>
             </div>
           </div>
         </form>
-      </div>
-    </Modal>
+      </ComponentCard>
+    </div>
   );
 };
 
-
-
-export default EditCouponModal
+export default EditCouponPage;

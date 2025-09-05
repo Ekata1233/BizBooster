@@ -113,10 +113,14 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const search  = searchParams.get("search");
-    const active  = searchParams.get("active"); // "true" | "false" | null
+    const active  = searchParams.get("active");
 
-    /* ── build filter object ────────────────────────── */
     const filter: Record<string, unknown> = { };
+
+     await Coupon.updateMany(
+      { endDate: { $lt: new Date() }, isActive: true },
+      { $set: { isActive: false } }
+    );
 
     if (search) {
       const regex = { $regex: search, $options: "i" };

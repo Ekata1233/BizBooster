@@ -61,10 +61,8 @@ const CancellationPolicyPage: React.FC<AboutUsEditorFormProps> = ({ initialData,
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md max-w-4xl mx-auto my-8">
-      <h2 className="text-3xl font-bold text-gray-800 dark:text-white/90 text-center mb-6">
-        {initialData?._id ? "Edit Cancellation Policy Content" : "Add New Cancellation Policy Content"}
-      </h2>
+    <div className="">
+      
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
           <Label htmlFor="aboutUsContent">Cancellation Policy Content</Label>

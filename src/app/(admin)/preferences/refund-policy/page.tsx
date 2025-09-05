@@ -5,8 +5,10 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios'; // Ensure axios is imported
-import { PencilIcon,  } from 'lucide-react';
+import { PencilIcon, } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
 
 // Assuming AboutUsPage is the component with the CKEditor form
 const RefundPolicyPage = dynamic(() => import('@/components/privacy&policy-components/Refund-Policy-Page'), {
@@ -153,13 +155,13 @@ const AdminAboutUsManagementPage: React.FC = () => {
     );
   }
 
-   const currentFormEntry = editingEntry ?? BLANK_ENTRY;
+  const currentFormEntry = editingEntry ?? BLANK_ENTRY;
   // Main render
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
-        Manage Refund Policy Sections
-      </h1>
+    <div className="container mx-auto px-4">
+
+      <PageBreadcrumb pageTitle="Manage Refund Policy Sections" />
+
 
       {/* Messages */}
       {saveSuccess && (
@@ -205,33 +207,33 @@ const AdminAboutUsManagementPage: React.FC = () => {
       )} */}
 
 
-       <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          {currentFormEntry._id ? 'Edit Refund Policy Section' : 'Add New Refund Policy Section'}
-        </h2>
+
+
+      <ComponentCard title={currentFormEntry._id ? 'Edit Refund Policy Section' : 'Add New Refund Policy Section'}>
+
         <RefundPolicyPage
           /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
           initialData={currentFormEntry}
           onSave={handleSaveAboutUs}
           onCancel={() => setEditingEntry(null)}
         />
-      </div>
+      </ComponentCard>
 
-      {/* Display List of About Us Entries */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Refund Policy Sections</h2>
-      {aboutUsList.length === 0 && !isLoading && !error && (
-        <p className="text-gray-600">No Refund Policy sections found. Click &quot;Add New&quot; to create one.</p>
-      )}
+      <ComponentCard title="Existing Refund Policy Sections">
 
-      <div className="space-y-6">
-        {aboutUsList.map((entry) => (
-          <div key={entry._id} className="p-5 border border-gray-200 rounded-lg shadow-sm bg-white">
-            <div className="flex justify-between items-start mb-3">
-              {/* Display a snippet or title if you had one, otherwise just content */}
-              <h3 className="text-xl font-semibold text-gray-800">
-                Refund Policy Entry (ID: {entry._id.substring(0, 6)}...)
-              </h3>
-              {/* <div className="flex space-x-2">
+        {aboutUsList.length === 0 && !isLoading && !error && (
+          <p className="text-gray-600">No Refund Policy sections found. Click &quot;Add New&quot; to create one.</p>
+        )}
+
+        <div className="space-y-6">
+          {aboutUsList.map((entry) => (
+            <div key={entry._id} className="">
+              <div className="flex justify-between items-start mb-3">
+                {/* Display a snippet or title if you had one, otherwise just content */}
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Refund Policy Entry (ID: {entry._id.substring(0, 6)}...)
+                </h3>
+                {/* <div className="flex space-x-2">
                 <button
                   onClick={() => handleEditClick(entry)}
                   className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -246,35 +248,36 @@ const AdminAboutUsManagementPage: React.FC = () => {
                 </button>
               </div> */}
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEditClick(entry)}
-                  className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                  aria-label="Edit"
-                >
-                  <PencilIcon size={16} />
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(entry._id)}
-                  className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                  aria-label="Delete"
-                >
-                  <TrashBinIcon />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditClick(entry)}
+                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                    aria-label="Edit"
+                  >
+                    <PencilIcon size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(entry._id)}
+                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                    aria-label="Delete"
+                  >
+                    <TrashBinIcon />
+                  </button>
+                </div>
               </div>
-            </div>
-            {/* Where else to show the data: a read-only preview of the content */}
-            <div
-              className="prose max-w-none text-gray-700 mt-2" // Add 'prose' if you use @tailwindcss/typography
-              dangerouslySetInnerHTML={{ __html: entry.content }}
-            />
+              {/* Where else to show the data: a read-only preview of the content */}
+              <div
+                className="prose max-w-none text-gray-700 mt-2" // Add 'prose' if you use @tailwindcss/typography
+                dangerouslySetInnerHTML={{ __html: entry.content }}
+              />
 
-            <p className="text-xs text-gray-500 mt-3">
-              Last Updated: {entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : 'N/A'}
-            </p>
-          </div>
-        ))}
-      </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Last Updated: {entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : 'N/A'}
+              </p>
+            </div>
+          ))}
+        </div>
+      </ComponentCard>
     </div>
   );
 };

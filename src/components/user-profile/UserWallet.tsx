@@ -5,6 +5,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { FaMoneyBillWave, FaMoneyCheckAlt, FaWallet } from 'react-icons/fa';
 import { IWalletTransaction, useUserWallet } from '@/context/WalletContext';
+import Pagination from '../tables/Pagination';
 
 interface UserWalletProps {
   userId: string;
@@ -32,8 +33,6 @@ const columnsWallet = [
     header: 'Lead ID',
     accessor: 'leadId',
     render: (row: IWalletTransaction) => {
-      console.log('Row:', row); // ✅ Console log here
-
       return (
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Lead Id : {row.leadId || '-'}</span>
@@ -67,8 +66,8 @@ const UserWallet = ({ userId }: UserWalletProps) => {
   const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
-
-  console.log("ujser wallet ; ", wallet)
+  const [currentPage, setCurrentPage] = useState(1); // ⬅️ new
+  const rowsPerPage = 10;
 
   useEffect(() => {
     if (userId) {
@@ -126,6 +125,13 @@ const UserWallet = ({ userId }: UserWalletProps) => {
 
   // Now reverse it back to show newest first
   const enrichedTransactions = [...enrichedAscending].reverse();
+
+  // Pagination logic
+  const totalPages = Math.ceil(enrichedTransactions.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = enrichedTransactions.slice(indexOfFirstRow, indexOfLastRow);
+
 
 
   const summaryCards = [
@@ -212,10 +218,20 @@ const UserWallet = ({ userId }: UserWalletProps) => {
               </p>
             </div>
           ) : (
-            <BasicTableOne
-              columns={columnsWallet}
-              data={enrichedTransactions as IWalletTransaction[]}
-            />
+            <>
+              <BasicTableOne
+                columns={columnsWallet}
+                data={currentRows as IWalletTransaction[]} // ⬅️ use paginated rows
+              />
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={enrichedTransactions.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           )}
         </>
       )}

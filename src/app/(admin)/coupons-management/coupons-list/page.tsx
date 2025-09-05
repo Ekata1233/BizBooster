@@ -155,7 +155,7 @@ const CouponList: React.FC = () => {
         discount: formatDiscount(c),
         appliesTo: formatAppliesTo(c),
         validity: formatValidity(c),
-        status: !c.isActive || (c as any).isDeleted ? 'Inactive' : 'Active',
+        status: !c.isActive || (c as any).isDeleted ? 'Expired' : 'Active',
       }));
 
       setRows(mapped);
@@ -239,7 +239,7 @@ const CouponList: React.FC = () => {
       render: (row: TableData) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold
-            ${row.status === 'Inactive'
+            ${row.status === 'Expired'
               ? 'text-red-600 bg-red-100 border border-red-300'
               : 'text-green-600 bg-green-100 border border-green-300'
             }`}
@@ -364,12 +364,12 @@ const CouponList: React.FC = () => {
 
       {/* …existing JSX… */}
 
-      <EditCouponModal
+      {/* <EditCouponModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         coupon={editingCoupon}
         onSave={handleUpdateCoupon}
-      />
+      /> */}
 
     </div>
   );

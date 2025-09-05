@@ -39,8 +39,7 @@ const UserDetails = () => {
       fetchSingleUser(userId);
     }
   }, [userId]);
-console.log("single user",singleUser);
-console.log("user list",users);
+
 
 
   if (singleUserLoading)
