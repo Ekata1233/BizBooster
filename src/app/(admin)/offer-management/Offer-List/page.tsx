@@ -196,19 +196,32 @@ const OfferListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs with counts */}
       <div className="flex gap-6 mb-5 border-b border-gray-200">
-        {['All', 'Active', 'Upcoming', 'Expired'].map((tab) => {
+        {(['All', 'Active', 'Upcoming', 'Expired'] as const).map((tab) => {
           const active = selectedTab === tab;
+
+          // Count offers for each tab
+          const count =
+            tab === 'All'
+              ? offers.length
+              : offers.filter(
+                  (offer) =>
+                    getOfferStatus(offer.offerStartTime, offer.offerEndTime) === tab
+                ).length;
+
           return (
             <button
               key={tab}
-              onClick={() => setSelectedTab(tab as 'All' | OfferStatus)}
+              onClick={() => setSelectedTab(tab)}
               className={`relative pb-3 text-sm font-medium transition-colors ${
                 active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               {tab}
+              <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                {count}
+              </span>
               {active && (
                 <span className="absolute left-0 -bottom-[1px] h-[2px] w-full rounded-full bg-blue-600" />
               )}
@@ -224,6 +237,7 @@ const OfferListPage: React.FC = () => {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className=" text-gray-600">
+                  <th className="px-5 py-3 font-medium text-left">Sr. No</th>
                   <th className="px-5 py-3 font-medium text-left">Thumbnail Image</th>
                   <th className="px-5 py-3 font-medium text-left">Banner</th>
                   <th className="px-5 py-3 font-medium text-left">Gallery</th>
@@ -234,7 +248,7 @@ const OfferListPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOffers.map((offer) => {
+                {[...filteredOffers].reverse().map((offer, index) => {
                   const status = getOfferStatus(
                     offer.offerStartTime,
                     offer.offerEndTime
@@ -244,6 +258,10 @@ const OfferListPage: React.FC = () => {
                       key={offer._id}
                       className="border-t border-gray-100 hover:bg-gray-50 transition"
                     >
+                      {/* Serial No */}
+                      <td className="px-5 py-3">
+                        {index + 1}
+                      </td>
                       <td className="px-5 py-3">
                         {offer.thumbnailImage ? (
                           <img
@@ -317,7 +335,7 @@ const OfferListPage: React.FC = () => {
                   <tr>
                     <td
                       className="px-5 py-10 text-center text-gray-500 text-sm"
-                      colSpan={6}
+                      colSpan={8}
                     >
                       No offers found.
                     </td>
