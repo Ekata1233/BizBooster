@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { PencilIcon } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
 
 // Lazily load the editor wrapper component
 const CancellationPolicyPage = dynamic(
@@ -49,8 +51,8 @@ const AdminCancellationPolicyManagementPage: React.FC = () => {
         const arr: PolicyEntry[] = Array.isArray(response.data.data)
           ? response.data.data
           : response.data.data
-          ? [response.data.data]
-          : [];
+            ? [response.data.data]
+            : [];
         setPolicyList(arr);
       } else {
         setError(response.data?.message || 'Failed to fetch Cancellation Policy content.');
@@ -158,15 +160,14 @@ const AdminCancellationPolicyManagementPage: React.FC = () => {
     );
   }
 
- 
+
   const currentFormEntry = editingEntry ?? BLANK_ENTRY;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Page Title */}
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
-        Manage Cancellation Policy Sections
-      </h1>
+    <div className="container mx-auto px-4">
+
+      <PageBreadcrumb pageTitle="Manage Cancellation Policy Sections" />
+
 
       {/* Messages */}
       {saveSuccess && (
@@ -195,71 +196,74 @@ const AdminCancellationPolicyManagementPage: React.FC = () => {
       )}
 
       {/* Always-visible Editor */}
-      <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          {currentFormEntry._id ? 'Edit Cancellation Policy Section' : 'Add New Cancellation Policy Section'}
-        </h2>
-        <CancellationPolicyPage
-          /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
-          initialData={currentFormEntry}
-          onSave={handleSavePolicy}
-          onCancel={handleCancel}
-        />
+      <div className="mb-10">
+        <ComponentCard title={currentFormEntry._id ? 'Edit Cancellation Policy Section' : 'Add New Cancellation Policy Section'}>
+
+
+          <CancellationPolicyPage
+            /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
+            initialData={currentFormEntry}
+            onSave={handleSavePolicy}
+            onCancel={handleCancel}
+          />
+        </ComponentCard>
       </div>
 
-      {/* Existing Entries */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Existing Cancellation Policy Sections
-      </h2>
 
-      {policyList.length === 0 ? (
-        <p className="text-gray-600">
-          No Cancellation Policy sections found. Use the form above to create one.
-        </p>
-      ) : (
-        <div className="space-y-6">
-          {policyList.map((entry) => (
-            <div
-              key={entry._id}
-              className="p-5 border border-gray-200 rounded-lg shadow-sm bg-white"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-xl font-semibold text-gray-800">
-                  Cancellation Policy Entry (ID: {entry._id.substring(0, 6)}…)
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEditClick(entry)}
-                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                    aria-label="Edit"
-                  >
-                    <PencilIcon size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(entry._id)}
-                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                    aria-label="Delete"
-                  >
-                    <TrashBinIcon />
-                  </button>
-                </div>
-              </div>
 
+      <ComponentCard title="Existing Cancellation Policy Sections">
+
+
+        {policyList.length === 0 ? (
+          <p className="text-gray-600">
+            No Cancellation Policy sections found. Use the form above to create one.
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {policyList.map((entry) => (
               <div
-                className="prose max-w-none text-gray-700 mt-2"
-                dangerouslySetInnerHTML={{ __html: entry.content }}
-              />
+                key={entry._id}
+                className=""
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    Cancellation Policy Entry (ID: {entry._id.substring(0, 6)}…)
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditClick(entry)}
+                      className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                      aria-label="Edit"
+                    >
+                      <PencilIcon size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(entry._id)}
+                      className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                      aria-label="Delete"
+                    >
+                      <TrashBinIcon />
+                    </button>
+                  </div>
+                </div>
 
-              <p className="text-xs text-gray-500 mt-3">
-                Last Updated:{' '}
-                {entry.updatedAt
-                  ? new Date(entry.updatedAt).toLocaleString()
-                  : 'N/A'}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+                <div
+                  className="prose max-w-none text-gray-700 mt-2"
+                  dangerouslySetInnerHTML={{ __html: entry.content }}
+                />
+
+                <p className="text-xs text-gray-500 mt-3">
+                  Last Updated:{' '}
+                  {entry.updatedAt
+                    ? new Date(entry.updatedAt).toLocaleString()
+                    : 'N/A'}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </ComponentCard>
     </div>
   );
 };
