@@ -20,6 +20,8 @@ type LeadEntry = {
     description?: string;
     createdAt?: string | number | Date;
 };
+
+const round2 = (num: number) => Number(num.toFixed(2));
 export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
@@ -35,9 +37,9 @@ export async function PUT(req: NextRequest) {
 
         const fetchedAmount =
             paymentType === "partial"
-                ? (bodyAmount ?? 0) / 2
+                ? round2(bodyAmount ?? 0) / 2
                 : paymentType === "full" || paymentType === "remaining"
-                    ? (bodyAmount ?? 0)
+                    ? round2(bodyAmount ?? 0)
                     : 0;
 
         console.log("Fetched Amount:", fetchedAmount);
@@ -59,13 +61,13 @@ export async function PUT(req: NextRequest) {
         }
 
         const total =
-            checkout.grandTotal && checkout.grandTotal > 0
+            round2(checkout.grandTotal && checkout.grandTotal > 0
                 ? Number(checkout.grandTotal)
-                : Number(checkout.totalAmount ?? 0);
+                : Number(checkout.totalAmount ?? 0));
         checkout.cashInHand = true;
-        checkout.cashInHandAmount = (checkout.cashInHandAmount || 0) + fetchedAmount;
-        checkout.paidAmount = (checkout.paidAmount || 0) + fetchedAmount;
-        checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+        checkout.cashInHandAmount = round2((checkout.cashInHandAmount || 0) + fetchedAmount);
+        checkout.paidAmount = round2((checkout.paidAmount || 0) + fetchedAmount);
+        checkout.remainingAmount = round2(Math.max(total - checkout.paidAmount, 0));
         const isFullPayment = checkout.paidAmount >= total;
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
         checkout.isPartialPayment = !isFullPayment;
@@ -133,19 +135,19 @@ export async function PUT(req: NextRequest) {
             );
         }
 
-        const prevBalance = providerWallet.balance || 0;
-        const newBalance = prevBalance - fetchedAmount;
-        const newCashInHand = (providerWallet.cashInHand || 0) + fetchedAmount;
-        const newWithdrawableBalance = Math.max((providerWallet.withdrawableBalance || 0) - fetchedAmount, 0);
-        const newPendingWithdraw = Math.max((providerWallet.pendingWithdraw || 0) - fetchedAmount, 0);
+        const prevBalance = round2(providerWallet.balance || 0);
+        const newBalance = round2(prevBalance - fetchedAmount);
+        const newCashInHand = round2((providerWallet.cashInHand || 0) + fetchedAmount);
+        const newWithdrawableBalance = round2(Math.max((providerWallet.withdrawableBalance || 0) - fetchedAmount, 0));
+        const newPendingWithdraw = round2(Math.max((providerWallet.pendingWithdraw || 0) - fetchedAmount, 0));
 
         providerWallet.cashInHand = newCashInHand;
         providerWallet.withdrawableBalance = newWithdrawableBalance;
         providerWallet.pendingWithdraw = newPendingWithdraw;
 
         providerWallet.transactions.push({
-            type: "credit",
-            amount: fetchedAmount,
+            type: "debit",
+            amount: round2(fetchedAmount),
             description: "Cash in hand received from customer",
             referenceId: checkout._id.toString(),
             method: "Cash",
@@ -156,7 +158,9 @@ export async function PUT(req: NextRequest) {
         });
 
         providerWallet.balance = newBalance;
-        providerWallet.totalCredits += fetchedAmount;
+        // providerWallet.totalCredits += fetchedAmount;
+        providerWallet.totalEarning = round2((providerWallet.totalEarning || 0) - fetchedAmount);
+        providerWallet.totalCredits = round2((providerWallet.totalCredits || 0) - fetchedAmount);
 
         await providerWallet.save();
 
