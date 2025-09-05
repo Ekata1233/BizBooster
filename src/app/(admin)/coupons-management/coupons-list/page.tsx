@@ -147,8 +147,8 @@ const CouponList: React.FC = () => {
       }
 
       /* map to table-friendly rows */
-      const mapped = data.map<TableData>((c) => ({
-        id: c._id,
+      const mapped = data.map<TableData>((c,index) => ({
+        id: c._id,  srNo: index + 1, 
         couponCode: c.couponCode,
         couponType: c.couponType,
         discountTitle: c.discountTitle,
@@ -189,44 +189,9 @@ const CouponList: React.FC = () => {
   };
 
 
-
-
-  /* ─── save (PUT) ────────────────────────────────────────────────────────── */
-  const handleUpdateCoupon = async (payload: Partial<CouponType>) => {
-    if (!editingCoupon) return;
-
-    const formData = new FormData();
-
-    if (payload.couponType) formData.append("couponType", payload.couponType);
-    if (payload.couponCode) formData.append("couponCode", payload.couponCode);
-    if (payload.discountType) formData.append("discountType", payload.discountType);
-    if (payload.discountAmountType) formData.append("discountAmountType", payload.discountAmountType);
-    if (payload.discountCostBearer) formData.append("discountCostBearer", payload.discountCostBearer);
-    if (payload.discountTitle) formData.append("discountTitle", payload.discountTitle);
-
-    if (payload.amount !== undefined) formData.append("amount", String(payload.amount));
-    if (payload.maxDiscount !== undefined) formData.append("maxDiscount", String(payload.maxDiscount));
-    if (payload.minPurchase !== undefined) formData.append("minPurchase", String(payload.minPurchase));
-    if (payload.limitPerUser !== undefined) formData.append("limitPerUser", String(payload.limitPerUser));
-
-    if (payload.startDate) formData.append("startDate", payload.startDate);
-    if (payload.endDate) formData.append("endDate", payload.endDate);
-    if (payload.isActive !== undefined) formData.append("isActive", String(payload.isActive));
-
-    if (payload.zone?._id) formData.append("zone", payload.zone._id);
-    if (payload.category?._id) formData.append("category", payload.category._id);
-    if (payload.service?._id) formData.append("service", payload.service._id);
-    if (payload.customer?._id) formData.append("customer", payload.customer._id);
-    if (payload.couponAppliesTo) formData.append("couponAppliesTo", payload.couponAppliesTo);
-
-    await updateCoupon(editingCoupon._id, formData);
-    setIsModalOpen(false);
-    await fetchFilteredCoupons();
-  };
-
-
   /* ─── table columns ────────────────────────────────────────────────────── */
   const columns = [
+     { header: 'Sr No.', accessor: 'srNo' },
     { header: 'Code', accessor: 'couponCode' },
     { header: 'Type', accessor: 'couponType' },
     { header: 'Title', accessor: 'discountTitle' },
@@ -361,15 +326,6 @@ const CouponList: React.FC = () => {
           : <BasicTableOne columns={columns} data={rows} />
         }
       </ComponentCard>
-
-      {/* …existing JSX… */}
-
-      {/* <EditCouponModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        coupon={editingCoupon}
-        onSave={handleUpdateCoupon}
-      /> */}
 
     </div>
   );
