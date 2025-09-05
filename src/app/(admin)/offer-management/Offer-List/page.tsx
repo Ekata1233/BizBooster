@@ -10,7 +10,6 @@ import ComponentCard from '@/components/common/ComponentCard';
 import StatCard from '@/components/common/StatCard';
 import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField'; // your styled input wrapper
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 
 interface OfferEntry {
   _id: string;
@@ -133,8 +132,8 @@ const OfferListPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4">
-      <PageBreadcrumb pageTitle="Offers List" />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-center">Offers List</h1>
 
       {error && (
         <p className="bg-red-100 text-red-700 px-4 py-2 mb-4 rounded">
@@ -197,20 +196,32 @@ const OfferListPage: React.FC = () => {
         </div>
       </div>
 
-      <ComponentCard title="All Offers">
-
-      {/* Tabs */}
+      {/* Tabs with counts */}
       <div className="flex gap-6 mb-5 border-b border-gray-200">
-        {['All', 'Active', 'Upcoming', 'Expired'].map((tab) => {
+        {(['All', 'Active', 'Upcoming', 'Expired'] as const).map((tab) => {
           const active = selectedTab === tab;
+
+          // Count offers for each tab
+          const count =
+            tab === 'All'
+              ? offers.length
+              : offers.filter(
+                  (offer) =>
+                    getOfferStatus(offer.offerStartTime, offer.offerEndTime) === tab
+                ).length;
+
           return (
             <button
               key={tab}
-              onClick={() => setSelectedTab(tab as 'All' | OfferStatus)}
-              className={`relative pb-3 text-sm font-medium transition-colors ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
+              onClick={() => setSelectedTab(tab)}
+              className={`relative pb-3 text-sm font-medium transition-colors ${
+                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
               {tab}
+              <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                {count}
+              </span>
               {active && (
                 <span className="absolute left-0 -bottom-[1px] h-[2px] w-full rounded-full bg-blue-600" />
               )}
@@ -220,11 +231,13 @@ const OfferListPage: React.FC = () => {
       </div>
 
       {/* All Offers Table */}
+      <ComponentCard title="All Offers">
         {!loading ? (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className=" text-gray-600">
+                  <th className="px-5 py-3 font-medium text-left">Sr. No</th>
                   <th className="px-5 py-3 font-medium text-left">Thumbnail Image</th>
                   <th className="px-5 py-3 font-medium text-left">Banner</th>
                   <th className="px-5 py-3 font-medium text-left">Gallery</th>
@@ -235,7 +248,7 @@ const OfferListPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOffers.map((offer) => {
+                {[...filteredOffers].reverse().map((offer, index) => {
                   const status = getOfferStatus(
                     offer.offerStartTime,
                     offer.offerEndTime
@@ -245,6 +258,10 @@ const OfferListPage: React.FC = () => {
                       key={offer._id}
                       className="border-t border-gray-100 hover:bg-gray-50 transition"
                     >
+                      {/* Serial No */}
+                      <td className="px-5 py-3">
+                        {index + 1}
+                      </td>
                       <td className="px-5 py-3">
                         {offer.thumbnailImage ? (
                           <img
@@ -318,7 +335,7 @@ const OfferListPage: React.FC = () => {
                   <tr>
                     <td
                       className="px-5 py-10 text-center text-gray-500 text-sm"
-                      colSpan={6}
+                      colSpan={8}
                     >
                       No offers found.
                     </td>
