@@ -51,7 +51,7 @@ const UserDetails = () => {
 
   const tabButtons = [
     { key: 'info', label: 'Profile' },
-    { key: 'stats', label: 'Stats' },
+    // { key: 'stats', label: 'Stats' },
     { key: 'selfLead', label: 'Self Lead' },
     { key: 'teamLead', label: 'Team Lead' },
     { key: 'wallet', label: 'Wallet' },
@@ -103,14 +103,14 @@ const UserDetails = () => {
             />
           )}
 
-          {activeTab === 'stats' && (
+          {/* {activeTab === 'stats' && (
             <UserStatCard
               stat1={{ title: 'Total Booking', value: '20' }}
               stat2={{ title: 'Total Revenue', value: '₹8420' }}
               stat3={{ title: 'Other', value: '420' }}
               stat4={{ title: 'Next Other', value: '320' }}
             />
-          )}
+          )} */}
 
           {activeTab === 'teamLead' && <TeamLeadTable
             userId={userId || ' '} isAction={true}
