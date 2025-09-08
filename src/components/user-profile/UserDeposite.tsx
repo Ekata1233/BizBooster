@@ -9,6 +9,7 @@ import {
   FaMoneyBillWave,
   FaPiggyBank,
 } from "react-icons/fa";
+import { useUserWallet } from "@/context/WalletContext";
 
 interface Deposite {
   _id: string;
@@ -42,7 +43,7 @@ const columnsTransactions = [
         year: "numeric",
       }),
   },
-  { header: "Transaction ID", accessor: "_id" },
+  { header: "Transaction ID", accessor: "referenceId" },
   {
     header: "Transaction Type",
     accessor: "type",
@@ -77,31 +78,23 @@ export default function UserDepositePage() {
   const [completedMonths, setCompletedMonths] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const { wallet, error, fetchWalletByUser } = useUserWallet();
 
-  // ✅ Static transactions for testing
-  const [transactions] = useState<Transaction[]>([
-    {
-      _id: "txn001",
-      user: "user123",
-      type: "credit",
-      amount: 5000,
-      createdAt: "2025-08-01T10:30:00Z",
-    },
-    {
-      _id: "txn002",
-      user: "user123",
-      type: "debit",
-      amount: 2000,
-      createdAt: "2025-08-10T14:20:00Z",
-    },
-    {
-      _id: "txn003",
-      user: "user123",
-      type: "credit",
-      amount: 1500,
-      createdAt: "2025-08-15T09:00:00Z",
-    },
-  ]);
+  // Fetch wallet when component mounts (or when userId changes)
+  useEffect(() => {
+    if (id) {
+      fetchWalletByUser(id);
+    }
+  }, [id]);
+
+  console.log("wallet : ", wallet)
+
+  // Filtered transactions from wallet
+  const depositTransactions =
+    wallet?.transactions?.filter(
+      (txn: any) => txn.description === "Monthly package earning"
+    ) || [];
+
 
   useEffect(() => {
     async function fetchData() {
@@ -144,13 +137,8 @@ export default function UserDepositePage() {
       setCurrentLevel(Math.min(5, Math.floor((progress / 100) * 5)));
     }
 
-    // ✅ Earnings from transactions
-    const earnings = transactions.reduce((acc, txn) => {
-      return txn.type === "credit" ? acc + txn.amount : acc - txn.amount;
-    }, 0);
 
-    setTotalEarnings(earnings);
-  }, [deposite, transactions]);
+  }, [deposite]);
 
   if (loading) return <p className="p-6 text-gray-600">Loading...</p>;
 
@@ -168,9 +156,9 @@ export default function UserDepositePage() {
                 <span className="font-medium">Package Activated:</span>{" "}
                 {deposite?.packageActivateDate
                   ? new Date(deposite.packageActivateDate).toLocaleDateString(
-                      "en-GB",
-                      { day: "2-digit", month: "short", year: "numeric" }
-                    )
+                    "en-GB",
+                    { day: "2-digit", month: "short", year: "numeric" }
+                  )
                   : "N/A"}
               </p>
               <p className="flex items-center gap-2 text-red-600">
@@ -259,21 +247,28 @@ export default function UserDepositePage() {
 
       {/* ─────────────── Transactions Table ─────────────── */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Transactions</h2>
-        {transactions.length > 0 ? (
+        <h2 className="text-lg font-semibold mb-4">Deposit Transactions</h2>
+        {depositTransactions.length > 0 ? (
           <BasicTableOne
             columns={columnsTransactions}
-            data={transactions.map((txn, index) => ({
+            data={depositTransactions.map((txn: any, index: number) => ({
               ...txn,
               sr: index + 1,
             }))}
           />
         ) : (
-          <p className="p-4 text-gray-600 text-sm">
-            No transactions found for this user.
-          </p>
+          <div className="flex flex-col items-center justify-center gap-3 p-8 bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <FaPiggyBank className="text-gray-400 text-4xl" />
+            <h3 className="text-lg font-semibold text-gray-700">
+              No Deposit Transactions
+            </h3>
+            <p className="text-sm text-gray-500 text-center">
+              This user does not have any deposit transactions yet.
+            </p>
+          </div>
         )}
       </div>
+
     </div>
   );
 }
