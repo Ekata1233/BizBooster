@@ -18,6 +18,7 @@ import axios from "axios";
 import UserStatCard from "@/components/user-component/UserStatCard";
 import * as XLSX from "xlsx";   // ✅ for Excel download
 import { FaFileDownload } from "react-icons/fa";
+import Pagination from "@/components/tables/Pagination";
 
 export interface User {
     _id: string;
@@ -30,7 +31,7 @@ export interface User {
     referralCode?: string;
     referredBy: string | null;
     isAgree: boolean;
-    profilePhoto:string;
+    profilePhoto: string;
     otp: {
         code: string;
         expiresAt: Date;
@@ -65,7 +66,8 @@ const UserList = () => {
     const [message, setMessage] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
-console.log("userlist",users);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const options = [
         { value: "latest", label: "Latest" },
@@ -223,7 +225,7 @@ console.log("userlist",users);
                         return {
                             id: user._id,
                             user: {
-                                image: user.profilePhoto  || "/images/logo/user1.webp",
+                                image: user.profilePhoto || "/images/logo/user1.webp",
                                 fullName: user.fullName,
                             },
                             email: user.email,
@@ -294,6 +296,17 @@ console.log("userlist",users);
         const fileName = `UserList_${activeTab}_${startDate || "all"}_to_${endDate || "all"}.xlsx`;
         XLSX.writeFile(workbook, fileName);
     };
+
+    const paginatedData = getFilteredByStatus();
+    const totalPages = Math.ceil(paginatedData.length / rowsPerPage);
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentRows = paginatedData.slice(indexOfFirstRow, indexOfLastRow);
+
+    // ✅ Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [startDate, endDate, sort, searchQuery, activeTab]);
 
     if (!users) {
         return <div>Loading...</div>;
@@ -422,8 +435,19 @@ console.log("userlist",users);
                     {message ? (
                         <p className="text-red-500 text-center my-4">{message}</p>
                     ) : (
-                        <BasicTableOne columns={columns} data={[...getFilteredByStatus()].reverse()} />
-                    )}
+                        <div>
+                            <BasicTableOne columns={columns} data={currentRows} />
+
+                            {/* ✅ Pagination */}
+                            <div className="flex justify-center mt-4">
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalItems={paginatedData.length}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                />
+                            </div>
+                        </div>)}
                 </ComponentCard>
             </div>
         </div>

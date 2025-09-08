@@ -20,6 +20,7 @@ import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
 import ModuleStatCard from '@/components/module-component/ModuleStatCard';
+import Pagination from '@/components/tables/Pagination';
 
 // Types
 interface Category {
@@ -66,9 +67,10 @@ const Subcategory = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [activeTab, setActiveTab] = useState('all');
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1); // ✅ pagination state
+    const rowsPerPage = 10;
     const router = useRouter();
 
-    console.log("data in categories : ", categories)
     useEffect(() => {
         axios.get("/api/category")
             .then(res => setCategories(res.data.data))
@@ -263,6 +265,15 @@ const Subcategory = () => {
         return filteredSubcategory;
     };
 
+    const paginatedData = getFilteredByStatus();
+    const totalPages = Math.ceil(paginatedData.length / rowsPerPage);
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentRows = paginatedData.slice(indexOfFirstRow, indexOfLastRow);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedCategory, activeTab]);
 
     return (
         <div>
@@ -327,8 +338,17 @@ const Subcategory = () => {
                     </div>
 
                     <div>
-                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
+                        <BasicTableOne columns={columns} data={currentRows} />
 
+                        {/* ✅ Pagination */}
+                        <div className="flex justify-center mt-4">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalItems={paginatedData.length}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
                     </div>
                 </ComponentCard>
             </div>
