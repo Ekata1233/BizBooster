@@ -1,4 +1,3 @@
-
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserStatCard from '@/components/user-profile/UserAddressCard';
@@ -15,7 +14,6 @@ import HelpSupport from '@/components/user-profile/HelpSupport';
 import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
 
-
 const UserDetails = () => {
   const {
     users,
@@ -24,7 +22,6 @@ const UserDetails = () => {
     singleUserLoading,
     singleUserError,
   } = useUserContext();
-
 
   const params = useParams();
   const userId = params?.id as string;
@@ -39,8 +36,6 @@ const UserDetails = () => {
       fetchSingleUser(userId);
     }
   }, [userId]);
-
-
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
@@ -68,7 +63,11 @@ const UserDetails = () => {
           imageSrc="/images/logo/user1.webp"
           name={singleUser.fullName}
           role={singleUser.email}
-          location={singleUser?.homeAddress?.fullAddress || singleUser?.workAddress?.fullAddress || "No Address"}
+          location={
+            singleUser?.homeAddress?.fullAddress ||
+            singleUser?.workAddress?.fullAddress ||
+            'No Address'
+          }
           userId={singleUser._id}
           isCommissionDistribute={singleUser.isCommissionDistribute}
           isToggleButton={true}
@@ -76,15 +75,16 @@ const UserDetails = () => {
         />
 
         {/* Tabs */}
-        <div className="grid grid-cols-8 gap-2 pt-2">
+        <div className="flex gap-2 pt-2">
           {tabButtons.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`w-full px-4 py-2 text-sm font-medium rounded-md border ${activeTab === tab.key
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
-                }`}
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md border ${
+                activeTab === tab.key
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+              }`}
             >
               {tab.label}
             </button>
@@ -99,7 +99,11 @@ const UserDetails = () => {
               email={singleUser.email}
               phone={singleUser.mobileNumber}
               referralCode={singleUser.referralCode || ' '}
-              address={singleUser?.homeAddress?.fullAddress || singleUser?.workAddress?.fullAddress || "No Address"}
+              address={
+                singleUser?.homeAddress?.fullAddress ||
+                singleUser?.workAddress?.fullAddress ||
+                'No Address'
+              }
             />
           )}
 
@@ -112,12 +116,13 @@ const UserDetails = () => {
             />
           )} */}
 
-          {activeTab === 'teamLead' && <TeamLeadTable
-            userId={userId || ' '} isAction={true}
-          />}
+          {activeTab === 'teamLead' && (
+            <TeamLeadTable userId={userId || ' '} isAction={true} />
+          )}
 
-
-          {activeTab === 'selfLead' && <SelfLeadTable userId={userId || ' '} isAction={true} />}
+          {activeTab === 'selfLead' && (
+            <SelfLeadTable userId={userId || ' '} isAction={true} />
+          )}
 
           {activeTab === 'wallet' && <UserWallet userId={userId || ' '} />}
 

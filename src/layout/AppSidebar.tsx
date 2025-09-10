@@ -814,7 +814,7 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
@@ -824,7 +824,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -838,7 +838,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -852,7 +852,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -866,7 +866,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -880,7 +880,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -894,7 +894,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -908,7 +908,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -922,7 +922,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -936,7 +936,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -950,7 +950,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -964,7 +964,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -978,7 +978,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -992,7 +992,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -1006,7 +1006,7 @@ const AppSidebar: React.FC = () => {
 
              <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -1020,7 +1020,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -1034,7 +1034,7 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
