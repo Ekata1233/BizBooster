@@ -37,6 +37,10 @@ const Page = () => {
             } else {
                 url = "/api/notifications/all-users";
             }
+console.log("Mode:", mode);
+console.log("Selected user:", selectedUser);
+console.log("Selected users:", selectedUsers);
+console.log("Payload tokens:", payload.tokens);
 
             const res = await fetch(url, {
                 method: "POST",

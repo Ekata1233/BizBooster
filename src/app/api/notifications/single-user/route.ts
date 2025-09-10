@@ -14,9 +14,11 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
     try {
-        const { title, body, token } = await req.json();
+        const { title, body, tokens } = await req.json();
 
-        if (!token) {
+        console.log("Request payload:", { title, body, tokens });
+
+        if (!tokens) {
             return NextResponse.json(
                 { error: "FCM token required" },
                 { status: 400, headers: corsHeaders }
@@ -28,11 +30,11 @@ export async function POST(req: NextRequest) {
                 title,
                 body,
             },
-            token,
+            tokens,
         };
 
         // ✅ Use messaging() correctly
-        const response = await messaging.send(message);
+       const response = await messaging.sendEachForMulticast(message);
 
         return NextResponse.json(
             { success: true, response },
