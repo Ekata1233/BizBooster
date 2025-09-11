@@ -30,7 +30,8 @@ export interface Provider {
 }
 
 type ProviderContextType = {
-    wallet: IProviderWallet | null;
+  wallet: IProviderWallet | null;
+  allWallet: IProviderWallet[];
   provider: Provider | null;
   providerDetails: Provider | null;
   loading: boolean;
@@ -44,7 +45,8 @@ type ProviderContextType = {
   getAllProviders: () => Promise<Provider[]>;
   getProvidersByServiceId: (serviceId: string) => Promise<Provider[]>;
   fetchWalletByProvider: (providerId: string) => Promise<void>;
-   getGalleryImages: (providerId: string) => Promise<string[]>;
+   fetchAllWallet: () => Promise<void>; 
+  getGalleryImages: (providerId: string) => Promise<string[]>;
 };
 
 const ProviderContext = createContext<ProviderContextType | undefined>(undefined);
@@ -62,6 +64,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wallet, setWallet] = useState<IProviderWallet | null>(null);
+  const [allWallet, setAllWallet] = useState<IProviderWallet[]>([]);
 
   const registerProvider = async (formData: FormData) => {
     setLoading(true);
@@ -230,7 +233,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     }
   };
-    const getGalleryImages = async (providerId: string): Promise<string[]> => {
+  const getGalleryImages = async (providerId: string): Promise<string[]> => {
     try {
       const response = await axios.get(`/api/provider/${providerId}/gallery`);
       return response.data.galleryImages || [];
@@ -241,6 +244,22 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
       return [];
     }
   };
+
+  const fetchAllWallet = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await axios.get("/api/provider/wallet/all");
+    setAllWallet(response.data.data || []); // assuming { success: true, data: [...] }
+  } catch (err: any) {
+    const message =
+      err?.response?.data?.message || err?.message || "Error fetching all wallets";
+    setError(message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -253,6 +272,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
     <ProviderContext.Provider
       value={{
         wallet,
+         allWallet,
         provider,
         providerDetails,
         loading,
@@ -266,6 +286,7 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
         getAllProviders,
         getProvidersByServiceId,
         fetchWalletByProvider,
+         fetchAllWallet, 
         getGalleryImages,
       }}
     >
