@@ -161,6 +161,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
       accessor: 'userDetails',
       render: (row: TeamLeadData) => (
         <div className="flex items-center gap-3">
+           <div className="w-10 h-10 overflow-hidden rounded-full">
           <Image
             src={row.userPhoto}
             alt="user"
@@ -168,6 +169,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
             height={40}
             className="rounded-full"
           />
+          </div>
           <div className="text-sm text-gray-700">
             <div className="font-semibold">{row.userName}</div>
             <div>{row.userEmail}</div>
@@ -262,7 +264,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
   }
 
   return (
-    <ComponentCard title="Team Lead Table1111">
+    <ComponentCard title="Team Lead Table">
       <BasicTableOne columns={columnsTeamLead} data={dataTeamLead} />
     </ComponentCard>
   );
