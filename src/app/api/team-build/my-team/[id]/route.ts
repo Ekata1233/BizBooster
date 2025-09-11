@@ -13,6 +13,9 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
 export interface IUser extends Document {
     _id: string;
     name: string;
@@ -50,7 +53,7 @@ export async function GET(req: NextRequest) {
     if (!userId) {
         return NextResponse.json(
             { success: false, message: 'userId is required' },
-            { status: 400 }
+            { status: 400, headers: corsHeaders }
         );
     }
 
@@ -146,9 +149,12 @@ export async function GET(req: NextRequest) {
             })
         );
 
-        return NextResponse.json({ success: true, team: teamData });
+        return NextResponse.json(
+            { success: true, team: teamData },
+            { status: 200, headers: corsHeaders } // <-- add CORS headers here
+        );
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+        return NextResponse.json({ success: false, message: "Server error" }, { status: 500, headers: corsHeaders });
     }
 }
