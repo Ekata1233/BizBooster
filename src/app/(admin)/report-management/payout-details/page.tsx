@@ -11,13 +11,13 @@ import Pagination from "@/components/tables/Pagination";
 import * as XLSX from "xlsx";
 
 interface WalletTransactionRow {
-  serial: number;
-  type: "franchise" | "provider";
-  amount: string;
-  description: string;
-  method: string;
-  status: string;
-  createdAt: string;
+    serial: number;
+    type: "franchise" | "provider";
+    amount: string;
+    description: string;
+    method: string;
+    status: string;
+    createdAt: string;
 }
 
 const Page = () => {
@@ -55,7 +55,10 @@ const Page = () => {
         const franchiseTxns =
             allWallets?.flatMap((w: any) =>
                 w.transactions
-                    ?.filter((t: any) => t.description === "Weekly auto-withdrawal")
+                    ?.filter((t: any) =>
+                        t.description?.includes("Weekly auto-withdrawal") ||
+                        t.description?.includes("The transfer has failed")
+                    )
                     .map((t: any) => ({
                         type: "franchise",
                         amount: t.amount,
@@ -69,7 +72,10 @@ const Page = () => {
         const providerTxns =
             allWallet?.flatMap((w: any) =>
                 w.transactions
-                    ?.filter((t: any) => t.description === "Weekly auto-withdrawal")
+                    ?.filter((t: any) =>
+                        t.description?.includes("Weekly auto-withdrawal") ||
+                        t.description?.includes("The transfer has failed")
+                    )
                     .map((t: any) => ({
                         type: "provider",
                         amount: t.amount,
@@ -100,7 +106,17 @@ const Page = () => {
         { header: "S.No", accessor: "serial" },
         { header: "Type", accessor: "type" },
         { header: "Amount", accessor: "amount" },
-        { header: "Description", accessor: "description" },
+        {
+            header: "Description",
+            accessor: "description",
+            render: (row: WalletTransactionRow) => {
+                if (!row.description) return "-";
+                const maxLength = 25;
+                return row.description.length <= maxLength
+                    ? row.description
+                    : row.description.slice(0, maxLength) + " ...";
+            }
+        },
         { header: "Method", accessor: "method" },
         {
             header: 'Status',
