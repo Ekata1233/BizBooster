@@ -263,7 +263,10 @@ const reportItems: NavItem[] = [
   { icon: <GridIcon />, name: "Transaction Reports", path: "/report-management/transaction-reports" },
   { icon: <GridIcon />, name: "Business Reports", path: "/report-management/business-reports" },
   { icon: <GridIcon />, name: "Admin Earnings", path: "/report-management/admin-earnings" },
+  { icon: <GridIcon />, name: "Payout Details", path: "/report-management/payout-details" },
+
 ];
+
 const notificationItems: NavItem[] = [
   { icon: <GridIcon />, name: "Send Notification", path: "/notification-management/send-notification" },
 ];
@@ -396,7 +399,7 @@ const AppSidebar: React.FC = () => {
       advisor: advisorItems,
       providerpreferences: providerpreferenceItems,
       report: reportItems,
-      notification : notificationItems,
+      notification: notificationItems,
       offer: offerItems,
       employee: EmployeeItems,
     };
@@ -1004,7 +1007,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(reportItems, "report")}
             </div>
 
-             <div>
+            <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                   }`}
