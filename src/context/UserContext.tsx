@@ -42,6 +42,7 @@ export interface User {
   otherAddress?: Address;
   addressCompleted?: boolean;
   userId: string;
+  profilePhoto:string;
   fcmTokens: string[];
 }
 

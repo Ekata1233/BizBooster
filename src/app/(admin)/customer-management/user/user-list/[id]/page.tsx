@@ -60,19 +60,19 @@ const UserDetails = () => {
       <PageBreadcrumb pageTitle="User Details" />
       <div className="space-y-6">
         <UserMetaCard
-          imageSrc="/images/logo/user1.webp"
-          name={singleUser.fullName}
-          role={singleUser.email}
-          location={
-            singleUser?.homeAddress?.fullAddress ||
-            singleUser?.workAddress?.fullAddress ||
-            'No Address'
-          }
-          userId={singleUser._id}
-          isCommissionDistribute={singleUser.isCommissionDistribute}
-          isToggleButton={true}
-          franchiseId={singleUser.userId}
-        />
+  imageSrc={singleUser?.profilePhoto || "/images/logo/user1.webp"} 
+  name={singleUser.fullName}
+  role={singleUser.email}
+  location={
+    singleUser?.homeAddress?.fullAddress ||
+    singleUser?.workAddress?.fullAddress ||
+    "No Address"
+  }
+  userId={singleUser._id}
+  isCommissionDistribute={singleUser.isCommissionDistribute}
+  isToggleButton={true}
+  franchiseId={singleUser.userId}
+/>
 
         {/* Tabs */}
         <div className="flex gap-2 pt-2">

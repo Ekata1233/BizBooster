@@ -262,7 +262,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
   }
 
   return (
-    <ComponentCard title="Team Lead Table">
+    <ComponentCard title="Team Lead Table1111">
       <BasicTableOne columns={columnsTeamLead} data={dataTeamLead} />
     </ComponentCard>
   );
