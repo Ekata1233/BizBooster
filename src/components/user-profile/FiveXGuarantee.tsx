@@ -32,8 +32,8 @@ const FiveXGuarantee = () => {
     const daysInTarget = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 0).getDate();
     return new Date(candidate.getFullYear(), candidate.getMonth(), Math.min(day, daysInTarget));
   };
-  console.log("Wallet :",wallet);
-  
+  console.log("Wallet :", wallet);
+
   // fetch user
   useEffect(() => {
     if (!id) return;
@@ -41,7 +41,6 @@ const FiveXGuarantee = () => {
       fetchSingleUser(id);
     }
     console.log("user data", singleUser);
-
   }, [id, singleUser, fetchSingleUser]);
 
   // fetch checkout
@@ -76,7 +75,7 @@ const FiveXGuarantee = () => {
     if (id) fetchWalletByUser(id);
   }, [id]);
 
-  // calculate remaining months/days
+  // ✅ calculate remaining months/days (fixed for proper month completion)
   useEffect(() => {
     if (!singleUser?.packageActivateDate || !fivexMonths) {
       setRemainingMonths(0);
@@ -84,34 +83,35 @@ const FiveXGuarantee = () => {
       return;
     }
 
-    const startDate = new Date(singleUser.packageActivateDate);
+    const startDate = startOfDay(new Date(singleUser.packageActivateDate));
     const expiry = addMonthsClamped(startDate, fivexMonths);
+    const today = startOfDay(new Date());
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const expiryDay = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
-
-    if (expiryDay <= today) {
+    if (expiry <= today) {
       setRemainingMonths(0);
       setRemainingDays(0);
       return;
     }
 
-    let temp = new Date(today);
-    let monthsCount = 0;
-    while (true) {
-      const next = addMonthsClamped(temp, 1);
-      if (next <= expiryDay) {
-        temp = next;
-        monthsCount += 1;
-      } else break;
+    // months between today and expiry
+    let monthsCount =
+      (expiry.getFullYear() - today.getFullYear()) * 12 +
+      (expiry.getMonth() - today.getMonth());
+
+    // If today's day < activation day, one month is not yet fully completed
+    if (today.getDate() < startDate.getDate()) {
+      monthsCount -= 1;
     }
 
+    const nextMonthDate = addMonthsClamped(today, monthsCount);
     const msPerDay = 1000 * 60 * 60 * 24;
-    const daysLeft = Math.round((expiryDay.getTime() - temp.getTime()) / msPerDay);
+    const daysLeft = Math.max(
+      0,
+      Math.round((expiry.getTime() - nextMonthDate.getTime()) / msPerDay)
+    );
 
     setRemainingMonths(Math.max(0, monthsCount));
-    setRemainingDays(Math.max(0, daysLeft));
+    setRemainingDays(daysLeft);
   }, [singleUser, fivexMonths]);
 
   // stats
@@ -125,7 +125,7 @@ const FiveXGuarantee = () => {
   const currentLevel = Math.min(Math.floor(totalLeads / levelStep) + 1, 5);
   const earningPercent = Math.min((totalEarnings / targetEarning) * 100, 100);
 
-  // ✅ FIX: Eligible only after package ends
+  // ✅ Eligible only after package ends
   const isEligible =
     targetLeads > 0 &&
     totalLeads >= targetLeads &&
@@ -156,8 +156,6 @@ const FiveXGuarantee = () => {
 
   return (
     <ComponentCard title="5x Guarantee">
-      {/* show remaining only if package is still active */}
-
       {/* Package Activated Date */}
       {singleUser?.packageActivateDate && (
         <div className="flex justify-center mb-6">
@@ -215,7 +213,6 @@ const FiveXGuarantee = () => {
               />
               <text x="150" y="100" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#3b82f6">
                 ₹{Number(totalEarnings.toFixed(2))}
-
               </text>
             </svg>
           </div>
@@ -229,12 +226,11 @@ const FiveXGuarantee = () => {
               ⏳ Are you eligible? — Yes, Remaining {remainingMonths} {remainingMonths === 1 ? "Month" : "Months"}
             </p>
           ) : (
-            <p className="text-lg font-bold text-red-600 bg-red-100 px-4 py-2 rounded-full inline-block shadow">
-              ❌ Are you eligible? — No, Period Completed
+            <p className="text-lg font-bold text-yellow-600 bg-yellow-100 px-4 py-2 rounded-full inline-block shadow">
+              ⏳ Are you eligible? — Yes, Remaining {remainingDays} Days
             </p>
           )}
         </div>
-
       )}
       {/* Summary Info */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
