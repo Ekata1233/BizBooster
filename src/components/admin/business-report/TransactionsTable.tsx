@@ -132,19 +132,28 @@ const columns = [
     render: (row: Transaction) =>
       row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`
   },
-  {
-    header: 'Status',
-    accessor: 'status',
-    className: "w-28",
-    render: (row: Transaction) => (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold 
-          ${row.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}
-      >
+ {
+  header: 'Status',
+  accessor: 'status',
+  className: "w-28",
+  render: (row: Transaction) => {
+    let statusClass = '';
+    if (row.status === 'success') {
+      statusClass = 'bg-green-100 text-green-700';
+    } else if (row.status === 'failed') {
+      statusClass = 'bg-red-100 text-red-700';
+    } else {
+      statusClass = 'bg-yellow-100 text-yellow-700'; // for other statuses like 'pending'
+    }
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`}>
         {row.status}
       </span>
-    ),
+    );
   },
+}
+
 ];
 
 
