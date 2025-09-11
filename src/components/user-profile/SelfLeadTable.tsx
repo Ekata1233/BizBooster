@@ -5,6 +5,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import { EyeIcon } from "@/icons";
 import { useCheckout } from "@/context/CheckoutContext";
+import Link from "next/link";
 
 interface SelfLeadProps {
   userId: string;
@@ -70,9 +71,11 @@ const columnsSelfLead = [
     accessor: "action",
     render: (row: any) => (
       <div className="flex gap-2">
-        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-          <EyeIcon />
-        </button>
+        <Link href={`/booking-management/all-booking/${row.id}`} passHref>
+          <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+            <EyeIcon size={16} />
+          </button>
+        </Link>
       </div>
     ),
   },
@@ -159,6 +162,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       : "₹0";
 
     return {
+       id: checkout._id,
       sr: index + 1,
       leadId: checkout?.bookingId || "N/A",
       serviceName: checkout?.service?.serviceName || "N/A",
