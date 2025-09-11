@@ -21,7 +21,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://biz-booster.vercel.app',
   'http://localhost:3000',
-  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+  'https://biz-booster-provider-panel.vercel.app',
+  'https://api.fetchtrue.com' // ✅ ADD THIS LINE
 ];
 function getCorsHeaders(origin: string | null): HeadersInit {
   const headers: HeadersInit = {
