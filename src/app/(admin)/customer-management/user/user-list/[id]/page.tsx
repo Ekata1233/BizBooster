@@ -76,7 +76,6 @@ const UserDetails = () => {
   franchiseId={singleUser.userId}
 />
 
-
         {/* Tabs */}
         <div className="flex gap-2 pt-2">
           {tabButtons.map((tab) => (
