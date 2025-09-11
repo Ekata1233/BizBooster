@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
 
-  const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000'];
+  const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000',  'https://api.fetchtrue.com'];
   const headers = new Headers();
   if (allowedOrigins.includes(origin)) {
     headers.set('Access-Control-Allow-Origin', origin);
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 export async function OPTIONS(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
   const headers = new Headers();
-    const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000'];
+    const allowedOrigins = ['http://localhost:3001', 'https://biz-booster.vercel.app', 'http://localhost:3000',  'https://api.fetchtrue.com',];
 
 
   if (allowedOrigins.includes(origin)) {
