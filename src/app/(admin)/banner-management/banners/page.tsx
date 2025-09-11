@@ -162,8 +162,8 @@ const Banner = () => {
         return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
         if (typeof banner.service === 'object' && banner.service !== null) {
-  return (banner.service as { name?: string })?.name || '-';
-}
+          return (banner.service as { name?: string })?.name || '-';
+        }
 
         return banner.service ? serviceMap[banner.service] || banner.service : '-';
       case 'referralUrl':
@@ -433,7 +433,7 @@ const Banner = () => {
             </div>
 
             {/* Dynamic Field Based on Selection Type */}
-            {currentBanner?.selectionType === 'category' && (
+            {/* {currentBanner?.selectionType === 'category' && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium">Category</label>
                 <select
@@ -483,7 +483,62 @@ const Banner = () => {
                   ))}
                 </select>
               </div>
+            )} */}
+
+            {/* Category Selection */}
+            {currentBanner?.selectionType === 'category' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Category</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={
+                    typeof currentBanner?.category === 'object'
+                      ? currentBanner.category?._id
+                      : currentBanner?.category || ''
+                  }
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, category: e.target.value, subcategory: '' } : null
+                    )
+                  }
+                >
+                  <option value="">Select Category</option>
+                  {categoryData.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
+
+            {/* Subcategory Selection */}
+            {currentBanner?.selectionType === 'subcategory' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Subcategory</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={
+                    typeof currentBanner?.subcategory === 'object'
+                      ? currentBanner.subcategory?._id
+                      : currentBanner?.subcategory || ''
+                  }
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, subcategory: e.target.value, category: '' } : null
+                    )
+                  }
+                >
+                  <option value="">Select Subcategory</option>
+                  {subcategoryData.map((sub) => (
+                    <option key={sub._id} value={sub._id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
 
             {currentBanner?.selectionType === 'service' && (
               <div className="md:col-span-2">

@@ -10,7 +10,9 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://biz-booster.vercel.app',
   'http://localhost:3000',
-  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+  'https://biz-booster-provider-panel.vercel.app',
+  'https://api.fetchtrue.com',// ✅ ADD THIS LINE
+  'http://localhost:3002',
 ];
 function getCORSHeaders(origin: string) {
   const headers = new Headers();
