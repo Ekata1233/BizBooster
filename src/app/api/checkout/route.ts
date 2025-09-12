@@ -10,6 +10,7 @@ import "@/models/Provider"
 const allowedOrigins = [
   'http://localhost:5173',
   'https://fetchtrue-service-page.vercel.app',
+    'https://api.fetchtrue.com',
   '*', // ⚠️ Only if you want to allow all (use with caution!)
 ];
 
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
       subtotal,
       serviceDiscount,
       couponDiscount,
+      couponDiscountType,
       champaignDiscount,
       gst,
       platformFee,
@@ -126,6 +128,7 @@ export async function POST(req: NextRequest) {
       subtotal,
       serviceDiscount,
       couponDiscount,
+      couponDiscountType,
       champaignDiscount,
       gst,
       platformFee,

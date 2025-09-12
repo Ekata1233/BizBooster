@@ -4,6 +4,7 @@ import Provider from "@/models/Provider";
 import { z } from "zod";
 import { connectToDatabase } from "@/utils/db";
 import { signToken } from "@/utils/auth";
+import ProviderWallet from "@/models/ProviderWallet";
 
 // const corsHeaders = {
 //   'Access-Control-Allow-Origin': '*',
@@ -20,7 +21,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://biz-booster.vercel.app',
   'http://localhost:3000',
-  'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
+  'https://biz-booster-provider-panel.vercel.app',
+  'https://api.fetchtrue.com' // ✅ ADD THIS LINE
 ];
 function getCorsHeaders(origin: string | null): HeadersInit {
   const headers: HeadersInit = {
@@ -92,6 +94,21 @@ export async function POST(req: NextRequest) {
       password,
       step1Completed: true,
       registrationStatus: "basic",
+    });
+
+    await ProviderWallet.create({
+      providerId: provider._id,
+      isActive: true,
+      balance: 0,
+      receivableBalance: 0,
+      withdrawableBalance: 0,
+      pendingWithdraw: 0,
+      alreadyWithdrawn: 0,
+      totalEarning: 0,
+      totalCredits: 0,
+      totalDebits: 0,
+      cashInHand: 0,
+      transactions: [],
     });
 
     const token = signToken(provider._id.toString());

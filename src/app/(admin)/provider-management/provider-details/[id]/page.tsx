@@ -63,7 +63,7 @@ interface Module {
   __v?: number;
 }
 
-interface SubscribedService {
+export interface SubscribedService {
   _id: string;
   serviceName: string;
   price: number;
@@ -87,6 +87,8 @@ interface Provider {
   updatedAt: string;
   isDeleted?: boolean;
   isVerified?: boolean;
+  providerId: string;
+  
 }
 
 export interface TableData {
@@ -196,13 +198,15 @@ const ProviderDetailsPage = () => {
       <div className="space-y-6">
         <div className="">
           <UserMetaCard
-          userId={provider._id}
+            userId={provider._id}
             imageSrc={provider.storeInfo?.logo || "/images/logo/default-provider.webp"}
             name={provider.fullName || provider.storeInfo?.storeName || "No Name"}
             role={provider.email}
             location={provider.storeInfo?.address || "No address provided"}
             isCommissionDistribute={false}
             isToggleButton={false}
+            franchiseId={provider.providerId}
+
           />
         </div>
 
@@ -281,7 +285,7 @@ const ProviderDetailsPage = () => {
           {activeTab === 'subscribe' && <ProviderSubscribedServices data={data || []} />}
           {activeTab === 'bookings' && <ProviderBookings provider={provider} />}
           {activeTab === 'serviceMan' && <ProviderServiceMan provider={provider} />}
-          {activeTab === 'bank' && <ProviderBankInfo />}
+          {activeTab === 'bank' && <ProviderBankInfo  />}
           {activeTab === 'wallet' && <ProviderWallet provider={provider} />}
         </div>
       </div>

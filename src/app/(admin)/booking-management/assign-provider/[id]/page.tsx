@@ -53,7 +53,27 @@ const AllBookingsDetails = () => {
 
     fetchLead();
   }, [checkoutDetails]);
+  const handleDownload = async () => {
+    if (!checkoutDetails?._id) return;
 
+    try {
+      const response = await fetch(`/api/invoice/${checkoutDetails._id}`);
+      if (!response.ok) throw new Error('Failed to fetch invoice');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${checkoutDetails.bookingId || checkoutDetails._id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      alert('Failed to download invoice. Please try again.');
+    }
+  };
   useEffect(() => {
     if (checkoutDetails?.serviceCustomer) {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
@@ -128,10 +148,9 @@ const AllBookingsDetails = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-2 mt-4">
 
-              <InvoiceDownload
-                checkoutDetails={checkoutDetails}
-                serviceCustomer={serviceCustomer}
-              />
+              <button onClick={handleDownload} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Download Invoice
+              </button>
             </div>
           </div>
         </ComponentCard>
@@ -206,15 +225,14 @@ const AllBookingsDetails = () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {[
-                  ['Price', leadDetails?.newAmount ?? checkoutDetails?.service?.price],
-                  ['Service Discount', leadDetails?.newDiscountAmount ?? (checkoutDetails?.service?.price - checkoutDetails?.service?.discountedPrice) ?? 0],
-                                    ['Coupon Discount', checkoutDetails.couponDiscount || 0],
-
+                  ['Price', leadDetails?.newAmount ?? checkoutDetails?.service?.price ?? 0],
+                  ['Service Discount', leadDetails?.newDiscountAmount ?? ((checkoutDetails?.service?.price ?? 0) - (checkoutDetails?.service?.discountedPrice ?? 0))],
+                  ['Coupon Discount', checkoutDetails?.couponDiscount ?? 0],
                   ['Campaign Discount', 0],
                   ['Service GST', 0],
                   ['Platform Fee', 0],
                   ['Fetch True Assurity Charges', 0],
-                  ['Grand Total ', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice],
+                  ['Grand Total', leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0],
                 ].map(([label, amount]) => (
                   <div className="flex justify-between" key={label}>
                     <span className="font-medium">{label} :</span>
@@ -222,12 +240,11 @@ const AllBookingsDetails = () => {
                   </div>
                 ))}
 
-
                 {hasExtraServices && (() => {
-                  const extraServices = leadDetails!.extraService!;
-                  const subtotal = extraServices.reduce((acc, service) => acc + (service.price || 0), 0);
-                  const totalDiscount = extraServices.reduce((acc, service) => acc + (service.discount || 0), 0);
-                  const grandTotal = extraServices.reduce((acc, service) => acc + (service.total || 0), 0);
+                  const extraServices = leadDetails?.extraService ?? [];
+                  const subtotal = extraServices.reduce((acc, service) => acc + (service.price ?? 0), 0);
+                  const totalDiscount = extraServices.reduce((acc, service) => acc + (service.discount ?? 0), 0);
+                  const extraGrandTotal = extraServices.reduce((acc, service) => acc + (service.total ?? 0), 0);
 
                   return (
                     <>
@@ -255,30 +272,30 @@ const AllBookingsDetails = () => {
                         </tbody>
                       </table>
 
-                      {/* Summary section */}
                       {[
                         ['Subtotal', subtotal],
                         ['Discount', totalDiscount],
                         ['Campaign Discount', 0],
-                        ['Coupon Discount', checkoutDetails.couponDiscount || 0],
+                        ['Coupon Discount', checkoutDetails?.couponDiscount ?? 0],
                         ['VAT', 0],
                         ['Platform Fee', 0],
-                        ['Extra Service Total', grandTotal],
+                        ['Extra Service Total', extraGrandTotal],
                       ].map(([label, amount]) => (
                         <div className="flex justify-between mb-1" key={label}>
                           <span className="font-medium">{label}:</span>
                           <span>{formatPrice(amount)}</span>
                         </div>
                       ))}
+
+                      <div className="flex justify-between font-bold text-blue-600">
+                        <span>Grand Total</span>
+                        <span>{formatPrice((leadDetails?.afterDicountAmount ?? checkoutDetails?.service?.discountedPrice ?? 0) + extraGrandTotal)}</span>
+                      </div>
                     </>
                   );
                 })()}
-
-                <div className="flex justify-between font-bold text-blue-600">
-                  <span>Grand Total</span>
-                  <span>{formatPrice(grandTotal || 0)}</span>
-                </div>
               </div>
+
             </div>
             {/* RIGHT SIDE */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
@@ -314,7 +331,7 @@ const AllBookingsDetails = () => {
 
             {/* RIGHT */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-             <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
+              <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
               {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
               {/* <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} /> */}
             </div>

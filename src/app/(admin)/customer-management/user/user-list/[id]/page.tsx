@@ -1,4 +1,3 @@
-
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserStatCard from '@/components/user-profile/UserAddressCard';
@@ -15,15 +14,14 @@ import HelpSupport from '@/components/user-profile/HelpSupport';
 import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
 
-
 const UserDetails = () => {
   const {
+    users,
     fetchSingleUser,
     singleUser,
     singleUserLoading,
     singleUserError,
   } = useUserContext();
-
 
   const params = useParams();
   const userId = params?.id as string;
@@ -37,8 +35,9 @@ const UserDetails = () => {
     if (userId) {
       fetchSingleUser(userId);
     }
+    
   }, [userId]);
-console.log("userlist",singleUser);
+    console.log("user detail:",singleUser);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
@@ -49,7 +48,7 @@ console.log("userlist",singleUser);
 
   const tabButtons = [
     { key: 'info', label: 'Profile' },
-    { key: 'stats', label: 'Stats' },
+    // { key: 'stats', label: 'Stats' },
     { key: 'selfLead', label: 'Self Lead' },
     { key: 'teamLead', label: 'Team Lead' },
     { key: 'wallet', label: 'Wallet' },
@@ -63,25 +62,31 @@ console.log("userlist",singleUser);
       <PageBreadcrumb pageTitle="User Details" />
       <div className="space-y-6">
         <UserMetaCard
-          imageSrc="/images/logo/user1.webp"
-          name={singleUser.fullName}
-          role={singleUser.email}
-          location="Amanora Chember, Hadapsar, Pune"
-          userId={singleUser._id}
-          isCommissionDistribute={singleUser.isCommissionDistribute}
-          isToggleButton={true}
-        />
+  imageSrc={singleUser?.profilePhoto || "/images/logo/user1.webp"} 
+  name={singleUser.fullName}
+  role={singleUser.email}
+  location={
+    singleUser?.homeAddress?.fullAddress ||
+    singleUser?.workAddress?.fullAddress ||
+    "No Address"
+  }
+  userId={singleUser._id}
+  isCommissionDistribute={singleUser.isCommissionDistribute}
+  isToggleButton={true}
+  franchiseId={singleUser.userId}
+/>
 
         {/* Tabs */}
-        <div className="grid grid-cols-8 gap-2 pt-2">
+        <div className="flex gap-2 pt-2">
           {tabButtons.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`w-full px-4 py-2 text-sm font-medium rounded-md border ${activeTab === tab.key
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
-                }`}
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md border ${
+                activeTab === tab.key
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+              }`}
             >
               {tab.label}
             </button>
@@ -96,25 +101,30 @@ console.log("userlist",singleUser);
               email={singleUser.email}
               phone={singleUser.mobileNumber}
               referralCode={singleUser.referralCode || ' '}
-              address="Amanora Chember, Hadapsar, Pune"
+              address={
+                singleUser?.homeAddress?.fullAddress ||
+                singleUser?.workAddress?.fullAddress ||
+                'No Address'
+              }
             />
           )}
 
-          {activeTab === 'stats' && (
+          {/* {activeTab === 'stats' && (
             <UserStatCard
               stat1={{ title: 'Total Booking', value: '20' }}
               stat2={{ title: 'Total Revenue', value: '₹8420' }}
               stat3={{ title: 'Other', value: '420' }}
               stat4={{ title: 'Next Other', value: '320' }}
             />
+          )} */}
+
+          {activeTab === 'teamLead' && (
+            <TeamLeadTable userId={userId || ' '} isAction={true} />
           )}
 
-          {activeTab === 'teamLead' && <TeamLeadTable
-            userId={userId || ' '} isAction={true}
-          />}
-
-
-          {activeTab === 'selfLead' && <SelfLeadTable userId={userId || ' '} isAction={true} />}
+          {activeTab === 'selfLead' && (
+            <SelfLeadTable userId={userId || ' '} isAction={true} />
+          )}
 
           {activeTab === 'wallet' && <UserWallet userId={userId || ' '} />}
 

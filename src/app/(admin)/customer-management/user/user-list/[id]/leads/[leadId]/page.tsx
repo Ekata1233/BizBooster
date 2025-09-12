@@ -1,4 +1,5 @@
 'use client';
+
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import React, { useEffect, useState } from 'react';
@@ -6,9 +7,11 @@ import { useUserContext } from '@/context/UserContext';
 import { useParams } from 'next/navigation';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
+import LeadTeam from '@/components/user-profile/team-details/LeadTeam';
 
 const UserDetails = () => {
   const {
+    users,
     fetchSingleUser,
     singleUser,
     singleUserLoading,
@@ -17,9 +20,11 @@ const UserDetails = () => {
 
   const params = useParams();
   const userId = params?.id as string;
-    const leadUserId = params?.leadId as string;
+  const leadUserId = params?.leadId as string;
 
-  console.log("leadUserId Id : ", leadUserId)
+  console.log("leadUserId Id : ", leadUserId);
+  console.log("all users", users);
+
   const [activeTab, setActiveTab] = useState('selfLead');
 
   useEffect(() => {
@@ -28,12 +33,9 @@ const UserDetails = () => {
     }
   }, [leadUserId]);
 
-  if (singleUserLoading)
-    return <div className="text-center text-gray-500">Loading user...</div>;
-  if (singleUserError)
-    return <div className="text-center text-red-500">Error: {singleUserError}</div>;
-  if (!singleUser)
-    return <div className="text-center text-gray-500">No user found.</div>;
+  if (singleUserLoading) return <div className="text-center text-gray-500">Loading user...</div>;
+  if (singleUserError) return <div className="text-center text-red-500">Error: {singleUserError}</div>;
+  if (!singleUser) return <div className="text-center text-gray-500">No user found.</div>;
 
   const tabButtons = [
     { key: 'selfLead', label: 'Self Lead' },
@@ -43,15 +45,18 @@ const UserDetails = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="User Details" />
+
       <div className="space-y-6">
         <UserMetaCard
-        userId={singleUser._id}
+          userId={singleUser._id}
           imageSrc="/images/logo/user1.webp"
           name={singleUser.fullName}
           role={singleUser.email}
           location="Amanora Chember, Hadapsar, Pune"
           isCommissionDistribute={singleUser.isCommissionDistribute}
           isToggleButton={false}
+          franchiseId={singleUser.userId}
+
         />
 
         {/* Tabs */}
@@ -72,13 +77,23 @@ const UserDetails = () => {
 
         {/* Tab content */}
         <div className="space-y-6 pt-4">
-          {activeTab === 'selfLead' && <SelfLeadTable  userId={leadUserId || ' '} isAction={true} />}
+          {activeTab === 'selfLead' && (
+            <SelfLeadTable
+              userId={leadUserId || ' '}
+              isAction={true}
+            />
+          )}
 
-          {activeTab === 'teamLead' && <TeamLeadTable
-            userId={leadUserId || ' '} isAction={true}
-          />}
-
-          
+          {activeTab === 'teamLead' && (
+            // <TeamLeadTable
+            //   userId={leadUserId || ' '}
+            //   isAction={true}
+            // />
+            <LeadTeam
+              userId={leadUserId || ' '}
+              isAction={true}
+            />
+          )}
         </div>
       </div>
     </div>

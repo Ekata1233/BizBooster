@@ -13,6 +13,7 @@ export interface ICheckout extends Document {
     subtotal: number;
     serviceDiscount: number;
     couponDiscount: number;
+    couponDiscountType: string;
     champaignDiscount: number;
     gst: number;
     platformFee: number;
@@ -72,6 +73,7 @@ const checkoutSchema = new Schema<ICheckout>({
     subtotal: { type: Number, required: true, min: 0 },
     serviceDiscount: { type: Number, required: true, min: 0, default: 0 },
     couponDiscount: { type: Number, required: true, min: 0, default: 0 },
+    couponDiscountType:{ type: String, default: null},
     champaignDiscount: { type: Number, required: true, min: 0, default: 0 },
     gst: { type: Number, required: true, min: 0, default: 0 },
     platformFee: { type: Number, required: true, min: 0, default: 0 },

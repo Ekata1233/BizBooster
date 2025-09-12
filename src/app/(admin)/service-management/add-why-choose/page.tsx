@@ -192,14 +192,14 @@ const Page = () => {
           >
             <TrashBinIcon />
           </button>
-          <Link href={`/why-choose-us/${row._id}`} passHref>
+          {/* <Link href={`/why-choose-us/${row._id}`} passHref>
             <button
               title="View Details"
               className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500"
             >
               <EyeIcon />
             </button>
-          </Link>
+          </Link> */}
         </div>
       ),
     },

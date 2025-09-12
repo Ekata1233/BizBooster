@@ -173,10 +173,15 @@ const PrivacyPolicyEditorForm: React.FC<EditorFormProps> = ({
   const editorKey = initialData?._id || 'new-entry'; // Use ID or a unique string for new entries
 
   return (
+<<<<<<< HEAD
     <div className="p-6 bg-white rounded-lg shadow-md max-w-4xl mx-auto my-8">
       <h2 className="text-3xl font-bold text-gray-800 dark:text-white/90 text-center mb-6">
         {initialData?._id ? 'Edit About Us  Section' : 'Add New About Us  Section'}
       </h2>
+=======
+    <div className="">
+      
+>>>>>>> a8680fb606342f5a260f80fc0f3658ea15be0720
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
           <Label htmlFor="About Us Content">About Us Content</Label>

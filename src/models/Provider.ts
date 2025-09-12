@@ -23,6 +23,7 @@ export interface StoreInfo {
   city?: string;
   state?: string;
   country?: string;
+  postalCode?: string;
 }
 
 export interface KYC {
@@ -35,6 +36,7 @@ export interface KYC {
 
 export interface ProviderDocument extends Document {
   /* step-1 */
+  _id : string;
   providerId: string;
   fullName: string;
   phoneNo: string;
@@ -123,14 +125,13 @@ const kycSchema = new Schema<KYC>(
 
 const providerSchema = new Schema<ProviderDocument>(
   {
-    /* ––– Step-1 fields ––– */
+
     providerId: { type: String, unique: true },
     fullName: { type: String, required: true, trim: true },
     phoneNo: { type: String, required: true, trim: true },
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -139,14 +140,8 @@ const providerSchema = new Schema<ProviderDocument>(
     referralCode: { type: String, unique: true, sparse: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     galleryImages: { type: [String], default: [] },
-
-    /* ––– Step-2 – Store Info ––– */
     storeInfo: storeInfoSchema,
-
-    /* ––– Step-3 – KYC ––– */
     kyc: kycSchema,
-
-    /* ––– Other business fields ––– */
     setBusinessPlan: { type: String, enum: ["commission base", "other"] },
     subscribedServices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
     averageRating: {
@@ -175,9 +170,24 @@ const providerSchema = new Schema<ProviderDocument>(
   { timestamps: true }
 );
 
-/* ─────────────── Hooks & Methods ──────────────── */
+// Email unique for non-deleted providers
+providerSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
 
-// Hash password before save / update
+// Phone number unique for non-deleted providers
+providerSchema.index(
+  { phoneNo: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
+// Referral code unique only if it exists
+providerSchema.index(
+  { referralCode: 1 },
+  { unique: true, sparse: true }
+);
+
 providerSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password as string, 10);

@@ -33,6 +33,7 @@ import { AdProvider } from '@/context/AdContext';
 import { GalleryProvider } from '@/context/GalleryContext';
 import { OfferProvider } from '@/context/OfferContext';
 import { AdvisorProvider } from '@/context/Advisor';
+import { ProviderBankDetailsProvider } from '@/context/ProviderBankDetailsContext';
 
 
 
@@ -54,64 +55,65 @@ export default function RootLayout({
         <ThemeProvider>
           <SidebarProvider>
             <AdvisorProvider>
-            <OfferProvider>
-            <AuthProvider>
-              <UserProvider>
-                <ModuleProvider>
-                  <CategoryProvider>
-                    <SubcategoryProvider>
-                      <BannerProvider>
-                        <ServiceProvider>
-                          <ProviderContextProvider>
-                            <WhyChooseProvider>
-                              <ZoneProvider>
-                                <SubscribeProvider>
-                                  <CouponProvider>
-                                    <ServiceCustomerProvider>
-                                      <CheckoutProvider>
-                                        <LeadProvider>
-                                          <ServiceManProvider>
-                                            <CommissionProvider>
-                                              <WalletUser>
-                                                <AdminEarningsProvider>
-
-                                                  <WebinarsProvider>
-                                                    <CertificationProvider>
-                                                      <LiveWebinarsProvider>
-                                                        <PackagesCommissionProvider>
-                                                          <PackageProvider>
-                                                            <ReviewProvider>
-                                                              <AdProvider>
-                                                                <GalleryProvider>
-                                                                {children}
-                                                                </GalleryProvider>
-                                                              </AdProvider>
-                                                            </ReviewProvider>
-                                                          </PackageProvider>
-                                                        </PackagesCommissionProvider>
-                                                      </LiveWebinarsProvider>
-                                                    </CertificationProvider>
-                                                  </WebinarsProvider>
-                                                </AdminEarningsProvider>
-                                              </WalletUser>
-                                            </CommissionProvider>
-                                          </ServiceManProvider>
-                                        </LeadProvider>
-                                      </CheckoutProvider>
-                                    </ServiceCustomerProvider>
-                                  </CouponProvider>
-                                </SubscribeProvider>
-                              </ZoneProvider>
-                            </WhyChooseProvider>
-                          </ProviderContextProvider>
-                        </ServiceProvider>
-                      </BannerProvider>
-                    </SubcategoryProvider>
-                  </CategoryProvider>
-                </ModuleProvider>
-              </UserProvider>
-            </AuthProvider>
-            </OfferProvider>
+              <OfferProvider>
+                <AuthProvider>
+                  <UserProvider>
+                    <ModuleProvider>
+                      <CategoryProvider>
+                        <SubcategoryProvider>
+                          <BannerProvider>
+                            <ServiceProvider>
+                              <ProviderContextProvider>
+                                <WhyChooseProvider>
+                                  <ZoneProvider>
+                                    <SubscribeProvider>
+                                      <CouponProvider>
+                                        <ServiceCustomerProvider>
+                                          <CheckoutProvider>
+                                            <LeadProvider>
+                                              <ServiceManProvider>
+                                                <CommissionProvider>
+                                                  <WalletUser>
+                                                    <AdminEarningsProvider>
+                                                      <WebinarsProvider>
+                                                        <CertificationProvider>
+                                                          <LiveWebinarsProvider>
+                                                            <PackagesCommissionProvider>
+                                                              <PackageProvider>
+                                                                <ReviewProvider>
+                                                                  <AdProvider>
+                                                                    <GalleryProvider>
+                                                                      <ProviderBankDetailsProvider>
+                                                                        {children}
+                                                                      </ProviderBankDetailsProvider>
+                                                                    </GalleryProvider>
+                                                                  </AdProvider>
+                                                                </ReviewProvider>
+                                                              </PackageProvider>
+                                                            </PackagesCommissionProvider>
+                                                          </LiveWebinarsProvider>
+                                                        </CertificationProvider>
+                                                      </WebinarsProvider>
+                                                    </AdminEarningsProvider>
+                                                  </WalletUser>
+                                                </CommissionProvider>
+                                              </ServiceManProvider>
+                                            </LeadProvider>
+                                          </CheckoutProvider>
+                                        </ServiceCustomerProvider>
+                                      </CouponProvider>
+                                    </SubscribeProvider>
+                                  </ZoneProvider>
+                                </WhyChooseProvider>
+                              </ProviderContextProvider>
+                            </ServiceProvider>
+                          </BannerProvider>
+                        </SubcategoryProvider>
+                      </CategoryProvider>
+                    </ModuleProvider>
+                  </UserProvider>
+                </AuthProvider>
+              </OfferProvider>
             </AdvisorProvider>
           </SidebarProvider>
         </ThemeProvider>

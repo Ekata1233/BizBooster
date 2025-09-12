@@ -1,18 +1,18 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import ComponentCard from '@/components/common/ComponentCard';
-import BasicTableOne from '@/components/tables/BasicTableOne';
-import { TrashBinIcon, EyeIcon, ChevronDownIcon } from '@/icons';
-import Input from '@/components/form/input/InputField';
-import Label from '@/components/form/Label';
-import Select from '@/components/form/Select';
-import { useProvider } from '@/context/ProviderContext';
-import Link from 'next/link';
-import { useModule } from '@/context/ModuleContext';
-import axios from 'axios';
-import { debounce } from 'lodash';
+"use client";
+import React, { useEffect, useState } from "react";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/common/ComponentCard";
+import BasicTableOne from "@/components/tables/BasicTableOne";
+import { TrashBinIcon, EyeIcon, ChevronDownIcon } from "@/icons";
+import Input from "@/components/form/input/InputField";
+import Label from "@/components/form/Label";
+import Select from "@/components/form/Select";
+import { useProvider } from "@/context/ProviderContext";
+import { useModule } from "@/context/ModuleContext";
+import Link from "next/link";
+import axios from "axios";
+import { debounce } from "lodash";
+import Image from "next/image";
 
 interface ProviderTableData {
   id: string;
@@ -21,8 +21,9 @@ interface ProviderTableData {
   phone: string;
   storeName: string;
   storePhone: string;
+   logo?: string; 
   city: string;
-  status: 'Completed' | 'Pending' | 'Approved' | 'Rejected';
+  status: "Completed" | "Pending" | "Approved" | "Rejected";
   isApproved: boolean;
   isRejected: boolean;
   step1Completed: boolean;
@@ -31,43 +32,42 @@ interface ProviderTableData {
 }
 
 const sortOptions = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'ascending', label: 'A-Z (Name)' },
-  { value: 'descending', label: 'Z-A (Name)' },
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "ascending", label: "A-Z (Name)" },
+  { value: "descending", label: "Z-A (Name)" },
 ];
 
 const statusOptions = [
-  { value: 'all', label: 'All Status' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
+  { value: "all", label: "All Status" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const ProviderList = () => {
-  const { providerDetails } = useProvider();
   const { modules } = useModule();
 
-  const [selectedModule, setSelectedModule] = useState<string>('');
+  const [selectedModule, setSelectedModule] = useState<string>("");
   const [providers, setProviders] = useState<ProviderTableData[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<ProviderTableData[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sort, setSort] = useState('latest');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [message, setMessage] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState("latest");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
-
+  const [activeTab, setActiveTab] = useState("all");
+  console.log("providerlist",providers);
+  
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/provider');
+      const response = await axios.get("/api/provider");
       const data = response.data;
 
       if (!Array.isArray(data) || data.length === 0) {
         setProviders([]);
         setFilteredProviders([]);
-        setMessage('No providers found');
+        setMessage("No providers found");
         setLoading(false);
         return;
       }
@@ -77,23 +77,20 @@ const ProviderList = () => {
         const isComplete =
           provider.step1Completed && provider.storeInfoCompleted && provider.kycCompleted;
 
-        let status: 'Completed' | 'Pending' | 'Approved' | 'Rejected' = 'Pending';
-        if (provider.isApproved) {
-          status = 'Approved';
-        } else if (provider.isRejected) {
-          status = 'Rejected';
-        } else if (isComplete) {
-          status = 'Completed';
-        }
+        let status: "Completed" | "Pending" | "Approved" | "Rejected" = "Pending";
+        if (provider.isApproved) status = "Approved";
+        else if (provider.isRejected) status = "Rejected";
+        else if (isComplete) status = "Completed";
 
         return {
           id: provider._id,
           fullName: provider.fullName,
           email: provider.email,
           phone: provider.phoneNo,
-          storeName: storeInfo.storeName || '-',
-          storePhone: storeInfo.storePhone || '-',
-          city: storeInfo.city || '-',
+          storeName: storeInfo.storeName || "-",
+          storePhone: storeInfo.storePhone || "-",
+          city: storeInfo.city || "-",
+           logo: storeInfo.logo || "", 
           isRejected: provider.isRejected || false,
           isApproved: provider.isApproved || false,
           status,
@@ -105,12 +102,12 @@ const ProviderList = () => {
 
       setProviders(updatedProviders);
       setFilteredProviders(updatedProviders);
-      setMessage('');
+      setMessage("");
     } catch (error) {
-      console.error('Error fetching providers:', error);
+      console.error("Error fetching providers:", error);
       setProviders([]);
       setFilteredProviders([]);
-      setMessage('Something went wrong while fetching providers');
+      setMessage("Something went wrong while fetching providers");
     } finally {
       setLoading(false);
     }
@@ -120,70 +117,49 @@ const ProviderList = () => {
     fetchProviders();
   }, []);
 
-  // Apply filters whenever any filter criteria changes
-  useEffect(() => {
-    let result = [...providers];
-
-    // Apply module filter
-    if (selectedModule) {
-      // Note: You'll need to adjust this if your provider objects have a module reference
-      // Currently, the interface doesn't include module information
-      // result = result.filter(provider => provider.moduleId === selectedModule);
-    }
-
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      result = result.filter(provider => {
-        if (statusFilter === 'completed') return provider.status === 'Completed';
-        if (statusFilter === 'pending') return provider.status === 'Pending';
-        if (statusFilter === 'approved') return provider.status === 'Approved';
-        if (statusFilter === 'rejected') return provider.status === 'Rejected';
-        return true;
-      });
-    }
-
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(provider =>
-        provider.fullName.toLowerCase().includes(query) ||
-        provider.email.toLowerCase().includes(query) ||
-        provider.phone.toLowerCase().includes(query) ||
-        provider.storeName.toLowerCase().includes(query) ||
-        provider.city.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply sorting
-    result = sortProviders(result, sort);
-
-    setFilteredProviders(result);
-
-    if (result.length === 0) {
-      setMessage('No providers match your filter criteria');
-    } else {
-      setMessage('');
-    }
-  }, [providers, selectedModule, statusFilter, searchQuery, sort]);
-
   const sortProviders = (data: ProviderTableData[], sortOption: string) => {
     const sorted = [...data];
     switch (sortOption) {
-      case 'latest':
-        return sorted; // Assuming the API returns latest first
-      case 'oldest':
+      case "oldest":
         return sorted.reverse();
-      case 'ascending':
+      case "ascending":
         return sorted.sort((a, b) => a.fullName.localeCompare(b.fullName));
-      case 'descending':
+      case "descending":
         return sorted.sort((a, b) => b.fullName.localeCompare(a.fullName));
       default:
         return sorted;
     }
   };
 
+  const getFilteredByTab = () => {
+    let result = [...providers];
+
+    if (activeTab !== "all") {
+      result = result.filter((p) => p.status.toLowerCase() === activeTab.toLowerCase());
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.fullName.toLowerCase().includes(query) ||
+          p.email.toLowerCase().includes(query) ||
+          p.phone.toLowerCase().includes(query) ||
+          p.storeName.toLowerCase().includes(query) ||
+          p.city.toLowerCase().includes(query)
+      );
+    }
+
+    result = sortProviders(result, sort);
+    return result;
+  };
+
+  const handleSearchChange = debounce((value: string) => {
+    setSearchQuery(value);
+  }, 300);
+
   const moduleOptions = [
-    { value: '', label: 'All Modules' },
+    { value: "", label: "All Modules" },
     ...modules.map((module) => ({
       value: module._id,
       label: module.name,
@@ -191,68 +167,77 @@ const ProviderList = () => {
     })),
   ];
 
-  const handleSearchChange = debounce((value: string) => {
-    setSearchQuery(value);
-  }, 300);
-
   const columns = [
-    { header: 'Name', accessor: 'fullName' },
-    { header: 'Email', accessor: 'email' },
-    { header: 'Phone', accessor: 'phone' },
-    { header: 'Store Name', accessor: 'storeName' },
-    { header: 'Store Phone', accessor: 'storePhone' },
-    { header: 'City', accessor: 'city' },
     {
-      header: 'Status',
-      accessor: 'status',
+      header: "S.No",
+      accessor: "serial",
       render: (row: ProviderTableData) => {
-        const statusMap = {
-          Completed: {
-            className: 'text-green-600 bg-green-100 border-green-300',
-            text: 'Completed'
-          },
-          Pending: {
-            className: 'text-yellow-500 bg-yellow-100 border-yellow-300',
-            text: 'Pending'
-          },
-          Approved: {
-            className: 'text-blue-600 bg-blue-100 border-blue-300',
-            text: 'Approved'
-          },
-          Rejected: {
-            className: 'text-red-600 bg-red-100 border-red-300',
-            text: 'Rejected'
-          }
-        };
-
-        const statusInfo = statusMap[row.status];
-
-        return (
-          <Link
-            href={{
-              pathname: `/provider-management/add-provider`,
-              query: { id: row.id },
-            }}
-            passHref
-          >
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusInfo.className} border hover:opacity-80`}>
-              {statusInfo.text}
-            </span>
-          </Link>
-        );
-      }
+        const serial = filteredProviders.findIndex((u) => u.id === row.id) + 1;
+        return <span>{serial}</span>;
+      },
     },
     {
-      header: 'Action',
-      accessor: 'action',
+  header: "Store Info",
+  accessor: "store",
+  render: (row: ProviderTableData) => (
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 overflow-hidden rounded-full">
+        <Image
+          width={40}
+          height={40}
+          src={row.logo || "/default-logo.png"} // 👈 fallback if no logo
+          alt={row.storeName || "Store logo"}
+        />
+      </div>
+      <div>
+        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+          {row.storeName || "N/A"}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.city || ""}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400">
+          {row.storePhone || ""}
+        </span>
+      </div>
+    </div>
+  ),
+},
+
+    { header: "Name", accessor: "fullName" },
+    { header: "Email", accessor: "email" },
+    { header: "Phone", accessor: "phone" },
+
+    // { header: "Store Phone", accessor: "storePhone" },
+    { header: "City", accessor: "city" },
+    {
+      header: "Status",
+      accessor: "status",
+      render: (row: ProviderTableData) => {
+        const statusMap: any = {
+          Completed: "text-green-600 bg-green-100 border-green-300",
+          Pending: "text-yellow-500 bg-yellow-100 border-yellow-300",
+          Approved: "text-blue-600 bg-blue-100 border-blue-300",
+          Rejected: "text-red-600 bg-red-100 border-red-300",
+        };
+
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-semibold ${statusMap[row.status]} border`}
+          >
+            {row.status}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Action",
+      accessor: "action",
       render: (row: ProviderTableData) => (
         <div className="flex gap-2">
-          <button 
+          <button
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            onClick={() => {
-              // Add delete functionality here
-              console.log('Delete provider', row.id);
-            }}
+            onClick={() => console.log("Delete provider", row.id)}
           >
             <TrashBinIcon />
           </button>
@@ -269,6 +254,7 @@ const ProviderList = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="Provider List" />
+
       <div className="my-5">
         <ComponentCard title="Search Filter">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -282,7 +268,7 @@ const ProviderList = () => {
                   onChange={(value: string) => setSelectedModule(value)}
                   className="dark:bg-dark-900"
                 />
-                <span className="absolute text-gray-500 right-3 top-1/2 transform -translate-y-1/2">
+                <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2">
                   <ChevronDownIcon />
                 </span>
               </div>
@@ -297,7 +283,7 @@ const ProviderList = () => {
                   onChange={(value: string) => setStatusFilter(value)}
                   className="dark:bg-dark-900"
                 />
-                <span className="absolute text-gray-500 right-3 top-1/2 transform -translate-y-1/2">
+                <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2">
                   <ChevronDownIcon />
                 </span>
               </div>
@@ -312,7 +298,7 @@ const ProviderList = () => {
                   onChange={(value: string) => setSort(value)}
                   className="dark:bg-dark-900"
                 />
-                <span className="absolute text-gray-500 right-3 top-1/2 transform -translate-y-1/2">
+                <span className="absolute text-gray-500 right-3 top-1/2 -translate-y-1/2">
                   <ChevronDownIcon />
                 </span>
               </div>
@@ -331,22 +317,36 @@ const ProviderList = () => {
       </div>
 
       <ComponentCard title="Provider List Table">
+        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+          <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+  {["all", "pending", "approved", "completed", "rejected"].map((tab) => (
+    <li
+      key={tab}
+      className={`cursor-pointer px-4 py-2 ${
+        activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+      }`}
+      onClick={() => setActiveTab(tab)}
+    >
+      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+      <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+        {providers.filter(
+          (p) => tab === "all" || p.status.toLowerCase() === tab
+        ).length}
+      </span>
+    </li>
+  ))}
+</ul>
+
+
+        </div>
+
         {loading ? (
           <div className="text-center py-8">Loading providers...</div>
         ) : message ? (
           <p className="text-red-500 text-center my-4">{message}</p>
         ) : (
-          <>
-            <div className="mb-4 flex justify-between items-center">
-              <div>
-                <span className="text-sm text-gray-500">
-                  Showing {filteredProviders.length} of {providers.length} providers
-                </span>
-              </div>
-            </div>
-            <BasicTableOne columns={columns} data={filteredProviders} />
-          </>
-      )}
+          <BasicTableOne columns={columns} data={[...getFilteredByTab()].reverse()} />
+        )}
       </ComponentCard>
     </div>
   );

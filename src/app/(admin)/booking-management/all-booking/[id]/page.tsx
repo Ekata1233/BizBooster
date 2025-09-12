@@ -18,6 +18,7 @@ const AllBookingsDetails = () => {
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
+  console.log("checkout details : ", checkoutDetails);
 
 
   const {
@@ -27,6 +28,29 @@ const AllBookingsDetails = () => {
     loading,
     error,
   } = useServiceCustomer();
+  console.log("service customer :", serviceCustomer);
+
+  const handleDownload = async () => {
+    if (!checkoutDetails?._id) return;
+
+    try {
+      const response = await fetch(`/api/invoice/${checkoutDetails._id}`);
+      if (!response.ok) throw new Error('Failed to fetch invoice');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${checkoutDetails.bookingId || checkoutDetails._id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      alert('Failed to download invoice. Please try again.');
+    }
+  };
 
 
   useEffect(() => {
@@ -156,10 +180,11 @@ const AllBookingsDetails = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-2 mt-4">
 
-              <InvoiceDownload
-                checkoutDetails={checkoutDetails}
-                serviceCustomer={serviceCustomer}
-              />
+              <button onClick={handleDownload} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Download Invoice
+              </button>
+
+
             </div>
           </div>
         </ComponentCard>
@@ -237,7 +262,7 @@ const AllBookingsDetails = () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {([
-                  ['Listing Price',  checkoutDetails?.listingPrice ?? 0],
+                  ['Listing Price', checkoutDetails?.listingPrice ?? 0],
                   [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
@@ -270,8 +295,7 @@ const AllBookingsDetails = () => {
 
                   // ✅ calculated assurity fee amount
                   const assurityFee = (assurityFeePercent / 100) * priceAfterDiscount;
-
-                  const grandTotal = subtotal - totalDiscount - (checkoutDetails.couponDiscount || 0) - champaignDiscount + serviceGST + assurityFee;
+                  const grandTotal = priceAfterDiscount + serviceGST + assurityFee;
                   finalGrandTotal = (checkoutDetails?.totalAmount ?? 0) + (grandTotal || 0);
                   console.log("subtotal : ", subtotal)
                   console.log("champaignDiscount : ", champaignDiscount)

@@ -8,6 +8,7 @@ import Input from '@/components/form/input/InputField';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
+import Pagination from '@/components/tables/Pagination';
 
 interface BookingRow {
   _id: string;
@@ -26,6 +27,8 @@ interface BookingRow {
 const AllBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1); // ✅ new
+  const rowsPerPage = 10;
 
   useEffect(() => {
     fetchCheckouts();
@@ -160,12 +163,12 @@ const AllBookings = () => {
               <EyeIcon />
             </button>
           </Link>
-          <button
+          {/* <button
             onClick={() => alert(`Editing booking ID: ${row.bookingId}`)}
             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
           >
             <PencilIcon />
-          </button>
+          </button> */}
           {/* <button
             onClick={() => alert(`Deleting booking ID: ${row.bookingId}`)}
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
@@ -199,6 +202,12 @@ const AllBookings = () => {
       isPartialPayment: checkout.isPartialPayment,
     }));
 
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
   return (
     <div>
       <PageBreadcrumb pageTitle="All Bookings" />
@@ -214,12 +223,33 @@ const AllBookings = () => {
             />
           </div>
 
-          {loading ? (
+          {/* {loading ? (
             <p>Loading...</p>
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : filteredData.length > 0 ? (
             <BasicTableOne columns={columns} data={filteredData} />
+          ) : (
+            <p className="text-sm text-gray-500">No bookings to display.</p>
+          )} */}
+
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : filteredData.length > 0 ? (
+            <>
+              <BasicTableOne columns={columns} data={currentRows} />
+              {/* ✅ Pagination added */}
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredData.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-gray-500">No bookings to display.</p>
           )}

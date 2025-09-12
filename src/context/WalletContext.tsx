@@ -36,9 +36,11 @@ export interface IWallet {
 // Context type
 interface UserWalletContextType {
   wallet: IWallet | null;
+  allWallets: IWallet[];
   loading: boolean;
   error: string | null;
   fetchWalletByUser: (userId: string) => Promise<void>;
+  fetchAllWallets: () => Promise<void>;
 }
 
 // Create Context
@@ -48,6 +50,7 @@ const WalletContext = createContext<UserWalletContextType | undefined>(undefined
 // Provider Component (named WalletUser)
 export const WalletUser = ({ children }: { children: React.ReactNode }) => {
   const [wallet, setWallet] = useState<IWallet | null>(null);
+  const [allWallets, setAllWallets] = useState<IWallet[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,13 +69,30 @@ export const WalletUser = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+
+  const fetchAllWallets = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`/api/wallet`);
+      setAllWallets(response.data.data); // assuming response = { success: true, data: [wallets] }
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || err?.message || 'Error fetching all wallets';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <WalletContext.Provider
       value={{
         wallet,
+        allWallets,
         loading,
         error,
         fetchWalletByUser,
+        fetchAllWallets,
       }}
     >
       {children}

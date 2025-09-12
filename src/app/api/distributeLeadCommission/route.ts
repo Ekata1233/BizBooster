@@ -49,7 +49,7 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("checkout details in lead : ",checkout)
+        console.log("checkout details in lead : ", checkout)
         const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
 
         console.log("raw commission : ", rawCommission)
@@ -130,8 +130,16 @@ export async function POST(req: Request) {
         console.log("A_share commission : ", A_share);
         console.log("adminShare commission : ", adminShare);
 
-        if (!userB) adminShare += B_share;
-        if (!userA) adminShare += A_share;
+        // if (!userB) adminShare += B_share;
+        // if (!userA) adminShare += A_share;
+
+        if (!userB || userB.isDeleted) {
+            adminShare += B_share;
+        }
+        if (!userA || userA.isDeleted) {
+            adminShare += A_share;
+        }
+
 
         const creditWallet = async (
             userId: Types.ObjectId,
@@ -196,7 +204,7 @@ export async function POST(req: Request) {
             adminShare += C_share;
         }
 
-        if (userB) {
+        if (userB && !userB.isDeleted) {
             await creditWallet(userB._id, B_share, "Team Revenue Share 2", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -205,7 +213,7 @@ export async function POST(req: Request) {
             });
         }
 
-        if (userA) {
+        if (userA && !userA.isDeleted) {
             await creditWallet(userA._id, A_share, "Team Revenue Share 3", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -240,12 +248,19 @@ export async function POST(req: Request) {
             });
         }
 
-        providerWallet.balance += providerShare;
-        providerWallet.withdrawableBalance += providerShare;
-        providerWallet.pendingWithdraw += providerShare;
-        providerWallet.totalCredits += providerShare;
-        providerWallet.totalEarning += providerShare;
+        // providerWallet.balance += providerShare;
+        // providerWallet.withdrawableBalance += providerShare;
+        // providerWallet.pendingWithdraw += providerShare;
+        // providerWallet.totalCredits += providerShare;
+        // providerWallet.totalEarning += providerShare;
+        // providerWallet.updatedAt = new Date();
+        providerWallet.balance = Number((providerWallet.balance + providerShare).toFixed(2));
+        providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + providerShare).toFixed(2));
+        providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + providerShare).toFixed(2));
+        providerWallet.totalCredits = Number((providerWallet.totalCredits + providerShare).toFixed(2));
+        providerWallet.totalEarning = Number((providerWallet.totalEarning + providerShare).toFixed(2));
         providerWallet.updatedAt = new Date();
+
 
         providerWallet.transactions.push({
             type: "credit",
@@ -307,8 +322,11 @@ export async function POST(req: Request) {
             console.log("extra A_share commission : ", extra_A_share);
             console.log("extra adminShare commission : ", extra_adminShare);
 
-            if (!userB) extra_adminShare += extra_B_share;
-            if (!userA) extra_adminShare += extra_A_share;
+            // if (!userB) extra_adminShare += extra_B_share;
+            // if (!userA) extra_adminShare += extra_A_share;
+
+            if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
+            if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
 
             if (userC?.packageActive) {
                 await creditWallet(userC._id, extra_C_share, "Self Earning Share 1 (Add On Service)", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
@@ -346,12 +364,19 @@ export async function POST(req: Request) {
                 amount: extra_adminShare,
             });
 
-            providerWallet.balance += extraProviderShare;
-            providerWallet.withdrawableBalance += extraProviderShare;
-            providerWallet.pendingWithdraw += extraProviderShare;
-            providerWallet.totalCredits += extraProviderShare;
-            providerWallet.totalEarning += extraProviderShare;
+            // providerWallet.balance += extraProviderShare;
+            // providerWallet.withdrawableBalance += extraProviderShare;
+            // providerWallet.pendingWithdraw += extraProviderShare;
+            // providerWallet.totalCredits += extraProviderShare;
+            // providerWallet.totalEarning += extraProviderShare;
+            // providerWallet.updatedAt = new Date();
+            providerWallet.balance = Number((providerWallet.balance + extraProviderShare).toFixed(2));
+            providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + extraProviderShare).toFixed(2));
+            providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + extraProviderShare).toFixed(2));
+            providerWallet.totalCredits = Number((providerWallet.totalCredits + extraProviderShare).toFixed(2));
+            providerWallet.totalEarning = Number((providerWallet.totalEarning + extraProviderShare).toFixed(2));
             providerWallet.updatedAt = new Date();
+
             providerWallet.transactions.push({
                 type: "credit",
                 amount: extraProviderShare,
@@ -404,10 +429,16 @@ export async function POST(req: Request) {
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
-        const totalRevenue = adminCommissionTotal;
         const franchiseEarningsTotal =
             C_share + B_share + A_share +
             (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
+        const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
+
+        const totalRevenue =
+            adminCommissionTotal +
+            providerEarningsTotal +
+            franchiseEarningsTotal + extraFee;
+
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
@@ -416,8 +447,7 @@ export async function POST(req: Request) {
                     adminCommission: adminCommissionTotal,
                     providerEarnings: providerEarningsTotal,
                     totalRevenue: totalRevenue,
-                    // Optional fields:
-                    extraFees: 0,
+                    extraFees: extraFee,
                     pendingPayouts: 0,
                     franchiseEarnings: franchiseEarningsTotal,
                     refundsToUsers: 0,

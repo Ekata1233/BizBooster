@@ -7,6 +7,8 @@ import Wallet from "@/models/Wallet";
 import { Types } from "mongoose";
 import { Package } from "@/models/Package";
 import AdminEarnings from "@/models/AdminEarnings";
+import Deposite from "@/models/Deposite";
+import { checkAndUpdateReferralStatus } from "@/utils/packageStatus";
 
 // Enable CORS
 const corsHeaders = {
@@ -28,10 +30,8 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-
         const { userId } = body;
 
-        console.log("user id : ", userId)
 
         const user = await User.findById(userId);
         if (!user) {
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
+
         // const packagePrice = pkg.grandtotal;
         const packagePrice = user.packagePrice && user.packagePrice > 0
             ? user.packagePrice
@@ -61,32 +62,26 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const userC = await User.findById(userId);
 
-        console.log("user c : ", userC)
+        const userC = await User.findById(userId);
         if (!userC) throw new Error("User not found");
 
         if (userC.packageActive && userC.isCommissionDistribute) {
             return NextResponse.json(
-                {
-                    success: false,
-                    message: "Commission already distributed for this user.",
-                },
+                { success: false, message: "Commission already distributed for this user." },
                 { status: 400, headers: corsHeaders }
             );
         }
 
+        /* ---------------- commission logic stays same ---------------- */
         const userB = userC.referredBy ? await User.findById(userC.referredBy) : null;
-        console.log("user b : ", userB)
         const userA = userB?.referredBy ? await User.findById(userB.referredBy) : null;
-        console.log("user a : ", userA)
 
         const pkgCommissionList = await PackagesCommission.find();
         if (!pkgCommissionList || pkgCommissionList.length === 0)
             throw new Error("Commission structure for package not found");
 
-        const pkgCommission = pkgCommissionList[0]; // pick the first one, or filter if needed
-
+        const pkgCommission = pkgCommissionList[0];
         let level1Amount = 0;
         let level2Amount = 0;
         let adminAmount = 0;
@@ -94,34 +89,37 @@ export async function POST(req: NextRequest) {
         const baseLevel1 = pkgCommission.level1Commission || 0;
         const baseLevel2 = pkgCommission.level2Commission || 0;
 
-        if (userB) {
+        // if (userB) level1Amount = baseLevel1;
+        // else adminAmount += baseLevel1;
+
+        // if (userA) level2Amount = baseLevel2;
+        // else adminAmount += baseLevel2;
+
+        if (userB && !userB.isDeleted) {
             level1Amount = baseLevel1;
-            console.log("level1Amount : ", level1Amount)
         } else {
-            adminAmount += baseLevel1; // If no userB, give their share to admin
+            adminAmount += baseLevel1; // userB missing or deleted
         }
 
-        if (userA) {
+        if (userA && !userA.isDeleted) {
             level2Amount = baseLevel2;
-            console.log("level2Amount : ", level2Amount)
         } else {
-            adminAmount += baseLevel2; // If no userA, give their share to admin
+            adminAmount += baseLevel2; // userA missing or deleted
         }
 
-        adminAmount += packagePrice - (baseLevel1 + baseLevel2); // Add what's left after total commission
-        console.log("adminAmount : ", adminAmount)
+
+        adminAmount += packagePrice - (baseLevel1 + baseLevel2);
 
         const creditWallet = async (
             userId: Types.ObjectId,
             amount: number,
             description: string,
             referenceId?: string,
-            level?: "A" | "B" | "C",
+            level?: "A" | "B" | "C" | "Admin",
             leadId?: string,
             commissionFrom?: string
         ) => {
             let wallet = await Wallet.findOne({ userId });
-
             const transaction = {
                 type: "credit",
                 amount,
@@ -148,14 +146,18 @@ export async function POST(req: NextRequest) {
                     lastTransactionAt: new Date(),
                 });
             } else {
-                wallet.balance += amount;
-                wallet.totalCredits += amount;
+                // wallet.balance += amount;
+                // wallet.totalCredits += amount;
+                // wallet.lastTransactionAt = new Date();
+                // if (level === "C") wallet.selfEarnings += amount;
+                // else if (level === "A" || level === "B") wallet.referralEarnings += amount;
+                // transaction.balanceAfterTransaction = wallet.balance;
+                // wallet.transactions.push(transaction);
+                wallet.balance = Number((wallet.balance + amount).toFixed(2));   // ✅ ensure 2 decimals
+                wallet.totalCredits = Number((wallet.totalCredits + amount).toFixed(2));
                 wallet.lastTransactionAt = new Date();
-                if (level === "C") {
-                    wallet.selfEarnings += amount;
-                } else if (level === "A" || level === "B") {
-                    wallet.referralEarnings += amount;
-                }
+                if (level === "C") wallet.selfEarnings = Number((wallet.selfEarnings + amount).toFixed(2));
+                else if (level === "A" || level === "B") wallet.referralEarnings = Number((wallet.referralEarnings + amount).toFixed(2));
                 transaction.balanceAfterTransaction = wallet.balance;
                 wallet.transactions.push(transaction);
             }
@@ -163,79 +165,101 @@ export async function POST(req: NextRequest) {
             await wallet.save();
         };
 
-        // B Level
-        if (userB && level1Amount > 0) {
+        // distribute commissions
+        if (userB && !userB.isDeleted && level1Amount > 0) {
             await creditWallet(userB._id, level1Amount, "Team Build Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
-            await ReferralCommission.create({
-                fromLead: userC._id,
-                receiver: userB._id,
-                amount: level1Amount,
-            });
+            await ReferralCommission.create({ fromLead: userC._id, receiver: userB._id, amount: level1Amount });
         }
 
-        // A Level
         if (userA && level2Amount > 0) {
             await creditWallet(userA._id, level2Amount, "Team Build Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
-            await ReferralCommission.create({
-                fromLead: userC._id,
-                receiver: userA._id,
-                amount: level2Amount,
-            });
+            await ReferralCommission.create({ fromLead: userC._id, receiver: userA._id, amount: level2Amount });
         }
 
-        // Admin
-        if (adminAmount > 0) {
-            await creditWallet(ADMIN_ID, adminAmount, "Team Build Commission - Admin", "-", userC.userId || userC._id);
+        const adminDeposit = pkg.deposit;
+        const adminTeamBuildCommission =
+            (pkg.discountedPrice || 0) - (level1Amount + level2Amount);
+
+        console.log("level1Amount : ", level1Amount)
+        console.log("level2Amount : ", level2Amount)
+        console.log("depostie : ", adminDeposit)
+        console.log("adminTeamBuildCommission : ", adminTeamBuildCommission)
+
+        if (adminDeposit > 0) {
+            await creditWallet(
+                ADMIN_ID,
+                adminDeposit,
+                "Deposit", userId, "Admin", "-",
+                userC.userId || userC._id
+            );
             await ReferralCommission.create({
                 fromLead: userC._id,
                 receiver: ADMIN_ID,
-                amount: adminAmount,
+                amount: adminDeposit,
+            });
+        }
+
+        // Remaining discountedPrice after userA & userB commissions
+        if (adminTeamBuildCommission > 0) {
+            await creditWallet(
+                ADMIN_ID,
+                adminTeamBuildCommission,
+                "Team Build Commission - Admin", userId, "Admin", "-",
+                userC.userId || userC._id
+            );
+            await ReferralCommission.create({
+                fromLead: userC._id,
+                receiver: ADMIN_ID,
+                amount: adminTeamBuildCommission,
             });
         }
 
         const todayDate = new Date().toISOString().split("T")[0];
-
-        const adminCommissionTotal = adminAmount;
-        const providerEarningsTotal = 0;
-        const totalRevenue = adminCommissionTotal;
-        const franchiseEarningsTotal =
-            level1Amount + level2Amount;
-
+        const totalRevenue = adminAmount + level1Amount + level2Amount;
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
             {
                 $inc: {
-                    adminCommission: adminCommissionTotal,
-                    providerEarnings: providerEarningsTotal,
+                    adminCommission: adminAmount,
+                    providerEarnings: 0,
                     totalRevenue: totalRevenue,
-                    // Optional fields:
                     extraFees: 0,
                     pendingPayouts: 0,
-                    franchiseEarnings: franchiseEarningsTotal,
+                    franchiseEarnings: level1Amount + level2Amount,
                     refundsToUsers: 0,
                 },
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
+        /* ---------------- ✅ New: Save package into Deposite ---------------- */
+        await Deposite.create({
+            // user: userC._id,
+            // packagePrice: pkg.discountedPrice || pkg.grandtotal,
+            // deposite: pkg.deposit,
+            // monthlyEarnings: pkg.monthlyEarnings,
+            // lockInPeriod: pkg.lockInPeriod,
+            // packageActivateDate: new Date()
+            user: userC._id,
+            packagePrice: Number((pkg.discountedPrice || pkg.grandtotal).toFixed(2)),
+            deposite: Number(pkg.deposit.toFixed(2)),
+            monthlyEarnings: Number(pkg.monthlyEarnings.toFixed(2)),
+            lockInPeriod: pkg.lockInPeriod,
+            packageActivateDate: new Date()
+        });
 
-        console.log("Updated userC package details:");
+        /* ---------------- user update ---------------- */
         userC.packageType = "full";
         userC.packageActive = true;
         userC.packageActivateDate = new Date();
         userC.isCommissionDistribute = true;
+        userC.packageStatus = "GP"
         await userC.save();
 
-        console.log("Updated userC package details:", {
-            packageType: userC.packageType,
-            packageActive: userC.packageActive,
-            isCommissionDistribute: userC.isCommissionDistribute,
-        });
-
-
+        await checkAndUpdateReferralStatus(userId);
 
         return NextResponse.json(
-            { success: true, message: "Package commission distributed successfully." },
+            { success: true, message: "Package commission distributed & deposit saved successfully." },
             { status: 200, headers: corsHeaders }
         );
     } catch (error: unknown) {
@@ -243,3 +267,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
     }
 }
+
+
+
+

@@ -57,6 +57,7 @@ type UpdateServiceResponse = {
 
 type ServiceContextType = {
   services: Service[];
+  fetchServices: () => Promise<void>; 
   createService: (formData: FormData) => Promise<Service | undefined>;
   updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
@@ -168,6 +169,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     <ServiceContext.Provider
       value={{
         services,
+        fetchServices,
         createService,
         updateService,
         deleteService,

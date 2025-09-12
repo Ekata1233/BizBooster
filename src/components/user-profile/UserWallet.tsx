@@ -5,6 +5,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { FaMoneyBillWave, FaMoneyCheckAlt, FaWallet } from 'react-icons/fa';
 import { IWalletTransaction, useUserWallet } from '@/context/WalletContext';
+import Pagination from '../tables/Pagination';
 
 interface UserWalletProps {
   userId: string;
@@ -32,8 +33,6 @@ const columnsWallet = [
     header: 'Lead ID',
     accessor: 'leadId',
     render: (row: IWalletTransaction) => {
-      console.log('Row:', row); // ✅ Console log here
-
       return (
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Lead Id : {row.leadId || '-'}</span>
@@ -55,12 +54,6 @@ const columnsWallet = [
       row.type === 'credit' ? `₹${row.amount}` : '-',
   },
   {
-    header: 'Withdraw',
-    accessor: 'withdraw',
-    render: (row: IWalletTransaction) =>
-      row.source === 'withdraw' ? `₹${row.amount}` : '-',
-  },
-  {
     header: 'Balance',
     accessor: 'balance',
     render: (row: IWalletTransaction & { runningBalance?: number }) => (
@@ -72,7 +65,9 @@ const columnsWallet = [
 const UserWallet = ({ userId }: UserWalletProps) => {
   const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' | 'withdraw'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
+  const [currentPage, setCurrentPage] = useState(1); // ⬅️ new
+  const rowsPerPage = 10;
 
   useEffect(() => {
     if (userId) {
@@ -112,14 +107,31 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
+  // let runningBalance = 0;
+  // const enrichedAscending = sortedByDateAsc.map((txn) => {
+  //   runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
+  //   return { ...txn, runningBalance };
+  // });
+
   let runningBalance = 0;
   const enrichedAscending = sortedByDateAsc.map((txn) => {
-    runningBalance += txn.type === 'credit' ? txn.amount : -txn.amount;
-    return { ...txn, runningBalance };
+    runningBalance += txn.type === "credit" ? txn.amount : -txn.amount;
+    return {
+      ...txn,
+      runningBalance: Number(runningBalance.toFixed(2))
+    };
   });
 
+
   // Now reverse it back to show newest first
-  const enrichedTransactions = enrichedAscending;
+  const enrichedTransactions = [...enrichedAscending].reverse();
+
+  // Pagination logic
+  const totalPages = Math.ceil(enrichedTransactions.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = enrichedTransactions.slice(indexOfFirstRow, indexOfLastRow);
+
 
 
   const summaryCards = [
@@ -146,9 +158,9 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     },
   ];
 
-    if (loading) return <p>Loading wallet...</p>;
+  if (loading) return <p>Loading wallet...</p>;
 
-    
+
   return (
     <ComponentCard title="Wallet">
       {/* Summary Cards */}
@@ -182,7 +194,7 @@ const UserWallet = ({ userId }: UserWalletProps) => {
         <>
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-4">
-            {['all', 'credit', 'debit', 'withdraw'].map((tab) => (
+            {['all', 'credit', 'debit'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
@@ -206,10 +218,20 @@ const UserWallet = ({ userId }: UserWalletProps) => {
               </p>
             </div>
           ) : (
-            <BasicTableOne
-              columns={columnsWallet}
-              data={enrichedTransactions as IWalletTransaction[]}
-            />
+            <>
+              <BasicTableOne
+                columns={columnsWallet}
+                data={currentRows as IWalletTransaction[]} // ⬅️ use paginated rows
+              />
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={enrichedTransactions.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           )}
         </>
       )}

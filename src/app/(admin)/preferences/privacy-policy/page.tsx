@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { PencilIcon, } from 'lucide-react';
 import { TrashBinIcon } from '@/icons';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
 
 // Import the renamed component
 const PrivacyPolicyEditorForm = dynamic(
@@ -21,10 +23,10 @@ const PrivacyPolicyEditorForm = dynamic(
 
 
 type AboutUsEntry = {
-  _id: string; 
+  _id: string;
   content: string;
   createdAt?: string;
-  updatedAt?: string; 
+  updatedAt?: string;
 };
 
 const BLANK_ENTRY: AboutUsEntry = { _id: '', content: '' };
@@ -149,12 +151,12 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
     );
   }
 
-   const currentFormEntry = editingEntry ?? BLANK_ENTRY;
+  const currentFormEntry = editingEntry ?? BLANK_ENTRY;
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
-        Manage Privacy Policy Sections
-      </h1>
+    <div className="container mx-auto px-4">
+
+      <PageBreadcrumb pageTitle="  Manage Privacy Policy Sections" />
+
 
       {saveSuccess && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -196,32 +198,34 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
         </div>
       )} */}
 
-      <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          {currentFormEntry._id ? 'Edit Privacy Policy Section' : 'Add New Privacy Policy Section'}
-        </h2>
+      {/* <div className="mb-10 p-6 bg-white rounded-lg shadow-md"> */}
+
+
+      <ComponentCard title={currentFormEntry._id ? 'Edit Privacy Policy Section' : 'Add New Privacy Policy Section'}>
+
         <PrivacyPolicyEditorForm
           /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
           initialData={currentFormEntry}
           onSave={handleSaveAboutUs}
           onCancel={() => setEditingEntry(null)}
         />
-      </div>
+      </ComponentCard>
+      {/* </div> */}
 
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Existing Privacy Policy Sections</h2>
-      {aboutUsList.length === 0 && !isLoading && !error && (
-        <p className="text-gray-600">No Privacy Policy section found. Click &quot;Add New&quot; to create one.</p>
-      )}
+      <ComponentCard title="Existing Privacy Policy Sections">
+        {aboutUsList.length === 0 && !isLoading && !error && (
+          <p className="text-gray-600">No Privacy Policy section found. Click &quot;Add New&quot; to create one.</p>
+        )}
 
-      <div className="space-y-6">
-        {aboutUsList.map((entry) => (
-          <div key={entry._id} className="p-5 border border-gray-200 rounded-lg shadow-sm bg-white">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Privacy Policy Entry (ID: {entry._id.substring(0, 6)}...)
-              </h3>
-              {/* <div className="flex space-x-2">
+        <div className="space-y-6">
+          {aboutUsList.map((entry) => (
+            <div key={entry._id} className="">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Privacy Policy Entry (ID: {entry._id.substring(0, 6)}...)
+                </h3>
+                {/* <div className="flex space-x-2">
                 <button
                   onClick={() => handleEditClick(entry)}
                   className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -236,33 +240,34 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
                 </button>
               </div> */}
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEditClick(entry)}
-                  className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                  aria-label="Edit"
-                >
-                  <PencilIcon size={16} />
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(entry._id)}
-                  className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-                  aria-label="Delete"
-                >
-                  <TrashBinIcon />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditClick(entry)}
+                    className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+                    aria-label="Edit"
+                  >
+                    <PencilIcon size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(entry._id)}
+                    className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+                    aria-label="Delete"
+                  >
+                    <TrashBinIcon />
+                  </button>
+                </div>
               </div>
+              <div
+                className="prose max-w-none text-gray-700 mt-2"
+                dangerouslySetInnerHTML={{ __html: entry.content }}
+              />
+              <p className="text-xs text-gray-500 mt-3">
+                Last Updated: {entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : 'N/A'}
+              </p>
             </div>
-            <div
-              className="prose max-w-none text-gray-700 mt-2"
-              dangerouslySetInnerHTML={{ __html: entry.content }}
-            />
-            <p className="text-xs text-gray-500 mt-3">
-              Last Updated: {entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : 'N/A'}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ComponentCard>
     </div>
   );
 };

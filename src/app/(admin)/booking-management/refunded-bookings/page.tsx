@@ -9,26 +9,29 @@ import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
 import { useLead } from '@/context/LeadContext';
+import { useParams } from 'next/navigation';
 
 interface BookingRow {
   _id: string;
   bookingId: string;
-  fullName: string;
-  email: string;
+   fullName?: string;   // make optional
+  email?: string;  
   totalAmount: number;
   paymentStatus: string;
   bookingDate: string;
   orderStatus: string;
   provider?: any;
-  isCompleted: boolean; // ✅ new field
+  isCompleted: boolean;
+   // ✅ new field
 }
 
 const RefundedBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const { leads, fetchLeads } = useLead();
   const [search, setSearch] = useState('');
-
-  console.log("leads data : ", leads)
+ const params = useParams();
+  const id = params?.id as string;
+  console.log("leads data 111: ", checkouts)
 
   useEffect(() => {
     fetchCheckouts();
@@ -44,16 +47,20 @@ const RefundedBookings = () => {
       header: 'Booking ID',
       accessor: 'bookingId',
     },
-    {
-      header: 'Customer Info',
-      accessor: 'customerInfo',
-      render: (row: BookingRow) => (
-        <div className="text-sm">
-          <p className="font-medium text-gray-900">{row.fullName || 'N/A'}</p>
-          <p className="text-gray-500">{row.email || ''}</p>
-        </div>
-      ),
-    },
+   {
+  header: 'Customer Info',
+  accessor: 'customerInfo',
+  render: (row: BookingRow & { serviceCustomer?: any }) => (
+    <div className="text-sm">
+      <p className="font-medium text-gray-900">
+        {row.serviceCustomer?.fullName || 'N/A'}
+      </p>
+      <p className="text-gray-500">{row.serviceCustomer?.email || ''}</p>
+      <p className="text-gray-400">{row.serviceCustomer?.city || ''}</p>
+    </div>
+  ),
+},
+
     {
       header: 'Total Amount',
       accessor: 'totalAmount',
@@ -159,12 +166,12 @@ const RefundedBookings = () => {
               <EyeIcon />
             </button>
           </Link>
-          <button
+          {/* <button
             onClick={() => alert(`Editing booking ID: ${row.bookingId}`)}
             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
           >
             <PencilIcon />
-          </button>
+          </button> */}
           {/* <button
             onClick={() => alert(`Deleting booking ID: ${row.bookingId}`)}
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
@@ -177,39 +184,48 @@ const RefundedBookings = () => {
   ];
 
   const filteredData = leads
-    .filter((lead) =>
-      // ✅ show only those leads that have a "Refund" status
-      lead.leads?.some((l: any) => l.statusType === "Refund")
-    )
-    .map((lead) => {
-      const checkout = lead.checkout;
-      return {
-        bookingId: checkout.bookingId,
-        fullName: checkout.serviceCustomer?.fullName,
-        email: checkout.serviceCustomer?.email,
-        totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
-          ? Number(checkout.grandTotal)
-          : Number(checkout.totalAmount),
-        paymentStatus: checkout?.paymentStatus || 'unpaid',
-        bookingDate: checkout?.createdAt,
-        orderStatus: checkout.orderStatus,
-        _id: checkout._id,
-        provider: checkout.provider,
-        isCompleted: checkout.isCompleted,
-        isCancel: checkout.isCanceled,
-        isAccepted: checkout.isAccepted,
-        isPartialPayment: checkout.isPartialPayment,
-      };
-    })
-    .filter((row) =>
-      row.bookingId?.toLowerCase().includes(search.toLowerCase())
-    );
+  .filter((lead) =>
+    lead.leads?.some((l: any) => l.statusType === "Refund")
+  )
+  .map((lead) => {
+    const checkout = lead.checkout;
+    console.log("refunded checkout ",checkout);
+    
+    return {
+      bookingId: checkout.bookingId,
+      fullName: checkout.serviceCustomer?.fullName,   // ✅ still mapped
+      email: checkout.serviceCustomer?.email,
+      serviceCustomer: checkout.serviceCustomer,      // ✅ added
+      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
+        ? Number(checkout.grandTotal)
+        : Number(checkout.totalAmount),
+      paymentStatus: checkout?.paymentStatus || 'unpaid',
+      bookingDate: checkout?.createdAt,
+      orderStatus: checkout.orderStatus,
+      _id: checkout._id,
+      provider: checkout.provider,
+      isCompleted: checkout.isCompleted,
+      isCancel: checkout.isCanceled,
+      isAccepted: checkout.isAccepted,
+      isPartialPayment: checkout.isPartialPayment,
+    };
+  })
+  .filter((row) =>
+    row.bookingId?.toLowerCase().includes(search.toLowerCase())
+  );
 
+console.log("Refunded Bookings:", filteredData);
+filteredData.forEach((row) => {
+  console.log("ServiceCustomer Details:", row.serviceCustomer);
 
+});
+
+    
   return (
     <div>
       <PageBreadcrumb pageTitle="Refunded Bookings" />
       <div className="space-y-6">
+        
         <ComponentCard title="Refunded Bookings">
           <div className="mb-4">
             <Input

@@ -3,6 +3,18 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import axios, { AxiosError } from 'axios';
 
+interface Address {
+  houseNumber?: string;
+  landmark?: string;
+  state?: string;
+  city?: string;
+  pinCode?: string;
+  country?: string;
+  fullAddress?: string;
+}
+
+
+
 export interface User {
   _id: string;
   fullName: string;
@@ -24,7 +36,14 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   packageActive: boolean;
-  packageActivateDate:Date;
+  packageActivateDate: Date;
+  homeAddress?: Address;
+  workAddress?: Address;
+  otherAddress?: Address;
+  addressCompleted?: boolean;
+  userId: string;
+  profilePhoto:string;
+  fcmTokens: string[];
 }
 
 interface UserContextType {

@@ -96,9 +96,9 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        leadDoc.leads.push({
+         leadDoc.leads.push({
           statusType: "Payment verified",
-          description: `Payment verified ${payment_amount} Rs via Cashfree`,
+          description: `Payment verified ${payment_amount} Rs (${checkout.isPartialPayment ? "Partial" : "Full"}) via Cashfree`,
           createdAt: new Date(),
         });
 
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
 
         await user.save();
 
-        // console.log("✅ User payment info updated");
+        
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }

@@ -5,6 +5,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import { EyeIcon } from "@/icons";
 import { useCheckout } from "@/context/CheckoutContext";
+import Link from "next/link";
 
 interface SelfLeadProps {
   userId: string;
@@ -49,6 +50,9 @@ const columnsSelfLead = [
         case "ongoing":
           color = "bg-blue-100 text-blue-600 border-blue-300";
           break;
+        case "Accepted":
+          color = "bg-blue-100 text-blue-600 border-blue-300";
+          break;
         case "cancelled":
           color = "bg-red-100 text-red-600 border-red-300";
           break;
@@ -67,9 +71,11 @@ const columnsSelfLead = [
     accessor: "action",
     render: (row: any) => (
       <div className="flex gap-2">
-        <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-          <EyeIcon />
-        </button>
+        <Link href={`/booking-management/all-booking/${row.id}`} passHref>
+          <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+            <EyeIcon size={16} />
+          </button>
+        </Link>
       </div>
     ),
   },
@@ -80,7 +86,18 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
   useEffect(() => {
-    fetchCheckoutByUser(userId);
+    const fetchData = async () => {
+      try {
+        const data = await fetchCheckoutByUser(userId);
+        console.log("Checkout data by user:", data);
+      } catch (err) {
+        console.error("Error fetching checkout:", err);
+      }
+    };
+
+    if (userId) {
+      fetchData();
+    }
   }, [userId]);
 
   // Fetch commission for each checkoutId
@@ -145,6 +162,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       : "₹0";
 
     return {
+       id: checkout._id,
       sr: index + 1,
       leadId: checkout?.bookingId || "N/A",
       serviceName: checkout?.service?.serviceName || "N/A",
@@ -155,11 +173,13 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       commission: myCommission,
       leadStatus: checkout?.isCompleted
         ? "completed"
-        : checkout?.orderStatus === "processing"
-          ? "ongoing"
-          : checkout?.isCanceled
-            ? "cancelled"
-            : "pending",
+        : checkout?.isAccepted
+          ? "Accepted"
+          : checkout?.orderStatus === "processing"
+            ? "ongoing"
+            : checkout?.isCanceled
+              ? "cancelled"
+              : "pending",
     };
   });
 

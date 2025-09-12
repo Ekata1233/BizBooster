@@ -204,7 +204,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const rawCommission = checkout.service?.franchiseDetails?.commission;
+    const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
     const commission = rawCommission;
 
     const leadAmount = checkout.subtotal;

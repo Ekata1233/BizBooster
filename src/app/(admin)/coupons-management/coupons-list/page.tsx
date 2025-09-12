@@ -147,15 +147,15 @@ const CouponList: React.FC = () => {
       }
 
       /* map to table-friendly rows */
-      const mapped = data.map<TableData>((c) => ({
-        id: c._id,
+      const mapped = data.map<TableData>((c,index) => ({
+        id: c._id,  srNo: index + 1, 
         couponCode: c.couponCode,
         couponType: c.couponType,
         discountTitle: c.discountTitle,
         discount: formatDiscount(c),
         appliesTo: formatAppliesTo(c),
         validity: formatValidity(c),
-        status: !c.isActive || (c as any).isDeleted ? 'Inactive' : 'Active',
+        status: !c.isActive || (c as any).isDeleted ? 'Expired' : 'Active',
       }));
 
       setRows(mapped);
@@ -189,44 +189,9 @@ const CouponList: React.FC = () => {
   };
 
 
-
-
-  /* ─── save (PUT) ────────────────────────────────────────────────────────── */
-  const handleUpdateCoupon = async (payload: Partial<CouponType>) => {
-    if (!editingCoupon) return;
-
-    const formData = new FormData();
-
-    if (payload.couponType) formData.append("couponType", payload.couponType);
-    if (payload.couponCode) formData.append("couponCode", payload.couponCode);
-    if (payload.discountType) formData.append("discountType", payload.discountType);
-    if (payload.discountAmountType) formData.append("discountAmountType", payload.discountAmountType);
-    if (payload.discountCostBearer) formData.append("discountCostBearer", payload.discountCostBearer);
-    if (payload.discountTitle) formData.append("discountTitle", payload.discountTitle);
-
-    if (payload.amount !== undefined) formData.append("amount", String(payload.amount));
-    if (payload.maxDiscount !== undefined) formData.append("maxDiscount", String(payload.maxDiscount));
-    if (payload.minPurchase !== undefined) formData.append("minPurchase", String(payload.minPurchase));
-    if (payload.limitPerUser !== undefined) formData.append("limitPerUser", String(payload.limitPerUser));
-
-    if (payload.startDate) formData.append("startDate", payload.startDate);
-    if (payload.endDate) formData.append("endDate", payload.endDate);
-    if (payload.isActive !== undefined) formData.append("isActive", String(payload.isActive));
-
-    if (payload.zone?._id) formData.append("zone", payload.zone._id);
-    if (payload.category?._id) formData.append("category", payload.category._id);
-    if (payload.service?._id) formData.append("service", payload.service._id);
-    if (payload.customer?._id) formData.append("customer", payload.customer._id);
-    if (payload.couponAppliesTo) formData.append("couponAppliesTo", payload.couponAppliesTo);
-
-    await updateCoupon(editingCoupon._id, formData);
-    setIsModalOpen(false);
-    await fetchFilteredCoupons();
-  };
-
-
   /* ─── table columns ────────────────────────────────────────────────────── */
   const columns = [
+     { header: 'Sr No.', accessor: 'srNo' },
     { header: 'Code', accessor: 'couponCode' },
     { header: 'Type', accessor: 'couponType' },
     { header: 'Title', accessor: 'discountTitle' },
@@ -239,7 +204,7 @@ const CouponList: React.FC = () => {
       render: (row: TableData) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold
-            ${row.status === 'Inactive'
+            ${row.status === 'Expired'
               ? 'text-red-600 bg-red-100 border border-red-300'
               : 'text-green-600 bg-green-100 border border-green-300'
             }`}
@@ -253,12 +218,15 @@ const CouponList: React.FC = () => {
       accessor: 'action',
       render: (row: TableData) => (
         <div className="flex gap-2">
+          <Link href={`/coupons-management/coupons-list/update-coupon/${row.id}`} passHref>
+
           <button
-            onClick={() => handleEdit(row.id)}
+            
             className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
           >
             <PencilIcon />
           </button>
+          </Link>
           <button
             onClick={() => handleDelete(row.id)}
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
@@ -358,15 +326,6 @@ const CouponList: React.FC = () => {
           : <BasicTableOne columns={columns} data={rows} />
         }
       </ComponentCard>
-
-      {/* …existing JSX… */}
-
-      <EditCouponModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        coupon={editingCoupon}
-        onSave={handleUpdateCoupon}
-      />
 
     </div>
   );

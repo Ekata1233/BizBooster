@@ -119,7 +119,7 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-
+{/* 
           <div className="hidden lg:block">
             <form>
               <div className="relative">
@@ -153,7 +153,7 @@ const AppHeader: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
+          </div> */}
         </div>
         <div
           className={`${
@@ -161,14 +161,9 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            {/* <!-- Dark Mode Toggler --> */}
-            <ThemeToggleButton />
-            {/* <!-- Dark Mode Toggler --> */}
+            {/* <ThemeToggleButton /> */}
 
-           <NotificationDropdown /> 
-            {/* <!-- Notification Menu Area --> */}
           </div>
-          {/* <!-- User Area --> */}
           <UserDropdown /> 
     
         </div>
