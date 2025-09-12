@@ -84,7 +84,7 @@ export async function checkAndUpdateReferralStatus(userId: string) {
 
   // Step 1: Check if parent has 3 direct referrals with packageActive true → then SGP
   const referrals = await User.find({ referredBy: parent._id, packageActive: true });
-  if (referrals.length >= 3 && parent.packageStatus !== "PGP") {
+  if (referrals.length >= 10 && parent.packageStatus !== "PGP") {
     if (parent.packageStatus !== "SGP") {
       parent.packageStatus = "SGP";
       await parent.save();
@@ -98,7 +98,7 @@ export async function checkAndUpdateReferralStatus(userId: string) {
     packageStatus: "SGP",
   });
 
-  if (sgpCount >= 1 && parent.packageStatus === "SGP") {
+  if (sgpCount >= 3 && parent.packageStatus === "SGP") {
     parent.packageStatus = "PGP";
     await parent.save();
     updated = true;
