@@ -151,8 +151,20 @@ export async function GET(req: NextRequest) {
       })
     );
 
+     const latestUpdated = await Module.aggregate([
+      {
+        $group: {
+          _id: null,
+          latestUpdatedAt: { $max: "$updatedAt" },
+        },
+      },
+    ]);
+
+    const newUpdatedAt =
+      latestUpdated.length > 0 ? latestUpdated[0].latestUpdatedAt : null;
+
     return NextResponse.json(
-      { success: true, data: modulesWithCategoryCount },
+      { success: true, data: modulesWithCategoryCount,newUpdatedAt },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
