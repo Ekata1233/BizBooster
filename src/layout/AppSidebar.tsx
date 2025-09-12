@@ -299,7 +299,7 @@ const AppSidebar: React.FC = () => {
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { checkouts } = useCheckout();
-  const { leads, loading, error, fetchLeads } = useLead();
+  const { leads } = useLead();
 
   useEffect(() => {
     // console.log("All Checkouts:", checkouts);
