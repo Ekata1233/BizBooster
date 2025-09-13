@@ -11,7 +11,7 @@ const tabs = [
   "Business Info",
   "Add Package",
   "Package Commision",
-  "5XGurrentee",
+  "5XGuarrentee",
   // "Bookings",
   // "Customers",
   // "Providers",
