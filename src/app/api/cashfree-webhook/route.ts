@@ -83,7 +83,13 @@ export async function POST(req: NextRequest) {
         checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
         const isFullPayment = checkout.paidAmount >= total;
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
-        checkout.isPartialPayment = !isFullPayment;
+        // checkout.isPartialPayment = !isFullPayment;
+
+        if (!isFullPayment) {
+          checkout.isPartialPayment = true;   // partial but confirmed
+        } else {
+          checkout.isPartialPayment = false;  // full payment completed
+        }
 
         await checkout.save();
         let leadDoc = await Lead.findOne({ checkout: checkoutId });
@@ -96,7 +102,7 @@ export async function POST(req: NextRequest) {
           });
         }
 
-         leadDoc.leads.push({
+        leadDoc.leads.push({
           statusType: "Payment verified",
           description: `Payment verified ${payment_amount} Rs (${checkout.isPartialPayment ? "Partial" : "Full"}) via Cashfree`,
           createdAt: new Date(),
@@ -154,6 +160,20 @@ export async function POST(req: NextRequest) {
 
       } else {
         console.warn(`⚠️ No Checkout found for checkoutId: ${checkoutId}`);
+      }
+    } else if (payment_status === "FAILED" && checkoutId) {
+      const checkout = await Checkout.findById(checkoutId);
+      if (checkout) {
+        checkout.paymentStatus = "failed";
+
+        // ✅ Keep true if already partially paid earlier
+        if (checkout.paidAmount > 0 && checkout.paidAmount < (checkout.grandTotal || checkout.totalAmount)) {
+          checkout.isPartialPayment = true;
+        } else {
+          checkout.isPartialPayment = false;
+        }
+
+        await checkout.save();
       }
     }
 
@@ -217,7 +237,7 @@ export async function POST(req: NextRequest) {
 
         await user.save();
 
-        
+
       } catch (err: any) {
         console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
       }
