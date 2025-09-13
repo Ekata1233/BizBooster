@@ -33,9 +33,9 @@
 //           </div>
 //           <div>
 //             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-             
+
 //             </div>
-            
+
 //             <form>
 //               <div className="space-y-6">
 //                 <div>
@@ -130,18 +130,24 @@ export default function SignInForm() {
     // Static credentials
     const validEmail = "Admin@FetchTrue";
     const validPassword = "FetchTrue@2025";
- setIsLoading(true);
+    setIsLoading(true);
     if (email === validEmail && password === validPassword) {
       // ✅ Set cookie
-      document.cookie = `isLoggedIn=true; path=/; max-age=${
-        isChecked ? 60 * 60 * 24 * 7 : 60 * 60 // 7 days if "keep me logged in", else 1 hour
-      }`;
+      document.cookie = `isLoggedIn=true; path=/; max-age=${isChecked ? 60 * 60 * 24 * 7 : 60 * 60 // 7 days if "keep me logged in", else 1 hour
+        }`;
 
-      alert("Login successful!");
-      router.push("/");
+      // alert("Login successful!");
+      // router.push("/");
+
+      window.alert("Login successful!");
+
+      // Add a small delay to ensure cookie is set
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
     } else {
       alert("Invalid email or password!");
-       setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -171,10 +177,10 @@ export default function SignInForm() {
             <div className="space-y-6">
               <div>
                 <Label>
-                  Email <span className="text-error-500">*</span>
+                  Username <span className="text-error-500">*</span>
                 </Label>
                 <Input
-                  placeholder="info@gmail.com"
+                  placeholder="admin123"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
