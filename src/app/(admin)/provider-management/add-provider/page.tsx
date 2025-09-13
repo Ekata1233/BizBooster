@@ -105,7 +105,7 @@ export default function ProviderOnboardingPage() {
   } = useProvider();
 
   const router = useRouter();
-  const { providerDetails } = useAuthContext();
+  const { providerDetails } = useProvider();
 
   const regForm = useForm();
   const storeForm = useForm();
