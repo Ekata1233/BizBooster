@@ -392,29 +392,24 @@ export async function POST(req: Request) {
         await providerWallet.save();
 
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
-            console.log("🧾 Provider Wallet Before Cash Deduction:", {
-                withdrawableBalance: providerWallet.withdrawableBalance,
-                pendingWithdraw: providerWallet.pendingWithdraw,
-                cashInHandAmount: checkout.cashInHandAmount,
-            });
             const cashAmount = checkout.cashInHandAmount;
 
-            providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
-            providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
-            providerWallet.balance = providerWallet.balance - cashAmount;
-            providerWallet.totalDebits = providerWallet.totalDebits + cashAmount;
+            // providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
+            // providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
+            // providerWallet.balance = providerWallet.balance - cashAmount;
+            // providerWallet.totalDebits = providerWallet.totalDebits + cashAmount;
 
-            providerWallet.transactions.push({
-                type: "debit",
-                amount: cashAmount,
-                description: "Cash in hand collected from customer",
-                referenceId: checkout._id.toString(),
-                method: "Cash",
-                source: "adjustment",
-                status: "success",
-                createdAt: new Date(),
-                leadId: checkout.bookingId,
-            });
+            // providerWallet.transactions.push({
+            //     type: "debit",
+            //     amount: cashAmount,
+            //     description: "Cash in hand collected from customer",
+            //     referenceId: checkout._id.toString(),
+            //     method: "Cash",
+            //     source: "adjustment",
+            //     status: "success",
+            //     createdAt: new Date(),
+            //     leadId: checkout.bookingId,
+            // });
 
             await providerWallet.save();
         }
