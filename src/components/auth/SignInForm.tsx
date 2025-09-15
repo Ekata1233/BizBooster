@@ -133,8 +133,7 @@ export default function SignInForm() {
     setIsLoading(true);
     if (email === validEmail && password === validPassword) {
       // ✅ Set cookie
-      document.cookie = `isLoggedIn=true; path=/; max-age=${isChecked ? 60 * 60 * 24 * 7 : 60 * 60 // 7 days if "keep me logged in", else 1 hour
-        }`;
+      document.cookie = `isLoggedIn=true; path=/; max-age=${isChecked ? 60 * 60 * 24 * 7 : 60 * 60 * 24 }`;
 
       // alert("Login successful!");
       // router.push("/");

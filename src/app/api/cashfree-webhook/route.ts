@@ -165,13 +165,18 @@ export async function POST(req: NextRequest) {
       const checkout = await Checkout.findById(checkoutId);
       if (checkout) {
         checkout.paymentStatus = "failed";
+        const total = (checkout.grandTotal && checkout.grandTotal > 0)
+          ? checkout.grandTotal
+          : checkout.totalAmount;
 
+        checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
         // ✅ Keep true if already partially paid earlier
-        if (checkout.paidAmount > 0 && checkout.paidAmount < (checkout.grandTotal || checkout.totalAmount)) {
+        if (checkout.paidAmount > 0 && checkout.paidAmount < total) {
           checkout.isPartialPayment = true;
         } else {
           checkout.isPartialPayment = false;
         }
+
 
         await checkout.save();
       }
