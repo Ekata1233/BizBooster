@@ -7,11 +7,12 @@ import { EyeCloseIcon, EyeIcon } from '@/icons';
 import { Check, ArrowRightIcon, Clock, ArrowLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { useAuthContext } from '@/context/AuthContext';
+import { useZone } from '@/context/ZoneContext';
+import { useModule } from '@/context/ModuleContext';
 
-/* ------------------------------------------------------------------ /
-/ VISUAL STEPPER                                                    /
-/ ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  VISUAL STEPPER                                                    */
+/* ------------------------------------------------------------------ */
 function Stepper({
   storeDone,
   kycDone,
@@ -60,40 +61,9 @@ function Stepper({
   );
 }
 
-/* ------------------------------------------------------------------ /
-/ PAGE                                                               /
-/ ------------------------------------------------------------------ */
-
-// Validation functions
-const validateEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) || "Invalid email address";
-};
-
-const validatePhone = (phone: string) => {
-  const phoneRegex = /^[0-9]{10}$/;
-  return phoneRegex.test(phone) || "Enter a valid 10-digit phone number";
-};
-
-const validateRequired = (value: string) => {
-  return !!value || "This field is required";
-};
-
-const validateMinLength = (value: string, min: number) => {
-  return value.length >= min || `Must be at least ${min} characters`;
-};
-
-const validatePasswordMatch = (password: string, confirmPassword: string) => {
-  return password === confirmPassword || "Passwords do not match";
-};
-
-const validateFile = (files: FileList | null, required: boolean = false) => {
-  if (required && (!files || files.length === 0)) {
-    return "This file is required";
-  }
-  return true;
-};
-
+/* ------------------------------------------------------------------ */
+/*  PAGE                                                              */
+/* ------------------------------------------------------------------ */
 export default function ProviderOnboardingPage() {
   const {
     provider,
@@ -110,8 +80,9 @@ export default function ProviderOnboardingPage() {
   const regForm = useForm();
   const storeForm = useForm();
   const kycForm = useForm();
-
   const [activeStep, setActiveStep] = useState<number>(1);
+  const { zones } = useZone();
+  const { modules } = useModule();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -152,81 +123,69 @@ export default function ProviderOnboardingPage() {
     fetchProvider();
   }, [providerId]);
 
- const onRegister = async (data: Record<string, FormDataEntryValue | Blob>) => {
-  try {
-    setApiError(null);
-    const fd = new FormData();
-    Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
-    
-    // This will throw an error if registration fails
-    await registerProvider(fd);
-    
-    // Only reach here if successful - move to next step
-    setActiveStep(2);
-  } catch (err: unknown) {
-    const error = err as Error;
+  const onRegister = async (data: Record<string, FormDataEntryValue | Blob>) => {
+    try {
+      setApiError(null);
+      const fd = new FormData();
+      Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
+      
+      await registerProvider(fd);
+      setActiveStep(2);
+    } catch (err: unknown) {
+      const error = err as Error;
 
-    if (
-      error.message?.includes("already registered") ||
-      error.message?.includes("already exists")
-    ) {
-      setApiError("Email or phone number is already registered");
-    } else {
-      setApiError("Registration failed. Please try again.");
+      if (
+        error.message?.includes("already registered") ||
+        error.message?.includes("already exists")
+      ) {
+        setApiError("Email or phone number is already registered");
+      } else {
+        setApiError("Registration failed. Please try again.");
+      }
     }
-    // DON'T setActiveStep here - stay on current step
-  }
-};
+  };
 
-const onStoreSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
-  try {
-    setApiError(null);
-    const fd = new FormData();
-    Object.entries(data).forEach(([k, v]) => {
-      if (v instanceof FileList) {
-        Array.from(v).forEach((file) => fd.append(k, file));
-      } else {
-        fd.append(k, v);
-      }
-    });
-    
-    // This will throw an error if store info update fails
-    await updateStoreInfo(fd);
-    
-    // Only reach here if successful - move to next step
-    setActiveStep(3);
-  } catch (err: unknown) {
-    setApiError('Failed to save store information. Please try again.');
-    console.log(err);
-    // DON'T setActiveStep here - stay on current step
-  }
-};
+  const onStoreSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
+    try {
+      setApiError(null);
+      const fd = new FormData();
+      Object.entries(data).forEach(([k, v]) => {
+        if (v instanceof FileList) {
+          Array.from(v).forEach((file) => fd.append(k, file));
+        } else {
+          fd.append(k, v);
+        }
+      });
+      
+      await updateStoreInfo(fd);
+      setActiveStep(3);
+    } catch (err: unknown) {
+      setApiError('Failed to save store information. Please try again.');
+      console.log(err);
+    }
+  };
 
-const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
-  try {
-    setApiError(null);
-    const fd = new FormData();
-    Object.entries(data).forEach(([k, v]) => {
-      if (v instanceof FileList) {
-        Array.from(v).forEach((file) => fd.append(k, file));
-      } else {
-        fd.append(k, v as string);
-      }
-    });
+  const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
+    try {
+      setApiError(null);
+      const fd = new FormData();
+      Object.entries(data).forEach(([k, v]) => {
+        if (v instanceof FileList) {
+          Array.from(v).forEach((file) => fd.append(k, file));
+        } else {
+          fd.append(k, v as string);
+        }
+      });
 
-    // This will throw an error if KYC update fails
-    await updateKycInfo(fd);
-    
-    // Only reach here if successful - redirect to home
-    setTimeout(() => {
-      router.push("/");
-    }, 3000);
-  } catch (err: unknown) {
-    setApiError('Failed to upload KYC documents. Please try again.');
-    console.log(err);
-    // DON'T redirect - stay on current step
-  }
-};
+      await updateKycInfo(fd);
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
+    } catch (err: unknown) {
+      setApiError('Failed to upload KYC documents. Please try again.');
+      console.log(err);
+    }
+  };
 
   const goToPreviousStep = () => {
     if (activeStep > 1) {
@@ -269,6 +228,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
             {activeStep === 1 && (
               <form onSubmit={regForm.handleSubmit(onRegister)} className="space-y-8">
                 <h2 className="text-xl font-semibold text-blue-700 mb-6">Step 1 • Registration</h2>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Full Name */}
                   <div>
@@ -278,9 +238,9 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     <input
                       {...regForm.register("fullName", {
                         required: "Full Name is required",
-                        validate: (value) => validateMinLength(value, 3)
+                        minLength: { value: 3, message: "Name must be at least 3 characters" },
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
                                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     {regForm.formState.errors.fullName && (
@@ -289,6 +249,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                       </p>
                     )}
                   </div>
+
                   {/* Email */}
                   <div>
                     <label className="block mb-1 font-medium text-gray-700">
@@ -297,10 +258,13 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     <input
                       {...regForm.register("email", {
                         required: "Email is required",
-                        validate: validateEmail
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "Invalid email address",
+                        },
                       })}
                       type="email"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
                                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     {regForm.formState.errors.email && (
@@ -309,6 +273,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                       </p>
                     )}
                   </div>
+
                   {/* Phone */}
                   <div>
                     <label className="block mb-1 font-medium text-gray-700">
@@ -317,9 +282,12 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     <input
                       {...regForm.register("phoneNo", {
                         required: "Phone number is required",
-                        validate: validatePhone
+                        pattern: {
+                          value: /^[0-9]{10}$/,
+                          message: "Enter a valid 10-digit phone number",
+                        },
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
                                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     {regForm.formState.errors.phoneNo && (
@@ -328,6 +296,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                       </p>
                     )}
                   </div>
+
                   {/* Password */}
                   <div className="relative">
                     <label className="block mb-1 font-medium text-gray-700">
@@ -336,18 +305,20 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     <input
                       {...regForm.register("password", {
                         required: "Password is required",
-                        validate: (value) => validateMinLength(value, 6)
+                        minLength: { value: 6, message: "Password must be at least 6 characters" },
+                        validate: (value) =>
+                          /[A-Z]/.test(value) || "Password must contain at least one uppercase letter",
                       })}
-                      type={showPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm
+                      type={showPassword ? "text" : "password"}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
                                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
+                      className="absolute inset-y-12 right-0 flex items-center pr-3 text-gray-500"
                     >
-                      {showPassword ? <EyeCloseIcon /> : <EyeIcon />}
+                      {showPassword ? <EyeCloseIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                     </button>
                     {regForm.formState.errors.password && (
                       <p className="text-red-500 text-sm mt-1">
@@ -355,6 +326,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                       </p>
                     )}
                   </div>
+
                   {/* Confirm Password */}
                   <div className="relative">
                     <label className="block mb-1 font-medium text-gray-700">
@@ -363,18 +335,19 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     <input
                       {...regForm.register("confirmPassword", {
                         required: "Please confirm your password",
-                        validate: (value) => validatePasswordMatch(regForm.getValues("password"), value)
+                        validate: (value) =>
+                          value === regForm.watch("password") || "Passwords do not match",
                       })}
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
                                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-sm leading-5"
+                      className="absolute inset-y-12 right-0 flex items-center pr-3 text-gray-500"
                     >
-                      {showConfirmPassword ? <EyeCloseIcon /> : <EyeIcon />}
+                      {showConfirmPassword ? <EyeCloseIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                     </button>
                     {regForm.formState.errors.confirmPassword && (
                       <p className="text-red-500 text-sm mt-1">
@@ -383,13 +356,15 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     )}
                   </div>
                 </div>
-                <div className="flex justify-end mt-6">
+
+                <div className="flex justify-end mt-8">
                   <button
                     type="submit"
-                    className="px-8 py-3 rounded text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 disabled:opacity-60"
+                    className="px-10 py-3 rounded-lg text-white font-semibold bg-gradient-to-r 
+                               from-blue-600 to-blue-800 shadow-md hover:shadow-lg disabled:opacity-60"
                     disabled={loading}
                   >
-                    {loading ? 'Submitting…' : 'Register'}
+                    {loading ? "Submitting…" : "Register"}
                   </button>
                 </div>
               </form>
@@ -405,15 +380,16 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                 )}
                 <form onSubmit={storeForm.handleSubmit(onStoreSave)} className="space-y-8">
                   <h2 className="text-xl font-semibold text-blue-700 mb-6">Step 2 • Store Information</h2>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Store Name */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Store Name</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Store Name <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('storeName', {
-                          required: "Store Name is required"
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        {...storeForm.register("storeName", { required: "Store Name is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.storeName && (
                         <p className="text-red-500 text-sm mt-1">
@@ -421,15 +397,18 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* Store Phone */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Store Phone</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Store Phone <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('storePhone', {
+                        {...storeForm.register("storePhone", {
                           required: "Store Phone is required",
-                          validate: validatePhone
+                          pattern: { value: /^[0-9]{10}$/, message: "Enter a valid 10-digit phone number" },
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.storePhone && (
                         <p className="text-red-500 text-sm mt-1">
@@ -437,16 +416,22 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* Store Email */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Store Email</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Store Email <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('storeEmail', {
+                        {...storeForm.register("storeEmail", {
                           required: "Store Email is required",
-                          validate: validateEmail
+                          pattern: {
+                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                            message: "Invalid email address",
+                          },
                         })}
                         type="email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.storeEmail && (
                         <p className="text-red-500 text-sm mt-1">
@@ -454,14 +439,61 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
+                    {/* Module Dropdown */}
+                    <div>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Select Module <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        {...storeForm.register("moduleId", { required: "Please select a Module" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Module</option>
+                        {modules?.map((m) => (
+                          <option key={m._id} value={m._id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                      {storeForm.formState.errors.moduleId && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {storeForm.formState.errors.moduleId.message as string}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Zone Dropdown */}
+                    <div>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Select Zone <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        {...storeForm.register("zoneId", { required: "Please select a Zone" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select Zone</option>
+                        {zones?.map((z) => (
+                          <option key={z._id} value={z._id}>
+                            {z.name}
+                          </option>
+                        ))}
+                      </select>
+                      {storeForm.formState.errors.zoneId && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {storeForm.formState.errors.zoneId.message as string}
+                        </p>
+                      )}
+                    </div>
+
                     {/* Address */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Address</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Address <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('address', {
-                          required: "Address is required"
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        {...storeForm.register("address", { required: "Address is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.address && (
                         <p className="text-red-500 text-sm mt-1">
@@ -469,14 +501,15 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* City */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">City</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        City <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('city', {
-                          required: "City is required"
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        {...storeForm.register("city", { required: "City is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.city && (
                         <p className="text-red-500 text-sm mt-1">
@@ -484,14 +517,15 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* State */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">State</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        State <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('state', {
-                          required: "State is required"
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        {...storeForm.register("state", { required: "State is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.state && (
                         <p className="text-red-500 text-sm mt-1">
@@ -499,14 +533,15 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* Country */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Country</label>
+                      <label className="block mb-1 font-medium text-gray-700">
+                        Country <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        {...storeForm.register('country', {
-                          required: "Country is required"
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        {...storeForm.register("country", { required: "Country is required" })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                       {storeForm.formState.errors.country && (
                         <p className="text-red-500 text-sm mt-1">
@@ -514,52 +549,45 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                         </p>
                       )}
                     </div>
+
                     {/* Logo */}
                     <div>
                       <label className="block mb-1 font-medium text-gray-700">Logo</label>
                       <input
-                        {...storeForm.register('logo')}
+                        {...storeForm.register("logo")}
                         type="file"
                         accept="image/*"
-                        className="block w-full text-sm text-gray-500
-                                   file:mr-4 file:py-2 file:px-4
-                                   file:rounded-lg file:border-0
-                                   file:text-sm file:font-semibold
-                                   file:bg-blue-50 file:text-blue-700
-                                   hover:file:bg-blue-100"
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                     </div>
+
                     {/* Cover */}
                     <div>
                       <label className="block mb-1 font-medium text-gray-700">Cover</label>
                       <input
-                        {...storeForm.register('cover')}
+                        {...storeForm.register("cover")}
                         type="file"
                         accept="image/*"
-                        className="block w-full text-sm text-gray-500
-                                   file:mr-4 file:py-2 file:px-4
-                                   file:rounded-lg file:border-0
-                                   file:text-sm file:font-semibold
-                                   file:bg-blue-50 file:text-blue-700
-                                   hover:file:bg-blue-100"
+                        className="block w-full text-sm text-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-between mt-6">
+
+                  <div className="flex justify-between mt-8">
                     <button
                       type="button"
                       onClick={goToPreviousStep}
-                      className="px-6 py-3 rounded text-white font-semibold bg-gray-500 disabled:opacity-60"
-                      disabled={loading}
+                      className="px-6 py-3 rounded-lg text-gray-700 font-semibold bg-gray-200 hover:bg-gray-300 flex items-center"
                     >
-                      <ArrowLeftIcon className="h-4 w-4 inline-block mr-2" /> Back
+                      <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                      Previous
                     </button>
                     <button
                       type="submit"
-                      className="px-8 py-3 rounded text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 disabled:opacity-60"
+                      className="px-10 py-3 rounded-lg text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 shadow-md hover:shadow-lg disabled:opacity-60"
                       disabled={loading}
                     >
-                      {loading ? 'Saving…' : 'Save Store Info'}
+                      {loading ? "Saving…" : "Save Store Info"}
                     </button>
                   </div>
                 </form>
@@ -574,28 +602,30 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                     ✅ Store information completed. Please upload your KYC documents.
                   </div>
                 )}
+
                 {!kycDone ? (
-                  <form onSubmit={kycForm.handleSubmit(onKycSave)} className="space-y-8">
-                    <h2 className="text-xl font-semibold text-blue-700 mb-6">Step 3 • KYC Documents</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {/* Aadhaar */}
+                  <form onSubmit={kycForm.handleSubmit(onKycSave)} className="space-y-6">
+                    <h2 className="text-xl font-semibold text-blue-700 mb-4">Step 3 • KYC Documents</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Aadhaar - REQUIRED */}
                       <div>
                         <label className="block mb-1 font-medium text-gray-700">
-                          Aadhaar (front and back) <span className="text-red-500">*</span>
+                          Aadhaar (up to 2) <span className="text-red-500">*</span>
                         </label>
                         <input
-                          {...kycForm.register('aadhaarCard', {
-                            validate: (files) => validateFile(files, true)
+                          {...kycForm.register("aadhaarCard", {
+                            required: "Aadhaar card is required",
                           })}
                           type="file"
                           multiple
                           accept="image/*,application/pdf"
                           className="block w-full text-sm text-gray-500
-                                     file:mr-4 file:py-2 file:px-4
-                                     file:rounded-lg file:border-0
-                                     file:text-sm file:font-semibold
-                                     file:bg-blue-50 file:text-blue-700
-                                     hover:file:bg-blue-100"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
                         />
                         {kycForm.formState.errors.aadhaarCard && (
                           <p className="text-red-500 text-sm mt-1">
@@ -603,24 +633,25 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                           </p>
                         )}
                       </div>
-                      {/* PAN */}
+
+                      {/* PAN - REQUIRED */}
                       <div>
                         <label className="block mb-1 font-medium text-gray-700">
                           PAN Card <span className="text-red-500">*</span>
                         </label>
                         <input
-                          {...kycForm.register('panCard', {
-                            validate: (files) => validateFile(files, true)
+                          {...kycForm.register("panCard", {
+                            required: "PAN card is required",
                           })}
                           type="file"
                           multiple
                           accept="image/*,application/pdf"
                           className="block w-full text-sm text-gray-500
-                                     file:mr-4 file:py-2 file:px-4
-                                     file:rounded-lg file:border-0
-                                     file:text-sm file:font-semibold
-                                     file:bg-blue-50 file:text-blue-700
-                                     hover:file:bg-blue-100"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
                         />
                         {kycForm.formState.errors.panCard && (
                           <p className="text-red-500 text-sm mt-1">
@@ -628,70 +659,83 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                           </p>
                         )}
                       </div>
-                      {/* Store Docs */}
+
+                      {/* Store Document - REQUIRED */}
                       <div>
-                        <label className="block mb-1 font-medium text-gray-700">Store Docs</label>
+                        <label className="block mb-1 font-medium text-gray-700">
+                          Store Document <span className="text-red-500">*</span>
+                        </label>
                         <input
-                          {...kycForm.register('storeDocument')}
+                          {...kycForm.register("storeDocument", {
+                            required: "Store document is required",
+                          })}
                           type="file"
                           multiple
                           accept="image/*,application/pdf"
                           className="block w-full text-sm text-gray-500
-                                     file:mr-4 file:py-2 file:px-4
-                                     file:rounded-lg file:border-0
-                                     file:text-sm file:font-semibold
-                                     file:bg-blue-50 file:text-blue-700
-                                     hover:file:bg-blue-100"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
                         />
+                        {kycForm.formState.errors.storeDocument && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {kycForm.formState.errors.storeDocument.message as string}
+                          </p>
+                        )}
                       </div>
-                      {/* GST Certificates */}
+
+                      {/* GST - Optional */}
                       <div>
                         <label className="block mb-1 font-medium text-gray-700">GST Certificates</label>
                         <input
-                          {...kycForm.register('GST')}
+                          {...kycForm.register("GST")}
                           type="file"
                           multiple
                           accept="image/*,application/pdf"
                           className="block w-full text-sm text-gray-500
-                                     file:mr-4 file:py-2 file:px-4
-                                     file:rounded-lg file:border-0
-                                     file:text-sm file:font-semibold
-                                     file:bg-blue-50 file:text-blue-700
-                                     hover:file:bg-blue-100"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
                         />
                       </div>
-                      {/* Other Docs */}
+
+                      {/* Other Docs - Optional */}
                       <div>
                         <label className="block mb-1 font-medium text-gray-700">Other Docs</label>
                         <input
-                          {...kycForm.register('other')}
+                          {...kycForm.register("other")}
                           type="file"
                           multiple
                           accept="image/*,application/pdf"
                           className="block w-full text-sm text-gray-500
-                                     file:mr-4 file:py-2 file:px-4
-                                     file:rounded-lg file:border-0
-                                     file:text-sm file:font-semibold
-                                     file:bg-blue-50 file:text-blue-700
-                                     hover:file:bg-blue-100"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
                         />
                       </div>
                     </div>
+
                     <div className="flex justify-between mt-6">
                       <button
                         type="button"
                         onClick={goToPreviousStep}
-                        className="px-6 py-3 rounded text-white font-semibold bg-gray-500 disabled:opacity-60"
-                        disabled={loading}
+                        className="px-6 py-3 rounded text-gray-700 font-semibold bg-gray-200 hover:bg-gray-300 flex items-center"
                       >
-                        <ArrowLeftIcon className="h-4 w-4 inline-block mr-2" /> Back
+                        <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                        Previous
                       </button>
                       <button
                         type="submit"
                         className="px-8 py-3 rounded text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 disabled:opacity-60"
                         disabled={loading}
                       >
-                        {loading ? 'Uploading…' : 'Submit KYC'}
+                        {loading ? "Uploading…" : "Submit KYC"}
                       </button>
                     </div>
                   </form>
@@ -702,7 +746,7 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
                       All steps completed!
                     </h2>
                     <p className="text-gray-600 mt-2">
-                      🎉 All steps completed — your account is under review. We'll notify
+                      🎉 All steps completed — your account is under review. We&apos;ll notify
                       you once everything is verified.
                     </p>
                   </div>
@@ -715,5 +759,3 @@ const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) =>
     </div>
   );
 }
-
-export const dynamic = 'force-dynamic';
