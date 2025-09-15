@@ -310,7 +310,7 @@ const LeadRequestDetails = () => {
 
       {activeTab === 'status' && (
         <ComponentCard title="Lead Status Updates">
-          <BookingStatus checkout={checkoutDetails} />
+          <BookingStatus checkout={checkoutId} />
         </ComponentCard>
       )}
 
