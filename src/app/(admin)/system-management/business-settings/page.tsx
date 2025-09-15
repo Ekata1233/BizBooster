@@ -11,7 +11,7 @@ const tabs = [
   "Business Info",
   "Add Package",
   "Package Commision",
-  "5XGuarrentee",
+  "5XGuarentee",
   // "Bookings",
   // "Customers",
   // "Providers",
@@ -135,6 +135,7 @@ function VendorDashboardPage() {
               </button>
             </div>
           )}
+
 
 
           {activeTab === "Add Package" && (
