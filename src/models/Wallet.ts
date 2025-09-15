@@ -18,6 +18,7 @@ export interface IWallet extends Document {
 
 // Transaction Subdocument Interface
 export interface IWalletTransaction {
+  _id?: mongoose.Types.ObjectId;
   type: 'credit' | 'debit';
   leadId : string;
   commissionFrom : string;
