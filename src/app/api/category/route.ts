@@ -113,6 +113,7 @@ export async function GET(req: NextRequest) {
         // Count the number of subcategories related to this category
         const subcategoryCount = await Subcategory.countDocuments({
           category: category._id,
+            isDeleted: false,
         });
 
         // Return category with subcategory count
