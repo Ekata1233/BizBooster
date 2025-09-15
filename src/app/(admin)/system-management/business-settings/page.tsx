@@ -11,7 +11,7 @@ const tabs = [
   "Business Info",
   "Add Package",
   "Package Commision",
-  "5XGuarentee",
+  "5XGuarantee",
   // "Bookings",
   // "Customers",
   // "Providers",
@@ -150,7 +150,7 @@ function VendorDashboardPage() {
             </div>
           )}
 
-          {activeTab === "5XGurrentee" && (
+          {activeTab === "5XGuarantee" && (
             <div className="space-y-4">
               <FiveXGurrentee />
             </div>

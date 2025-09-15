@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Input from '@/components/form/input/InputField';
-import {  EyeIcon,  TrashBinIcon } from '@/icons';
+import { EyeIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useLead } from '@/context/LeadContext';
 import { Modal } from '@/components/ui/modal';
@@ -42,6 +42,38 @@ const LeadRequests = () => {
     const [commission, setCommissioin] = useState('');
     const [selectedRow, setSelectedRow] = useState<LeadRow | null>(null);
     const { updateCheckout } = useCheckout();
+    const [serviceCustomers, setServiceCustomers] = useState<{ [key: string]: any }>({});
+
+    useEffect(() => {
+        const fetchServiceCustomers = async () => {
+            if (!leads?.length) return;
+
+            const customerIds = leads
+                .map((lead) => lead.checkout?.serviceCustomer)
+                .filter(Boolean);
+
+            const uniqueIds = Array.from(new Set(customerIds));
+
+            const results: { [key: string]: any } = {};
+
+            await Promise.all(
+                uniqueIds.map(async (id) => {
+                    try {
+                        const res = await axios.get(`/api/service-customer/${id}`);
+
+                        console.log("response of the service-customer : ", res)
+                        results[id] = res.data; // save by ID
+                    } catch (err) {
+                        console.error('Error fetching serviceCustomer', id, err);
+                    }
+                })
+            );
+
+            setServiceCustomers(results);
+        };
+
+        fetchServiceCustomers();
+    }, [leads]);
 
     console.log("leads data checkout id : ", leads)
     const columns = [
@@ -161,63 +193,68 @@ const LeadRequests = () => {
     ];
 
     const filteredData = leads
-        ?.filter((lead) =>
-            lead.isAdminApproved === false 
-        // || (Array.isArray(lead.extraService) &&
-        //         lead.extraService.some((service) => service.isLeadApproved === false))
-                 &&
-            lead.checkout?.bookingId?.toLowerCase().includes(search.toLowerCase())
-        )
-        .map((lead) => ({
-            _id: lead._id,
-            checkoutId : lead.checkout?._id || "N/A",
-            bookingId: lead.checkout?.bookingId || '-',
-            fullName: lead.serviceCustomer?.fullName || 'N/A',
-            email: lead.serviceCustomer?.email || '',
-            totalAmount: lead.checkout?.totalAmount || 0,
-            paymentStatus: lead.checkout?.paymentStatus || 'pending',
-            orderStatus: lead.checkout?.orderStatus || 'processing',
-            isAdminApproved:
-                lead.isAdminApproved === true
-                    ? 'Approved'
-                    : lead.isAdminApproved === false
-                        ? 'Pending'
-                        : 'Not Set',
-        }));
+        ?.filter((lead) => lead.isAdminApproved === false && lead.checkout?.bookingId?.toLowerCase().includes(search.toLowerCase()))
+        .map((lead) => {
+            const customerId = lead.checkout?.serviceCustomer;
+            console.log("customer id : ", customerId)
+            const customerResponse = serviceCustomers[customerId];
+
+    // Extract the actual data from API response
+    const customerData = customerResponse?.data;
+            console.log("customer customer : ", customerData)
+
+            return {
+                _id: lead._id,
+                checkoutId: lead.checkout?._id || "N/A",
+                bookingId: lead.checkout?.bookingId || '-',
+                fullName: customerData?.fullName || 'N/A',
+                email: customerData?.email || '',
+                totalAmount: lead.checkout?.totalAmount || 0,
+                paymentStatus: lead.checkout?.paymentStatus || 'pending',
+                orderStatus: lead.checkout?.orderStatus || 'processing',
+                isAdminApproved:
+                    lead.isAdminApproved === true
+                        ? 'Approved'
+                        : lead.isAdminApproved === false
+                            ? 'Pending'
+                            : 'Not Set',
+            };
+        });
+
 
     const handleApprove = async () => {
         if (!selectedRow || !commission) return alert("Missing data");
 
         try {
-        // 1. Update checkout commission
-        await updateCheckout(selectedRow.checkoutId, {
-            commission: Number(commission),
-        });
+            // 1. Update checkout commission
+            await updateCheckout(selectedRow.checkoutId, {
+                commission: Number(commission),
+            });
 
-        // 2. Approve lead via FormData
-        const formData = new FormData();
-        formData.append("updateType", "adminApproval");
-        formData.append("isAdminApproved", "true");
+            // 2. Approve lead via FormData
+            const formData = new FormData();
+            formData.append("updateType", "adminApproval");
+            formData.append("isAdminApproved", "true");
 
-        const response = await axios.put(
-            `/api/leads/${selectedRow._id}`,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+            const response = await axios.put(
+                `/api/leads/${selectedRow._id}`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            if (response.data.success) {
+                alert("Commission and Lead approval updated successfully");
+                fetchLeads();
+                closeModal();
+            } else {
+                throw new Error(response.data.message || "Approval failed");
             }
-        );
 
-        if (response.data.success) {
-            alert("Commission and Lead approval updated successfully");
-            fetchLeads();
-            closeModal();
-        } else {
-            throw new Error(response.data.message || "Approval failed");
-        }
-
-    }  catch (error) {
+        } catch (error) {
             console.error(error);
             alert("Error updating commission");
         }

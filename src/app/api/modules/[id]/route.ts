@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import Category from "@/models/Category";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -112,3 +113,45 @@ export async function DELETE(req: Request) {
   }
 }
 
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Find the module by ID
+    const module = await Module.findById(id);
+    if (!module) {
+      return NextResponse.json(
+        { success: false, message: "Module not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // Count categories related to this module
+    const categoryCount = await Category.countDocuments({ module: module._id });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: { ...module.toObject(), categoryCount },
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
