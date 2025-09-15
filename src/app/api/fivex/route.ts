@@ -8,6 +8,8 @@ export async function POST(req: Request) {
     await connectToDatabase();
     const body = await req.json();
 
+    console.log("body : ", body)
+
     const { leadcount, fixearning, months } = body; // ✅ Accept months too
     if (!leadcount || !fixearning || !months) {
       return NextResponse.json(

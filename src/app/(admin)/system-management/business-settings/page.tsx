@@ -149,7 +149,7 @@ function VendorDashboardPage() {
             </div>
           )}
 
-          {activeTab === "5XGurrentee" && (
+          {activeTab === "5XGuarrentee" && (
             <div className="space-y-4">
               <FiveXGurrentee />
             </div>
