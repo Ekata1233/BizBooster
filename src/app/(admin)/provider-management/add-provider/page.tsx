@@ -152,64 +152,81 @@ export default function ProviderOnboardingPage() {
     fetchProvider();
   }, [providerId]);
 
-  const onRegister = async (data: any) => {
-    try {
-      setApiError(null);
-      const fd = new FormData();
-      Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
-      await registerProvider(fd);
-      setActiveStep(2);
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
-      if (
-        error.response?.data?.error?.includes("already registered") ||
-        error.response?.data?.error?.includes("already exists")
-      ) {
-        setApiError("Email or phone number is already registered");
+ const onRegister = async (data: Record<string, FormDataEntryValue | Blob>) => {
+  try {
+    setApiError(null);
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
+    
+    // This will throw an error if registration fails
+    await registerProvider(fd);
+    
+    // Only reach here if successful - move to next step
+    setActiveStep(2);
+  } catch (err: unknown) {
+    const error = err as Error;
+
+    if (
+      error.message?.includes("already registered") ||
+      error.message?.includes("already exists")
+    ) {
+      setApiError("Email or phone number is already registered");
+    } else {
+      setApiError("Registration failed. Please try again.");
+    }
+    // DON'T setActiveStep here - stay on current step
+  }
+};
+
+const onStoreSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
+  try {
+    setApiError(null);
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v instanceof FileList) {
+        Array.from(v).forEach((file) => fd.append(k, file));
       } else {
-        setApiError("Registration failed. Please try again.");
+        fd.append(k, v);
       }
-    }
-  };
+    });
+    
+    // This will throw an error if store info update fails
+    await updateStoreInfo(fd);
+    
+    // Only reach here if successful - move to next step
+    setActiveStep(3);
+  } catch (err: unknown) {
+    setApiError('Failed to save store information. Please try again.');
+    console.log(err);
+    // DON'T setActiveStep here - stay on current step
+  }
+};
 
-  const onStoreSave = async (data: any) => {
-    try {
-      setApiError(null);
-      const fd = new FormData();
-      Object.entries(data).forEach(([k, v]) => {
-        if (k === 'logo' || k === 'cover') {
-          // @ts-ignore
-          if (v && v[0]) fd.append(k, v[0]);
-        } else {
-          fd.append(k, v as string);
-        }
-      });
-      await updateStoreInfo(fd);
-      setActiveStep(3);
-    } catch (err: unknown) {
-      setApiError('Failed to save store information. Please try again.');
-    }
-  };
+const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
+  try {
+    setApiError(null);
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v instanceof FileList) {
+        Array.from(v).forEach((file) => fd.append(k, file));
+      } else {
+        fd.append(k, v as string);
+      }
+    });
 
-  const onKycSave = async (data: any) => {
-    try {
-      setApiError(null);
-      const fd = new FormData();
-      Object.entries(data).forEach(([k, v]) => {
-        // @ts-ignore
-        if (v && v.length > 0) {
-          // @ts-ignore
-          Array.from(v).forEach((file) => fd.append(k, file));
-        }
-      });
-      await updateKycInfo(fd);
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
-    } catch (err: unknown) {
-      setApiError('Failed to upload KYC documents. Please try again.');
-    }
-  };
+    // This will throw an error if KYC update fails
+    await updateKycInfo(fd);
+    
+    // Only reach here if successful - redirect to home
+    setTimeout(() => {
+      router.push("/");
+    }, 3000);
+  } catch (err: unknown) {
+    setApiError('Failed to upload KYC documents. Please try again.');
+    console.log(err);
+    // DON'T redirect - stay on current step
+  }
+};
 
   const goToPreviousStep = () => {
     if (activeStep > 1) {

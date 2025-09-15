@@ -66,67 +66,87 @@ export const ProviderContextProvider = ({ children }: { children: ReactNode }) =
   const [wallet, setWallet] = useState<IProviderWallet | null>(null);
   const [allWallet, setAllWallet] = useState<IProviderWallet[]>([]);
 
-  const registerProvider = async (formData: FormData) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/provider/register', {
-        method: 'POST',
-        body: formData,
-      });
+ 
+const registerProvider = async (formData: FormData) => {
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/provider/register`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
-
-      setProvider(data.provider);
-
-      setError(null);
-      // return true; 
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+    console.log("data at the time of registration : ", data);
+    
+    if (!res.ok) {
+      throw new Error(data.message || 'Registration failed');
     }
-  };
-
-  const updateStoreInfo = async (formData: FormData) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/provider/store-info', {
-        method: 'PUT',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Store info update failed');
-
-      setProvider(data.provider);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    
+    if (data.token) {
+      localStorage.setItem('token', data.token);
     }
-  };
+    setProvider(data.provider);
+    setError(null);
+  } catch (err: unknown) {
+    const error = err as Error;
+    setError(error.message);
+    throw error; // Re-throw the error
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const updateKycInfo = async (formData: FormData) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/provider/kyc', {
-        method: 'PUT',
-        body: formData,
-      });
+// Apply the same pattern to updateStoreInfo and updateKycInfo
+const updateStoreInfo = async (formData: FormData) => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/provider/store-info`, {
+      method: 'PUT',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'KYC update failed');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Store info update failed');
+    setProvider(data.provider);
+    setError(null);
+  } catch (err: unknown) {
+    const error = err as Error;
+    setError(error.message);
+    throw error; // Re-throw the error
+  } finally {
+    setLoading(false);
+  }
+};
 
-      setProvider(data.provider);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const updateKycInfo = async (formData: FormData) => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/provider/kyc`, {
+      method: 'PUT',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'KYC update failed');
+    setProvider(data.provider);
+    setError(null);
+  } catch (err: unknown) {
+    const error = err as Error;
+    setError(error.message);
+    throw error; // Re-throw the error
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getProviderById = async (id: string) => {
     setLoading(true);

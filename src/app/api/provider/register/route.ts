@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ✅ Phone number duplication check
+    const existingPhone = await Provider.findOne({ phoneNo });
+    if (existingPhone) {
+      return NextResponse.json(
+        { message: "Phone number already registered" },
+        { status: 409, headers: corsHeaders }
+      );
+    }
+
     const provider = await Provider.create({
       fullName,
       email,
