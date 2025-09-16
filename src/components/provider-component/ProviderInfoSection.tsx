@@ -23,7 +23,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
             }
 
             try {
-                const res = await fetch(`http://localhost:3001/api/modules/${provider.storeInfo.module}`);
+                const res = await fetch(`https://api.fetchtrue.com/api/modules/${provider.storeInfo.module}`);
                 const data = await res.json();
                 if (data.success && data.data?.name) {
                     setModuleName(data.data.name);
