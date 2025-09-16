@@ -38,6 +38,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
 
         fetchModule();
     }, [provider.storeInfo?.module]);
+    
     const renderImageArray = (images?: string[]) => {
         if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
         return (
