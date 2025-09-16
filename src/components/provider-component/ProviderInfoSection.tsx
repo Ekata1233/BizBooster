@@ -13,7 +13,9 @@ interface Module {
     name: string;
 }
 const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
-     const [moduleName, setModuleName] = useState<string>('Loading...');
+    const [moduleName, setModuleName] = useState<string>('Loading...');
+    const [zoneName, setZoneName] = useState<string>('Loading...');
+
 
     useEffect(() => {
         const fetchModule = async () => {
@@ -36,9 +38,38 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
             }
         };
 
+        const fetchZone = async () => {
+            if (!provider?.storeInfo?.zone) {
+                setZoneName("No Zone Registered");
+                return;
+            }
+
+            try {
+                const res = await fetch(
+                    `https://api.fetchtrue.com/api/zone/${provider.storeInfo.zone}`
+                );
+
+                console.log("data of the res : ", res);
+
+                const data = await res.json();
+
+                console.log("data of the zone : ", data);
+
+                if (data.success && data.data?.name) {
+                    setZoneName(data.data.name);
+                } else {
+                    setZoneName("Zone Not Found");
+                }
+            } catch (error) {
+                console.error("Error fetching zone:", error);
+                setZoneName("Error fetching zone"); // ✅ fixed
+            }
+        };
+
         fetchModule();
-    }, [provider.storeInfo?.module]);
-    
+        fetchZone();
+    }, [provider.storeInfo?.module, provider?.storeInfo?.zone]);
+
     const renderImageArray = (images?: string[]) => {
         if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
         return (
@@ -92,6 +123,11 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                         <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-500 whitespace-nowrap">Module Name :</p>
                             <p className="font-medium">{moduleName || 'No Any Moduel Registered'}</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Module Name :</p>
+                            <p className="font-medium">{zoneName || 'No Any Moduel Registered'}</p>
                         </div>
                     </div>
                 </ComponentCard>
