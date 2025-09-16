@@ -16,6 +16,8 @@ export interface AdminEarningsType {
   providerEarnings: number;
   franchiseEarnings: number;
   refundsToUsers: number;
+  franchiseBalance:number;
+  providerBalance:number;
   extraFees: number;
   pendingPayouts: number;
   createdAt?: string;

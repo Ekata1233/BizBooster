@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import AdminEarnings from '@/models/AdminEarnings';
 import { connectToDatabase } from '@/utils/db';
-
+import FranchiseWallet from '@/models/Wallet'; // your franchise wallet model
+import ProviderWallet from '@/models/ProviderWallet'; // your provider wallet model
+import mongoose from 'mongoose';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -125,8 +127,39 @@ export async function GET(req: NextRequest) {
         },
       ]);
 
+      
+      // ✅ Get total franchise balance, excluding one franchise by _id
+      const franchiseBalanceAgg = await FranchiseWallet.aggregate([
+        {
+          $match: {
+            userId: { $ne: new mongoose.Types.ObjectId("444c44d4444be444d4444444") }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalFranchiseBalance: { $sum: "$balance" }
+          }
+        }
+      ]);
+
+      // ✅ Get total provider balance (no exclusion)
+      const providerBalanceAgg = await ProviderWallet.aggregate([
+        { $group: { _id: null, totalProviderBalance: { $sum: "$balance" } } }
+      ]);
+
+      const franchiseBalance = franchiseBalanceAgg[0]?.totalFranchiseBalance || 0;
+      const providerBalance = providerBalanceAgg[0]?.totalProviderBalance || 0;
+
       return NextResponse.json(
-        { success: true, data: result[0] || {} },
+        {
+          success: true,
+          data: {
+            ...(result[0] || {}),
+            franchiseBalance,
+            providerBalance
+          }
+        },
         { status: 200, headers: corsHeaders }
       );
     }
