@@ -25,7 +25,7 @@ jobs:
 
       # Step 2: Run commands on EC2
       - name: Execute remote SSH commands
-        uses: appleboy/ssh-action@main
+        uses: appleboy/ssh-action@v0.1.10 
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
