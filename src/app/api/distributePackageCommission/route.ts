@@ -214,8 +214,16 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        let actualFranchiseEarnings = 0;
+        if (userB && !userB.isDeleted) {
+            actualFranchiseEarnings += level1Amount;
+        }
+        if (userA && !userA.isDeleted) {
+            actualFranchiseEarnings += level2Amount;
+        }
+
         const todayDate = new Date().toISOString().split("T")[0];
-        const totalRevenue = adminAmount + level1Amount + level2Amount;
+        const totalRevenue = adminAmount + actualFranchiseEarnings;
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
             {
@@ -225,7 +233,7 @@ export async function POST(req: NextRequest) {
                     totalRevenue: totalRevenue,
                     extraFees: 0,
                     pendingPayouts: 0,
-                    franchiseEarnings: level1Amount + level2Amount,
+                    franchiseEarnings: actualFranchiseEarnings,
                     refundsToUsers: 0,
                 },
             },
