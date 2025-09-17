@@ -30,19 +30,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid input data' }, { status: 400 });
     }
 
-    const grandtotal = body.discountedPrice + body.deposit; // ✅ Calculate grandtotal
+    const discountedPrice = Number(body.discountedPrice);
+const deposit = Number(body.deposit);
+const grandtotal = discountedPrice + deposit;
 
-    const newPackage = new Package({
-      ...body,
-      grandtotal, // ✅ Inject it
-      description: {
-        gp: body.description.gp,
-        sgp: body.description.sgp || '',
-        pgp: body.description.pgp || '',
-         monthlyEarnings: body.monthlyEarnings, // ✅ Inject new field
-      lockInPeriod: body.lockInPeriod 
-      },
-    });
+const newPackage = new Package({
+  price: body.price,
+  discount: body.discount,
+  discountedPrice,
+  deposit,
+  grandtotal, // ✅ will save correctly
+  description: {
+    gp: body.description.gp,
+    sgp: body.description.sgp || '',
+    pgp: body.description.pgp || '',
+  },
+  monthlyEarnings: body.monthlyEarnings,
+  lockInPeriod: body.lockInPeriod,
+});
+
 
     await newPackage.save();
 

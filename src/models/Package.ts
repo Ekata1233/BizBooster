@@ -26,7 +26,7 @@ const packageSchema = new Schema<IPackage>({
   discount: { type: Number, required: true },
   discountedPrice: { type: Number, required: true },
   deposit: { type: Number, required: true },
-  grandtotal: { type: Number, default: 0 },
+grandtotal: { type: Number, required: true },
   monthlyEarnings: { type: Number, required: true }, // Added field
   lockInPeriod: { type: Number, required: true },
 }, { timestamps: true });
