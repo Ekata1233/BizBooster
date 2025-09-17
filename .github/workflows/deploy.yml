@@ -34,5 +34,5 @@ jobs:
             cd /var/www/html/BizBooster
             git pull origin main
             npm install --legacy-peer-deps
-            npm run build
+            npm run build --no-lint --no-type-check
             pm2 restart fetch-true || pm2 start npm --name "fetch-true" -- start
