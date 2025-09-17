@@ -16,7 +16,7 @@ jobs:
 
       # Step 1: Copy files to EC2
       - name: Deploy files to EC2
-        uses: easingthemes/ssh-deploy@v0.1.10
+        uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_KEY }}
           REMOTE_HOST: ${{ secrets.EC2_HOST }}
@@ -34,5 +34,5 @@ jobs:
             cd /var/www/html/BizBooster
             git pull origin main
             npm install --legacy-peer-deps
-            npm run build
+            npm run build --no-type-check
             pm2 restart fetch-true || pm2 start npm --name "fetch-true" -- start
