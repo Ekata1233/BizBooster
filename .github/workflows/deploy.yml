@@ -25,7 +25,7 @@ jobs:
 
       # Step 2: Run commands on EC2
       - name: Execute remote SSH commands
-        uses: appleboy/ssh-action@v0.1.10 
+        uses: appleboy/ssh-action@main
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
@@ -34,5 +34,5 @@ jobs:
             cd /var/www/html/BizBooster
             git pull origin main
             npm install --legacy-peer-deps
-            npm run build --no-type-check
+            npm run build
             pm2 restart fetch-true || pm2 start npm --name "fetch-true" -- start
