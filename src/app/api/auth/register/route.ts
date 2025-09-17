@@ -120,8 +120,9 @@ export const POST = async (req: Request) => {
     });
     await wallet.save();
 
+    const { __v, ...userData } = newUser.toObject();
     return NextResponse.json(
-      { success: true, message: 'Register Successfull' },
+      { success: true, message: 'Register Successfull', user: userData },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
