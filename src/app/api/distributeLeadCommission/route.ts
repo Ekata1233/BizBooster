@@ -424,9 +424,21 @@ export async function POST(req: Request) {
 
         const adminCommissionTotal = adminShare + (extra_adminShare || 0);
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
-        const franchiseEarningsTotal =
-            C_share + B_share + A_share +
-            (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
+        let actualFranchiseEarnings = 0;
+        if (userC?.packageActive) actualFranchiseEarnings += C_share;
+        if (userB && !userB.isDeleted) actualFranchiseEarnings += B_share;
+        if (userA && !userA.isDeleted) actualFranchiseEarnings += A_share;
+
+        if (extraLeadAmount > 0) {
+            if (userC?.packageActive) actualFranchiseEarnings += extra_C_share;
+            if (userB && !userB.isDeleted) actualFranchiseEarnings += extra_B_share;
+            if (userA && !userA.isDeleted) actualFranchiseEarnings += extra_A_share;
+        }
+        const franchiseEarningsTotal = actualFranchiseEarnings;
+
+        // const franchiseEarningsTotal =
+        //     C_share + B_share + A_share +
+        //     (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
         const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
 
         const totalRevenue =
