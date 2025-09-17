@@ -22,7 +22,7 @@ interface AdType {
     _id?: string;   // 👈 make optional
     serviceName: string;
   };
-  provider?: string;
+ provider?: { _id: string; fullName: string; email: string; providerId:string }; 
   startDate?: string;
   endDate?: string;
   isApproved?: boolean;
@@ -36,6 +36,9 @@ const AdDetailsPage = () => {
   const { ads } = useAdContext();
 
   const [ad, setAd] = useState<AdType | null>(null);
+
+  console.log("adds :",ads);
+  
 
   useEffect(() => {
     if (id && ads.length > 0) {
@@ -95,7 +98,7 @@ const AdDetailsPage = () => {
 
             <div>
               <h2 className="text-lg font-semibold">Provider ID:</h2>
-              <p className="text-gray-700">{ad.provider || 'N/A'}</p>
+              <p className="text-gray-700">  {ad.provider ? ad.provider.providerId : 'N/A'}</p>
             </div>
 
             <div>
