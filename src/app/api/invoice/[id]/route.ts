@@ -27,7 +27,7 @@ interface ServiceItem {
 }
 
 interface ExtraService {
-serviceName: string;
+  serviceName: string;
   price: number;
   discount: number;
   total: number;
@@ -72,7 +72,7 @@ interface Invoice {
   campaignDiscount?: number;
 
   couponDiscount?: number;
-  couponDiscountPrice?: number; 
+  couponDiscountPrice?: number;
   gst?: number;
   serviceGSTPrice?: number;
   platformFeePrice?: number;
@@ -86,6 +86,7 @@ interface Invoice {
   discountAmountType?: 'Percentage' | 'Rupees';
   coupon?: { couponCode?: string };
   extraService?: any[];
+  couponDiscountType?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -109,6 +110,8 @@ export async function GET(req: NextRequest) {
       .populate('provider')
       .lean() as unknown as Invoice;
 
+      console.log("invoice services", invoice);
+
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404, headers: corsHeaders });
     }
@@ -116,8 +119,8 @@ export async function GET(req: NextRequest) {
     // ✅ Fetch related Lead to get extra services
     const lead = await Lead.findOne({ checkout: id }).lean<LeadType>();
 
-const extraServices: ExtraService[] = lead?.extraService || [];
-console.log("extra services", extraServices);
+    const extraServices: ExtraService[] = lead?.extraService || [];
+    console.log("extra services", extraServices);
 
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([595, 842]); // first page
@@ -154,39 +157,39 @@ console.log("extra services", extraServices);
         color: rgb(0.8, 0.8, 0.8)
       });
     };
-// Draw text with wrapping at a fixed width
-const drawWrappedText = (
-  text: string,
-  x: number,
-  yPos: number,
-  maxWidth: number,
-  size = 12,
-  isBold = false
-) => {
-  const fontToUse = isBold ? boldFont : font;
-  const words = text.split(' ');
-  let line = '';
-  let currentY = yPos;
+    // Draw text with wrapping at a fixed width
+    const drawWrappedText = (
+      text: string,
+      x: number,
+      yPos: number,
+      maxWidth: number,
+      size = 12,
+      isBold = false
+    ) => {
+      const fontToUse = isBold ? boldFont : font;
+      const words = text.split(' ');
+      let line = '';
+      let currentY = yPos;
 
-  for (const word of words) {
-    const testLine = line + word + ' ';
-    const textWidth = fontToUse.widthOfTextAtSize(testLine, size);
-    if (textWidth > maxWidth) {
-      page.drawText(line, { x, y: currentY, size, font: fontToUse });
-      currentY -= size + 2; // move to next line
-      line = word + ' ';
-    } else {
-      line = testLine;
-    }
-  }
+      for (const word of words) {
+        const testLine = line + word + ' ';
+        const textWidth = fontToUse.widthOfTextAtSize(testLine, size);
+        if (textWidth > maxWidth) {
+          page.drawText(line, { x, y: currentY, size, font: fontToUse });
+          currentY -= size + 2; // move to next line
+          line = word + ' ';
+        } else {
+          line = testLine;
+        }
+      }
 
-  if (line) {
-    page.drawText(line, { x, y: currentY, size, font: fontToUse });
-    currentY -= size + 2;
-  }
+      if (line) {
+        page.drawText(line, { x, y: currentY, size, font: fontToUse });
+        currentY -= size + 2;
+      }
 
-  return currentY; // return new Y position after text
-};
+      return currentY; // return new Y position after text
+    };
 
     // Function to move to next line with pagination
     const nextLine = (space = 20) => {
@@ -309,28 +312,28 @@ const drawWrappedText = (
 
     // Main services
     const services = Array.isArray(invoice.service) ? invoice.service : [invoice.service];
-  for (const s of services) {
-  if (!checkPageSpace(0)) addNewPage();
+    for (const s of services) {
+      if (!checkPageSpace(0)) addNewPage();
 
-  const serviceName = s?.serviceName || 'N/A';
-  const price = s?.price || 0;
-  const discountedPrice = s?.discountedPrice || 0;
-  const rowServiceDiscountPrice = price - discountedPrice;
+      const serviceName = s?.serviceName || 'N/A';
+      const price = s?.price || 0;
+      const discountedPrice = s?.discountedPrice || 0;
+      const rowServiceDiscountPrice = price - discountedPrice;
 
-  const originalY = y; // store original y before wrapping
-  const newY = drawWrappedText(serviceName, margin, y, 150); // wrap at 150px
+      const originalY = y; // store original y before wrapping
+      const newY = drawWrappedText(serviceName, margin, y, 150); // wrap at 150px
 
-  // Vertically center other columns with wrapped text
-  const lineHeight = 14; // font size + spacing
-  const wrappedHeight = originalY - newY; // total height of wrapped text
-  const centerY = originalY - wrappedHeight / 2 - lineHeight / 2;
+      // Vertically center other columns with wrapped text
+      const lineHeight = 14; // font size + spacing
+      const wrappedHeight = originalY - newY; // total height of wrapped text
+      const centerY = originalY - wrappedHeight / 2 - lineHeight / 2;
 
-  drawText(`₹${price.toFixed(2)}`, 200, centerY);
-  drawText(`₹${rowServiceDiscountPrice.toFixed(2)}`, 320, centerY);
-  drawText(`₹${discountedPrice.toFixed(2)}`, 440, centerY);
+      drawText(`₹${price.toFixed(2)}`, 200, centerY);
+      drawText(`₹${rowServiceDiscountPrice.toFixed(2)}`, 320, centerY);
+      drawText(`₹${discountedPrice.toFixed(2)}`, 440, centerY);
 
-  y = newY - 6; // add a little extra spacing after block
-}
+      y = newY - 6; // add a little extra spacing after block
+    }
 
 
     // Extra services
@@ -345,14 +348,12 @@ const drawWrappedText = (
     const summaryItems = [
       ['Listing Price', invoice.listingPrice],
       [
-        `Service Discount (${invoice.discountAmountType === 'Percentage' ? `${invoice.serviceDiscount || 0}%` : `Rs.${invoice.serviceDiscount || 0}`})`,
+        `Service Discount (${`${invoice.serviceDiscount || 0}%`})`,
         invoice.serviceDiscountPrice,
       ],
       ['Price After Discount', invoice.priceAfterDiscount],
       [
-        invoice.discountAmountType === 'Percentage'
-          ? `Coupon Discount (${invoice.couponDiscount || 0}% - ${invoice.coupon?.couponCode || '-'})`
-          : `Coupon Discount (Rs.${invoice.couponDiscount || 0} - ${invoice.coupon?.couponCode || '-'})`,
+         `Coupon Discount (${invoice.couponDiscount || 0}${invoice?.couponDiscountType|| '-'})`,
         invoice.couponDiscountPrice,
       ],
       [`Service GST (${invoice.gst || 0}%)`, invoice.serviceGSTPrice],
@@ -404,8 +405,8 @@ const drawWrappedText = (
 
       drawText('Extra Services', margin, y, 12, rgb(0, 0, 0), true);
       nextLine(20);
-    drawLine(y);
-    nextLine(20);
+      drawLine(y);
+      nextLine(20);
 
       for (const [index, extra] of extraServices.entries()) {
         if (!checkPageSpace(20)) addNewPage();
@@ -418,9 +419,9 @@ const drawWrappedText = (
           y
         );
         drawText(`₹${extra.total.toFixed(2)}`, 440, y);
-       nextLine(20);
-    drawLine(y);
-    nextLine(20);
+        nextLine(20);
+        drawLine(y);
+        nextLine(20);
       }
     }
 
@@ -471,20 +472,20 @@ const drawWrappedText = (
     drawText('+91 93096 517500', width / 2 - 30, y - 15, 10);
     drawText('info@fetchtrue.com', width - 150, y - 15, 10);
 
-   const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await pdfDoc.save();
 
-// ✅ Convert Uint8Array → Buffer
-const pdfBuffer = Buffer.from(pdfBytes);
+    // ✅ Convert Uint8Array → Buffer
+    const pdfBuffer = Buffer.from(pdfBytes);
 
-return new NextResponse(pdfBuffer, {
-  status: 200,
-  headers: {
-    "Content-Type": "application/pdf",
-    "Content-Disposition": `inline; filename=invoice-${invoice.bookingId}.pdf`,
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-  },
-});
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename=invoice-${invoice.bookingId}.pdf`,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+      },
+    });
 
   } catch (error) {
     console.error('[INVOICE_PDF_ERROR]', error);
