@@ -6,7 +6,7 @@ import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
-import img from '../../../public/images/logo/user1.webp';
+import img from '../../../public/images/logo/user1.png';
 import { useUserContext } from '@/context/UserContext';
 
 interface TeamLeadData {

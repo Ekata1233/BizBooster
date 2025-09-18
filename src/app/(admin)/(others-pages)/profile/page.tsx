@@ -20,7 +20,7 @@ export default function Profile() {
         <div className="space-y-6">
           <UserMetaCard
             userId={"123"}
-            imageSrc="/images/logo/user1.webp"
+            imageSrc="/images/logo/user1.png"
             name="BizBooster Admin"
             role="Admin"
             location="Amanora Chember, Hadapsar, Pune"
