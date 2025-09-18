@@ -1415,52 +1415,175 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   }));
 
   /* ---------------- Fetch Offer for Edit ---------------- */
-  const fetchOffer = useCallback(async () => {
-    if (!offerIdToEdit) {
-      resetForm();
-      setIsFormLoading(false);
-      return;
-    }
+//   const fetchOffer = useCallback(async () => {
+//     if (!offerIdToEdit) {
+//       resetForm();
+//       setIsFormLoading(false);
+//       return;
+//     }
     
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await axios.get<{ success: boolean; data: OfferResponse }>(
-        `${API_BASE}/${offerIdToEdit}`
-      );
-      const data = res.data.data;
+//     setLoading(true);
+//     setError(null);
+//     try {
+//       const res = await axios.get<{ success: boolean; data: OfferResponse }>(
+//         `${API_BASE}/${offerIdToEdit}`
+//       );
+//       const data = res.data.data;
 
-      setExistingBannerUrl(data.bannerImage || null);
-      setExistingThumbnailUrl(data.thumbnailImage || null);
-      setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
-      setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
-      setExistingGalleryUrls(data.galleryImages || []);
-      setEligibilityCriteria(data.eligibilityCriteria || '');
-      setHowToParticipate(data.howToParticipate || '');
-      setFaqList(parseFaq(data.faq));
-      setTermsAndConditions(data.termsAndConditions || '');
+//       setExistingBannerUrl(data.bannerImage || null);
+//       setExistingThumbnailUrl(data.thumbnailImage || null);
+//       setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
+//       setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
+//       setExistingGalleryUrls(data.galleryImages || []);
+//       setEligibilityCriteria(data.eligibilityCriteria || '');
+//       setHowToParticipate(data.howToParticipate || '');
+//       setFaqList(parseFaq(data.faq));
+//       setTermsAndConditions(data.termsAndConditions || '');
 
-      const servId = extractId(data.service);
-      if (servId) {
-        setSelectedService(servId);
+//     //   const servId = extractId(data.service);
+//     //   if (servId) {
+//     //     setSelectedService(servId);
+//     //     const servDoc = services.find((s) => extractId(s._id) === servId);
+//     //     if (servDoc) {
+//     //       console.log('Found service document:', servDoc);
+//     //       console.log('Service category:', servDoc.category);
+//     //       console.log('Service subcategory:', servDoc.subcategory);
+//     //       const catId = extractId(servDoc.category);
+//     //       const subId = extractId(servDoc.subcategory);
+//     //       setSelectedCategory(catId);
+//     //       setSelectedSubcategory(subId);
+//     //       const catDoc = categories.find((c) => extractId(c._id) === catId);
+//     //       if (catDoc) setSelectedModule(extractId(catDoc.module));
+//     //     }
+//     //   }
+//     // }
+//     const servId = extractId(data.service);
+//     console.log("Raw data.service:", data.service);
+// console.log("Extracted Service ID:", servId);
+// console.log("All service IDs:", services.map(s => extractId(s._id)));
+
+// if (servId) {
+//   setSelectedService(servId);
+
+//   const servDoc = services.find((s) => extractId(s._id) === servId);
+//   console.log("Looking for service in services list:", services);
+//   console.log("Matched service document:", servDoc);
+
+//   if (servDoc) {
+//     console.log("✅ Found service document:", servDoc);
+//     console.log("Service category ID (raw):", servDoc.category);
+//     console.log("Service subcategory ID (raw):", servDoc.subcategory);
+
+//     const catId = extractId(servDoc.category);
+//     const subId = extractId(servDoc.subcategory);
+//     console.log("Extracted Category ID:", catId);
+//     console.log("Extracted Subcategory ID:", subId);
+
+//     setSelectedCategory(catId);
+//     setSelectedSubcategory(subId);
+
+//     const catDoc = categories.find((c) => extractId(c._id) === catId);
+//     console.log("Matched category document:", catDoc);
+
+//     if (catDoc) {
+//       const moduleId = extractId(catDoc.module);
+//       console.log("Extracted Module ID from category:", moduleId);
+//       setSelectedModule(moduleId);
+//     } else {
+//       console.warn("⚠️ No category document found for Category ID:", catId);
+//     }
+//   } else {
+//     console.warn("⚠️ No service document found for Service ID:", servId);
+//   }
+// } else {
+//   console.warn("⚠️ No Service ID extracted from data.service:", data.service);
+// }
+//     }
+//     catch (err) {
+//       console.error('Error fetching offer:', err);
+//       setError('Failed to fetch offer.');
+//     } finally {
+//       setLoading(false);
+//       setIsFormLoading(false);
+//     }
+//   }, [offerIdToEdit, services, categories]);
+
+
+
+const fetchOffer = useCallback(async () => {
+  if (!offerIdToEdit) {
+    resetForm();
+    setIsFormLoading(false);
+    return;
+  }
+  
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await axios.get<{ success: boolean; data: OfferResponse }>(
+      `${API_BASE}/${offerIdToEdit}`
+    );
+    const data = res.data.data;
+
+    setExistingBannerUrl(data.bannerImage || null);
+    setExistingThumbnailUrl(data.thumbnailImage || null);
+    setOfferStartTime(toDatetimeLocalValue(data.offerStartTime));
+    setOfferEndTime(toDatetimeLocalValue(data.offerEndTime));
+    setExistingGalleryUrls(data.galleryImages || []);
+    setEligibilityCriteria(data.eligibilityCriteria || '');
+    setHowToParticipate(data.howToParticipate || '');
+    setFaqList(parseFaq(data.faq));
+    setTermsAndConditions(data.termsAndConditions || '');
+
+    const servId = extractId(data.service);
+    console.log("Service ID from offer:", servId);
+
+    if (servId) {
+      // Wait for services and categories to be loaded from context
+      if (services.length > 0 && categories.length > 0) {
         const servDoc = services.find((s) => extractId(s._id) === servId);
+        console.log("Found service document:", servDoc);
+
         if (servDoc) {
+          setSelectedService(servId);
+
           const catId = extractId(servDoc.category);
           const subId = extractId(servDoc.subcategory);
-          setSelectedCategory(catId);
-          setSelectedSubcategory(subId);
-          const catDoc = categories.find((c) => extractId(c._id) === catId);
-          if (catDoc) setSelectedModule(extractId(catDoc.module));
+          console.log("Category ID:", catId, "Subcategory ID:", subId);
+
+          if (catId) {
+            setSelectedCategory(catId);
+            
+            const catDoc = categories.find((c) => extractId(c._id) === catId);
+            console.log("Found category document:", catDoc);
+            
+            if (catDoc) {
+              const moduleId = extractId(catDoc.module);
+              console.log("Module ID:", moduleId);
+              setSelectedModule(moduleId);
+            }
+          }
+
+          if (subId) {
+            setSelectedSubcategory(subId);
+          }
         }
+      } else {
+        // If context data isn't loaded yet, we'll set the service ID and let the useEffect handle the rest
+        setSelectedService(servId);
+        console.log("Context data not loaded yet, will set dropdowns in useEffect");
       }
-    } catch (err) {
-      console.error('Error fetching offer:', err);
-      setError('Failed to fetch offer.');
-    } finally {
-      setLoading(false);
-      setIsFormLoading(false);
     }
-  }, [offerIdToEdit, services, categories]);
+  } catch (err) {
+    console.error('Error fetching offer:', err);
+    setError('Failed to fetch offer.');
+  } finally {
+    setLoading(false);
+    setIsFormLoading(false);
+  }
+}, [offerIdToEdit, services, categories]);
+
+
 
   useEffect(() => {
     // Wait for context data to be available before fetching
@@ -1468,6 +1591,33 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
       fetchOffer();
     }
   }, [offerIdToEdit, services, categories, fetchOffer]);
+
+
+  useEffect(() => {
+  if (selectedService && services.length > 0 && categories.length > 0) {
+    const servDoc = services.find((s) => extractId(s._id) === selectedService);
+    if (servDoc) {
+      const catId = extractId(servDoc.category);
+      const subId = extractId(servDoc.subcategory);
+      
+      if (catId && !selectedCategory) {
+        setSelectedCategory(catId);
+        
+        const catDoc = categories.find((c) => extractId(c._id) === catId);
+        if (catDoc) {
+          const moduleId = extractId(catDoc.module);
+          if (moduleId && !selectedModule) {
+            setSelectedModule(moduleId);
+          }
+        }
+      }
+      
+      if (subId && !selectedSubcategory) {
+        setSelectedSubcategory(subId);
+      }
+    }
+  }
+}, [selectedService, services, categories, selectedCategory, selectedModule, selectedSubcategory]);
 
   /* ---------------- Reset ---------------- */
   const resetForm = () => {
@@ -1841,3 +1991,9 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
 };
 
 export default AddOffer;
+
+
+
+
+
+

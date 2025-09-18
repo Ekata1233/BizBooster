@@ -117,7 +117,7 @@ const page = () => {
                     >
                         <TrashBinIcon size={16} />
                     </button>
-                    <Link href={`/ad-management/ad-detail/${row.id}`} passHref>
+                    <Link href={`/adds-management/add-request/${row.id}`} passHref>
                         <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                             <EyeIcon size={16} />
                         </button>

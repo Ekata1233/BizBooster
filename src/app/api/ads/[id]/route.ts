@@ -31,7 +31,9 @@ export async function GET(req: Request) {
       );
     }
 
-    const ad = await Ad.findById(id);
+    // const ad = await Ad.findById(id);
+        const ad = await Ad.findById(id).populate("category service provider");
+    
 
     if (!ad) {
       return NextResponse.json(
