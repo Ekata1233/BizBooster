@@ -6,6 +6,8 @@ import User from '@/models/User';
 import { connectToDatabase } from '@/utils/db';
 import { generateOtp } from '@/utils/generateOtp';
 import Wallet from '@/models/Wallet';
+import jwt from 'jsonwebtoken';  // ✅ Add JWT
+import bcrypt from 'bcrypt';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,8 +122,15 @@ export const POST = async (req: Request) => {
     });
     await wallet.save();
 
+    const token = jwt.sign(
+      { userId: newUser._id },
+      process.env.JWT_SECRET!,
+      { expiresIn: '1h' }
+    );
+
+    const { __v, ...userData } = newUser.toObject();
     return NextResponse.json(
-      { success: true, message: 'Register Successfull' },
+      { success: true, message: 'Register Successfull',token, user: userData },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

@@ -155,6 +155,7 @@ export async function PUT(req: NextRequest) {
             status: "success",
             balanceAfterTransaction: newBalance,
             createdAt: new Date(),
+            leadId: checkout.bookingId,
         });
 
         providerWallet.balance = newBalance;

@@ -105,3 +105,39 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+//GET /api/zones/[id]
+export async function GET(req: Request) {
+  try {
+    await connectToDatabase();
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const zone = await Zone.findOne({ _id: id, isDeleted: false });
+
+    if (!zone) {
+      return NextResponse.json(
+        { success: false, message: "Zone not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: zone },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error("Error fetching zone:", error);
+    return NextResponse.json(
+      { success: false, message: "Server Error" },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

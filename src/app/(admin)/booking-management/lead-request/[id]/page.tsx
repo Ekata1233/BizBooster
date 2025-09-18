@@ -122,18 +122,18 @@ const LeadRequestDetails = () => {
       });
 
       if (checkoutInfo?._id) {
-      const newGrandTotal = Number((extraServiceTotal + (checkoutInfo.totalAmount ?? 0)).toFixed(2));
-      const roundedExtraServiceTotal = Number(extraServiceTotal.toFixed(2));
+        const newGrandTotal = Number((extraServiceTotal + (checkoutInfo.totalAmount ?? 0)).toFixed(2));
+        const roundedExtraServiceTotal = Number(extraServiceTotal.toFixed(2));
 
-      await fetch(`/api/checkout/add-on-service/${checkoutInfo._id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          extraServicePrice: roundedExtraServiceTotal,
-          grandTotal: newGrandTotal
-        })
-      });
-    }
+        await fetch(`/api/checkout/add-on-service/${checkoutInfo._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            extraServicePrice: roundedExtraServiceTotal,
+            grandTotal: newGrandTotal
+          })
+        });
+      }
 
       if (response.data.success) {
         alert('Commission and Lead approved successfully');
@@ -310,7 +310,7 @@ const LeadRequestDetails = () => {
 
       {activeTab === 'status' && (
         <ComponentCard title="Lead Status Updates">
-          <BookingStatus checkout={checkoutDetails} />
+          <BookingStatus checkout={checkoutId} />
         </ComponentCard>
       )}
 

@@ -84,7 +84,7 @@ export async function GET() {
     const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
 
     // Find all ads
-    const ads = await Ad.find().populate("category service");
+    const ads = await Ad.find().populate("category service provider");
 
     // Check for expiry and update if needed
     const updatePromises = ads.map(async (ad: any) => {

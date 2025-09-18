@@ -1,59 +1,59 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import axios from 'axios';
 import Image from 'next/image';
 
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
-import { useAdContext } from '@/context/AdContext';
 
-interface AdType {
+type AdDetail = {
   _id: string;
+  addType: string;
   title: string;
   description: string;
   fileUrl: string;
-  addType: string;
-  category?: {
-    _id?: string;   // 👈 make optional
-    name: string;
+  startDate: string;
+  endDate: string;
+  provider: {
+    fullName: string;
+    storeInfo: { logo: string };
   };
-  service?: {
-    _id?: string;   // 👈 make optional
-    serviceName: string;
-  };
- provider?: { _id: string; fullName: string; email: string; providerId:string }; 
-  startDate?: string;
-  endDate?: string;
-  isApproved?: boolean;
-  isExpired?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+  category: { name: string };
+  service: { serviceName: string };
+};
 
-const AdDetailsPage = () => {
+const AdDetailPage: React.FC = () => {
   const { id } = useParams();
-  const { ads } = useAdContext();
+  const [ad, setAd] = useState<AdDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [ad, setAd] = useState<AdType | null>(null);
-
-  console.log("adds :",ads);
-  
+  const fetchAd = async () => {
+    try {
+      const res = await axios.get(`/api/ads/${id}`);
+      if (res.data.success) {
+        setAd(res.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching ad:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (id && ads.length > 0) {
-      const found = ads.find((a) => a._id === id);
-      if (found) setAd(found);
-    }
-  }, [id, ads]);
+    fetchAd();
+  }, [id]);
 
-  if (!ad) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4">Loading...</div>;
+  if (!ad) return <div className="p-4 text-red-500">Ad not found.</div>;
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Advertisement Details" />
 
-      {/* Card 1: Image + Title */}
+      {/* Card 1: Image + Title + Description */}
       <div className="my-5">
         <ComponentCard title="Ad Overview">
           <div className="flex flex-col md:flex-row items-start gap-6">
@@ -97,8 +97,8 @@ const AdDetailsPage = () => {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Provider ID:</h2>
-              <p className="text-gray-700">  {ad.provider ? ad.provider.providerId : 'N/A'}</p>
+              <h2 className="text-lg font-semibold">Provider:</h2>
+              <p className="text-gray-700">{ad.provider?.fullName || 'N/A'}</p>
             </div>
 
             <div>
@@ -120,37 +120,18 @@ const AdDetailsPage = () => {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-lg font-semibold">Status:</h2>
-              <p
-                className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
-                  ad.isApproved
-                    ? 'text-green-600 bg-green-100 border border-green-300'
-                    : 'text-yellow-600 bg-yellow-100 border border-yellow-300'
-                }`}
-              >
-                {ad.isApproved ? 'Approved' : 'Pending'}
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold">Expired:</h2>
-              <p className="text-gray-700">{ad.isExpired ? 'Yes' : 'No'}</p>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold">Created At:</h2>
-              <p className="text-gray-700">
-                {ad.createdAt ? new Date(ad.createdAt).toLocaleString() : 'N/A'}
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold">Updated At:</h2>
-              <p className="text-gray-700">
-                {ad.updatedAt ? new Date(ad.updatedAt).toLocaleString() : 'N/A'}
-              </p>
-            </div>
+            {ad.provider?.storeInfo?.logo && (
+              <div>
+                <h2 className="text-lg font-semibold">Store Logo:</h2>
+                <Image
+                  src={ad.provider.storeInfo.logo}
+                  alt="Store Logo"
+                  width={100}
+                  height={100}
+                  className="rounded border mt-2"
+                />
+              </div>
+            )}
           </div>
         </ComponentCard>
       </div>
@@ -158,4 +139,4 @@ const AdDetailsPage = () => {
   );
 };
 
-export default AdDetailsPage;
+export default AdDetailPage;

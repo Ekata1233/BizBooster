@@ -10,7 +10,7 @@ import "@/models/Provider"
 const allowedOrigins = [
   'http://localhost:5173',
   'https://fetchtrue-service-page.vercel.app',
-    'https://api.fetchtrue.com',
+  'https://api.fetchtrue.com',
   '*', // ⚠️ Only if you want to allow all (use with caution!)
 ];
 
@@ -117,6 +117,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30 in milliseconds
+    const istTime = new Date(now.getTime() + istOffset);
+
     const checkout = new Checkout({
       user,
       service,
@@ -157,6 +161,8 @@ export async function POST(req: NextRequest) {
       paymentStatus,
       orderStatus,
       notes,
+      createdAt: istTime,
+      updatedAt: istTime,
     });
 
     console.log('Checkout before save:', checkout);

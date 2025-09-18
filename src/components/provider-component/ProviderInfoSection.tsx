@@ -2,12 +2,74 @@ import { Location } from '@/app/(admin)/provider-management/provider-details/[id
 import { Provider } from '@/context/ProviderContext';
 import Image from 'next/image'; // optional: move shared utils here
 import ComponentCard from '../common/ComponentCard';
+import { useEffect, useState } from 'react';
 
 interface Props {
     provider: Provider;
 }
 
+interface Module {
+    _id: string;
+    name: string;
+}
 const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
+    const [moduleName, setModuleName] = useState<string>('Loading...');
+    const [zoneName, setZoneName] = useState<string>('Loading...');
+
+
+    useEffect(() => {
+        const fetchModule = async () => {
+            if (!provider.storeInfo?.module) {
+                setModuleName('No Module Registered');
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://api.fetchtrue.com/api/modules/${provider.storeInfo.module}`);
+                const data = await res.json();
+                if (data.success && data.data?.name) {
+                    setModuleName(data.data.name);
+                } else {
+                    setModuleName('Module Not Found');
+                }
+            } catch (error) {
+                console.error('Error fetching module:', error);
+                setModuleName('Error fetching module');
+            }
+        };
+
+        const fetchZone = async () => {
+            if (!provider?.storeInfo?.zone) {
+                setZoneName("No Zone Registered");
+                return;
+            }
+
+            try {
+                const res = await fetch(
+                    `https://api.fetchtrue.com/api/zone/${provider.storeInfo.zone}`
+                );
+
+                console.log("data of the res : ", res);
+
+                const data = await res.json();
+
+                console.log("data of the zone : ", data);
+
+                if (data.success && data.data?.name) {
+                    setZoneName(data.data.name);
+                } else {
+                    setZoneName("Zone Not Found");
+                }
+            } catch (error) {
+                console.error("Error fetching zone:", error);
+                setZoneName("Error fetching zone"); // ✅ fixed
+            }
+        };
+
+        fetchModule();
+        fetchZone();
+    }, [provider.storeInfo?.module, provider?.storeInfo?.zone]);
+
     const renderImageArray = (images?: string[]) => {
         if (!images || images.length === 0) return <p className="text-gray-400 italic">No images</p>;
         return (
@@ -58,7 +120,15 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                             <p className="text-sm text-gray-500 whitespace-nowrap">Phone:</p>
                             <p className="font-medium">{provider.phoneNo || provider.storeInfo?.storePhone || '-'}</p>
                         </div>
-                       
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Module Name :</p>
+                            <p className="font-medium">{moduleName || 'No Any Moduel Registered'}</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Module Name :</p>
+                            <p className="font-medium">{zoneName || 'No Any Moduel Registered'}</p>
+                        </div>
                     </div>
                 </ComponentCard>
             </div>
@@ -90,7 +160,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Country:</p>
                                     <p className="font-medium">{provider.storeInfo?.country || '-'}</p>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Store Email:</p>
                                     <p className="font-medium">{provider.storeInfo?.storeEmail || '-'}</p>
@@ -99,12 +169,12 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Store Phone:</p>
                                     <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
                                     <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
                                 </div>
-                                
+
                             </div>
 
                         )}
