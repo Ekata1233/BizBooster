@@ -110,7 +110,6 @@ export async function GET(req: NextRequest) {
       .populate('provider')
       .lean() as unknown as Invoice;
 
-      console.log("invoice services", invoice);
 
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404, headers: corsHeaders });
