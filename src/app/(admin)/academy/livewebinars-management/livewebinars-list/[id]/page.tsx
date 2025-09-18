@@ -10,18 +10,12 @@ import { CiLink } from 'react-icons/ci'; // Assuming CiLink is imported from rea
 import { TrashBinIcon } from '@/icons'; // Assuming this is a custom SVG/React component for the trash bin
 import { useLiveWebinars } from '@/context/LiveWebinarContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'; // Assuming PageBreadcrumb exists
-
-// Modal and Form components (assuming these are styled consistently elsewhere or will be updated)
-// import { Modal } from '@/components/ui/modal';
-// import FileInput from '@/components/form/input/FileInput';
-// import Input from '@/components/form/input/InputField';
-// import Label from '@/components/form/Label';
 import axios from 'axios'; // Import axios for error handling type guard
 import Button from '@/components/ui/button/Button';
 
 
 type WebinarUser = {
-  user: { _id: string; fullName: string; email: string; mobileNumber: string };
+  user: { _id: string; userId: string; fullName: string; email: string; mobileNumber: string };
   status: boolean;
 };
 
@@ -37,8 +31,21 @@ type Webinar = {
   user: WebinarUser[];
 };
 
+type RawWebinarUser = {
+  user?: {
+    _id?: string;
+    userId?: string;
+    fullName?: string;
+    email?: string;
+    mobileNumber?: string;
+  };
+  userId?: string;   // Sometimes comes at root level
+  status: boolean;
+};
+
+
 const WebinarDetailPage: React.FC = () => {
-const params = useParams();
+  const params = useParams();
   const rawId = params?.id as string; // 👈 Type cast here
   const id = rawId ?? '';
   const router = useRouter();
@@ -75,8 +82,36 @@ const params = useParams();
           date: data.date,
           startTime: data.startTime,
           endTime: data.endTime,
-          user: (data.user || []) as WebinarUser[],
+          // user: (data.user || []) as WebinarUser[],
+          // user: (data.user || []).map((userEntry: any) => ({
+          //   user: {
+          //     _id: userEntry.user?._id,
+          //     userId: userEntry.userId ?? userEntry.user?.userId, // Add this line
+          //     fullName: userEntry.user?.fullName,
+          //     email: userEntry.user?.email,
+          //     mobileNumber: userEntry.user?.mobileNumber
+          //   },
+          //   status: userEntry.status
+          // })),
+          user: (data.user as RawWebinarUser[] || []).map((userEntry) => ({
+  user: {
+    _id: userEntry.user?._id ?? '',
+    userId: userEntry.userId ?? userEntry.user?.userId ?? '',
+    fullName: userEntry.user?.fullName ?? '',
+    email: userEntry.user?.email ?? '',
+    mobileNumber: userEntry.user?.mobileNumber ?? '',
+  },
+  status: userEntry.status,
+})),
+
         };
+
+        console.log("API raw webinar:", data);
+        console.log("Transformed webinar:", transformedWebinar);
+        transformedWebinar.user.forEach((u, i) => {
+          console.log(`User[${i}] _id:`, u.user?._id, " userId:", u.user?.userId);
+        });
+
 
         setWebinar(transformedWebinar);
         // Call calculateCountdown only if data is available
@@ -304,7 +339,7 @@ const params = useParams();
                 webinar.user.map((entry, idx) => (
                   <tr key={entry.user?._id || idx} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-4 py-3 whitespace-nowrap text-gray-700">{idx + 1}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-700">{entry.user?._id ?? 'N/A'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-700">{entry.user.userId}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-gray-700">{entry.user?.fullName ?? 'Unknown'}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-gray-700">{entry.user?.email ?? 'Unknown'}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-gray-700">{entry.user?.mobileNumber ?? 'Unknown'}</td>
@@ -360,7 +395,7 @@ const params = useParams();
         </div>
       </div>
 
-     
+
 
       <Link href="/academy/livewebinars-management/livewebinars-list" passHref>
 

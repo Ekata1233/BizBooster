@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing checkoutId parameter." },
-        { status: 400, headers: corsHeaders }
+        { status: 200, headers: corsHeaders }
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     if (!record) {
       return NextResponse.json(
         { success: false, message: "No record found for this checkoutId." },
-        { status: 404, headers: corsHeaders }
+        { status: 200, headers: corsHeaders }
       );
     }
 
