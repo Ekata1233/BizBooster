@@ -103,7 +103,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
         if (!cancelled && json?.success && Array.isArray(json?.team) && json.team.length > 0) {
           const mappedFromApi: TeamLeadData[] = json.team.map((member: any) => {
             const user = member?.user ?? {};
-
+            console.log("Team member from API:", member);
             let status: string = "NonGP";
             if (user.isDeleted) {
               status = "Deleted";
@@ -161,14 +161,14 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
       accessor: 'userDetails',
       render: (row: TeamLeadData) => (
         <div className="flex items-center gap-3">
-           <div className="w-10 h-10 overflow-hidden rounded-full">
-          <Image
-            src={row.userPhoto}
-            alt="user"
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
+          <div className="w-10 h-10 overflow-hidden rounded-full">
+            <Image
+              src={row.userPhoto}
+              alt="user"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
           </div>
           <div className="text-sm text-gray-700">
             <div className="font-semibold">{row.userName}</div>
@@ -225,7 +225,15 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     {
       header: 'My Earnings',
       accessor: 'myEarnings',
-      render: (row: TeamLeadData) => <div className="text-sm">{row.myEarnings}</div>,
+      render: (row: TeamLeadData) => (
+        <div className="flex flex-col text-sm">
+          <span>{row.myEarnings}</span>
+          {/* Add status note below earnings */}
+          {row.status === "GP" && (
+            <span className="text-xs text-green-600">(completed)</span>
+          )}
+        </div>
+      ),
     },
     {
       header: 'Lead',
@@ -233,18 +241,18 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
     },
     ...(isAction
       ? [
-          {
-            header: 'Action',
-            accessor: 'action',
-            render: (row: TeamLeadData) => (
-              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}`} passHref>
-                <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-                  <EyeIcon />
-                </button>
-              </Link>
-            ),
-          },
-        ]
+        {
+          header: 'Action',
+          accessor: 'action',
+          render: (row: TeamLeadData) => (
+            <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}`} passHref>
+              <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+                <EyeIcon />
+              </button>
+            </Link>
+          ),
+        },
+      ]
       : []),
   ];
 

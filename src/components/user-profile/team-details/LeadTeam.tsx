@@ -8,6 +8,7 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
 import img from '../../../../public/images/logo/user1.webp';
 import { useUserContext } from '@/context/UserContext';
+import { useParams } from 'next/navigation';
 
 interface TeamLeadData {
   id: string;
@@ -44,6 +45,13 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const { users: ctxUsers } = useUserContext() as unknown as { users: unknown };
   const [dataTeamLead, setDataTeamLead] = useState<TeamLeadData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myEarnings3, setMyEarnings3] = useState<number>(0);
+
+
+  const params = useParams();
+
+  const parentId = params?.id as string;
+  console.log("parent id : ", parentId)
 
   /** Safely coerce context users into AppUser[] */
   const users: AppUser[] = useMemo(() => {
@@ -98,7 +106,10 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
       setLoading(true);
       try {
         const res = await fetch(`/api/team-build/my-team/${userId}`);
+
         const json = await res.json();
+        console.log("mbere dfd f ; ", json)
+
 
         if (!cancelled && json?.success && Array.isArray(json?.team) && json.team.length > 0) {
           const mappedFromApi: TeamLeadData[] = json.team.map((member: any) => {
@@ -149,11 +160,47 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
       }
     };
 
+    const fetchMyEarnings = async () => {
+      try {
+        const res = await fetch(`/api/team-build/my-team/${parentId}`);
+        const json = await res.json();
+        console.log("my earnings data", json);
+
+        let earnings = 0;
+        const targetUserId = userId;
+
+        if (json?.success && Array.isArray(json?.team)) {
+          json.team.forEach((member: any) => {
+            if (member.user?._id === targetUserId) {
+              if (Array.isArray(member.team) && member.team.length > 0) {
+                earnings = member.team[0].totalEarningsFromShare_3 || 0;
+              }
+            }
+
+            member.team?.forEach((child: any) => {
+              if (child.user?._id === targetUserId) {
+                earnings = child.totalEarningsFromShare_3 || 0;
+              }
+            });
+          });
+        }
+
+        console.log("My Earnings level 3: ", earnings);
+
+        setMyEarnings3(earnings); // ✅ set state here
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+
+
     if (userId) fetchTeam();
+    if (parentId) fetchMyEarnings();
     return () => {
       cancelled = true;
     };
-  }, [userId, buildFromContext, users]);
+  }, [userId, buildFromContext, users, parentId]);
 
   const columnsTeamLead = [
     {
@@ -220,29 +267,34 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
         </div>
       ),
     },
-    {
-      header: 'My Earnings',
-      accessor: 'myEarnings',
-      render: (row: TeamLeadData) => <div className="text-sm">{row.myEarnings}</div>,
-    },
+   {
+  header: 'My Earnings',
+  accessor: 'myEarnings',
+  render: (row: TeamLeadData) => (
+    <div className="text-sm text-center">
+      <div>₹{myEarnings3.toLocaleString()}</div>
+      <div className="text-xs text-green-600 font-medium">(Completed)</div>
+    </div>
+  ),
+},
     {
       header: 'Lead',
       accessor: 'leadCount',
     },
     ...(isAction
       ? [
-          {
-            header: 'Action',
-            accessor: 'action',
-            render: (row: TeamLeadData) => (
-              <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}/subleads/${row.id}`} passHref>
-                <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
-                  <EyeIcon />
-                </button>
-              </Link>
-            ),
-          },
-        ]
+        {
+          header: 'Action',
+          accessor: 'action',
+          render: (row: TeamLeadData) => (
+            <Link href={`/customer-management/user/user-list/${userId}/leads/${row.id}/subleads/${row.id}`} passHref>
+              <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+                <EyeIcon />
+              </button>
+            </Link>
+          ),
+        },
+      ]
       : []),
   ];
 
