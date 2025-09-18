@@ -216,6 +216,20 @@ export async function DELETE(req: Request) {
 //   }
 // }
 
+
+interface IPopulatedUser {
+  _id: mongoose.Types.ObjectId | string;
+  userId: string;
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+}
+
+interface IUserEntry {
+  status: boolean;
+  user: IPopulatedUser | null;
+}
+
 export async function GET(req: Request) {
   await connectToDatabase();
 
@@ -234,9 +248,9 @@ export async function GET(req: Request) {
       .populate({
         path: "user.user",
         model: "User",
-        select: "fullName email mobileNumber",
+        select: "userId fullName email mobileNumber",
       })
-      .lean<ILiveWebinar | null>(); // Ensure type matches interface
+      .lean<ILiveWebinar | null>();
 
     if (!webinar) {
       return NextResponse.json(
@@ -245,14 +259,24 @@ export async function GET(req: Request) {
       );
     }
 
-    // Normalize user array to ensure proper structure
-    const normalizedUsers = webinar.user.map((entry) => ({
-      status: entry.status,
-      user:
-        entry.user && typeof entry.user === "object" && "_id" in entry.user
-          ? entry.user
-          : null,
-    }));
+    // Type-safe normalization
+    const normalizedUsers: IUserEntry[] = webinar.user.map((entry): IUserEntry => {
+      const u = entry.user as Partial<IPopulatedUser> | undefined;
+
+      return {
+        status: entry.status,
+        user:
+          u && "_id" in u && "userId" in u && "fullName" in u
+            ? {
+                _id: u._id as string,
+                userId: u.userId!,
+                fullName: u.fullName!,
+                email: u.email!,
+                mobileNumber: u.mobileNumber!,
+              }
+            : null,
+      };
+    });
 
     return NextResponse.json(
       { success: true, data: { ...webinar, user: normalizedUsers } },
