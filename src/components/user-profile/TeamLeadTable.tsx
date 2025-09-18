@@ -6,7 +6,6 @@ import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
-import img from '../../../public/images/logo/user1.png';
 import { useUserContext } from '@/context/UserContext';
 
 interface TeamLeadData {
@@ -76,7 +75,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
 
         return {
           id: member._id,
-          userPhoto: member.profilePhoto || img.src,
+          userPhoto: member.profilePhoto || '/images/logo/user1.png',
           userName: member.fullName,
           userEmail: member.email,
           userPhone: member.mobileNumber,
@@ -117,7 +116,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
 
             const base: TeamLeadData = {
               id: user._id,
-              userPhoto: user.profilePhoto || img.src,
+              userPhoto: member.profilePhoto || '/images/logo/user1.png',
               userName: user.fullName,
               userEmail: user.email,
               userPhone: user.mobileNumber,
