@@ -187,15 +187,15 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       userPhone: customer?.phone || "N/A",
       price: `₹${Number(checkout?.totalAmount ?? 0).toLocaleString()}`,
       commission: commissionWithStatus,
-      leadStatus: checkout?.isCompleted
-        ? "completed"
-        : checkout?.isAccepted
-          ? "Accepted"
-          : checkout?.orderStatus === "processing"
-            ? "ongoing"
-            : checkout?.isCanceled
-              ? "cancelled"
-              : "pending",
+      leadStatus:
+        checkout?.isCanceled
+          ? "cancelled" : checkout?.isCompleted
+            ? "completed"
+            : checkout?.isAccepted
+              ? "Accepted"
+              : checkout?.orderStatus === "processing"
+                ? "ongoing"
+                : "pending",
     };
   });
 
