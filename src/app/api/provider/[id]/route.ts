@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import '@/models/Service';
+import ProviderWallet from "@/models/ProviderWallet";
+import Checkout from "@/models/Checkout";
 
 const allowedOrigins = [
   'http://localhost:3001',
@@ -34,7 +36,6 @@ export async function OPTIONS(req: NextRequest) {
 // ─── GET /api/provider/:id ─────────────────────────────────────────
 export async function GET(req: NextRequest) {
   await connectToDatabase();
-
   const origin = req.headers.get("origin");
   const id = req.nextUrl.pathname.split("/").pop();
 
@@ -45,8 +46,12 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const provider = await Provider.findById(id).populate('subscribedServices', 'serviceName price discountedPrice');
-  // .populate('subscribedServices', 'serviceName price discountedPrice');
+  // Fetch provider
+  const provider = await Provider.findById(id).populate(
+    "subscribedServices",
+    "serviceName price discountedPrice"
+  );
+
   if (!provider) {
     return NextResponse.json(
       { success: false, message: "Provider not found." },
@@ -54,7 +59,23 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
+  // Fetch provider wallet
+  const wallet = await ProviderWallet.findOne({ providerId: id });
+
+  // Count completed checkouts
+  const completedCheckoutsCount = await Checkout.countDocuments({
+    provider: id,
+    isCompleted: true,
+  });
+
+  // Include wallet totalCredits and completed checkouts count
+  const response = {
+    ...provider.toObject(),
+    totalCredits: wallet?.totalCredits || 0,
+    completedCheckouts: completedCheckoutsCount,
+  };
+
+  return NextResponse.json(response, { status: 200, headers: getCorsHeaders(origin) });
 }
 
 // ─── PUT /api/provider/:id ─────────────────────────────────────────
