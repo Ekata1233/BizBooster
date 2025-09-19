@@ -312,7 +312,7 @@ const CertificateDetailPage: React.FC = () => {
   const id = params?.id as string;
   const router = useRouter();
   
-  const currentUserId = "689440c22f4284262b0c489e"; 
+  const currentUserId = "68b581020057b79c97c99e23"; 
 
   const { certificates, deleteCertificate, deleteTutorial: deleteVideoInCertificate } = useCertificate();
 
