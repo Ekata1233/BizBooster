@@ -48,7 +48,7 @@ const UserDetails = () => {
       <div className="space-y-6">
         <UserMetaCard
           userId={singleUser._id}
-          imageSrc="/images/logo/user1.webp"
+          imageSrc="/images/logo/user1.png"
           name={singleUser.fullName}
           role={singleUser.email}
           location="Amanora Chember, Hadapsar, Pune"

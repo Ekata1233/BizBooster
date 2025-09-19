@@ -13,6 +13,7 @@ import FiveXGuarantee from '@/components/user-profile/FiveXGuarantee';
 import HelpSupport from '@/components/user-profile/HelpSupport';
 import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
+import Image from 'next/image';
 
 const UserDetails = () => {
   const {
@@ -61,8 +62,8 @@ const UserDetails = () => {
     <div>
       <PageBreadcrumb pageTitle="User Details" />
       <div className="space-y-6">
-        <UserMetaCard
-  imageSrc={singleUser?.profilePhoto || "/images/logo/user1.webp"} 
+    <UserMetaCard
+  imageSrc={singleUser?.profilePhoto || "/images/logo/user1.png"}
   name={singleUser.fullName}
   role={singleUser.email}
   location={
@@ -75,6 +76,7 @@ const UserDetails = () => {
   isToggleButton={true}
   franchiseId={singleUser.userId}
 />
+
 
         {/* Tabs */}
         <div className="flex gap-2 pt-2">

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { EyeIcon } from '@/icons';
-import img from '../../../../public/images/logo/user1.webp';
 import { useUserContext } from '@/context/UserContext';
 import { useParams } from 'next/navigation';
 
@@ -47,6 +46,7 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const [loading, setLoading] = useState(true);
   const [myEarnings3, setMyEarnings3] = useState<number>(0);
 
+const fallbackUserImg = "/images/logo/user1.png"; 
 
   const params = useParams();
 
@@ -84,7 +84,7 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
 
         return {
           id: member._id,
-          userPhoto: member.profilePhoto || img.src,
+         userPhoto: member.profilePhoto || fallbackUserImg,
           userName: member.fullName,
           userEmail: member.email,
           userPhone: member.mobileNumber,
@@ -128,7 +128,7 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
 
             const base: TeamLeadData = {
               id: user._id,
-              userPhoto: user.profilePhoto || img.src,
+              userPhoto: user.profilePhoto || fallbackUserImg,
               userName: user.fullName,
               userEmail: user.email,
               userPhone: user.mobileNumber,
