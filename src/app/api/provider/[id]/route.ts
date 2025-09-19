@@ -10,7 +10,7 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://biz-booster.vercel.app',
   'http://localhost:3000',
-    'https://api.fetchtrue.com',
+  'https://api.fetchtrue.com',
   'https://biz-booster-provider-panel.vercel.app' // ✅ ADD THIS LINE
 ];
 function getCorsHeaders(origin: string | null) {
@@ -94,7 +94,11 @@ export async function PUT(req: NextRequest) {
 
   const updates = await req.json();
   console.log("provider data for the update : ", updates)
-  const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
+  const provider = await Provider.findByIdAndUpdate(
+    id,
+    { $set: updates }, // ✅ ensures only provided fields are updated
+    { new: true, runValidators: true }
+  );
 
   if (!provider) {
     return NextResponse.json(
