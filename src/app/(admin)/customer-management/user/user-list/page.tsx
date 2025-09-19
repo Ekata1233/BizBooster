@@ -246,7 +246,7 @@ const UserList = () => {
                     })
                 );
 
-                setFilteredUsers(mapped);
+                setFilteredUsers(mapped.reverse());
                 setMessage('');
             }
         } catch (error) {

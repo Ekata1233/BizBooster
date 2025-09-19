@@ -16,6 +16,8 @@ interface CommissionData {
   checkoutId: string;
   share_1: number;
   share_2: number;
+    share_3: number;
+
 }
 
 const columnsSelfLead = [
@@ -82,7 +84,7 @@ const columnsSelfLead = [
   },
 ];
 
-const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
+const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
@@ -122,12 +124,13 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
                 checkoutId: checkout._id,
                 share_1: json.data.share_1 ?? 0,
                 share_2: json.data.share_2 ?? 0,
+                share_3 : json.data.share_3 ?? 0 , 
               });
             } else {
-              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0 });
+              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0 });
             }
           } catch (err) {
-            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0 });
+            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0 });
           }
         })
       );
@@ -162,7 +165,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       (c) => c.checkoutId === checkout._id
     );
     const myCommission = commissionEntry
-      ? `₹${commissionEntry.share_2.toLocaleString()}`
+      ? `₹${commissionEntry.share_3.toLocaleString()}`
       : "₹0";
 
     let commissionWithStatus: React.ReactNode = (
@@ -207,4 +210,4 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   );
 };
 
-export default SelfLeadTable;
+export default SelfLeadShare3;

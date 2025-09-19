@@ -6,12 +6,7 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { useService } from '@/context/ServiceContext';
 import { useSubscribe } from '@/context/SubscribeContext';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
-import Button from '@/components/ui/button/Button';
-import { Modal } from '@/components/ui/modal';
-import { useModal } from '@/hooks/useModal';
-import Label from '@/components/form/Label';
-import Input from '@/components/form/input/InputField';
+import { EyeIcon, TrashBinIcon } from '@/icons';
 import { useRouter } from 'next/navigation';
 
 /* -------------------- types -------------------- */
@@ -30,7 +25,7 @@ interface TableData {
 
 /* -------------------- component -------------------- */
 const SubscribeRequestPage = () => {
-    const { services,fetchServices } = useService();
+    const { services, fetchServices } = useService();
     const { approveService, deleteService } = useSubscribe();
     const [tableData, setTableData] = useState<TableData[]>([]);
     const router = useRouter();
@@ -142,7 +137,15 @@ const SubscribeRequestPage = () => {
                         <EyeIcon />
                     </button>
                     <button
-                        onClick={() => handleDelete(row.id)}
+                        // onClick={() => handleDelete(row.id)}
+                        onClick={() => {
+                            const confirmDelete = window.confirm(
+                                "Are you sure you want to reject this service?"
+                            );
+                            if (confirmDelete) {
+                                handleDelete(row.id);
+                            }
+                        }}
                         className="text-red-500 border border-red-500 rounded-md px-3 py-2 hover:bg-red-500 hover:text-white"
                     >
                         <TrashBinIcon />

@@ -118,12 +118,12 @@ const UserDetails = () => {
             />
           )} */}
 
-          {activeTab === 'teamLead' && (
-            <TeamLeadTable userId={userId || ' '} isAction={true} />
-          )}
-
           {activeTab === 'selfLead' && (
             <SelfLeadTable userId={userId || ' '} isAction={true} />
+          )}
+
+           {activeTab === 'teamLead' && (
+            <TeamLeadTable userId={userId || ' '} isAction={true} />
           )}
 
           {activeTab === 'wallet' && <UserWallet userId={userId || ' '} />}
