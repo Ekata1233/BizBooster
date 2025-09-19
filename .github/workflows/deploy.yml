@@ -34,6 +34,7 @@ jobs:
             git pull origin main
             npm install --legacy-peer-deps
             npm run build
+            sudo systemctl restart nginx
             pm2 restart fetch-true || pm2 start npm --name "fetch-true" -- start
 
 
