@@ -4,7 +4,6 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import Profile from '../../../public/images/logo/user1.png'
 import { useRouter } from "next/navigation";
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,11 +47,11 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <Image
+            <Image
+            src="/images/logo/user1.png"   // ✅ use public path, not import
+            alt="User"
             width={44}
             height={44}
-            src={Profile}
-            alt="User"
           />
         </span>
 
