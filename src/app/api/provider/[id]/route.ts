@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
 }
 
 // ─── PUT /api/provider/:id ─────────────────────────────────────────
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   await connectToDatabase();
 
   const origin = req.headers.get("origin");
