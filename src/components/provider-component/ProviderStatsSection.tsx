@@ -1,9 +1,10 @@
 import { UserIcon, CalenderIcon, DollarLineIcon, BoxCubeIcon, ArrowUpIcon } from '@/icons';
 import StatCard from '../common/StatCard';
 import ComponentCard from '../common/ComponentCard';
-import { Provider } from '@/context/ProviderContext';
+import { Provider, useProvider } from '@/context/ProviderContext'; // ⬅️ import hook
 import { useCheckout } from '@/context/CheckoutContext';
 import { useServiceMan } from '@/context/ServiceManContext';
+import { useEffect } from 'react';
 
 type Props = {
   provider: Provider;
@@ -14,6 +15,17 @@ const ProviderStatsSection = ({ provider }: Props) => {
 
   const { checkouts = [], loading: checkoutLoading, error: checkoutError } = useCheckout();
   const { serviceMen = [], loading: serviceManLoading, error: serviceManError } = useServiceMan();
+
+  const { wallet, fetchWalletByProvider } = useProvider(); // ⬅️ access wallet & fetch function
+
+  // Fetch wallet whenever provider changes
+  useEffect(() => {
+    if (provider?._id) {
+      fetchWalletByProvider(provider._id);
+    }
+  }, [provider?._id]);
+
+  console.log("Wallet data for provider:", wallet); // ⬅️ now you will see wallet in console
 
   const subscribedServicesCount = provider?.subscribedServices?.length || 0;
 
@@ -56,19 +68,18 @@ const ProviderStatsSection = ({ provider }: Props) => {
             gradient="from-red-100 to-red-200"
             textColor="text-red-800"
           />
-          <StatCard
-            title="Total Earning"
-            value="0" // Replace with actual earnings when available
-            icon={BoxCubeIcon}
-            badgeColor="success"
-            badgeValue="0.00%"
-            badgeIcon={ArrowUpIcon}
-            gradient="from-purple-100 to-purple-200"
-            textColor="text-purple-800"
-          />
+         <StatCard
+  title="Total Earning"
+  value={wallet?.totalCredits?.toFixed(2).toString() || "0"} // ✅ show totalEarning
+  icon={BoxCubeIcon}
+  badgeColor="success"
+  badgeValue="0.00%"
+  badgeIcon={ArrowUpIcon}
+  gradient="from-purple-100 to-purple-200"
+  textColor="text-purple-800"
+/>
         </div>
 
-        {/* optional: show a subtle loading indicator below cards */}
         {(checkoutLoading || serviceManLoading) && (
           <p className="text-sm text-gray-400 mt-2">Updating stats...</p>
         )}

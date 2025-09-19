@@ -227,7 +227,7 @@ const UserList = () => {
                         return {
                             id: user._id,
                             user: {
-                                image: user.profilePhoto || "/images/logo/user1.webp",
+                                image: user.profilePhoto || "/images/logo/user1.png",
                                 fullName: user.fullName,
                             },
                             email: user.email,
