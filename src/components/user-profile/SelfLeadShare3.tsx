@@ -16,7 +16,7 @@ interface CommissionData {
   checkoutId: string;
   share_1: number;
   share_2: number;
-    share_3: number;
+  share_3: number;
 
 }
 
@@ -124,7 +124,7 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
                 checkoutId: checkout._id,
                 share_1: json.data.share_1 ?? 0,
                 share_2: json.data.share_2 ?? 0,
-                share_3 : json.data.share_3 ?? 0 , 
+                share_3: json.data.share_3 ?? 0,
               });
             } else {
               results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0 });
@@ -190,18 +190,17 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
       userPhone: customer?.phone || "N/A",
       price: `₹${Number(checkout?.totalAmount ?? 0).toLocaleString()}`,
       commission: commissionWithStatus,
-      leadStatus: checkout?.isCompleted
-        ? "completed"
-        : checkout?.isAccepted
-          ? "Accepted"
-          : checkout?.orderStatus === "processing"
-            ? "ongoing"
-            : checkout?.isCanceled
-              ? "cancelled"
-              : "pending",
+      leadStatus:
+        checkout?.isCanceled
+          ? "cancelled" : checkout?.isCompleted
+            ? "completed"
+            : checkout?.isAccepted
+              ? "Accepted"
+              : checkout?.orderStatus === "processing"
+                ? "ongoing"
+                : "pending",
     };
   });
-
 
   return (
     <ComponentCard title="Self Lead Table">

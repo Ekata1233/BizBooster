@@ -19,6 +19,8 @@ import UserStatCard from "@/components/user-component/UserStatCard";
 import * as XLSX from "xlsx";   // ✅ for Excel download
 import { FaFileDownload } from "react-icons/fa";
 import Pagination from "@/components/tables/Pagination";
+import user1 from "@/public/images/logo/user1.png";
+
 
 export interface User {
     _id: string;

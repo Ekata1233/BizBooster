@@ -56,7 +56,7 @@ const ProviderSubscribedServices: React.FC<Props> = ({ data }) => {
 
     return (
         <div className="">
-            <ComponentCard title="Statestics">
+            <ComponentCard title="Subscribed Services">
                 <BasicTableOne columns={columns} data={data} />
             </ComponentCard>
         </div>

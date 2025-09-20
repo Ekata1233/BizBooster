@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 import LeadTeam from '@/components/user-profile/team-details/LeadTeam';
+import SelfLeadShare2 from '@/components/user-profile/SelfLeadShare2';
 
 const UserDetails = () => {
   const {
@@ -78,7 +79,7 @@ const UserDetails = () => {
         {/* Tab content */}
         <div className="space-y-6 pt-4">
           {activeTab === 'selfLead' && (
-            <SelfLeadTable
+            <SelfLeadShare2
               userId={leadUserId || ' '}
               isAction={true}
             />
