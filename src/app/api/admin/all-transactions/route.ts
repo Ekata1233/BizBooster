@@ -116,7 +116,7 @@ export async function GET() {
       status: txn.status,
       credit: txn.type === 'credit' ? txn.amount : 0,
       debit: txn.type === 'debit' ? txn.amount : 0,
-      balance: '-', // no balanceAfterTransaction stored in provider wallet
+      balance: txn.balanceAfterTransaction ?? '-',
     }))
   );
 

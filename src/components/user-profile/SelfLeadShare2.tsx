@@ -82,7 +82,7 @@ const columnsSelfLead = [
   },
 ];
 
-const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
+const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
   const { fetchCheckoutByUser, checkouts, loading, error } = useCheckout();
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
 
@@ -162,7 +162,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       (c) => c.checkoutId === checkout._id
     );
     const myCommission = commissionEntry
-      ? `₹${commissionEntry.share_1.toLocaleString()}`
+      ? `₹${commissionEntry.share_2.toLocaleString()}`
       : "₹0";
 
     let commissionWithStatus: React.ReactNode = (
@@ -207,4 +207,4 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   );
 };
 
-export default SelfLeadTable;
+export default SelfLeadShare2;

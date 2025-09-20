@@ -3,70 +3,39 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
+import { useAdminEarnings } from "@/context/AdminEarningsContext";
 import { useCheckout } from "@/context/CheckoutContext";
 import { useUserWallet } from "@/context/WalletContext";
 import React, { useEffect, useMemo, useState } from "react";
-import { FaMoneyBillWave, FaWallet } from "react-icons/fa";
-import { FaFileDownload } from "react-icons/fa";
+import { FaMoneyBillWave, FaWallet, FaFileDownload } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
 const Page = () => {
     const userId = "444c44d4444be444d4444444";
-    const { wallet, loading, error, fetchWalletByUser } = useUserWallet();
+    const { wallet, fetchWalletByUser } = useUserWallet();
     const { checkouts } = useCheckout();
+    const { summary,fetchSummary } = useAdminEarnings(); // ✅ get summary from context
 
     const [activeTab, setActiveTab] = useState<
         "all" | "credit" | "debit" | "package" | "lead" | "deposit"
     >("all");
     const [currentPage, setCurrentPage] = useState(1);
-
     const rowsPerPage = 10;
-
-    console.log("All Checkouts : ", checkouts);
-
-    const leadEarningsTransactions =
-        wallet?.transactions?.filter(
-            (txn) => txn.description?.trim() === "Team Revenue - Admin"
-        ) || [];
-
-    console.log("Lead Earnings Transactions:", leadEarningsTransactions);
 
     useEffect(() => {
         if (userId) {
             fetchWalletByUser(userId);
         }
     }, [userId]);
-    useEffect(() => {
-  if (checkouts && wallet?.transactions) {
-    // ✅ Match wallet.leadId ↔ checkout.bookingId
-    const matchedCheckouts = checkouts.filter((checkout) =>
-      wallet.transactions.some(
-        (txn) =>
-          txn.leadId &&
-          txn.leadId.trim() === checkout.bookingId.trim() &&
-          txn.description?.trim() === "Team Revenue - Admin"
-      )
-    );
 
-    // ✅ Map to only required fields
-    const checkoutDetails = matchedCheckouts.map((c) => ({
-      bookingId: c.bookingId,
-      platformFeePrice: c.platformFeePrice,
-      assurityChargesPrice: c.assurityChargesPrice,
-      totalExtraFee: (c.platformFeePrice || 0) + (c.assurityChargesPrice || 0),
-      user: c.user?.fullName || "N/A",
-      service: c.service?.serviceName || "N/A",
-      createdAt: c.createdAt,
-    }));
-
-    console.log("✅ Matched Checkouts Data:", checkoutDetails);
-  }
-}, [checkouts, wallet]);
+      useEffect(() => {
+        fetchSummary();
+      }, []);
 
     const isWalletAvailable =
         !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
 
-    // ✅ Summary Cards
+    // ✅ Summary Cards with extraFees from context
     const summaryCards = useMemo(() => {
         const packageEarningsTotal =
             wallet?.transactions
@@ -85,27 +54,6 @@ const Page = () => {
                 ?.filter((txn) => txn.description?.trim() === "Deposit")
                 .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
-        // ✅ NEW: Calculate Extra Fee only for matching Lead ↔ Checkout
-        const matchingExtraFee =
-            wallet?.transactions
-                ?.filter(
-                    (txn) =>
-                        txn.leadId && txn.description?.trim() === "Team Revenue - Admin"
-                )
-                ?.reduce((acc, txn) => {
-                    const relatedCheckout = checkouts?.find(
-                        (c) => c.bookingId === txn.leadId
-                    );
-                    if (relatedCheckout) {
-                        return (
-                            acc +
-                            (relatedCheckout.platformFeePrice || 0) +
-                            (relatedCheckout.assurityChargesPrice || 0)
-                        );
-                    }
-                    return acc;
-                }, 0) || 0;
-
         return [
             {
                 title: "Balance",
@@ -123,7 +71,7 @@ const Page = () => {
             },
             {
                 title: "Extra Fee",
-                amount: `₹${matchingExtraFee.toLocaleString()}`,
+                amount: `₹${summary?.extraFees?.toLocaleString() || 0}`, // ✅ from context
                 icon: <FaMoneyBillWave />,
                 gradient: "from-red-100 to-red-200",
                 textColor: "text-red-800",
@@ -150,9 +98,9 @@ const Page = () => {
                 textColor: "text-teal-800",
             },
         ];
-    }, [wallet, checkouts]);
+    }, [wallet, summary]); // ✅ dependency updated
 
-    // ✅ Filter + reverse transactions
+    // Filter + reverse transactions
     const filteredTransactions = useMemo(() => {
         if (!wallet?.transactions) return [];
 
@@ -176,7 +124,6 @@ const Page = () => {
             );
         }
 
-        // ✅ Reverse order so newest is first
         return [...txns].reverse();
     }, [wallet, activeTab]);
 
@@ -186,7 +133,7 @@ const Page = () => {
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = filteredTransactions.slice(indexOfFirstRow, indexOfLastRow);
 
-    // ✅ Table columns (with Serial No)
+    // Table columns
     const columnsWallet = [
         { header: "S.No", accessor: "serial" },
         { header: "Type", accessor: "type" },
@@ -199,12 +146,8 @@ const Page = () => {
         { header: "Date", accessor: "createdAt" },
     ];
 
-    // ✅ Table data with serial numbers in reverse
     const transactionData = currentRows.map((txn, index) => {
-        // Calculate global index
         const globalIndex = (currentPage - 1) * rowsPerPage + index;
-
-        // ✅ Serial number reversed
         const serial = filteredTransactions.length - globalIndex;
 
         return {
@@ -216,13 +159,10 @@ const Page = () => {
             commissionFrom: txn.commissionFrom || "-",
             method: txn.method || "-",
             status: txn.status || "-",
-            createdAt: txn.createdAt
-                ? new Date(txn.createdAt).toLocaleString()
-                : "-",
+            createdAt: txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-",
         };
     });
 
-    // ✅ Excel download
     const handleDownload = () => {
         if (!wallet?.transactions) return;
 
@@ -254,9 +194,7 @@ const Page = () => {
                             key={card.title}
                             className={`bg-gradient-to-r ${card.gradient} ${card.textColor} p-6 rounded-xl shadow flex justify-between items-center`}
                         >
-                            <div className="text-3xl bg-white/40 p-3 rounded-full">
-                                {card.icon}
-                            </div>
+                            <div className="text-3xl bg-white/40 p-3 rounded-full">{card.icon}</div>
                             <div className="text-right">
                                 <div className="text-sm font-medium">{card.title}</div>
                                 <div className="text-lg font-bold">{card.amount}</div>
@@ -270,8 +208,7 @@ const Page = () => {
                         <FaWallet className="text-5xl mb-4 text-blue-400" />
                         <h2 className="text-xl font-semibold mb-2">No Wallet Found</h2>
                         <p className="text-sm max-w-md">
-                            This wallet doesn't have any transactions yet. Once transactions
-                            are made, they will appear here.
+                            This wallet doesn't have any transactions yet. Once transactions are made, they will appear here.
                         </p>
                     </div>
                 ) : (
@@ -283,21 +220,11 @@ const Page = () => {
                                     <li
                                         key={tab}
                                         onClick={() => {
-                                            setActiveTab(
-                                                tab as
-                                                    | "all"
-                                                    | "credit"
-                                                    | "debit"
-                                                    | "package"
-                                                    | "lead"
-                                                    | "deposit"
-                                            );
+                                            setActiveTab(tab as any);
                                             setCurrentPage(1);
                                         }}
                                         className={`cursor-pointer px-4 py-2 ${
-                                            activeTab === tab
-                                                ? "border-b-2 border-blue-600 text-blue-600"
-                                                : ""
+                                            activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
                                         }`}
                                     >
                                         {tab === "package"
@@ -312,20 +239,15 @@ const Page = () => {
                                                 ? wallet.transactions.length
                                                 : tab === "package"
                                                 ? wallet.transactions.filter(
-                                                      (txn) =>
-                                                          txn.description ===
-                                                          "Team Build Commission - Admin"
+                                                      (txn) => txn.description === "Team Build Commission - Admin"
                                                   ).length
                                                 : tab === "lead"
                                                 ? wallet.transactions.filter(
-                                                      (txn) =>
-                                                          txn.description ===
-                                                          "Team Revenue - Admin"
+                                                      (txn) => txn.description === "Team Revenue - Admin"
                                                   ).length
                                                 : tab === "deposit"
                                                 ? wallet.transactions.filter(
-                                                      (txn) =>
-                                                          txn.description === "Deposit"
+                                                      (txn) => txn.description === "Deposit"
                                                   ).length
                                                 : wallet.transactions.filter(
                                                       (txn) => txn.type === tab
@@ -348,20 +270,14 @@ const Page = () => {
                         {filteredTransactions.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500">
                                 <FaMoneyBillWave className="text-5xl mb-4 text-blue-400" />
-                                <h2 className="text-xl font-semibold mb-2">
-                                    No Transactions Found
-                                </h2>
+                                <h2 className="text-xl font-semibold mb-2">No Transactions Found</h2>
                                 <p className="text-sm max-w-md">
-                                    This wallet doesn't have any transactions yet. Once
-                                    transactions are made, they will appear here.
+                                    This wallet doesn't have any transactions yet. Once transactions are made, they will appear here.
                                 </p>
                             </div>
                         ) : (
                             <>
-                                <BasicTableOne
-                                    columns={columnsWallet}
-                                    data={transactionData}
-                                />
+                                <BasicTableOne columns={columnsWallet} data={transactionData} />
                                 <div className="flex justify-center mt-4">
                                     <Pagination
                                         currentPage={currentPage}

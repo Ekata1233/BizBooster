@@ -61,100 +61,102 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredTransactions.slice(indexOfFirstRow, indexOfLastRow);
 
- // ✅ Columns definition with width control
-const columns = [
-  {
-    header: 'Date',
-    accessor: 'date',
-    className: "w-32", // fixed width
-    render: (row: Transaction) => {
-      const dateObj = new Date(row.date);
-      const date = dateObj.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      });
-      const time = dateObj.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
+  // ✅ Columns definition with width control
+  const columns = [
+    {
+      header: 'Date',
+      accessor: 'date',
+      className: "w-32", // fixed width
+      render: (row: Transaction) => {
+        const dateObj = new Date(row.date);
+        const date = dateObj.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        });
+        const time = dateObj.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
 
-      return (
-        <div className="flex flex-col text-sm leading-snug">
-          <span>{date}</span>
-          <span className="text-gray-500">{time}</span>
-        </div>
-      );
+        return (
+          <div className="flex flex-col text-sm leading-snug">
+            <span>{date}</span>
+            <span className="text-gray-500">{time}</span>
+          </div>
+        );
+      },
     },
-  },
-  {
-    header: 'Transaction ID',
-    accessor: 'transactionId',
-    className: "w-40 truncate", // reduced width + ellipsis
-    render: (row: Transaction) => (
-      <span className="block truncate max-w-[150px]">{row.transactionId}</span>
-    ),
-  },
-  { header: 'To', accessor: 'to', className: "w-32 truncate" },
-  { header: 'Wallet', accessor: 'walletType', className: "w-28" },
-  // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
-  { header: 'Method', accessor: 'method', className: "w-28" },
-  {
-    header: 'Type',
-    accessor: 'type',
-    className: "w-24",
-    render: (row: Transaction) => (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold 
+    {
+      header: 'Transaction ID',
+      accessor: 'transactionId',
+      className: "w-40 truncate", // reduced width + ellipsis
+      render: (row: Transaction) => (
+        <span className="block truncate max-w-[150px]">{row.transactionId}</span>
+      ),
+    },
+    { header: 'To', accessor: 'to', className: "w-32 truncate" },
+    { header: 'Wallet', accessor: 'walletType', className: "w-28" },
+    // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
+    { header: 'Method', accessor: 'method', className: "w-28" },
+    {
+      header: 'Type',
+      accessor: 'type',
+      className: "w-24",
+      render: (row: Transaction) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold 
           ${row.type === 'credit' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-      >
-        {row.type}
-      </span>
-    ),
-  },
-  {
-    header: 'Credit',
-    accessor: 'credit',
-    className: "w-28",
-    render: (row: Transaction) => `₹${row.credit || '-'}`
-  },
-  {
-    header: 'Debit',
-    accessor: 'debit',
-    className: "w-28",
-    render: (row: Transaction) => `₹${row.debit || '-'}`
-  },
-  {
-    header: 'Balance',
-    accessor: 'balance',
-    className: "w-32",
-    render: (row: Transaction) =>
-      row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`
-  },
- {
-  header: 'Status',
-  accessor: 'status',
-  className: "w-28",
+        >
+          {row.type}
+        </span>
+      ),
+    },
+    {
+      header: 'Credit',
+      accessor: 'credit',
+      className: "w-28",
+      render: (row: Transaction) => `₹${row.credit || '-'}`
+    },
+    {
+      header: 'Debit',
+      accessor: 'debit',
+      className: "w-28",
+      render: (row: Transaction) => `₹${row.debit || '-'}`
+    },
+   {
+  header: 'Balance',
+  accessor: 'balance',
+  className: "w-32",
   render: (row: Transaction) => {
-    let statusClass = '';
-    if (row.status === 'success') {
-      statusClass = 'bg-green-100 text-green-700';
-    } else if (row.status === 'failed') {
-      statusClass = 'bg-red-100 text-red-700';
-    } else {
-      statusClass = 'bg-yellow-100 text-yellow-700'; // for other statuses like 'pending'
+    console.log("Row data of provider:", row); // 👈 log the whole row
+    return row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`;
+  }
+},
+    {
+      header: 'Status',
+      accessor: 'status',
+      className: "w-28",
+      render: (row: Transaction) => {
+        let statusClass = '';
+        if (row.status === 'success') {
+          statusClass = 'bg-green-100 text-green-700';
+        } else if (row.status === 'failed') {
+          statusClass = 'bg-red-100 text-red-700';
+        } else {
+          statusClass = 'bg-yellow-100 text-yellow-700'; // for other statuses like 'pending'
+        }
+
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`}>
+            {row.status}
+          </span>
+        );
+      },
     }
 
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`}>
-        {row.status}
-      </span>
-    );
-  },
-}
-
-];
+  ];
 
 
   // ✅ Excel download function
@@ -190,14 +192,13 @@ const columns = [
               <li
                 key={tab.key}
                 onClick={() => {
-                  setCurrentPage(1); 
+                  setCurrentPage(1);
                   setActiveTab(tab.key);
                 }}
-                className={`cursor-pointer px-4 py-2 ${
-                  activeTab === tab.key
+                className={`cursor-pointer px-4 py-2 ${activeTab === tab.key
                     ? 'border-b-2 border-blue-600 text-blue-600'
                     : ''
-                }`}
+                  }`}
               >
                 {tab.label}
                 <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">

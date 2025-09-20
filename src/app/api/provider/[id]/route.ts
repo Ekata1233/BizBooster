@@ -15,10 +15,10 @@ const allowedOrigins = [
 ];
 function getCorsHeaders(origin: string | null) {
   const headers: Record<string, string> = {
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true",
-    "Referrer-Policy": "no-referrer" 
+    "Referrer-Policy": "no-referrer" // 👈 added here
   };
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -27,6 +27,7 @@ function getCorsHeaders(origin: string | null) {
 
   return headers;
 }
+
 
 // ─── CORS Pre-flight ───────────────────────────────────────────────
 export async function OPTIONS(req: NextRequest) {
@@ -95,11 +96,7 @@ export async function PUT(req: NextRequest) {
 
   const updates = await req.json();
   console.log("provider data for the update : ", updates)
-  const provider = await Provider.findByIdAndUpdate(
-    id,
-    { $set: updates }, // ✅ ensures only provided fields are updated
-    { new: true, runValidators: true }
-  );
+  const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
 
   if (!provider) {
     return NextResponse.json(
