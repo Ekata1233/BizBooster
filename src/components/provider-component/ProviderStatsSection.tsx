@@ -36,7 +36,7 @@ const ProviderStatsSection = ({ provider }: Props) => {
 
   return (
     <div className="">
-      <ComponentCard title="Statistics">
+      <ComponentCard title="Statestics">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
           <StatCard
             title="Total Serviceman"
