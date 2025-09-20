@@ -126,7 +126,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-500 whitespace-nowrap">Module Name :</p>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Zone Name :</p>
                             <p className="font-medium">{zoneName || 'No Any Moduel Registered'}</p>
                         </div>
                     </div>
@@ -170,10 +170,10 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                {/* <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
                                     <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
-                                </div>
+                                </div> */}
 
                             </div>
 
