@@ -222,13 +222,35 @@ export async function POST(req: NextRequest) {
             actualFranchiseEarnings += level2Amount;
         }
 
+        // const todayDate = new Date().toISOString().split("T")[0];
+        // const totalRevenue = adminAmount + actualFranchiseEarnings;
+        // await AdminEarnings.findOneAndUpdate(
+        //     { date: todayDate },
+        //     {
+        //         $inc: {
+        //             adminCommission: adminAmount,
+        //             providerEarnings: 0,
+        //             totalRevenue: totalRevenue,
+        //             extraFees: 0,
+        //             pendingPayouts: 0,
+        //             franchiseEarnings: actualFranchiseEarnings,
+        //             refundsToUsers: 0,
+        //         },
+        //     },
+        //     { upsert: true, new: true, setDefaultsOnInsert: true }
+        // );
+
+        actualFranchiseEarnings = Math.round(actualFranchiseEarnings * 100) / 100;
+        const adminAmountRounded = Math.round(adminAmount * 100) / 100;
+        const totalRevenue = Math.round((adminAmountRounded + actualFranchiseEarnings) * 100) / 100;
+
         const todayDate = new Date().toISOString().split("T")[0];
-        const totalRevenue = adminAmount + actualFranchiseEarnings;
+
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
             {
                 $inc: {
-                    adminCommission: adminAmount,
+                    adminCommission: adminAmountRounded,
                     providerEarnings: 0,
                     totalRevenue: totalRevenue,
                     extraFees: 0,
@@ -239,7 +261,6 @@ export async function POST(req: NextRequest) {
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
-
         /* ---------------- ✅ New: Save package into Deposite ---------------- */
         await Deposite.create({
             // user: userC._id,

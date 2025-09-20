@@ -436,25 +436,23 @@ export async function POST(req: Request) {
             if (userB && !userB.isDeleted) actualFranchiseEarnings += extra_B_share;
             if (userA && !userA.isDeleted) actualFranchiseEarnings += extra_A_share;
         }
-        const franchiseEarningsTotal = actualFranchiseEarnings;
+        const franchiseEarningsTotal = Math.round(actualFranchiseEarnings * 100) / 100;
 
-        // const franchiseEarningsTotal =
-        //     C_share + B_share + A_share +
-        //     (extra_C_share || 0) + (extra_B_share || 0) + (extra_A_share || 0);
-        const extraFee = (checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0);
+        const extraFee = Math.round(
+            ((checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0)) * 100
+        ) / 100;
 
-        const totalRevenue =
-            adminCommissionTotal +
-            providerEarningsTotal +
-            franchiseEarningsTotal + extraFee;
+        const totalRevenue = Math.round(
+            (adminCommissionTotal + providerEarningsTotal + franchiseEarningsTotal + extraFee) * 100
+        ) / 100;
 
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
             {
                 $inc: {
-                    adminCommission: adminCommissionTotal,
-                    providerEarnings: providerEarningsTotal,
+                    adminCommission: Math.round(adminCommissionTotal * 100) / 100,
+                    providerEarnings: Math.round(providerEarningsTotal * 100) / 100,
                     totalRevenue: totalRevenue,
                     extraFees: extraFee,
                     pendingPayouts: 0,
