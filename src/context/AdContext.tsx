@@ -11,6 +11,7 @@ export interface AdType {
   description: string;
   fileUrl: string;
    isApproved: boolean; 
+   isExpired:boolean;
    category: {
     name: string;
   };

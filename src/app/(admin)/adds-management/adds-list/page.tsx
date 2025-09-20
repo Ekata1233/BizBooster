@@ -6,7 +6,6 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdContext } from '@/context/AdContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PencilIcon } from 'lucide-react';
 import { EyeIcon, TrashBinIcon } from '@/icons';
 import Input from '@/components/form/input/InputField';
 import BasicTableOne from '@/components/tables/BasicTableOne';
@@ -18,6 +17,7 @@ interface AdTableData {
     categoryName: string;
     serviceName: string;
     status: string;
+    activeStatus: string;
 }
 
 const AdListPage = () => {
@@ -30,8 +30,6 @@ const AdListPage = () => {
         fetchAds();
     }, []);
 
-    console.log("ads  : ", ads);
-
     useEffect(() => {
         const formatted: AdTableData[] = ads.map(ad => ({
             id: ad._id,
@@ -40,6 +38,7 @@ const AdListPage = () => {
             categoryName: ad.category?.name || 'N/A',
             serviceName: ad.service?.serviceName || 'N/A',
             status: ad.isApproved ? 'Approved' : 'Pending',
+            activeStatus: ad.isExpired ? 'Inactive' : 'Active', // ✅ corrected logic
         }));
 
         const filtered = formatted.filter(ad =>
@@ -52,7 +51,18 @@ const AdListPage = () => {
     const getFilteredByStatus = () => {
         if (activeTab === 'approved') return filteredAds.filter(ad => ad.status === 'Approved');
         if (activeTab === 'pending') return filteredAds.filter(ad => ad.status === 'Pending');
+        if (activeTab === 'active') return filteredAds.filter(ad => ad.activeStatus === 'Active');
+        if (activeTab === 'inactive') return filteredAds.filter(ad => ad.activeStatus === 'Inactive');
         return filteredAds;
+    };
+
+    // ✅ Counts for tabs
+    const counts = {
+        all: filteredAds.length,
+        approved: filteredAds.filter(ad => ad.status === 'Approved').length,
+        pending: filteredAds.filter(ad => ad.status === 'Pending').length,
+        active: filteredAds.filter(ad => ad.activeStatus === 'Active').length,
+        inactive: filteredAds.filter(ad => ad.activeStatus === 'Inactive').length,
     };
 
     const columns = [
@@ -97,16 +107,25 @@ const AdListPage = () => {
             },
         },
         {
+            header: 'Active Status',
+            accessor: 'activeStatus',
+            render: (row: AdTableData) => {
+                const isActive = row.activeStatus === 'Active';
+                const color = isActive ? 'green' : 'red';
+                return (
+                    <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
+                    >
+                        {row.activeStatus}
+                    </span>
+                );
+            },
+        },
+        {
             header: 'Action',
             accessor: 'action',
             render: (row: AdTableData) => (
                 <div className="flex gap-2">
-                    {/* <button
-                        onClick={() => alert(`Edit Ad ID: ${row.id}`)}
-                        className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-                    >
-                        <PencilIcon size={16} />
-                    </button> */}
                     <button
                         onClick={() => alert(`Delete Ad ID: ${row.id}`)}
                         className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
@@ -138,20 +157,31 @@ const AdListPage = () => {
                         />
                     </div>
 
+                    {/* ✅ Tabs with counts */}
                     <div className="border-b border-gray-200 mb-4">
                         <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                            {['all', 'approved', 'pending'].map((tab) => (
+                            {[
+                                { key: "all", label: "All", count: counts.all },
+                                { key: "approved", label: "Approved", count: counts.approved },
+                                { key: "pending", label: "Pending", count: counts.pending },
+                                { key: "active", label: "Active", count: counts.active },
+                                { key: "inactive", label: "Inactive", count: counts.inactive },
+                            ].map((tab) => (
                                 <li
-                                    key={tab}
-                                    className={`cursor-pointer px-4 py-2 capitalize ${activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                                    key={tab.key}
+                                    className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? "border-b-2 border-blue-600 text-blue-600" : ""
                                         }`}
-                                    onClick={() => setActiveTab(tab)}
+                                    onClick={() => setActiveTab(tab.key)}
                                 >
-                                    {tab}
+                                    {tab.label}
+                                    <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                        {tab.count}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
                     </div>
+
 
                     {getFilteredByStatus().length > 0 ? (
                         <BasicTableOne columns={columns} data={getFilteredByStatus()} />
