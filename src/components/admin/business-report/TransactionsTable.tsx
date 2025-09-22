@@ -31,6 +31,7 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
 
   const rowsPerPage = 10;
 
+  console.log("trnascation s : ", transactions)
   const tabButtons = [
     { key: 'all', label: 'All' },
     { key: 'credit', label: 'Credit' },
@@ -130,7 +131,6 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
   accessor: 'balance',
   className: "w-32",
   render: (row: Transaction) => {
-    console.log("Row data of provider:", row); // 👈 log the whole row
     return row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`;
   }
 },
