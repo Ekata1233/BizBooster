@@ -17,6 +17,7 @@ import axios from 'axios';
 import { useService } from '@/context/ServiceContext';
 import EditServiceModal from '@/components/service-component/EditServiceModal';
 import { useRouter } from 'next/navigation';
+import Pagination from '@/components/tables/Pagination';
 
 
 
@@ -122,12 +123,19 @@ const ServiceList = () => {
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+
 
   const router = useRouter();
 
-  const fetchFilteredServices = async () => {
+  const fetchFilteredServices = async (page: number = 1) => {
     try {
       const params = {
+        page,
+        limit: rowsPerPage,
         ...(searchQuery && { search: searchQuery }),
         ...(selectedCategory && { category: selectedCategory }),
         ...(selectedSubcategory && { subcategory: selectedSubcategory }),
@@ -135,14 +143,12 @@ const ServiceList = () => {
       };
 
       const response = await axios.get('/api/service', { params });
-
       const serviceData = response.data;
 
-      console.log("service data in frontend  : ", serviceData)
-
-      if (serviceData.data.length === 0) {
+      if (!serviceData.data || serviceData.data.length === 0) {
         setFilteredServices([]);
         setMessage(serviceData.message || 'No services found');
+        setTotalPages(0);
       } else {
         const mapped = serviceData.data.map((service: Service) => ({
           id: service._id,
@@ -165,32 +171,36 @@ const ServiceList = () => {
         }));
 
         setFilteredServices(mapped);
+        setTotalPages(serviceData.totalPages || 1);
         setMessage('');
       }
     } catch (error) {
       console.error('Error fetching services:', error);
       setFilteredServices([]);
       setMessage('Something went wrong while fetching services');
+      setTotalPages(0);
     }
   };
 
+
   useEffect(() => {
-    fetchFilteredServices();
-  }, [searchQuery, selectedCategory, selectedSubcategory, sort]);
+    fetchFilteredServices(currentPage);
+  }, [searchQuery, selectedCategory, selectedSubcategory, sort, currentPage]);
+
 
   const handleDelete = async (id: string) => {
-  const confirmDelete = window.confirm('Are you sure you want to delete this service?');
-  if (!confirmDelete) return;
+    const confirmDelete = window.confirm('Are you sure you want to delete this service?');
+    if (!confirmDelete) return;
 
-  try {
-    await deleteService(id);
-    alert('Service deleted successfully');
-    fetchFilteredServices();
-  } catch (error) {
-    const err = error as Error;
-    alert('Error deleting service: ' + err.message);
-  }
-};
+    try {
+      await deleteService(id);
+      alert('Service deleted successfully');
+      fetchFilteredServices();
+    } catch (error) {
+      const err = error as Error;
+      alert('Error deleting service: ' + err.message);
+    }
+  };
 
 
   const columns = [
@@ -307,6 +317,8 @@ const ServiceList = () => {
 
   };
 
+
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Service List" />
@@ -393,11 +405,27 @@ const ServiceList = () => {
             </ul>
           </div>
 
-          {message ? (
-            <p className="text-red-500 text-center my-4">{message}</p>
-          ) : (
-            <BasicTableOne columns={columns} data={filteredServices} />
-          )}
+          <div>
+            {message ? (
+              <p className="text-red-500 text-center my-4">{message}</p>
+            ) : (
+              <div>
+                <BasicTableOne columns={columns} data={filteredServices} />
+                {filteredServices.length > 0 && (
+                  <div className="flex justify-center mt-4">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalItems={totalPages * rowsPerPage} // totalItems for display
+                      totalPages={totalPages}
+                      onPageChange={(page) => setCurrentPage(page)}
+                    />
+                  </div>
+                )}
+
+              </div>
+            )}
+
+          </div>
         </ComponentCard>
       </div>
 

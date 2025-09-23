@@ -17,6 +17,7 @@ import Input from '@/components/form/input/InputField';
 import StatCard from '@/components/common/StatCard';
 import axios from 'axios';
 import { useService } from '@/context/ServiceContext';
+import Pagination from '@/components/tables/Pagination';
 
 interface BannerType {
   _id: string;
@@ -56,6 +57,9 @@ const Banner = () => {
   const { subcategories: subcategoryData } = useSubcategory();
   const { services: serviceData } = useService();
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
@@ -76,7 +80,9 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
+
   useEffect(() => {
+    setCurrentPage(1);
     fetchFilteredBanners();
   }, [searchQuery, selectedSubcategory, sort])
   const handleDelete = async (id: string) => {
@@ -208,9 +214,6 @@ const Banner = () => {
   }
 
 
-
-
-
   const columns = [
     {
       header: 'Page',
@@ -294,6 +297,12 @@ const Banner = () => {
     setSelectedSubcategory(value); // required to set the selected module
   };
 
+  const totalPages = Math.ceil(filteredBanner.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredBanner.slice(indexOfFirstRow, indexOfLastRow);
+
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Banners" />
@@ -371,10 +380,24 @@ const Banner = () => {
           {message ? (
             <p className="text-red-500 text-center my-4">{message}</p>
           ) : (
-            <BasicTableOne columns={columns} data={filteredBanner} />
+            <>
+              <BasicTableOne columns={columns} data={currentRows} />
+
+              {filteredBanner.length > 0 && (
+                <div className="flex justify-center mt-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredBanner.length}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                </div>
+              )}
+            </>
           )}
         </ComponentCard>
       </div>
+
 
       {/* Edit Modal */}
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} className="max-w-3xl">
