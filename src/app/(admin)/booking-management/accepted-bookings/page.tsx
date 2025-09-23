@@ -8,6 +8,7 @@ import Input from '@/components/form/input/InputField';
 import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
+import Pagination from '@/components/tables/Pagination';
 
 interface BookingRow {
   _id: string;
@@ -25,6 +26,8 @@ interface BookingRow {
 const AcceptedBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1); // ✅ new
+  const rowsPerPage = 10;
 
   useEffect(() => {
     fetchCheckouts();
@@ -196,10 +199,15 @@ const AcceptedBookings = () => {
       _id: checkout._id,
       provider: checkout.provider,
       isCompleted: checkout.isCompleted,
-       isCancel: checkout.isCanceled,
+      isCancel: checkout.isCanceled,
       isAccepted: checkout.isAccepted,
       isPartialPayment: checkout.isPartialPayment,
     }));
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
     <div>
@@ -221,7 +229,18 @@ const AcceptedBookings = () => {
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : filteredData.length > 0 ? (
-            <BasicTableOne columns={columns} data={filteredData} />
+            <>
+              <BasicTableOne columns={columns} data={currentRows} />
+              {/* ✅ Pagination added */}
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredData.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-gray-500">No bookings to display.</p>
           )}
