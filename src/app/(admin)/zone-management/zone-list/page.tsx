@@ -215,7 +215,6 @@ const ZoneList = () => {
         <div className="border-b border-gray-200">
           <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
             <li className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`} onClick={() => setActiveTab('all')}>All</li>
-            {/* <li className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`} onClick={() => setActiveTab('active')}>Active</li> */}
             {/* <li className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`} onClick={() => setActiveTab('inactive')}>Inactive</li> */}
           </ul>
         </div>
