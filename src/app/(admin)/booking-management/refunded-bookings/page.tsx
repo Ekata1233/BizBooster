@@ -10,27 +10,30 @@ import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
 import { useLead } from '@/context/LeadContext';
 import { useParams } from 'next/navigation';
+import Pagination from '@/components/tables/Pagination';
 
 interface BookingRow {
   _id: string;
   bookingId: string;
-   fullName?: string;   // make optional
-  email?: string;  
+  fullName?: string;   // make optional
+  email?: string;
   totalAmount: number;
   paymentStatus: string;
   bookingDate: string;
   orderStatus: string;
   provider?: any;
   isCompleted: boolean;
-   // ✅ new field
+  // ✅ new field
 }
 
 const RefundedBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const { leads, fetchLeads } = useLead();
   const [search, setSearch] = useState('');
- const params = useParams();
+  const params = useParams();
   const id = params?.id as string;
+  const [currentPage, setCurrentPage] = useState(1); // ✅ new
+  const rowsPerPage = 10;
   console.log("leads data 111: ", checkouts)
 
   useEffect(() => {
@@ -47,19 +50,19 @@ const RefundedBookings = () => {
       header: 'Booking ID',
       accessor: 'bookingId',
     },
-   {
-  header: 'Customer Info',
-  accessor: 'customerInfo',
-  render: (row: BookingRow & { serviceCustomer?: any }) => (
-    <div className="text-sm">
-      <p className="font-medium text-gray-900">
-        {row.serviceCustomer?.fullName || 'N/A'}
-      </p>
-      <p className="text-gray-500">{row.serviceCustomer?.email || ''}</p>
-      <p className="text-gray-400">{row.serviceCustomer?.city || ''}</p>
-    </div>
-  ),
-},
+    {
+      header: 'Customer Info',
+      accessor: 'customerInfo',
+      render: (row: BookingRow & { serviceCustomer?: any }) => (
+        <div className="text-sm">
+          <p className="font-medium text-gray-900">
+            {row.serviceCustomer?.fullName || 'N/A'}
+          </p>
+          <p className="text-gray-500">{row.serviceCustomer?.email || ''}</p>
+          <p className="text-gray-400">{row.serviceCustomer?.city || ''}</p>
+        </div>
+      ),
+    },
 
     {
       header: 'Total Amount',
@@ -184,48 +187,53 @@ const RefundedBookings = () => {
   ];
 
   const filteredData = leads
-  .filter((lead) =>
-    lead.leads?.some((l: any) => l.statusType === "Refund")
-  )
-  .map((lead) => {
-    const checkout = lead.checkout;
-    console.log("refunded checkout ",checkout);
-    
-    return {
-      bookingId: checkout.bookingId,
-      fullName: checkout.serviceCustomer?.fullName,   // ✅ still mapped
-      email: checkout.serviceCustomer?.email,
-      serviceCustomer: checkout.serviceCustomer,      // ✅ added
-      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
-        ? Number(checkout.grandTotal)
-        : Number(checkout.totalAmount),
-      paymentStatus: checkout?.paymentStatus || 'unpaid',
-      bookingDate: checkout?.createdAt,
-      orderStatus: checkout.orderStatus,
-      _id: checkout._id,
-      provider: checkout.provider,
-      isCompleted: checkout.isCompleted,
-      isCancel: checkout.isCanceled,
-      isAccepted: checkout.isAccepted,
-      isPartialPayment: checkout.isPartialPayment,
-    };
-  })
-  .filter((row) =>
-    row.bookingId?.toLowerCase().includes(search.toLowerCase())
-  );
+    .filter((lead) =>
+      lead.leads?.some((l: any) => l.statusType === "Refund")
+    )
+    .map((lead) => {
+      const checkout = lead.checkout;
+      console.log("refunded checkout ", checkout);
 
-console.log("Refunded Bookings:", filteredData);
-filteredData.forEach((row) => {
-  console.log("ServiceCustomer Details:", row.serviceCustomer);
+      return {
+        bookingId: checkout.bookingId,
+        fullName: checkout.serviceCustomer?.fullName,   // ✅ still mapped
+        email: checkout.serviceCustomer?.email,
+        serviceCustomer: checkout.serviceCustomer,      // ✅ added
+        totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount),
+        paymentStatus: checkout?.paymentStatus || 'unpaid',
+        bookingDate: checkout?.createdAt,
+        orderStatus: checkout.orderStatus,
+        _id: checkout._id,
+        provider: checkout.provider,
+        isCompleted: checkout.isCompleted,
+        isCancel: checkout.isCanceled,
+        isAccepted: checkout.isAccepted,
+        isPartialPayment: checkout.isPartialPayment,
+      };
+    })
+    .filter((row) =>
+      row.bookingId?.toLowerCase().includes(search.toLowerCase())
+    );
 
-});
+  console.log("Refunded Bookings:", filteredData);
+  filteredData.forEach((row) => {
+    console.log("ServiceCustomer Details:", row.serviceCustomer);
 
-    
+  });
+
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Refunded Bookings" />
       <div className="space-y-6">
-        
+
         <ComponentCard title="Refunded Bookings">
           <div className="mb-4">
             <Input
@@ -242,7 +250,18 @@ filteredData.forEach((row) => {
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : filteredData.length > 0 ? (
-            <BasicTableOne columns={columns} data={filteredData} />
+            <>
+              <BasicTableOne columns={columns} data={currentRows} />
+              {/* ✅ Pagination added */}
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredData.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-gray-500">No bookings to display.</p>
           )}
