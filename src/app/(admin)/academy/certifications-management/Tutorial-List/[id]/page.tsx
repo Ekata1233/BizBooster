@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import axios, { isAxiosError } from "axios"; 
+import axios from "axios"; 
 import Button from '@/components/ui/button/Button';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { TrashBinIcon } from '@/icons';
@@ -154,7 +154,6 @@ const CertificateDetailPage: React.FC = () => {
       playersRef.current = {};
     };
   }, []);
-
 const loadCertificateDetails = useCallback(async () => {
   if (!id || !currentUserId) {
     setIsLoading(false);
@@ -164,17 +163,27 @@ const loadCertificateDetails = useCallback(async () => {
   setError(null);
   try {
     const found = certificates.find((c) => c._id === id);
-    const certificateData = found || (await axios.get<Certificate>(`/api/academy/certifications/${id}`)).data;
-    
+    const certificateData =
+      found ||
+      (await axios.get<Certificate>(
+        `/api/academy/certifications/${id}`
+      )).data;
+
     setCertificate({ ...certificateData, video: certificateData.video || [] });
 
-    const progressRes = await axios.get<VideoProgress[]>(`/api/video-progress?userId=${currentUserId}&certificateId=${id}`);
-    const completedVideoIds = progressRes.data.map((record) => record.videoId);
+    const progressRes = await axios.get<VideoProgress[]>(
+      `/api/video-progress?userId=${currentUserId}&certificateId=${id}`
+    );
+    const completedVideoIds = progressRes.data.map(
+      (record) => record.videoId
+    );
     setCompletedVideos(completedVideoIds);
-    
+
     // Check if the video array is not empty before trying to access index 0
-    const nextVideoToPlay = (certificateData.video || []).find(v => !completedVideoIds.includes(v._id));
-    
+    const nextVideoToPlay = (certificateData.video || []).find(
+      (v) => !completedVideoIds.includes(v._id)
+    );
+
     let initialVideoId = null;
     const videoList = certificateData.video || [];
     if (videoList.length > 0) {
@@ -183,72 +192,90 @@ const loadCertificateDetails = useCallback(async () => {
 
     setSelectedVideoId(initialVideoId);
   } catch (err: unknown) {
-    console.error('Failed to fetch details or progress:', err);
-    if (axios.isAxiosError(err)) {
-      setError(err.response?.data?.message || 'Failed to load tutorial details.');
+    console.error("Failed to fetch details or progress:", err);
+
+    const axiosErr = err as any;
+    if (axiosErr?.response?.data?.message) {
+      setError(axiosErr.response.data.message);
     } else if (err instanceof Error) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || "An unexpected error occurred.");
     } else {
-      setError('An unknown error occurred.');
+      setError("An unknown error occurred.");
     }
   } finally {
     setIsLoading(false);
   }
 }, [id, certificates, currentUserId]);
 
-  useEffect(() => {
-    if (isApiReady && certificate?.video && selectedVideoId) {
-      const videoToPlay = certificate.video.find(v => v._id === selectedVideoId);
-      if (videoToPlay) {
-        initPlayer(videoToPlay._id, videoToPlay.videoUrl);
-      }
+useEffect(() => {
+  if (isApiReady && certificate?.video && selectedVideoId) {
+    const videoToPlay = certificate.video.find(
+      (v) => v._id === selectedVideoId
+    );
+    if (videoToPlay) {
+      initPlayer(videoToPlay._id, videoToPlay.videoUrl);
     }
-  }, [isApiReady, selectedVideoId, certificate, initPlayer]);
+  }
+}, [isApiReady, selectedVideoId, certificate, initPlayer]);
 
-  useEffect(() => {
+useEffect(() => {
+  loadCertificateDetails();
+}, [loadCertificateDetails]);
+
+const handleDeleteVideo = async (videoId: string) => {
+  if (!certificate) return;
+  if (!window.confirm("Are you sure you want to delete this video?")) return;
+
+  try {
+    const videoIdx = certificate.video.findIndex((v) => v._id === videoId);
+    if (videoIdx === -1) {
+      throw new Error("Video not found.");
+    }
+
+    await deleteVideoInCertificate(certificate._id, videoIdx);
     loadCertificateDetails();
-  }, [loadCertificateDetails]);
+    alert("Video deleted successfully!");
+  } catch (err: unknown) {
+    console.error("Delete video error:", err);
 
-  const handleDeleteVideo = async (videoId: string) => {
-    if (!certificate) return;
-    if (!window.confirm('Are you sure you want to delete this video?')) return;
-
-    try {
-      const videoIdx = certificate.video.findIndex(v => v._id === videoId);
-      if (videoIdx === -1) {
-        throw new Error("Video not found.");
-      }
-
-      await deleteVideoInCertificate(certificate._id, videoIdx);
-      loadCertificateDetails();
-      alert('Video deleted successfully!');
-    } catch (err: unknown) {
-      console.error('Delete video error:', err);
-      if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.message || 'Error deleting video.');
-      } else {
-        alert('An unexpected error occurred during video deletion.');
-      }
+    const axiosErr = err as any;
+    if (axiosErr?.response?.data?.message) {
+      alert(axiosErr.response.data.message);
+    } else if (err instanceof Error) {
+      alert(
+        err.message || "An unexpected error occurred during video deletion."
+      );
+    } else {
+      alert("An unknown error occurred during video deletion.");
     }
-  };
+  }
+};
 
-  const handleDeleteCertificate = async () => {
-    if (!certificate) return;
-    if (!window.confirm('Are you sure you want to delete this entire tutorial?')) return;
+const handleDeleteCertificate = async () => {
+  if (!certificate) return;
+  if (!window.confirm("Are you sure you want to delete this entire tutorial?"))
+    return;
 
-    try {
-      await deleteCertificate(certificate._id);
-      alert('Tutorial deleted successfully!');
-      router.back();
-    } catch (err: unknown) {
-      console.error('Delete tutorial error:', err);
-      if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.message || 'Error deleting tutorial.');
-      } else {
-        alert('An unexpected error occurred during tutorial deletion.');
-      }
+  try {
+    await deleteCertificate(certificate._id);
+    alert("Tutorial deleted successfully!");
+    router.back();
+  } catch (err: unknown) {
+    console.error("Delete tutorial error:", err);
+
+    const axiosErr = err as any;
+    if (axiosErr?.response?.data?.message) {
+      alert(axiosErr.response.data.message);
+    } else if (err instanceof Error) {
+      alert(
+        err.message || "An unexpected error occurred during tutorial deletion."
+      );
+    } else {
+      alert("An unknown error occurred during tutorial deletion.");
     }
-  };
+  }
+};
+
 
   const handleEdit = (certId: string, videoId: string) => {
     const videoIdx = certificate?.video.findIndex(v => v._id === videoId);

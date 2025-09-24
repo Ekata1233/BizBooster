@@ -58,14 +58,16 @@ export const CertificationProvider = ({ children }: { children: React.ReactNode 
   const [certificates, setCertificates] = useState<Certificate[]>([]);
 
   // Fetch certificates from the API
-  const fetchCertificates = async () => {
-    try {
-      const response = await axios.get("/api/academy/certifications");
-      setCertificates(response.data.data);
-    } catch (error) {
-      console.error("Error fetching certificates:", error);
-    }
-  };
+ const fetchCertificates = async () => {
+  try {
+    // Type the response: data contains an array of Certificate objects
+    const response = await axios.get<{ data: Certificate[] }>("/api/academy/certifications");
+    setCertificates(response.data.data); // ✅ now TypeScript knows it's Certificate[]
+  } catch (error) {
+    console.error("Error fetching certificates:", error);
+  }
+};
+
 
   // Fetch certificates when the component mounts
   useEffect(() => {

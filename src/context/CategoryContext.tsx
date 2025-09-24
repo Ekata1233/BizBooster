@@ -20,7 +20,10 @@ interface CategoryContextType {
   deleteCategory: (id: string) => void;
   loading: boolean;
 }
-
+interface CategoryResponse {
+  success: boolean;
+  data: Category[];
+}
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
 
 export const useCategory = () => {
@@ -34,15 +37,19 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
   const [loading, setLoading] = useState(false);
 
   const fetchCategories = async () => {
-    try {
-      const res = await axios.get("/api/category", {
-        headers: { "Cache-Control": "no-store" },
-      });
-      if (res.data.success) setCategories(res.data.data);
-    } catch (error) {
-      console.error("Fetch categories error:", error);
+  try {
+    // Add generic to type the response
+    const res = await axios.get<CategoryResponse>("/api/category", {
+      headers: { "Cache-Control": "no-store" },
+    });
+
+    if (res.data.success) {
+      setCategories(res.data.data); // ✅ TypeScript now knows it's Category[]
     }
-  };
+  } catch (error) {
+    console.error("Fetch categories error:", error);
+  }
+};
 
   const addCategory = async (formData: FormData) => {
     setLoading(true);
