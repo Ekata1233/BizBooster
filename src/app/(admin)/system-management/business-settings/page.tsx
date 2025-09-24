@@ -6,13 +6,14 @@ import AddPackage from "@/components/system-management/AddPackage";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import FiveXGurrentee from "@/components/system-management/FiveXGurrentee";
+import TrendingModules from "@/components/trending-modules/TrendingModules";
 
 const tabs = [
   "Business Info",
   "Add Package",
   "Package Commision",
   "5XGuarantee",
-  // "Bookings",
+  "Trending Modules",
   // "Customers",
   // "Providers",
   // "Servicemen",
@@ -155,8 +156,11 @@ function VendorDashboardPage() {
               <FiveXGurrentee />
             </div>
           )}
-          {/* {activeTab === "Bookings" && <div>Bookings Content</div>}
-          {activeTab === "Customers" && <div>Customers Content</div>}
+          {activeTab === "Trending Modules" && (
+            
+            <div className="space-y-4"><TrendingModules/></div>
+            )}
+          {/*{activeTab === "Customers" && <div>Customers Content</div>}
           {activeTab === "Providers" && <div>Providers Content</div>}
           {activeTab === "Servicemen" && <div>Servicemen Content</div>} */}
         </div>
