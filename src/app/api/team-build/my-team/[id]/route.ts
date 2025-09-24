@@ -14,7 +14,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 export async function OPTIONS() {
-  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+    return NextResponse.json({}, { status: 200, headers: corsHeaders });
 }
 export interface IUser extends Document {
     _id: string;
@@ -59,6 +59,8 @@ export async function GET(req: NextRequest) {
 
     try {
         const teamMembers = await User.find({ referredBy: userId });
+
+        console.log("team members : ", teamMembers);
 
         const teamData = await Promise.all(
             teamMembers.map(async (member: any) => {

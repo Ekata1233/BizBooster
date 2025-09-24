@@ -12,11 +12,25 @@ import {
   HorizontaLDots,
   PieChartIcon,
   FolderIcon,
-  BoxIcon
+  BoxIcon,
+  PaperPlaneIcon,
+  UserIcon,
+  GroupIcon,
+  TaskIcon,
+  EnvelopeIcon,
+  DollarLineIcon,
+  UserCircleIcon,
+  LockIcon,
+  DocsIcon,
+  TableIcon,
+  ArrowDownIcon,
+  BellIcon,
+  PlugInIcon
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 import { useCheckout } from "@/context/CheckoutContext";
 import { useLead } from "@/context/LeadContext";
+import { CalendarIcon, DollarSignIcon, MapIcon, Megaphone } from "lucide-react";
 
 // Define the new type for nested sub-items
 type SubNavItem = {
@@ -45,7 +59,7 @@ const navItems: NavItem[] = [
 
 const moduleItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <BoxCubeIcon />,
     name: "Module",
     path: "/module-management/module"
   },
@@ -60,7 +74,7 @@ const moduleItems: NavItem[] = [
     path: "/subCategory-management/subCategory"
   },
   {
-    icon: <FolderIcon />,
+    icon: <PaperPlaneIcon />,
     name: "Banner",
     subItems: [
       { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
@@ -71,7 +85,7 @@ const moduleItems: NavItem[] = [
 
 const customerItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <UserIcon />,
     name: "Users",
     path: "/customer-management/user/user-list",
   },
@@ -79,7 +93,7 @@ const customerItems: NavItem[] = [
 
 const providerItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <GroupIcon />,
     name: "Provider",
     subItems: [
       { name: "Add Provider", path: "/provider-management/add-provider", pro: false },
@@ -89,7 +103,7 @@ const providerItems: NavItem[] = [
     ],
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <MapIcon />,
     name: "Zone Setup",
     subItems: [
       { name: "Add Zone", path: "/zone-management/add-zone", pro: false },
@@ -100,7 +114,7 @@ const providerItems: NavItem[] = [
 
 const serviceItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <TaskIcon />,
     name: "Service",
     subItems: [
       { name: "Add New Service", path: "/service-management/add-service", pro: false },
@@ -112,7 +126,7 @@ const serviceItems: NavItem[] = [
 
 const subscribeItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <EnvelopeIcon />,
     name: "Subscribe",
     subItems: [
       { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
@@ -123,7 +137,7 @@ const subscribeItems: NavItem[] = [
 
 const promotionItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <DollarLineIcon />,
     name: "Coupons",
     subItems: [
       { name: "Add Coupons", path: "/coupons-management/add-coupon", pro: false },
@@ -131,7 +145,7 @@ const promotionItems: NavItem[] = [
     ],
   },
   {
-    icon: <PieChartIcon />,
+    icon: <Megaphone />,
     name: "Advertisements",
     subItems: [
       { name: "Adds List", path: "/adds-management/adds-list", pro: false },
@@ -142,7 +156,7 @@ const promotionItems: NavItem[] = [
 
 const bookingItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <CalendarIcon />,
     name: "Bookings",
     subItems: [
       { name: "All Bookings", path: "/booking-management/all-booking", pro: false },
@@ -155,7 +169,7 @@ const bookingItems: NavItem[] = [
     ],
   },
   {
-    icon: <PieChartIcon />,
+    icon: <UserCircleIcon />,
     name: "Leads",
     subItems: [
       { name: "Lead Requests", path: "/booking-management/lead-request", pro: false },
@@ -165,7 +179,7 @@ const bookingItems: NavItem[] = [
 
 const privacyItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <LockIcon />,
     name: "Preferences",
     subItems: [
       { name: "Privacy & Policy", path: "/preferences/privacy-policy" },
@@ -179,7 +193,7 @@ const privacyItems: NavItem[] = [
 
 const offerItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <DollarSignIcon />,
     name: "Offer Management",
     subItems: [
       { name: "Add Offer", path: "/offer-management/Add-Offer" },
@@ -190,7 +204,7 @@ const offerItems: NavItem[] = [
 
 const providerpreferenceItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <UserIcon />,
     name: "Provider Preferences",
     subItems: [
       { name: "Provider Privacy & Policy", path: "/providerpreferences/provider-privacypolicy" },
@@ -206,7 +220,7 @@ const providerpreferenceItems: NavItem[] = [
 // ACADEMY ITEMS STRUCTURE WITH NESTED PARTNER REVIEW
 const academyItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <DocsIcon />,
     name: "Academy",
     subItems: [
       {
@@ -250,7 +264,7 @@ const academyItems: NavItem[] = [
 
 const advisorItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <UserCircleIcon />,
     name: "Advisor Management",
     subItems: [
       { name: "Add Advisor", path: "/advisor-management/add-advisor" },
@@ -260,20 +274,20 @@ const advisorItems: NavItem[] = [
 ];
 
 const reportItems: NavItem[] = [
-  { icon: <GridIcon />, name: "Transaction Reports", path: "/report-management/transaction-reports" },
-  { icon: <GridIcon />, name: "Business Reports", path: "/report-management/business-reports" },
-  { icon: <GridIcon />, name: "Admin Earnings", path: "/report-management/admin-earnings" },
-  { icon: <GridIcon />, name: "Payout Details", path: "/report-management/payout-details" },
+  { icon: <TableIcon />, name: "Transaction Reports", path: "/report-management/transaction-reports" },
+  { icon: <PieChartIcon />, name: "Business Reports", path: "/report-management/business-reports" },
+  { icon: <DollarLineIcon />, name: "Admin Earnings", path: "/report-management/admin-earnings" },
+  { icon: <ArrowDownIcon />, name: "Payout Details", path: "/report-management/payout-details" },
 
 ];
 
 const notificationItems: NavItem[] = [
-  { icon: <GridIcon />, name: "Send Notification", path: "/notification-management/send-notification" },
+  { icon: <Megaphone />, name: "Send Notification", path: "/notification-management/send-notification" },
 ];
 
 const systemItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <PlugInIcon />,
     name: "Settings Management",
     subItems: [
       { name: "Business Settings", path: "/system-management/business-settings", pro: false },
@@ -283,12 +297,12 @@ const systemItems: NavItem[] = [
 
 const EmployeeItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
+    icon: <TaskIcon />,
     name: "Employee Role",
     path: "/employee-management/employee-role"
   },
   {
-    icon: <FolderIcon />,
+    icon: <GroupIcon />,
     name: "Employees",
     subItems: [
       { name: "Add Employee", path: "/employee-management/add-employee", pro: false },
