@@ -10,14 +10,13 @@ export interface AdType {
   title: string;
   description: string;
   fileUrl: string;
-   isApproved: boolean; 
-   isExpired:boolean;
-   category: {
+  isApproved: boolean; 
+  isExpired: boolean;
+  category: {
     name: string;
   };
   service: {
     serviceName: string;
-    
   };
 }
 
@@ -36,25 +35,41 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
   const [ads, setAds] = useState<AdType[]>([]);
 
   const fetchAds = async () => {
-    const res = await axios.get('/api/ads');
-    setAds(res.data.data);
+    try {
+      const res = await axios.get<{ data: AdType[] }>('/api/ads');
+      setAds(res.data.data);
+    } catch (err) {
+      console.error('Failed to fetch ads:', err);
+    }
   };
 
   const createAd = async (formData: FormData) => {
-    const res = await axios.post('/api/ads', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    fetchAds();
+    try {
+      await axios.post('/api/ads', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchAds();
+    } catch (err) {
+      console.error('Failed to create ad:', err);
+    }
   };
 
   const deleteAd = async (id: string) => {
-    await axios.delete(`/api/ads/${id}`);
-    setAds(prev => prev.filter(ad => ad._id !== id));
+    try {
+      await axios.delete(`/api/ads/${id}`);
+      setAds(prev => prev.filter(ad => ad._id !== id));
+    } catch (err) {
+      console.error('Failed to delete ad:', err);
+    }
   };
 
   const updateAd = async (id: string, data: Partial<AdType>) => {
-    const res = await axios.put(`/api/ads/${id}`, data);
-    fetchAds();
+    try {
+      await axios.put(`/api/ads/${id}`, data);
+      fetchAds();
+    } catch (err) {
+      console.error('Failed to update ad:', err);
+    }
   };
 
   const approveAd = async (id: string) => {
@@ -71,7 +86,7 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AdContext.Provider value={{ ads, fetchAds, createAd, deleteAd, updateAd, approveAd  }}>
+    <AdContext.Provider value={{ ads, fetchAds, createAd, deleteAd, updateAd, approveAd }}>
       {children}
     </AdContext.Provider>
   );

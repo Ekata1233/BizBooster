@@ -1,5 +1,4 @@
 'use client';
-
 import React, {
   createContext,
   useContext,
@@ -60,7 +59,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
   const fetchSummary = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/admin-earnings', {
+      const res = await axios.get<{ success: boolean; data: AdminEarningsType }>('/api/admin/admin-earnings', {
         params: { summary: true },
       });
 
@@ -76,7 +75,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
 
   const createOrUpdateEarnings = async (data: Partial<AdminEarningsType>) => {
     try {
-      const res = await axios.post('/api/admin-earnings', data);
+      const res = await axios.post<{ success: boolean; data?: AdminEarningsType; message?: string }>('/api/admin-earnings', data);
       if (res.data?.success) {
         await fetchSummary();
       } else {
@@ -90,10 +89,8 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/all-transactions');
-      if (res.status === 200) {
-        setTransactions(res.data);
-      }
+      const res = await axios.get<TransactionType[]>('/api/admin/all-transactions');
+      setTransactions(res.data); // ✅ now typed correctly
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -104,7 +101,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
   const fetchEarningsByDates = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/earnings-by-date');
+      const res = await axios.get<{ success: boolean; data: AdminEarningsType[]; message?: string }>('/api/admin/earnings-by-date');
       if (res.data?.success && Array.isArray(res.data.data)) {
         setEarningsByDate(res.data.data);
       } else {
@@ -116,7 +113,6 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchTransactions();
@@ -132,7 +128,7 @@ export const AdminEarningsProvider = ({ children }: { children: ReactNode }) => 
         createOrUpdateEarnings,
         transactions,
         fetchTransactions,
-        fetchEarningsByDates,    // ✅
+        fetchEarningsByDates,
         earningsByDate,
       }}
     >

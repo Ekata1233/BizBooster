@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
-// Define the AdvisorData type (same as before)
+// Define the AdvisorData type
 type AdvisorData = {
   _id: string;
   name: string;
@@ -23,8 +23,6 @@ interface AdvisorContextType {
   advisors: AdvisorData[];
   addAdvisor: (formData: FormData) => Promise<void>;
   updateAdvisor: (id: string, formData: FormData) => Promise<void>;
-  // CORRECTED: The return type should be a Promise that resolves to
-  // AdvisorData or null, not void.
   fetchAdvisorById: (id: string) => Promise<AdvisorData | null>;
   deleteAdvisor: (id: string) => Promise<void>;
 }
@@ -37,8 +35,8 @@ export const AdvisorProvider = ({ children }: { children: React.ReactNode }) => 
   // Fetch advisors from the API
   const fetchAdvisors = async () => {
     try {
-      const response = await axios.get("/api/advisor");
-      setAdvisors(response.data.data);
+      const response = await axios.get<{ data: AdvisorData[] }>("/api/advisor");
+      setAdvisors(response.data.data); // ✅ typed properly
     } catch (error) {
       console.error("Error fetching advisors:", error);
     }
@@ -57,7 +55,6 @@ export const AdvisorProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  // Update existing advisors
   const updateAdvisor = async (id: string, formData: FormData) => {
     try {
       await axios.put(`/api/advisor/${id}`, formData);
@@ -67,12 +64,10 @@ export const AdvisorProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  // The implementation correctly returns a value
   const fetchAdvisorById = async (id: string): Promise<AdvisorData | null> => {
     try {
-      const res = await axios.get(`/api/advisor/${id}`);
-      console.log("Fetched advisor data:", res.data);
-      // We assume res.data.data is the single advisor object.
+      const res = await axios.get<{ data: AdvisorData }>(`/api/advisor/${id}`);
+      console.log("Fetched advisor data:", res.data.data);
       return res.data.data;
     } catch (err) {
       console.error("Error fetching advisor:", err);
@@ -90,13 +85,14 @@ export const AdvisorProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   return (
-    <AdvisorContext.Provider value={{ advisors, addAdvisor, updateAdvisor, fetchAdvisorById, deleteAdvisor }}>
+    <AdvisorContext.Provider
+      value={{ advisors, addAdvisor, updateAdvisor, fetchAdvisorById, deleteAdvisor }}
+    >
       {children}
     </AdvisorContext.Provider>
   );
 };
 
-// Custom hook to use Advisor context
 export const useAdvisor = () => {
   const context = useContext(AdvisorContext);
   if (!context) {

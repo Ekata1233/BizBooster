@@ -30,10 +30,16 @@ export const useBanner = () => useContext(BannerContext)!;
 export const BannerProvider = ({ children }: { children: ReactNode }) => {
   const [banners, setBanners] = useState<Banner[]>([]);
 
-  const fetchBanners = async () => {
-    const res = await axios.get('/api/banner');
-    setBanners(res.data);
-  };
+ const fetchBanners = async () => {
+  try {
+    // Type the response so TypeScript knows the structure
+    const res = await axios.get<{ data: Banner[] }>('/api/banner');
+    setBanners(res.data.data); // ✅ now TypeScript knows it's Banner[]
+  } catch (error) {
+    console.error('Error fetching banners:', error);
+  }
+};
+
 
   const createBanner = async (formData: FormData) => {
     await axios.post('/api/banner', formData);

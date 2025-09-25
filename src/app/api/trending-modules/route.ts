@@ -22,3 +22,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+// GET all records
+export async function GET() {
+  await connectToDatabase();
+  try {
+    const records = await TrendingModuleService.find();
+    return NextResponse.json(records, { status: 200 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}

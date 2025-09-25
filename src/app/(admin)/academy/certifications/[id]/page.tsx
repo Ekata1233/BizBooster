@@ -71,7 +71,7 @@ const CertificateDetailPage: React.FC = () => {
       } else {
         // If not found in context, fetch from API (useful on direct URL access/refresh)
         const res = await axios.get(`/api/academy/tutorials/${id}`);
-        setCertificate(res.data.data as Certificate);
+        setCertificate((res as any).data.data);
       }
     } catch (err: unknown) {
       console.error('Failed to fetch certificate details:', err);
