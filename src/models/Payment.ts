@@ -1,17 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPayment extends Document {
-  order_id: string;               // Cashfree order ID
-  payment_id?: string;            // Cashfree payment ID (cf_payment_id)
+  order_id: string;
+  payment_id?: string;
   amount: number;
   currency: string;
-  status: string;                 // Payment status like SUCCESS / FAILED
+  status: string;
   name?: string;
   email?: string;
   phone?: string;
   payment_time?: Date;
   bank_reference?: string;
   payment_method?: string;
+  slug?: string;
 }
 
 const PaymentSchema = new Schema<IPayment>(
@@ -29,6 +30,7 @@ const PaymentSchema = new Schema<IPayment>(
     payment_time: { type: Date },
     bank_reference: { type: String },
     payment_method: { type: String },
+    slug: { type: String },
   },
   { timestamps: true }
 );
