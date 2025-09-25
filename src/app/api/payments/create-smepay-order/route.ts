@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
                 amount: body.amount,
                 order_id: order_id,
                 customerId: body.customerId,
-                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${body.order_id}&amount=${body.amount}`,
+                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${order_id}&amount=${body.amount}`,
                 customer_details: body.customer_details,
             },
             {
@@ -266,9 +266,9 @@ export async function POST(req: NextRequest) {
         await mongoose.connect(process.env.MONGO_URI!);
 
         const payment = await Payment.findOneAndUpdate(
-            { order_id: body.order_id },
+            { order_id: order_id },
             {
-                order_id: body.order_id,
+                order_id: order_id,
                 amount: body.amount,
                 status: "PENDING",
                 name: body.customer_details?.name,
