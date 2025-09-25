@@ -15,7 +15,11 @@ interface Module {
   _id: string
   name: string
 }
-
+interface Trending {
+  serviceId: string
+  moduleId: string
+  isTrending: boolean
+}
 interface Category {
   _id: string
   name: string
@@ -65,24 +69,39 @@ const TrendingModules = () => {
       return
     }
 
-    const filteredSub = subcategories.filter(
-      sc => sc.category === selectedCategory || (sc.category as any)?._id === selectedCategory
-    )
+    const filteredSub: SubCategory[] = subcategories
+      .filter(sc => {
+        const cat = sc.category as string | { _id: string }
+        if (typeof cat === "string") return cat === selectedCategory
+        if (cat && typeof cat === "object") return cat._id === selectedCategory
+        return false
+      })
+      .map(sc => ({
+        _id: sc._id,
+        name: sc.name,
+        categoryId: typeof sc.category === "string" ? sc.category : sc.category?._id || ""
+      }))
+
     setSubCategories(filteredSub)
 
     const fetchTrending = async () => {
       try {
         const trendingRes = await axios.get('/api/trending-modules')
-        const trendingData = trendingRes.data // array of { serviceId, moduleId, isTrending }
+        const trendingData: Trending[] = trendingRes.data as Trending[]
 
         let filteredServices: Service[] = []
 
         if (filteredSub.length === 0) {
           filteredServices = allServices
-            .filter(s => s.category?._id === selectedCategory || s.category === selectedCategory)
+            .filter(s => {
+              if (!s.category) return false
+              if (typeof s.category === 'string') return s.category === selectedCategory
+              if (typeof s.category === 'object') return s.category._id === selectedCategory
+              return false
+            })
             .map(s => ({
               ...s,
-              status: trendingData.some((t: any) => t.serviceId === s._id && t.isTrending),
+              status: trendingData.some(t => t.serviceId === s._id && t.isTrending),
             }))
         }
 
@@ -102,17 +121,20 @@ const TrendingModules = () => {
     const fetchTrending = async () => {
       try {
         const trendingRes = await axios.get('/api/trending-modules')
-        const trendingData = trendingRes.data
+        const trendingData: Trending[] = trendingRes.data as Trending[]
 
         const filteredServices = allServices
-          .filter(
-            s =>
-              s.subcategory?._id === selectedSubCategory ||
-              s.subcategory === selectedSubCategory
-          )
+          .filter(s => {
+            if (!s.subcategory) return false
+
+            if (typeof s.subcategory === "string") return s.subcategory === selectedSubCategory
+            if (typeof s.subcategory === "object") return s.subcategory._id === selectedSubCategory
+
+            return false
+          })
           .map(s => ({
             ...s,
-            status: trendingData.some((t: any) => t.serviceId === s._id && t.isTrending),
+            status: trendingData.some(t => t.serviceId === s._id && t.isTrending),
           }))
 
         setServices(filteredServices)
@@ -137,14 +159,12 @@ const TrendingModules = () => {
     if (!confirm(confirmMsg)) return
 
     try {
-      // Save trending status in database
-      await axios.post('/api/trending-modules', {
+      await axios.patch('http://localhost:3000/api/trending-modules', {
         moduleId: selectedModule,
         serviceId: service._id,
         isTrending: newStatus,
       })
 
-      // Update local state
       setServices(prev =>
         prev.map(s => (s._id === service._id ? { ...s, status: newStatus } : s))
       )
@@ -162,16 +182,25 @@ const TrendingModules = () => {
       header: 'Status',
       accessor: 'status',
       render: (row: Service) => (
-        <label className="inline-flex relative items-center cursor-pointer">
-          <input
-            type="checkbox"
-            className="sr-only peer"
-            checked={row.status}
-            onChange={() => toggleServiceStatus(row)}
-          />
-          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
-          <span className="ml-3 text-sm font-medium">{row.status ? 'On' : 'Off'}</span>
-        </label>
+        <div className="flex flex-col items-end gap-1">
+          {/* <label className="text-sm font-semibold text-blue-600 dark:text-blue-600 tracking-wide uppercase">
+            Trending
+          </label> */}
+          <button
+            onClick={() => toggleServiceStatus(row)}
+            className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-300 border-2 ${
+              row.status
+                ? "bg-gradient-to-r from-green-400 to-green-600 border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"
+                : "bg-gray-300 border-gray-400"
+            }`}
+          >
+            <span
+              className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                row.status ? "translate-x-8" : ""
+              }`}
+            ></span>
+          </button>
+        </div>
       ),
     },
   ]
