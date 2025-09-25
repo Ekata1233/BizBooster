@@ -221,7 +221,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-
+        const order_id = `package_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
         // 1. Authenticate and get token
         const authResponse = await axios.post("https://apps.typof.com/api/external/auth", {
             client_id: process.env.SMEPAY_CLIENT_ID,
@@ -245,7 +245,8 @@ export async function POST(req: NextRequest) {
             {
                 client_id: process.env.SMEPAY_CLIENT_ID,
                 amount: body.amount,
-                order_id: body.order_id,
+                order_id: order_id,
+                customerId: body.customerId,
                 callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${body.order_id}&amount=${body.amount}`,
                 customer_details: body.customer_details,
             },
@@ -274,6 +275,7 @@ export async function POST(req: NextRequest) {
                 email: body.customer_details?.email,
                 phone: body.customer_details?.mobile,
                 slug: data.order_slug, // 🔑 save SMEPay slug
+                customerId: body.customerId,
             },
             { upsert: true, new: true }
         );
