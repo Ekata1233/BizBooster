@@ -205,6 +205,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import Payment from "@/models/Payment";
+import mongoose from "mongoose";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -244,7 +246,7 @@ export async function POST(req: NextRequest) {
                 client_id: process.env.SMEPAY_CLIENT_ID,
                 amount: body.amount,
                 order_id: body.order_id,
-                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook`,
+                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${body.order_id}&amount=${body.amount}`,
                 customer_details: body.customer_details,
             },
             {
@@ -256,7 +258,27 @@ export async function POST(req: NextRequest) {
             }
         );
 
-        console.log("order response data ; ", orderResponse.data)
+        const data = orderResponse.data;
+        console.log("order response data:", data);
+
+        // 3. Save payment in DB (with slug)
+        await mongoose.connect(process.env.MONGO_URI!);
+
+        const payment = await Payment.findOneAndUpdate(
+            { order_id: body.order_id },
+            {
+                order_id: body.order_id,
+                amount: body.amount,
+                status: "PENDING",
+                name: body.customer_details?.name,
+                email: body.customer_details?.email,
+                phone: body.customer_details?.mobile,
+                slug: data.order_slug, // 🔑 save SMEPay slug
+            },
+            { upsert: true, new: true }
+        );
+
+        console.log("Saved Payment:", payment);
 
         return NextResponse.json(orderResponse.data, { headers: corsHeaders });
     } catch (error: any) {
