@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const amount = body.amount || null;
 
 
-        console.log("slug : ", slug);
+    console.log("slug : ", slug);
     console.log("amount : ", amount);
 
 
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         client_secret: process.env.SMEPAY_CLIENT_SECRET,
       }
     );
+    // console.log('authResponse : ', authResponse)
 
     const token = authResponse.data.access_token;
     console.log('token : ', token)
@@ -80,30 +81,30 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    console.log("validate repsonce : ", validateResponse)
+    // console.log("validate repsonce : ", validateResponse)
 
-    const status = validateResponse.data?.status || "unknown";
+    const status = validateResponse.data?.payment_status || "unknown";
+    console.log("status : ", status);
 
-    console.log("staus : ", status)
     // 3️⃣ Save payment status in DB
-    await mongoose.connect(process.env.MONGODB_URI || "");
-    const payment = await Payment.findOneAndUpdate(
-      { order_id: orderId || slug },
-      {
-        order_id: orderId || slug,
-        slug: slug,
-        amount: amount,
-        status: status,
-        updatedAt: new Date(),
-      },
-      { upsert: true, new: true }
-    );
+    // await mongoose.connect(process.env.MONGODB_URI || "");
+    // const payment = await Payment.findOneAndUpdate(
+    //   { order_id: orderId || slug },
+    //   {
+    //     order_id: orderId || slug,
+    //     slug: slug,
+    //     amount: amount,
+    //     status: status,
+    //     updatedAt: new Date(),
+    //   },
+    //   { upsert: true, new: true }
+    // );
 
-    console.log("Payment validated and saved:", payment);
+    // console.log("Payment validated and saved:", payment);
 
     // 4️⃣ Respond with success
     return NextResponse.json(
-      { success: true, status: status, payment },
+      { success: true, status: status },
       { headers: corsHeaders }
     );
   } catch (error: any) {
