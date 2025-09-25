@@ -14,6 +14,14 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+// GET handler (prevents 405)
+export async function GET(req: NextRequest) {
+  return NextResponse.json(
+    { message: "SMEPay webhook ready. Use POST for payment validation." },
+    { status: 200, headers: corsHeaders }
+  );
+}
+
 // Handle GET/POST callback from SMEpay
 export async function POST(req: NextRequest) {
   try {

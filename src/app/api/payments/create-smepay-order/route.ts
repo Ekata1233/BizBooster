@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
                 client_id: process.env.SMEPAY_CLIENT_ID,
                 amount: body.amount,
                 order_id: body.order_id,
-                callback_url: `https://payment-design-kohl.vercel.app?order_id=${body.order_id}&amount=${body.amount}&createdAt=${encodeURIComponent(createdAt)}`,
+                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook`,
                 customer_details: body.customer_details,
             },
             {
