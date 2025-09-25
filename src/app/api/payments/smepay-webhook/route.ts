@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import mongoose from "mongoose";
 import Payment from "@/models/Payment"; // Your Mongoose Payment model
+import { Package } from "@/models/Package";
+import User from "@/models/User";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,6 +93,64 @@ export async function GET(req: NextRequest) {
       { new: true }
     );
 
+    console.log("customer Id : ", payment.customerId)
+    // ------------------------------
+    // ✅ Package payment logic
+    // ------------------------------
+    if (
+      paymentStatus === "SUCCESS" &&
+      orderId.startsWith("package_") &&
+      payment.customerId
+    ) {
+      try {
+        const amountPaid = Number(amount);
+
+        const pkg = await Package.findOne();
+        if (!pkg || typeof pkg.grandtotal !== "number") {
+          console.warn("Valid package not found.");
+        } else {
+          const fullPackageAmount = pkg.grandtotal;
+          console.log("full package amount:", fullPackageAmount);
+
+          const user = await User.findById(payment.customerId);
+          if (!user) throw new Error("User not found");
+
+          const newTotalPaid = (user.packageAmountPaid || 0) + amountPaid;
+          console.log("newTotalPaid:", newTotalPaid);
+
+          // Set packagePrice only once during first partial payment
+          if ((user.packagePrice ?? 0) === 0 && newTotalPaid < fullPackageAmount) {
+            user.packagePrice = fullPackageAmount;
+            console.log("packagePrice set:", user.packagePrice);
+          }
+
+          const effectivePackagePrice = user.packagePrice > 0 ? user.packagePrice : fullPackageAmount;
+          const remaining = effectivePackagePrice - newTotalPaid;
+          console.log("remaining:", remaining);
+
+          user.packageAmountPaid = newTotalPaid;
+          user.remainingAmount = Math.max(remaining, 0);
+          user.packageType = newTotalPaid >= effectivePackagePrice ? "full" : "partial";
+
+          // Trigger commission if fully paid and not active
+          if (newTotalPaid >= effectivePackagePrice && !user.packageActive) {
+            try {
+              await axios.post(
+                "https://api.fetchtrue.com/api/distributePackageCommission",
+                { userId: user._id }
+              );
+            } catch (err: any) {
+              console.error("❌ Failed to distribute package commission:", err?.response?.data || err.message);
+            }
+          }
+
+          await user.save();
+        }
+      } catch (err: any) {
+        console.error("❌ Package payment processing error:", err?.response?.data || err.message);
+      }
+    }
+
     return NextResponse.json(
       { success: true, source: "GET", orderId, amount, paymentStatus },
       { status: 200, headers: corsHeaders }
@@ -104,7 +164,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Handle GET/POST callback from SMEpay
+// NOT WORKING
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
