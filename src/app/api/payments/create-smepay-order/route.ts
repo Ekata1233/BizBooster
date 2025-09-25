@@ -236,6 +236,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const createdAt = new Date().toISOString();
         // 2. Create order using token
         const orderResponse = await axios.post(
             "https://apps.typof.com/api/external/create-order",
@@ -243,7 +244,7 @@ export async function POST(req: NextRequest) {
                 client_id: process.env.SMEPAY_CLIENT_ID,
                 amount: body.amount,
                 order_id: body.order_id,
-                callback_url: `http://localhost:3001/api/payments/validate-order?order_id=${body.order_id}&amount=${body.amount}`,
+                callback_url: `https://payment-design-kohl.vercel.app?order_id=${body.order_id}&amount=${body.amount}&createdAt=${encodeURIComponent(createdAt)}`,
                 customer_details: body.customer_details,
             },
             {

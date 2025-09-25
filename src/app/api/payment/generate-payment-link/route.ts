@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         order_id: orderId,
         link_amount: amount,
         link_currency: "INR",
-        link_purpose: "Advance payment for home service booking",
+        link_purpose: "Fetch True Payment",
         customer_details: {
           customer_id: customerId,
           customer_name: customerName,
