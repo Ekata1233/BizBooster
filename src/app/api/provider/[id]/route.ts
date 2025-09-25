@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import '@/models/Service';
+import '@/models/Category';
 import ProviderWallet from "@/models/ProviderWallet";
 import Checkout from "@/models/Checkout";
+import ServiceMan from "@/models/ServiceMan";
 
 const allowedOrigins = [
   'http://localhost:3001',
@@ -49,10 +51,15 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch provider
-  const provider = await Provider.findById(id).populate(
-    "subscribedServices",
-    "serviceName price discountedPrice"
-  );
+  const provider = await Provider.findById(id)
+    .populate({
+      path: "subscribedServices",
+      select: "serviceName price discountedPrice category",
+      populate: {
+        path: "category", // field inside subscribedServices
+        select: "name", // fields from Category model
+      },
+    });
 
   if (!provider) {
     return NextResponse.json(
@@ -70,11 +77,14 @@ export async function GET(req: NextRequest) {
     isCompleted: true,
   });
 
+  const servicemenCount = await ServiceMan.countDocuments({ provider: id });
   // Include wallet totalCredits and completed checkouts count
   const response = {
     ...provider.toObject(),
     totalCredits: wallet?.totalCredits || 0,
-    completedCheckouts: completedCheckoutsCount,
+    totalCompletedBookings: completedCheckoutsCount,
+    totalSubscribedServices: provider.subscribedServices?.length || 0,
+    totalServicemen: servicemenCount,
   };
 
   return NextResponse.json(response, { status: 200, headers: getCorsHeaders(origin) });
