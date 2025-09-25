@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import '@/models/Service';
+import '@/models/Category';
 import ProviderWallet from "@/models/ProviderWallet";
 import Checkout from "@/models/Checkout";
 
@@ -49,10 +50,15 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch provider
-  const provider = await Provider.findById(id).populate(
-    "subscribedServices",
-    "serviceName price discountedPrice"
-  );
+  const provider = await Provider.findById(id)
+  .populate({
+    path: "subscribedServices",
+    select: "serviceName price discountedPrice category",
+    populate: {
+      path: "category", // field inside subscribedServices
+      select: "name", // fields from Category model
+    },
+  });
 
   if (!provider) {
     return NextResponse.json(
