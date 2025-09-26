@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
     // ✅ Package payment logic
     // ------------------------------
     if (
-      paymentStatus === "SUCCESS" &&
+      paymentStatus === "paid" &&
       orderId.startsWith("package_") &&
       payment.customerId
     ) {
