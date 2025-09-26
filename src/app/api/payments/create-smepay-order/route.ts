@@ -247,14 +247,13 @@ export async function POST(req: NextRequest) {
                 amount: body.amount,
                 order_id: order_id,
                 customerId: body.customerId,
-                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${body.order_id}&amount=${body.amount}`,
+                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${order_id}&amount=${body.amount}`,
                 customer_details: body.customer_details,
             },
             {
                 headers: {
-                    // SMEPay doc says "Authorization: token : <value>"
-                    // If that's literal → use below format, else use `Bearer ${token}`
-                    Authorization: `Bearer ${token}`, "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
             }
         );
@@ -266,15 +265,15 @@ export async function POST(req: NextRequest) {
         await mongoose.connect(process.env.MONGO_URI!);
 
         const payment = await Payment.findOneAndUpdate(
-            { order_id: body.order_id },
+            { order_id: order_id },
             {
-                order_id: body.order_id,
+                order_id: order_id,
                 amount: body.amount,
                 status: "PENDING",
                 name: body.customer_details?.name,
                 email: body.customer_details?.email,
                 phone: body.customer_details?.mobile,
-                slug: data.order_slug, // 🔑 save SMEPay slug
+                slug: data.order_slug, 
                 customerId: body.customerId,
             },
             { upsert: true, new: true }

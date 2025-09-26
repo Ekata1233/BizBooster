@@ -86,9 +86,9 @@ export async function GET(req: NextRequest) {
     await Payment.findOneAndUpdate(
       { order_id: orderId },
       {
-        status: paymentStatus,                  // update status
-        amount: amount ? Number(amount) : payment.amount, // update amount if passed
-        payment_time: paymentStatus === "SUCCESS" ? new Date() : payment.payment_time, // record time if successful
+        status: paymentStatus,             
+        amount: amount ? Number(amount) : payment.amount, 
+        payment_time: paymentStatus === "SUCCESS" ? new Date() : payment.payment_time, 
       },
       { new: true }
     );
