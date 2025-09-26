@@ -16,7 +16,7 @@ export async function OPTIONS() {
 }
 
 // ───────────── PUT: Update Provider ─────────────
-export async function PUT(req: Request) {
+export async function PATCH(req: Request) {
   await connectToDatabase();
 
   try {
