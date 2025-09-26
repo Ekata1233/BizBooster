@@ -1,60 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
+import imagekit from "@/utils/imagekit";
 
-// ✅ Allowed origins
-const allowedOrigins = [
-  'http://localhost:3001',
-  'https://biz-booster.vercel.app',
-  'http://localhost:3000',
-  'https://api.fetchtrue.com',
-  'https://biz-booster-provider-panel.vercel.app',
-];
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
-function getCorsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Credentials": "true",
-    "Referrer-Policy": "no-referrer",
-  };
-
-  if (origin && allowedOrigins.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-  }
-
-  return headers;
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// ─── CORS Pre-flight handler ───────────────────────────────
-export async function OPTIONS(req: NextRequest) {
-  const origin = req.headers.get("origin");
-  return NextResponse.json({}, { headers: getCorsHeaders(origin) });
-}
+// ───────────── PUT: Update Provider ─────────────
+export async function PUT(req: Request) {
+  await connectToDatabase();
 
-// ─── PUT Handler ───────────────────────────────
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
   try {
-    await connectToDatabase();
-    const origin = req.headers.get("origin");
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: "Invalid provider ID" },
-        { status: 400, headers: getCorsHeaders(origin) }
+        { success: false, message: "Invalid or missing provider ID." },
+        { status: 400, headers: corsHeaders }
       );
     }
 
-    const form = await req.formData();
+    const formData = await req.formData();
     const updateData: Record<string, any> = {};
 
-    // Extract text fields including nested
-    form.forEach((value, key) => {
+    // ── Extract text fields (dot notation for nested)
+    formData.forEach((value, key) => {
       if (typeof value === "string") {
         if (key.includes(".")) {
           const parts = key.split(".");
@@ -70,21 +50,23 @@ export async function PUT(
       }
     });
 
-    // Handle file uploads
-    const fileKeys = [
-      "logo", "cover", "galleryImages",
-      "aadhaarCard", "panCard", "storeDocument", "GST", "other",
-    ];
+    // ── File upload keys
+    const fileKeys = ["logo", "cover", "galleryImages", "aadhaarCard", "panCard", "storeDocument", "GST", "other"];
 
     for (const key of fileKeys) {
-      const files = form.getAll(key) as File[];
-      if (files.length > 0) {
+      const files = formData.getAll(key) as File[];
+      if (files && files.length > 0) {
         const uploadedUrls: string[] = [];
         for (const file of files) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const fileName = `${Date.now()}-${file.name}`;
-          // Replace with your cloud upload logic
-          uploadedUrls.push(`/uploads/${fileName}`);
+          if (file instanceof File) {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const uploadResponse = await imagekit.upload({
+              file: buffer,
+              fileName: `${uuidv4()}-${file.name}`,
+              folder: key === "galleryImages" || key === "logo" || key === "cover" ? "/provider" : "/provider/kyc",
+            });
+            uploadedUrls.push(uploadResponse.url);
+          }
         }
 
         if (["logo", "cover"].includes(key)) {
@@ -93,34 +75,32 @@ export async function PUT(
           updateData.galleryImages = uploadedUrls;
         } else {
           if (!updateData.kyc) updateData.kyc = {};
-          if (!updateData.kyc[key]) updateData.kyc[key] = [];
-          updateData.kyc[key] = updateData.kyc[key].concat(uploadedUrls);
+          updateData.kyc[key] = uploadedUrls;
         }
       }
     }
 
-    // Prevent forbidden updates
+    // ── Prevent forbidden updates
     const disallowed = ["_id", "providerId", "email", "phoneNo", "isDeleted"];
-    disallowed.forEach((f) => delete updateData[f]);
+    disallowed.forEach(f => delete updateData[f]);
 
-    // Fetch provider
+    // ── Find provider
     const provider = await Provider.findById(id);
     if (!provider) {
-      return NextResponse.json(
-        { error: "Provider not found" },
-        { status: 404, headers: getCorsHeaders(origin) }
-      );
+      return NextResponse.json({ success: false, message: "Provider not found." }, { status: 404, headers: corsHeaders });
     }
 
-    // Merge arrays and nested objects
+    // ── Merge arrays and nested objects
     if (updateData.galleryImages) {
       provider.galleryImages = provider.galleryImages.concat(updateData.galleryImages);
       delete updateData.galleryImages;
     }
+
     if (updateData.storeInfo) {
       provider.storeInfo = { ...provider.storeInfo?.toObject(), ...updateData.storeInfo };
       delete updateData.storeInfo;
     }
+
     if (updateData.kyc) {
       provider.kyc = { ...provider.kyc?.toObject(), ...updateData.kyc };
       delete updateData.kyc;
@@ -132,16 +112,34 @@ export async function PUT(
     const providerResponse = provider.toObject();
     delete providerResponse.password;
 
-    return NextResponse.json(
-      { message: "Profile updated successfully", provider: providerResponse },
-      { status: 200, headers: getCorsHeaders(origin) }
-    );
-  } catch (error: any) {
-    console.error("Error updating provider:", error);
-    const origin = req.headers.get("origin");
-    return NextResponse.json(
-      { error: "Failed to update provider", details: error.message },
-      { status: 500, headers: getCorsHeaders(origin) }
-    );
+    return NextResponse.json({ success: true, message: "Profile updated successfully", data: providerResponse }, { status: 200, headers: corsHeaders });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+  }
+}
+
+// ───────────── GET: Fetch Provider ─────────────
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid or missing provider ID." }, { status: 400, headers: corsHeaders });
+    }
+
+    const provider = await Provider.findById(id);
+    if (!provider) return NextResponse.json({ success: false, message: "Provider not found." }, { status: 404, headers: corsHeaders });
+
+    const providerResponse = provider.toObject();
+    delete providerResponse.password;
+
+    return NextResponse.json({ success: true, data: providerResponse }, { status: 200, headers: corsHeaders });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
   }
 }
