@@ -252,9 +252,8 @@ export async function POST(req: NextRequest) {
             },
             {
                 headers: {
-                    // SMEPay doc says "Authorization: token : <value>"
-                    // If that's literal → use below format, else use `Bearer ${token}`
-                    Authorization: `Bearer ${token}`, "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
             }
         );
@@ -274,7 +273,7 @@ export async function POST(req: NextRequest) {
                 name: body.customer_details?.name,
                 email: body.customer_details?.email,
                 phone: body.customer_details?.mobile,
-                slug: data.order_slug, // 🔑 save SMEPay slug
+                slug: data.order_slug, 
                 customerId: body.customerId,
             },
             { upsert: true, new: true }
