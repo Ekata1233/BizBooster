@@ -97,7 +97,7 @@ export default function ProviderOnboardingPage() {
       }
 
       try {
-        const res = await axios.get(`https://biz-booster.vercel.app/api/provider/${providerId}`);
+        const res = await axios.get(`https://api.fetchtrue.com/api/provider/${providerId}`);
         const p = res.data;
 
         if (!p) {

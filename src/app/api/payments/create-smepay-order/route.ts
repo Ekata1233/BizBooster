@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
                 amount: body.amount,
                 order_id: order_id,
                 customerId: body.customerId,
-                callback_url: `https://biz-booster.vercel.app/api/payments/smepay-webhook?order_id=${order_id}&amount=${body.amount}`,
+                callback_url: `https://api.fetchtrue.com/api/payments/smepay-webhook?order_id=${order_id}&amount=${body.amount}`,
                 customer_details: body.customer_details,
             },
             {

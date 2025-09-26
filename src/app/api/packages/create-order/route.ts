@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           send_sms: false,
         },
         link_meta: {
-          return_url: `https://biz-booster.vercel.app/payment-success?customer_id=${customerId}`,
+          return_url: `https://api.fetchtrue.com/payment-success?customer_id=${customerId}`,
         },
       },
       {
