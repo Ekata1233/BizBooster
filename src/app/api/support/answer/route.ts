@@ -7,7 +7,7 @@ import { transporter } from '@/utils/nodemailer';
 
 
 
-
+export const runtime = "node";
 
 export async function POST(req: NextRequest) {
   try {

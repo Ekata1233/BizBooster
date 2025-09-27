@@ -1,11 +1,10 @@
 // src/app/api/provider/forgot-password/route.ts
-"use client"
 import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import crypto from "crypto";
 import { transporter } from "@/utils/nodemailer";
-
+export const runtime = "node";
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
