@@ -61,7 +61,7 @@ export default function UserMetaCard({
     setLoading(true);
 
     try {
-      const res = await fetch("https://biz-booster.vercel.app/api/distributePackageCommission", {
+      const res = await fetch("https://api.fetchtrue.com/api/distributePackageCommission", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

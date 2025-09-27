@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
         if (newTotalPaid >= effectivePackagePrice && !user.packageActive) {
           try {
             await axios.post(
-              "https://biz-booster.vercel.app/api/distributePackageCommission",
+              "https://api.fetchtrue.com/api/distributePackageCommission",
               { userId: user._id }
             );
           } catch (err: any) {

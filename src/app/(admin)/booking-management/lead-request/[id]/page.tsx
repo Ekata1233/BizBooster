@@ -48,7 +48,7 @@ const LeadRequestDetails = () => {
   useEffect(() => {
     const fetchCommission = async () => {
       try {
-        const res = await axios.get("https://biz-booster.vercel.app/api/commission");
+        const res = await axios.get("https://api.fetchtrue.com/api/commission");
         if (Array.isArray(res.data) && res.data.length > 0) {
           setAssurityFee(Number(res.data[0].assurityfee) || 0);
         }

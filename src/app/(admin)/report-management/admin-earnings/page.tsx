@@ -14,7 +14,7 @@ const Page = () => {
     const userId = "444c44d4444be444d4444444";
     const { wallet, fetchWalletByUser } = useUserWallet();
     const { checkouts } = useCheckout();
-    const { summary,fetchSummary } = useAdminEarnings(); // ✅ get summary from context
+    const { summary, fetchSummary } = useAdminEarnings(); // ✅ get summary from context
 
     const [activeTab, setActiveTab] = useState<
         "all" | "credit" | "debit" | "package" | "lead" | "deposit"
@@ -28,9 +28,9 @@ const Page = () => {
         }
     }, [userId]);
 
-      useEffect(() => {
+    useEffect(() => {
         fetchSummary();
-      }, []);
+    }, []);
 
     const isWalletAvailable =
         !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
@@ -57,14 +57,14 @@ const Page = () => {
         return [
             {
                 title: "Balance",
-                amount: `₹${wallet?.balance?.toLocaleString() || 0}`,
+                amount:  `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
                 icon: <FaWallet />,
                 gradient: "from-green-100 to-green-200",
                 textColor: "text-green-800",
             },
             {
-                title: "Total Credits",
-                amount: `₹${wallet?.totalCredits?.toLocaleString() || 0}`,
+                title: "Total Earnings",
+                amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
                 icon: <FaMoneyBillWave />,
                 gradient: "from-blue-100 to-blue-200",
                 textColor: "text-blue-800",
@@ -223,35 +223,34 @@ const Page = () => {
                                             setActiveTab(tab as any);
                                             setCurrentPage(1);
                                         }}
-                                        className={`cursor-pointer px-4 py-2 ${
-                                            activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
-                                        }`}
+                                        className={`cursor-pointer px-4 py-2 ${activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+                                            }`}
                                     >
                                         {tab === "package"
                                             ? "Package Earnings"
                                             : tab === "lead"
-                                            ? "Lead Earnings"
-                                            : tab === "deposit"
-                                            ? "Deposit Collections"
-                                            : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                                ? "Lead Earnings"
+                                                : tab === "deposit"
+                                                    ? "Deposit Collections"
+                                                    : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                         <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                                             {tab === "all"
                                                 ? wallet.transactions.length
                                                 : tab === "package"
-                                                ? wallet.transactions.filter(
-                                                      (txn) => txn.description === "Team Build Commission - Admin"
-                                                  ).length
-                                                : tab === "lead"
-                                                ? wallet.transactions.filter(
-                                                      (txn) => txn.description === "Team Revenue - Admin"
-                                                  ).length
-                                                : tab === "deposit"
-                                                ? wallet.transactions.filter(
-                                                      (txn) => txn.description === "Deposit"
-                                                  ).length
-                                                : wallet.transactions.filter(
-                                                      (txn) => txn.type === tab
-                                                  ).length}
+                                                    ? wallet.transactions.filter(
+                                                        (txn) => txn.description === "Team Build Commission - Admin"
+                                                    ).length
+                                                    : tab === "lead"
+                                                        ? wallet.transactions.filter(
+                                                            (txn) => txn.description === "Team Revenue - Admin"
+                                                        ).length
+                                                        : tab === "deposit"
+                                                            ? wallet.transactions.filter(
+                                                                (txn) => txn.description === "Deposit"
+                                                            ).length
+                                                            : wallet.transactions.filter(
+                                                                (txn) => txn.type === tab
+                                                            ).length}
                                         </span>
                                     </li>
                                 ))}
