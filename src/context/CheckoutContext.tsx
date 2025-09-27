@@ -28,7 +28,7 @@ export interface Checkout {
   isPartialPayment: boolean;
   platformFeePrice?: number;
   assurityChargesPrice?:number;
-
+paidAmount?:number;
   remainingPaymentStatus?: string;
   commission?: number;
   subtotal?: number;

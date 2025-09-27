@@ -5,10 +5,12 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Input from '@/components/form/input/InputField';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import { EyeIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
 import Pagination from '@/components/tables/Pagination';
+import * as XLSX from 'xlsx';
+import { FaFileDownload } from 'react-icons/fa';
 
 interface BookingRow {
   _id: string;
@@ -20,33 +22,25 @@ interface BookingRow {
   bookingDate: string;
   orderStatus: string;
   provider?: any;
-  isCompleted: boolean; // ✅ new field
+  isCompleted: boolean;
+  isAccepted?: boolean;
+  isCancel?: boolean;
+  isPartialPayment?: boolean;
+  paidAmount?: number;
 }
 
 const BookingRequests = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1); // ✅ new
+  const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
   useEffect(() => {
     fetchCheckouts();
   }, []);
 
-  useEffect(() => {
-    if (checkouts.length > 0) {
-      console.log('Checkout Data:', checkouts);
-    }
-    if (error) {
-      console.error('Checkout Error:', error);
-    }
-  }, [checkouts, error]);
-
   const columns = [
-    {
-      header: 'Booking ID',
-      accessor: 'bookingId',
-    },
+    { header: 'Booking ID', accessor: 'bookingId' },
     {
       header: 'Customer Info',
       accessor: 'customerInfo',
@@ -64,10 +58,6 @@ const BookingRequests = () => {
         <span className="text-gray-800 font-semibold">₹ {row.totalAmount}</span>
       ),
     },
-
-    // ✅ NEW COLUMN: Booking Status based on isCompleted
-
-
     {
       header: 'Booking Date',
       accessor: 'bookingDate',
@@ -95,26 +85,19 @@ const BookingRequests = () => {
     {
       header: 'Payment Status',
       accessor: 'paymentStatus',
-      render: (row: BookingRow & { isPartialPayment?: boolean; paidAmount?: number }) => {
+      render: (row: BookingRow) => {
         let status = row.paymentStatus;
-
-        // Rule 1: Unpaid if paidAmount is 0
-        if (row.paidAmount === 0) {
-          status = 'unpaid';
-        }
-        // Rule 2: Part payment if partial payment flag is true
-        else if (row.isPartialPayment) {
-          status = 'partpay';
-        }
+        if (row.paidAmount === 0) status = 'unpaid';
+        else if (row.isPartialPayment) status = 'partpay';
 
         const statusColor =
           status === 'paid'
             ? 'bg-green-100 text-green-700 border-green-300'
             : status === 'unpaid'
-              ? 'bg-red-100 text-red-700 border-red-300'
-              : status === 'partpay'
-                ? 'bg-purple-100 text-purple-700 border-purple-300'
-                : 'bg-yellow-100 text-yellow-700 border-yellow-300';
+            ? 'bg-red-100 text-red-700 border-red-300'
+            : status === 'partpay'
+            ? 'bg-purple-100 text-purple-700 border-purple-300'
+            : 'bg-yellow-100 text-yellow-700 border-yellow-300';
 
         return (
           <span className={`px-3 py-1 rounded-full text-sm border ${statusColor}`}>
@@ -126,7 +109,7 @@ const BookingRequests = () => {
     {
       header: 'Booking Status',
       accessor: 'bookingStatus',
-      render: (row: BookingRow & { isCancel?: boolean } & { isAccepted?: boolean }) => {
+      render: (row: BookingRow) => {
         let label = '';
         let colorClass = '';
 
@@ -151,7 +134,6 @@ const BookingRequests = () => {
         );
       },
     },
-
     {
       header: 'Action',
       accessor: 'action',
@@ -162,35 +144,45 @@ const BookingRequests = () => {
               <EyeIcon />
             </button>
           </Link>
-          {/* <button
-            onClick={() => alert(`Editing booking ID: ${row.bookingId}`)}
-            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-          >
-            <PencilIcon />
-          </button> */}
-          {/* <button
-            onClick={() => alert(`Deleting booking ID: ${row.bookingId}`)}
-            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-          >
-            <TrashBinIcon />
-          </button> */}
         </div>
       ),
     },
   ];
 
+  // ✅ Filter for search across multiple fields + only requests
   const filteredData = checkouts
-    .filter((checkout) =>
-      checkout.bookingId?.toLowerCase().includes(search.toLowerCase()) &&
-      checkout.isAccepted === false
-    )
+    .filter((checkout) => {
+      if (checkout.isAccepted) return false; // Only requests
+
+      const searchTerm = search.toLowerCase();
+      const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || '';
+      const email = checkout.serviceCustomer?.email?.toLowerCase() || '';
+      const bookingId = checkout.bookingId?.toLowerCase() || '';
+      const paymentStatus = checkout.paymentStatus?.toLowerCase() || '';
+      const orderStatus = checkout.orderStatus?.toLowerCase() || '';
+      const isCompleted = checkout.isCompleted ? 'completed' : '';
+      const isCanceled = checkout.isCanceled ? 'cancelled' : '';
+      const bookingDate = new Date(checkout.createdAt).toLocaleDateString().toLowerCase();
+
+      return (
+        bookingId.includes(searchTerm) ||
+        fullName.includes(searchTerm) ||
+        email.includes(searchTerm) ||
+        paymentStatus.includes(searchTerm) ||
+        orderStatus.includes(searchTerm) ||
+        isCompleted.includes(searchTerm) ||
+        isCanceled.includes(searchTerm) ||
+        bookingDate.includes(searchTerm)
+      );
+    })
     .map((checkout) => ({
       bookingId: checkout.bookingId,
       fullName: checkout.serviceCustomer?.fullName,
       email: checkout.serviceCustomer?.email,
-      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
-        ? Number(checkout.grandTotal)
-        : Number(checkout.totalAmount),
+      totalAmount:
+        Number(checkout.grandTotal ?? 0) > 0
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount),
       paymentStatus: checkout?.paymentStatus || 'unpaid',
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,
@@ -200,6 +192,7 @@ const BookingRequests = () => {
       isCancel: checkout.isCanceled,
       isAccepted: checkout.isAccepted,
       isPartialPayment: checkout.isPartialPayment,
+      paidAmount: checkout.paidAmount,
     }));
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
@@ -207,15 +200,58 @@ const BookingRequests = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
 
+  // ✅ Excel Download
+  const handleDownload = () => {
+    if (filteredData.length === 0) {
+      alert('No booking data available');
+      return;
+    }
+
+    const dataToExport = filteredData.map((b) => ({
+      'Booking ID': b.bookingId,
+      'Customer Name': b.fullName,
+      Email: b.email,
+      'Total Amount': b.totalAmount,
+      'Payment Status': b.paymentStatus,
+      'Booking Date': new Date(b.bookingDate).toLocaleString(),
+      'Provider Status': b.provider ? 'Assigned' : 'Unassigned',
+      'Booking Status': b.isCancel
+        ? 'Cancelled'
+        : b.isCompleted
+        ? 'Completed'
+        : b.isAccepted
+        ? 'Accepted'
+        : 'Pending',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'BookingRequests');
+    XLSX.writeFile(workbook, 'Booking_Requests.xlsx');
+  };
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Booking Requests" />
       <div className="space-y-6">
-        <ComponentCard title="Booking Requests">
+        <ComponentCard
+          title={
+            <div className="flex justify-between items-center w-full">
+              <span>Booking Requests</span>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+              >
+                <FaFileDownload className="w-5 h-5" />
+                <span>Download Excel</span>
+              </button>
+            </div>
+          }
+        >
           <div className="mb-4">
             <Input
               type="text"
-              placeholder="Search by Booking ID…"
+              placeholder="Search by any field…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200"
@@ -227,18 +263,17 @@ const BookingRequests = () => {
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : filteredData.length > 0 ? (
-           <>
-                         <BasicTableOne columns={columns} data={currentRows} />
-                         {/* ✅ Pagination added */}
-                         <div className="flex justify-center mt-4">
-                           <Pagination
-                             currentPage={currentPage}
-                             totalItems={filteredData.length}
-                             totalPages={totalPages}
-                             onPageChange={setCurrentPage}
-                           />
-                         </div>
-                       </>
+            <>
+              <BasicTableOne columns={columns} data={currentRows} />
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredData.length}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-gray-500">No bookings to display.</p>
           )}
