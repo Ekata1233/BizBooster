@@ -40,7 +40,10 @@ const CompletedBookings = () => {
   }, []);
 
   const columns = [
-    
+     {
+      header: 'S.No',
+      accessor: 'serialNo', // Serial number column
+    },
     { header: 'Booking ID', accessor: 'bookingId' },
     {
       header: 'Customer Info',
@@ -164,8 +167,12 @@ const CompletedBookings = () => {
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
-
+ const currentRows = filteredData
+  .slice(indexOfFirstRow, indexOfLastRow)
+  .map((row, idx) => ({
+    ...row,
+    serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx), // 🔹 Descending S.No
+  }));
   // ✅ Download Excel
   const handleDownload = () => {
     if (filteredData.length === 0) {
@@ -173,7 +180,8 @@ const CompletedBookings = () => {
       return;
     }
 
-    const dataToExport = filteredData.map((b) => ({
+    const dataToExport = filteredData.map((b,idx) => ({
+      'S.No': idx + 1,
       'Booking ID': b.bookingId,
       'Customer Name': b.fullName,
       Email: b.email,

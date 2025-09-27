@@ -36,6 +36,10 @@ const AllBookings = () => {
   }, []);
 
   const columns = [
+    {
+      header: 'S.No',
+      accessor: 'serialNo', // Serial number column
+    },
     { header: 'Booking ID', accessor: 'bookingId' },
     {
       header: 'Customer Info',
@@ -145,57 +149,64 @@ const AllBookings = () => {
     },
   ];
 
- const filteredData = checkouts
-  .filter((checkout) => {
-    const searchTerm = search.toLowerCase();
+  const filteredData = checkouts
+    .filter((checkout) => {
+      const searchTerm = search.toLowerCase();
 
-    const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || '';
-    const email = checkout.serviceCustomer?.email?.toLowerCase() || '';
-    const bookingId = checkout.bookingId?.toLowerCase() || '';
-    const paymentStatus = checkout.paymentStatus?.toLowerCase() || '';
-    const orderStatus = checkout.orderStatus?.toLowerCase() || '';
-    const isCompleted = checkout.isCompleted ? 'completed' : '';
-    const isCanceled = checkout.isCanceled ? 'cancelled' : '';
-    const isAccepted = checkout.isAccepted && !checkout.isCompleted ? 'accepted' : '';
-    const bookingDate = new Date(checkout.createdAt).toLocaleDateString().toLowerCase();
+      const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || '';
+      const email = checkout.serviceCustomer?.email?.toLowerCase() || '';
+      const bookingId = checkout.bookingId?.toLowerCase() || '';
+      const paymentStatus = checkout.paymentStatus?.toLowerCase() || '';
+      const orderStatus = checkout.orderStatus?.toLowerCase() || '';
+      const isCompleted = checkout.isCompleted ? 'completed' : '';
+      const isCanceled = checkout.isCanceled ? 'cancelled' : '';
+      const isAccepted = checkout.isAccepted && !checkout.isCompleted ? 'accepted' : '';
+      const bookingDate = new Date(checkout.createdAt).toLocaleDateString().toLowerCase();
 
-    return (
-      bookingId.includes(searchTerm) ||
-      fullName.includes(searchTerm) ||
-      email.includes(searchTerm) ||
-      paymentStatus.includes(searchTerm) ||
-      orderStatus.includes(searchTerm) ||
-      isCompleted.includes(searchTerm) ||
-      isCanceled.includes(searchTerm) ||
-      isAccepted.includes(searchTerm) ||
-      bookingDate.includes(searchTerm)
-    );
-  })
-  .map((checkout) => ({
-    bookingId: checkout.bookingId,
-    fullName: checkout.serviceCustomer?.fullName,
-    email: checkout.serviceCustomer?.email,
-    totalAmount:
-      Number(checkout.grandTotal ?? 0) > 0
-        ? Number(checkout.grandTotal)
-        : Number(checkout.totalAmount),
-    paymentStatus: checkout?.paymentStatus,
-    bookingDate: checkout?.createdAt,
-    orderStatus: checkout.orderStatus,
-    _id: checkout._id,
-    provider: checkout.provider,
-    isCompleted: checkout.isCompleted,
-    isCancel: checkout.isCanceled,
-    isAccepted: checkout.isAccepted,
-    isPartialPayment: checkout.isPartialPayment,
-    paidAmount: checkout.paidAmount,
-  }));
-
+      return (
+        bookingId.includes(searchTerm) ||
+        fullName.includes(searchTerm) ||
+        email.includes(searchTerm) ||
+        paymentStatus.includes(searchTerm) ||
+        orderStatus.includes(searchTerm) ||
+        isCompleted.includes(searchTerm) ||
+        isCanceled.includes(searchTerm) ||
+        isAccepted.includes(searchTerm) ||
+        bookingDate.includes(searchTerm)
+      );
+    })
+    .map((checkout) => ({
+      bookingId: checkout.bookingId,
+      fullName: checkout.serviceCustomer?.fullName,
+      email: checkout.serviceCustomer?.email,
+      totalAmount:
+        Number(checkout.grandTotal ?? 0) > 0
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount),
+      paymentStatus: checkout?.paymentStatus,
+      bookingDate: checkout?.createdAt,
+      orderStatus: checkout.orderStatus,
+      _id: checkout._id,
+      provider: checkout.provider,
+      isCompleted: checkout.isCompleted,
+      isCancel: checkout.isCanceled,
+      isAccepted: checkout.isAccepted,
+      isPartialPayment: checkout.isPartialPayment,
+      paidAmount: checkout.paidAmount,
+    }));
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Add serial number to each row
+  const currentRows = filteredData
+  .slice(indexOfFirstRow, indexOfLastRow)
+  .map((row, idx) => ({
+    ...row,
+    serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx), // 🔹 Descending S.No
+  }));
+
 
   // ✅ Excel Download
   const handleDownload = () => {
@@ -204,7 +215,8 @@ const AllBookings = () => {
       return;
     }
 
-    const dataToExport = filteredData.map((b) => ({
+    const dataToExport = filteredData.map((b, idx) => ({
+      'S.No': idx + 1,
       'Booking ID': b.bookingId,
       'Customer Name': b.fullName,
       Email: b.email,
