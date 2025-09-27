@@ -40,6 +40,7 @@ const CompletedBookings = () => {
   }, []);
 
   const columns = [
+    
     { header: 'Booking ID', accessor: 'bookingId' },
     {
       header: 'Customer Info',
