@@ -54,12 +54,17 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const deleteAd = async (id: string) => {
+    const deleteAd = async (id: string): Promise<boolean> => {
     try {
-      await axios.delete(`/api/ads/${id}`);
-      setAds(prev => prev.filter(ad => ad._id !== id));
-    } catch (err) {
-      console.error('Failed to delete ad:', err);
+      const res = await axios.delete(`/api/ads/${id}`);
+      if (res.data.success) {
+        setAds((prev) => prev.filter((ad) => ad._id !== id));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error deleting ad:", error);
+      return false;
     }
   };
 

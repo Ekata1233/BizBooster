@@ -21,7 +21,7 @@ interface AdTableData {
 }
 
 const AdListPage = () => {
-    const { ads, fetchAds } = useAdContext();
+    const { ads, fetchAds, deleteAd, deleteAllAds } = useAdContext();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [filteredAds, setFilteredAds] = useState<AdTableData[]>([]);
@@ -38,7 +38,7 @@ const AdListPage = () => {
             categoryName: ad.category?.name || 'N/A',
             serviceName: ad.service?.serviceName || 'N/A',
             status: ad.isApproved ? 'Approved' : 'Pending',
-            activeStatus: ad.isExpired ? 'Inactive' : 'Active', // ✅ corrected logic
+            activeStatus: ad.isExpired ? 'Inactive' : 'Active',
         }));
 
         const filtered = formatted.filter(ad =>
@@ -56,7 +56,6 @@ const AdListPage = () => {
         return filteredAds;
     };
 
-    // ✅ Counts for tabs
     const counts = {
         all: filteredAds.length,
         approved: filteredAds.filter(ad => ad.status === 'Approved').length,
@@ -65,11 +64,20 @@ const AdListPage = () => {
         inactive: filteredAds.filter(ad => ad.activeStatus === 'Inactive').length,
     };
 
+    const handleDelete = async (id: string) => {
+        if (confirm("Are you sure you want to delete this ad?")) {
+            await deleteAd(id);
+        }
+    };
+
+    const handleDeleteAll = async () => {
+        if (confirm("Are you sure you want to delete ALL ads? This cannot be undone.")) {
+            await deleteAllAds();
+        }
+    };
+
     const columns = [
-        {
-            header: 'Title',
-            accessor: 'title',
-        },
+        { header: 'Title', accessor: 'title' },
         {
             header: 'Preview',
             accessor: 'fileUrl',
@@ -83,14 +91,8 @@ const AdListPage = () => {
                 />
             ),
         },
-        {
-            header: 'Category',
-            accessor: 'categoryName',
-        },
-        {
-            header: 'Service',
-            accessor: 'serviceName',
-        },
+        { header: 'Category', accessor: 'categoryName' },
+        { header: 'Service', accessor: 'serviceName' },
         {
             header: 'Status',
             accessor: 'status',
@@ -98,9 +100,7 @@ const AdListPage = () => {
                 const isApproved = row.status === 'Approved';
                 const color = isApproved ? 'green' : 'yellow';
                 return (
-                    <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
-                    >
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}>
                         {row.status}
                     </span>
                 );
@@ -113,9 +113,7 @@ const AdListPage = () => {
                 const isActive = row.activeStatus === 'Active';
                 const color = isActive ? 'green' : 'red';
                 return (
-                    <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
-                    >
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}>
                         {row.activeStatus}
                     </span>
                 );
@@ -127,7 +125,7 @@ const AdListPage = () => {
             render: (row: AdTableData) => (
                 <div className="flex gap-2">
                     <button
-                        onClick={() => alert(`Delete Ad ID: ${row.id}`)}
+                        onClick={() => handleDelete(row.id)}
                         className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
                     >
                         <TrashBinIcon size={16} />
@@ -148,16 +146,19 @@ const AdListPage = () => {
 
             <div className="my-5">
                 <ComponentCard title="Ads List">
-                    <div className="mb-4">
+                    
+                    {/* 🔎 Search + Delete All */}
+                    <div className="flex justify-between mb-4">
                         <Input
                             type="text"
                             placeholder="Search by ad title"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                       
                     </div>
 
-                    {/* ✅ Tabs with counts */}
+                    {/* 📌 Tabs */}
                     <div className="border-b border-gray-200 mb-4">
                         <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
                             {[
@@ -169,8 +170,7 @@ const AdListPage = () => {
                             ].map((tab) => (
                                 <li
                                     key={tab.key}
-                                    className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? "border-b-2 border-blue-600 text-blue-600" : ""
-                                        }`}
+                                    className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? "border-b-2 border-blue-600 text-blue-600" : ""}`}
                                     onClick={() => setActiveTab(tab.key)}
                                 >
                                     {tab.label}
@@ -182,7 +182,7 @@ const AdListPage = () => {
                         </ul>
                     </div>
 
-
+                    {/* 📋 Table */}
                     {getFilteredByStatus().length > 0 ? (
                         <BasicTableOne columns={columns} data={getFilteredByStatus()} />
                     ) : (

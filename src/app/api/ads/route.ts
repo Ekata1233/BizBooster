@@ -81,25 +81,17 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+    // Expire all ads whose endDate has passed (date + time check)
+    await Ad.updateMany(
+      { endDate: { $lte: new Date() }, isExpired: false },
+      { $set: { isExpired: true } }
+    );
 
-    // Find all ads
+    // Fetch updated ads with relations
     const ads = await Ad.find().populate("category service provider");
 
-    // Check for expiry and update if needed
-    const updatePromises = ads.map(async (ad: any) => {
-      const adEndDate = new Date(ad.endDate).toISOString().split("T")[0];
-      if (adEndDate === today && !ad.isExpired) {
-        ad.isExpired = true;
-        await ad.save();
-      }
-      return ad;
-    });
-
-    const updatedAds = await Promise.all(updatePromises);
-
     return NextResponse.json(
-      { success: true, data: updatedAds },
+      { success: true, data: ads },
       { headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -110,3 +102,4 @@ export async function GET() {
     );
   }
 }
+
