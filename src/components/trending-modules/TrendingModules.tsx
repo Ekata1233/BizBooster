@@ -159,7 +159,7 @@ const TrendingModules = () => {
     if (!confirm(confirmMsg)) return
 
     try {
-      await axios.patch('http://localhost:3000/api/trending-modules', {
+      await axios.patch('/api/trending-modules', {
         moduleId: selectedModule,
         serviceId: service._id,
         isTrending: newStatus,

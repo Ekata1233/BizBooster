@@ -5,10 +5,12 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Input from '@/components/form/input/InputField';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import { EyeIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
 import Pagination from '@/components/tables/Pagination';
+import * as XLSX from 'xlsx';
+import { FaFileDownload } from 'react-icons/fa';
 
 interface BookingRow {
   _id: string;
@@ -20,34 +22,25 @@ interface BookingRow {
   bookingDate: string;
   orderStatus: string;
   provider?: any;
-  isCompleted: boolean; // ✅ new field
-
+  isCompleted: boolean;
 }
 
 const AllBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1); // ✅ new
+  const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
   useEffect(() => {
     fetchCheckouts();
   }, []);
 
-  useEffect(() => {
-    if (checkouts.length > 0) {
-      console.log('Checkout Data:', checkouts);
-    }
-    if (error) {
-      console.error('Checkout Error:', error);
-    }
-  }, [checkouts, error]);
-
   const columns = [
     {
-      header: 'Booking ID',
-      accessor: 'bookingId',
+      header: 'S.No',
+      accessor: 'serialNo', // Serial number column
     },
+    { header: 'Booking ID', accessor: 'bookingId' },
     {
       header: 'Customer Info',
       accessor: 'customerInfo',
@@ -65,10 +58,6 @@ const AllBookings = () => {
         <span className="text-gray-800 font-semibold">₹ {row.totalAmount}</span>
       ),
     },
-
-    // ✅ NEW COLUMN: Booking Status based on isCompleted
-
-
     {
       header: 'Booking Date',
       accessor: 'bookingDate',
@@ -98,24 +87,17 @@ const AllBookings = () => {
       accessor: 'paymentStatus',
       render: (row: BookingRow & { isPartialPayment?: boolean; paidAmount?: number }) => {
         let status = row.paymentStatus;
-
-        // Rule 1: Unpaid if paidAmount is 0
-        if (row.paidAmount === 0) {
-          status = 'unpaid';
-        }
-        // Rule 2: Part payment if partial payment flag is true
-        else if (row.isPartialPayment) {
-          status = 'partpay';
-        }
+        if (row.paidAmount === 0) status = 'unpaid';
+        else if (row.isPartialPayment) status = 'partpay';
 
         const statusColor =
           status === 'paid'
             ? 'bg-green-100 text-green-700 border-green-300'
             : status === 'unpaid'
-              ? 'bg-red-100 text-red-700 border-red-300'
-              : status === 'partpay'
-                ? 'bg-purple-100 text-purple-700 border-purple-300'
-                : 'bg-yellow-100 text-yellow-700 border-yellow-300';
+            ? 'bg-red-100 text-red-700 border-red-300'
+            : status === 'partpay'
+            ? 'bg-purple-100 text-purple-700 border-purple-300'
+            : 'bg-yellow-100 text-yellow-700 border-yellow-300';
 
         return (
           <span className={`px-3 py-1 rounded-full text-sm border ${statusColor}`}>
@@ -152,7 +134,6 @@ const AllBookings = () => {
         );
       },
     },
-
     {
       header: 'Action',
       accessor: 'action',
@@ -163,34 +144,45 @@ const AllBookings = () => {
               <EyeIcon />
             </button>
           </Link>
-          {/* <button
-            onClick={() => alert(`Editing booking ID: ${row.bookingId}`)}
-            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-          >
-            <PencilIcon />
-          </button> */}
-          {/* <button
-            onClick={() => alert(`Deleting booking ID: ${row.bookingId}`)}
-            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-          >
-            <TrashBinIcon />
-          </button> */}
         </div>
       ),
     },
   ];
 
   const filteredData = checkouts
-    .filter((checkout) =>
-      checkout.bookingId?.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((checkout) => {
+      const searchTerm = search.toLowerCase();
+
+      const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || '';
+      const email = checkout.serviceCustomer?.email?.toLowerCase() || '';
+      const bookingId = checkout.bookingId?.toLowerCase() || '';
+      const paymentStatus = checkout.paymentStatus?.toLowerCase() || '';
+      const orderStatus = checkout.orderStatus?.toLowerCase() || '';
+      const isCompleted = checkout.isCompleted ? 'completed' : '';
+      const isCanceled = checkout.isCanceled ? 'cancelled' : '';
+      const isAccepted = checkout.isAccepted && !checkout.isCompleted ? 'accepted' : '';
+      const bookingDate = new Date(checkout.createdAt).toLocaleDateString().toLowerCase();
+
+      return (
+        bookingId.includes(searchTerm) ||
+        fullName.includes(searchTerm) ||
+        email.includes(searchTerm) ||
+        paymentStatus.includes(searchTerm) ||
+        orderStatus.includes(searchTerm) ||
+        isCompleted.includes(searchTerm) ||
+        isCanceled.includes(searchTerm) ||
+        isAccepted.includes(searchTerm) ||
+        bookingDate.includes(searchTerm)
+      );
+    })
     .map((checkout) => ({
       bookingId: checkout.bookingId,
       fullName: checkout.serviceCustomer?.fullName,
       email: checkout.serviceCustomer?.email,
-      totalAmount: (Number(checkout.grandTotal ?? 0) > 0)
-        ? Number(checkout.grandTotal)
-        : Number(checkout.totalAmount),
+      totalAmount:
+        Number(checkout.grandTotal ?? 0) > 0
+          ? Number(checkout.grandTotal)
+          : Number(checkout.totalAmount),
       paymentStatus: checkout?.paymentStatus,
       bookingDate: checkout?.createdAt,
       orderStatus: checkout.orderStatus,
@@ -200,19 +192,71 @@ const AllBookings = () => {
       isCancel: checkout.isCanceled,
       isAccepted: checkout.isAccepted,
       isPartialPayment: checkout.isPartialPayment,
+      paidAmount: checkout.paidAmount,
     }));
-
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Add serial number to each row
+  const currentRows = filteredData
+  .slice(indexOfFirstRow, indexOfLastRow)
+  .map((row, idx) => ({
+    ...row,
+    serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx), // 🔹 Descending S.No
+  }));
+
+
+  // ✅ Excel Download
+  const handleDownload = () => {
+    if (filteredData.length === 0) {
+      alert('No booking data available');
+      return;
+    }
+
+    const dataToExport = filteredData.map((b, idx) => ({
+      'S.No': idx + 1,
+      'Booking ID': b.bookingId,
+      'Customer Name': b.fullName,
+      Email: b.email,
+      'Total Amount': b.totalAmount,
+      'Payment Status': b.paymentStatus,
+      'Booking Date': new Date(b.bookingDate).toLocaleString(),
+      'Provider Status': b.provider ? 'Assigned' : 'Unassigned',
+      'Booking Status': b.isCancel
+        ? 'Cancelled'
+        : b.isCompleted
+        ? 'Completed'
+        : b.isAccepted
+        ? 'Accepted'
+        : 'Pending',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
+    XLSX.writeFile(workbook, 'All_Bookings.xlsx');
+  };
 
   return (
     <div>
       <PageBreadcrumb pageTitle="All Bookings" />
       <div className="space-y-6">
-        <ComponentCard title="All Bookings">
+        <ComponentCard
+          title={
+            <div className="flex justify-between items-center w-full">
+              <span>All Bookings</span>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+              >
+                <FaFileDownload className="w-5 h-5" />
+                <span>Download Excel</span>
+              </button>
+            </div>
+          }
+        >
           <div className="mb-4">
             <Input
               type="text"
@@ -223,16 +267,6 @@ const AllBookings = () => {
             />
           </div>
 
-          {/* {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
-          ) : filteredData.length > 0 ? (
-            <BasicTableOne columns={columns} data={filteredData} />
-          ) : (
-            <p className="text-sm text-gray-500">No bookings to display.</p>
-          )} */}
-
           {loading ? (
             <p>Loading...</p>
           ) : error ? (
@@ -240,7 +274,6 @@ const AllBookings = () => {
           ) : filteredData.length > 0 ? (
             <>
               <BasicTableOne columns={columns} data={currentRows} />
-              {/* ✅ Pagination added */}
               <div className="flex justify-center mt-4">
                 <Pagination
                   currentPage={currentPage}
