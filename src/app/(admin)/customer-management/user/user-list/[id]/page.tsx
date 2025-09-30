@@ -36,9 +36,9 @@ const UserDetails = () => {
     if (userId) {
       fetchSingleUser(userId);
     }
-    
+
   }, [userId]);
-    console.log("user detail:",singleUser);
+  console.log("user detail:", singleUser);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
@@ -62,20 +62,20 @@ const UserDetails = () => {
     <div>
       <PageBreadcrumb pageTitle="User Details" />
       <div className="space-y-6">
-    <UserMetaCard
-  imageSrc={singleUser?.profilePhoto || "/images/logo/user1.png"}
-  name={singleUser.fullName}
-  role={singleUser.email}
-  location={
-    singleUser?.homeAddress?.fullAddress ||
-    singleUser?.workAddress?.fullAddress ||
-    "No Address"
-  }
-  userId={singleUser._id}
-  isCommissionDistribute={singleUser.isCommissionDistribute}
-  isToggleButton={true}
-  franchiseId={singleUser.userId}
-/>
+        <UserMetaCard
+          imageSrc={singleUser?.profilePhoto || "/images/logo/user1.png"}
+          name={singleUser.fullName}
+          role={singleUser.email}
+          location={
+            singleUser?.homeAddress?.fullAddress ||
+            singleUser?.workAddress?.fullAddress ||
+            "No Address"
+          }
+          userId={singleUser._id}
+          isCommissionDistribute={singleUser.isCommissionDistribute}
+          isToggleButton={true}
+          franchiseId={singleUser.userId}
+        />
 
 
         {/* Tabs */}
@@ -84,11 +84,10 @@ const UserDetails = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md border ${
-                activeTab === tab.key
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md border ${activeTab === tab.key
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -124,7 +123,7 @@ const UserDetails = () => {
             <SelfLeadTable userId={userId || ' '} isAction={true} />
           )}
 
-           {activeTab === 'teamLead' && (
+          {activeTab === 'teamLead' && (
             <TeamLeadTable userId={userId || ' '} isAction={true} />
           )}
 

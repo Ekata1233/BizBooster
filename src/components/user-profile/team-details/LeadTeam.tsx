@@ -44,14 +44,14 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const { users: ctxUsers } = useUserContext() as unknown as { users: unknown };
   const [dataTeamLead, setDataTeamLead] = useState<TeamLeadData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [myEarnings3, setMyEarnings3] = useState<number>(0);
-
-const fallbackUserImg = "/images/logo/user1.png"; 
+  const [myEarnings3Data, setMyEarnings3Data] = useState<any[]>([]);
+  const fallbackUserImg = "/images/logo/user1.png";
 
   const params = useParams();
 
   const parentId = params?.id as string;
-  console.log("parent id : ", parentId)
+        console.log("My E 3: ", myEarnings3Data);
+
 
   /** Safely coerce context users into AppUser[] */
   const users: AppUser[] = useMemo(() => {
@@ -84,7 +84,7 @@ const fallbackUserImg = "/images/logo/user1.png";
 
         return {
           id: member._id,
-         userPhoto: member.profilePhoto || fallbackUserImg,
+          userPhoto: member.profilePhoto || fallbackUserImg,
           userName: member.fullName,
           userEmail: member.email,
           userPhone: member.mobileNumber,
@@ -108,7 +108,7 @@ const fallbackUserImg = "/images/logo/user1.png";
         const res = await fetch(`/api/team-build/my-team/${userId}`);
 
         const json = await res.json();
-        console.log("mbere dfd f ; ", json)
+        // console.log("mbere dfd f ; ", json)
 
 
         if (!cancelled && json?.success && Array.isArray(json?.team) && json.team.length > 0) {
@@ -164,30 +164,31 @@ const fallbackUserImg = "/images/logo/user1.png";
       try {
         const res = await fetch(`/api/team-build/my-team/${parentId}`);
         const json = await res.json();
-        console.log("my earnings data", json);
+        // console.log("my earnings data", json);
 
-        let earnings = 0;
+        const earningsData: any[] = [];
         const targetUserId = userId;
 
         if (json?.success && Array.isArray(json?.team)) {
           json.team.forEach((member: any) => {
-            if (member.user?._id === targetUserId) {
-              if (Array.isArray(member.team) && member.team.length > 0) {
-                earnings = member.team[0].totalEarningsFromShare_3 || 0;
-              }
+            // Check if member has children
+            if (Array.isArray(member.team) && member.team.length > 0) {
+              member.team.forEach((child: any) => {
+                // Only push if the child belongs to target user or just push all
+                earningsData.push({
+                  userId: child.user?._id,
+                  name: child.user?.name,
+                  email: child.user?.email,
+                  phone: child.user?.phone,
+                  totalEarningsFromShare_3: child.totalEarningsFromShare_3 || 0,
+                });
+              });
             }
-
-            member.team?.forEach((child: any) => {
-              if (child.user?._id === targetUserId) {
-                earnings = child.totalEarningsFromShare_3 || 0;
-              }
-            });
           });
         }
 
-        console.log("My Earnings level 3: ", earnings);
-
-        setMyEarnings3(earnings); // ✅ set state here
+        // console.log("My Earnings level 3 data: ", earningsData);
+        setMyEarnings3Data(earningsData); // ✅ set state here
       } catch (error) {
         console.error(error);
       }
@@ -267,15 +268,23 @@ const fallbackUserImg = "/images/logo/user1.png";
         </div>
       ),
     },
-   {
+    {
   header: 'My Earnings',
   accessor: 'myEarnings',
-  render: (row: TeamLeadData) => (
-    <div className="text-sm text-center">
-      <div>₹{myEarnings3.toLocaleString()}</div>
-      <div className="text-xs text-green-600 font-medium">(Completed)</div>
-    </div>
-  ),
+  render: (row: TeamLeadData) => {
+    // Find the earnings for this userId in the array
+    console.log("row of my earnigs: ", row)
+    const userEarnings = myEarnings3Data.find(
+      (item) => item.userId === row.id
+    )?.totalEarningsFromShare_3 || 0; // fallback to 0 if not found
+
+    return (
+      <div className="text-sm text-center">
+        <div>₹{userEarnings.toLocaleString()}</div>
+        <div className="text-xs text-green-600 font-medium">(Completed)</div>
+      </div>
+    );
+  },
 },
     {
       header: 'Lead',
