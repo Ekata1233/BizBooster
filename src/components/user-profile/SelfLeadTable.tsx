@@ -11,6 +11,11 @@ interface SelfLeadProps {
   userId: string;
   isAction: boolean;
 }
+interface ServiceCustomer {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+}
 
 interface CommissionData {
   checkoutId: string;
@@ -159,7 +164,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
 const mappedData = [...checkouts] // copy array to avoid mutating original
   .reverse() // reverse order so latest data is first
   .map((checkout, index) => {
-    const customer = checkout?.serviceCustomer || {};
+    const customer: ServiceCustomer = checkout?.serviceCustomer || {};
     const commissionEntry = commissions.find(
       (c) => c.checkoutId === checkout._id
     );
@@ -181,7 +186,7 @@ const mappedData = [...checkouts] // copy array to avoid mutating original
 
     return {
       id: checkout._id,
-      sr: index + 1, // serial number starts from 1 for latest
+       sr: checkouts.length - index, // serial number starts from 1 for latest
       leadId: checkout?.bookingId || "N/A",
       serviceName: checkout?.service?.serviceName || "N/A",
       userName: customer?.fullName || "N/A",
