@@ -57,7 +57,7 @@ const Page = () => {
         return [
             {
                 title: "Balance",
-                amount:  `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
+                amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
                 icon: <FaWallet />,
                 gradient: "from-green-100 to-green-200",
                 textColor: "text-green-800",
@@ -98,7 +98,7 @@ const Page = () => {
                 textColor: "text-teal-800",
             },
         ];
-    }, [wallet, summary]); // ✅ dependency updated
+    }, [wallet, summary]);
 
     // Filter + reverse transactions
     const filteredTransactions = useMemo(() => {

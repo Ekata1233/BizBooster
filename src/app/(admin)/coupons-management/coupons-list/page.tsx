@@ -20,7 +20,6 @@ import StatCard from '@/components/common/StatCard';
 import EditCouponModal from '@/components/coupon-component/EditCouponModal';
 import Link from 'next/link';
 
-
 /* -------------------------------------------------------------------------- */
 /* 🔖 interfaces                                                              */
 /* -------------------------------------------------------------------------- */
@@ -51,6 +50,7 @@ export interface CouponType {
 
 export interface TableData {
   id: string;
+  srNo: number;
   couponCode: string;
   couponType: string;
   discountTitle: string;
@@ -99,6 +99,7 @@ const CouponList: React.FC = () => {
   const [sort, setSort] = useState<'latest' | 'oldest' | 'ascending' | 'descending'>('latest');
 
   const [rows, setRows] = useState<TableData[]>([]);
+  const [allRows, setAllRows] = useState<TableData[]>([]); // Store all data for client-side filtering
   const [message, setMessage] = useState<string>('');
 
   /* ─── helpers ──────────────────────────────────────────────────────────── */
@@ -113,42 +114,37 @@ const CouponList: React.FC = () => {
   const formatAppliesTo = (c: CouponType) => {
     if (c.category) return categoryMap[c.category._id] ?? c.category.name;
     if (c.service) return c.service.serviceName;
-    if (c.couponType === 'customerWise') return 'Customer';     // fallback
+    if (c.couponType === 'customerWise') return 'Customer';
     return c.zone?.name ?? '-';
   };
 
-  /* ─── fetch + filter ───────────────────────────────────────────────────── */
+  /* ─── fetch data ───────────────────────────────────────────────────────── */
   useEffect(() => {
     fetchFilteredCoupons();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, filterType, sort]);
+  }, [filterType, sort]); // Remove search from dependencies
 
   const fetchFilteredCoupons = async () => {
     try {
       const params: Record<string, string> = {
-        ...(search && { search }),
         ...(filterType && { couponType: filterType }),
         ...(sort && { sort }),
       };
 
-      // const res = await axios.get<CouponType[]>('/api/coupon', { params });
-      // console.log("Coupons API response:", res.data); // ← debug log
-
-      // const data: CouponType[] = Array.isArray(res.data)
-      //   ? res.data
-      //   : res.data.data ?? [];
       const res = await axios.get<{ data: CouponType[] }>('/api/coupon', { params });
       const data: CouponType[] = res.data.data ?? [];
 
       if (data.length === 0) {
         setRows([]);
+        setAllRows([]);
         setMessage('No coupons found.');
         return;
       }
 
       /* map to table-friendly rows */
-      const mapped = data.map<TableData>((c,index) => ({
-        id: c._id,  srNo: index + 1, 
+      const mapped = data.map<TableData>((c, index) => ({
+        id: c._id,
+        srNo: index + 1,
         couponCode: c.couponCode,
         couponType: c.couponType,
         discountTitle: c.discountTitle,
@@ -158,7 +154,8 @@ const CouponList: React.FC = () => {
         status: !c.isActive || (c as any).isDeleted ? 'Expired' : 'Active',
       }));
 
-      setRows(mapped);
+      setAllRows(mapped); // Store all data
+      setRows(mapped); // Initially show all data
       setMessage('');
     } catch (e) {
       console.error(e);
@@ -166,12 +163,40 @@ const CouponList: React.FC = () => {
     }
   };
 
+  /* ─── search functionality ─────────────────────────────────────────────── */
+  useEffect(() => {
+    if (!search.trim()) {
+      setRows(allRows); // Show all data when search is empty
+      return;
+    }
+
+    const searchTerm = search.toLowerCase().trim();
+    
+    const filtered = allRows.filter(row => 
+      row.couponCode.toLowerCase().includes(searchTerm) ||
+      row.couponType.toLowerCase().includes(searchTerm) ||
+      row.discountTitle.toLowerCase().includes(searchTerm) ||
+      row.discount.toLowerCase().includes(searchTerm) ||
+      row.appliesTo.toLowerCase().includes(searchTerm) ||
+      row.validity.toLowerCase().includes(searchTerm) ||
+      row.status.toLowerCase().includes(searchTerm)
+    );
+
+    setRows(filtered);
+    
+    if (filtered.length === 0) {
+      setMessage('No coupons match your search criteria.');
+    } else {
+      setMessage('');
+    }
+  }, [search, allRows]);
+
   /* ─── actions ──────────────────────────────────────────────────────────── */
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this coupon?')) return;
     try {
       await deleteCoupon(id);
-      await fetchFilteredCoupons();
+      await fetchFilteredCoupons(); // Refresh data
       alert('Coupon deleted.');
     } catch (e) {
       console.error(e);
@@ -188,15 +213,13 @@ const CouponList: React.FC = () => {
     }
   };
 
-
   /* ─── table columns ────────────────────────────────────────────────────── */
   const columns = [
-     { header: 'Sr No.', accessor: 'srNo' },
+    { header: 'Sr No.', accessor: 'srNo' },
     { header: 'Code', accessor: 'couponCode' },
     { header: 'Type', accessor: 'couponType' },
     { header: 'Title', accessor: 'discountTitle' },
     { header: 'Discount', accessor: 'discount' },
-    // { header: 'Applies To', accessor: 'appliesTo' },
     { header: 'Validity', accessor: 'validity' },
     {
       header: 'Status',
@@ -219,13 +242,11 @@ const CouponList: React.FC = () => {
       render: (row: TableData) => (
         <div className="flex gap-2">
           <Link href={`/coupons-management/coupons-list/update-coupon/${row.id}`} passHref>
-
-          <button
-            
-            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-          >
-            <PencilIcon />
-          </button>
+            <button
+              className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+            >
+              <PencilIcon />
+            </button>
           </Link>
           <button
             onClick={() => handleDelete(row.id)}
@@ -233,11 +254,6 @@ const CouponList: React.FC = () => {
           >
             <TrashBinIcon />
           </button>
-          {/* <button
-            className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white"
-          >
-            <EyeIcon />
-          </button> */}
           <Link href={`/coupons-management/coupons-list/${row.id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
               <EyeIcon />
@@ -255,48 +271,16 @@ const CouponList: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Search & Filter Section */}
         <div className="w-full lg:w-3/4 my-5 flex flex-col">
-          <ComponentCard title="Search & Filter" className=" h-full">
+          <ComponentCard title="Search & Filter" className="h-full">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 py-3">
-              {/* Coupon Type Filter */}
-              <div>
-                <Label>Coupon Type</Label>
-                <div className="relative">
-                  <Select
-                    options={[{ value: '', label: 'All' }, ...couponTypeOptions]}
-                    placeholder="Select Type"
-                    onChange={setFilterType}
-                    className="dark:bg-dark-900"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
-                </div>
-              </div>
-
-              {/* Sort */}
-              <div>
-                <Label>Sort</Label>
-                <div className="relative">
-                  <Select
-                    options={sortOptions}
-                    placeholder="Sort by"
-                    onChange={(val) => setSort(val as "latest" | "oldest" | "ascending" | "descending")}
-                    className="dark:bg-dark-900"
-                  />
-
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400">
-                    <ChevronDownIcon />
-                  </span>
-                </div>
-              </div>
-
-              {/* Search */}
-              <div>
-                <Label>Search by Code</Label>
+              {/* Universal Search Bar */}
+              <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                <Label>Search Coupons</Label>
                 <Input
-                  placeholder="e.g. SAVE15"
+                  placeholder="Search by code, type, title, discount, applies to, validity, or status..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  className="w-full"
                 />
               </div>
             </div>
@@ -318,15 +302,23 @@ const CouponList: React.FC = () => {
         </div>
       </div>
 
-
-      {/* ▸─ table ─────────────────────────────────────────────────────────── */}
+      {/* Table Section */}
       <ComponentCard title="All Coupons">
-        {message
-          ? <p className="text-red-500 text-center my-4">{message}</p>
-          : <BasicTableOne columns={columns} data={rows} />
-        }
+        {message ? (
+          <p className="text-red-500 text-center my-4">{message}</p>
+        ) : (
+          <BasicTableOne columns={columns} data={rows} />
+        )}
       </ComponentCard>
 
+      {/* Edit Modal */}
+      {isModalOpen && editingCoupon && (
+        <EditCouponModal
+          coupon={editingCoupon}
+          onClose={() => setIsModalOpen(false)}
+          onUpdate={updateCoupon}
+        />
+      )}
     </div>
   );
 };
