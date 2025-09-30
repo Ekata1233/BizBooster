@@ -1,13 +1,13 @@
-"use client";
+'use client';
+
 import React, { useEffect, useState, useMemo } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
-import { TrashBinIcon, EyeIcon, ChevronDownIcon } from "@/icons";
+import { TrashBinIcon, EyeIcon } from "@/icons";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import Select from "@/components/form/Select";
 import { useProvider } from "@/context/ProviderContext";
 import { useModule } from "@/context/ModuleContext";
 import Link from "next/link";
@@ -32,21 +32,9 @@ interface ProviderTableData {
   kycCompleted: boolean;
 }
 
-const sortOptions = [
-  { value: "latest", label: "Latest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "ascending", label: "A-Z (Name)" },
-  { value: "descending", label: "Z-A (Name)" },
-];
-
-const statusOptions = [
-  { value: "all", label: "All Status" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-];
-
 const ProviderList = () => {
   const { modules } = useModule();
+  const { deleteProvider } = useProvider(); // ✅ Get deleteProvider from context
 
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [providers, setProviders] = useState<ProviderTableData[]>([]);
@@ -57,7 +45,6 @@ const ProviderList = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
-  // ✅ Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
 
@@ -119,6 +106,17 @@ const ProviderList = () => {
     fetchProviders();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this provider?")) return;
+
+    try {
+      await deleteProvider(id); // ✅ Call delete from context
+      setProviders((prev) => prev.filter((p) => p.id !== id));
+    } catch (error) {
+      console.error("Failed to delete provider:", error);
+    }
+  };
+
   const sortProviders = (data: ProviderTableData[], sortOption: string) => {
     const sorted = [...data];
     switch (sortOption) {
@@ -133,7 +131,6 @@ const ProviderList = () => {
     }
   };
 
-  // ✅ Memoized filtered + sorted data
   const filteredProviders = useMemo(() => {
     let result = [...providers];
 
@@ -159,13 +156,11 @@ const ProviderList = () => {
     return result;
   }, [providers, activeTab, searchQuery, sort]);
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredProviders.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredProviders.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Reset page on filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, searchQuery, sort]);
@@ -173,15 +168,6 @@ const ProviderList = () => {
   const handleSearchChange = debounce((value: string) => {
     setSearchQuery(value);
   }, 300);
-
-  const moduleOptions = [
-    { value: "", label: "All Modules" },
-    ...modules.map((module) => ({
-      value: module._id,
-      label: module.name,
-      image: module.image,
-    })),
-  ];
 
   const columns = [
     {
@@ -250,7 +236,7 @@ const ProviderList = () => {
         <div className="flex gap-2">
           <button
             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            onClick={() => console.log("Delete provider", row.id)}
+            onClick={() => handleDelete(row.id)} // ✅ Delete integrated
           >
             <TrashBinIcon />
           </button>
@@ -268,11 +254,9 @@ const ProviderList = () => {
     <div>
       <PageBreadcrumb pageTitle="Provider List" />
 
-      {/* Search Filters */}
       <div className="mb-6">
         <ComponentCard title="Search & Filter">
           <div className=" gap-4">
-            {/* Search Input */}
             <div>
               <Label htmlFor="search">Search Providers</Label>
               <Input
@@ -283,12 +267,6 @@ const ProviderList = () => {
                 className="w-full"
               />
             </div>
-
-            {/* Sort Dropdown */}
-           
-
-            {/* Module Dropdown */}
-            
           </div>
         </ComponentCard>
       </div>
