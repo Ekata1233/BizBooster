@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         console.log("Email sent:", info);
 
 
-        return NextResponse.json({ success: true, message: "Password reset link sent" },{ headers: corsHeaders });
+        return NextResponse.json({ success: true, message: "Password reset link sent" }, { headers: corsHeaders });
     } catch (err) {
         console.error("Forgot password error:", err);
         return NextResponse.json({ success: false, message: "Server error" }, { status: 500, headers: corsHeaders });

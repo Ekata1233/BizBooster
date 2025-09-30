@@ -40,6 +40,14 @@ export async function POST(req: NextRequest) {
     try {
         const { email, token, newPassword } = await req.json();
 
+                console.log("email ; ", email)
+
+
+                        console.log("token ; ", token)
+
+                                console.log("newPassword ; ", newPassword)
+
+
         if (!email || !token || !newPassword) {
             return NextResponse.json({ success: false, message: "Invalid request" }, { status: 400, headers: corsHeaders });
         }
@@ -49,6 +57,8 @@ export async function POST(req: NextRequest) {
             resetPasswordToken: token,
             resetPasswordExpires: { $gt: Date.now() }, // ensure token not expired
         });
+
+        console.log("provider ; ", provider)
 
         if (!provider) {
             return NextResponse.json({ success: false, message: "Invalid or expired token" }, { status: 400, headers: corsHeaders });

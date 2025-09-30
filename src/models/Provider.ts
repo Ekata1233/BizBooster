@@ -68,6 +68,8 @@ export interface ProviderDocument extends Document {
   storeInfoCompleted: boolean;
   kycCompleted: boolean;
   registrationStatus: "basic" | "store" | "kyc" | "done";
+  resetPasswordToken: string;
+  resetPasswordExpires: string;
 
   /* methods */
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -166,6 +168,8 @@ const providerSchema = new Schema<ProviderDocument>(
       enum: ["basic", "store", "kyc", "done"],
       default: "basic",
     },
+    resetPasswordToken:{type: String },
+    resetPasswordExpires:{type: String },
   },
   { timestamps: true }
 );
