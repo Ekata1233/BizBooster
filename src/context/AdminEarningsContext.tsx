@@ -35,6 +35,7 @@ export interface TransactionType {
   credit: number;
   debit: number;
   balance: number | string;
+  leadId : string;
 }
 
 interface AdminEarningsContextType {

@@ -18,6 +18,7 @@ interface WalletTxn {
   status: 'success' | 'pending' | 'failed';
   balanceAfterTransaction?: number;
   createdAt: Date;
+  leadId: string;
 }
 
 // Final format returned to admin frontend
@@ -33,6 +34,7 @@ interface AdminTransaction {
   credit: number;
   debit: number;
   balance: number | string;
+  leadId: string;
 }
 
 export async function GET() {
@@ -84,6 +86,7 @@ export async function GET() {
         (wallet.userId
           ? `${wallet.userId._id}-${txn.createdAt.getTime()}`
           : `U-unknown-${txn.createdAt.getTime()}`),
+      leadId: txn.leadId,
       walletType: 'User',
       to: wallet.userId
         ? `${wallet.userId.userId} - ${wallet.userId.fullName}`
@@ -105,6 +108,7 @@ export async function GET() {
         (wallet.providerId
           ? `${wallet.providerId._id}-${txn.createdAt.getTime()}`
           : `P-unknown-${txn.createdAt.getTime()}`),
+      leadId: txn.leadId,
       walletType: 'Provider',
       to: wallet.providerId
         ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`

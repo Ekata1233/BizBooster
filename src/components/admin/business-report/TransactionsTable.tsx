@@ -19,6 +19,7 @@ interface Transaction {
   method: string;
   status: string;
   source: string;
+  leadId: string;
 }
 
 interface Props {
@@ -97,6 +98,14 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
         <span className="block truncate max-w-[150px]">{row.transactionId}</span>
       ),
     },
+    {
+      header: 'Lead ID',
+      accessor: 'leadId',
+      className: "w-40 truncate", // reduced width + ellipsis
+      render: (row: Transaction) => (
+        <span className="block truncate max-w-[150px]">{row.leadId}</span>
+      ),
+    },
     { header: 'To', accessor: 'to', className: "w-32 truncate" },
     { header: 'Wallet', accessor: 'walletType', className: "w-28" },
     // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
@@ -164,6 +173,7 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     const exportData = filteredTransactions.map((row) => ({
       Date: new Date(row.date).toLocaleString(),
       TransactionID: row.transactionId,
+      leadId : row.leadId || "-",
       To: row.to,
       Wallet: row.walletType,
       Source: row.source,
