@@ -42,6 +42,7 @@ const ProviderServiceMan : React.FC<Props> = ({ provider }) => {
 
   useEffect(() => {
     if (serviceMenByProvider && serviceMenByProvider.length > 0) {
+       console.log("Raw servicemen data from context:", serviceMenByProvider);
       const formatted = serviceMenByProvider.map((man: ServiceMan) => ({
         id: man._id || '',
         name: man.name || '—',
@@ -115,7 +116,7 @@ const ProviderServiceMan : React.FC<Props> = ({ provider }) => {
           >
             <TrashBinIcon />
           </button>
-          <Link href={`/admin/serviceman/view/${row.id}`} passHref>
+          <Link href={`/provider-management/provider-details/serviceman-details/${row.id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
               <EyeIcon />
             </button>
