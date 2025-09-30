@@ -63,7 +63,7 @@ const fileToBuffer = async (file: File) => Buffer.from(await file.arrayBuffer())
 function parseFAQFlexible(raw: unknown): FAQItem[] {
   if (raw == null) return [];
   if (Array.isArray(raw)) {
-    return raw.flatMap((v, ) => parseFAQFlexible(v));
+    return raw.flatMap((v,) => parseFAQFlexible(v));
   }
   if (typeof raw === 'string') {
     const trimmed = raw.trim();
@@ -83,14 +83,14 @@ function parseFAQFlexible(raw: unknown): FAQItem[] {
     const objRaw = raw as Record<string, unknown>;
     const answer =
       typeof objRaw.answer === 'string' ? objRaw.answer :
-      typeof objRaw.a === 'string'      ? objRaw.a :
-      typeof objRaw.content === 'string'? objRaw.content : '';
+        typeof objRaw.a === 'string' ? objRaw.a :
+          typeof objRaw.content === 'string' ? objRaw.content : '';
 
     const question =
       typeof objRaw.question === 'string' ? objRaw.question :
-      typeof objRaw.q === 'string'        ? objRaw.q :
-      typeof objRaw.title === 'string'    ? objRaw.title :
-      (answer ? stripHTML(answer).slice(0, 60) : 'FAQ');
+        typeof objRaw.q === 'string' ? objRaw.q :
+          typeof objRaw.title === 'string' ? objRaw.title :
+            (answer ? stripHTML(answer).slice(0, 60) : 'FAQ');
 
     return [{ question, answer }];
   }
@@ -129,7 +129,7 @@ function sanitizeFAQ(items: FAQItem[]): FAQItem[] {
 }
 
 /* ---------------- route ---------------- */
-
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
@@ -162,9 +162,28 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: corsHeaders }
       );
     }
+    if (bannerImageFile.size > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { success: false, message: 'Banner image must be less than 2MB.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    if (!(thumbnailImageFile instanceof File) || thumbnailImageFile.size === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Thumbnail image file is required.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    if (thumbnailImageFile.size > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { success: false, message: 'Thumbnail image must be less than 2MB.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
 
     const start = parseDateFlexible(typeof startRaw === 'string' ? startRaw : null);
-    const end   = parseDateFlexible(typeof endRaw === 'string' ? endRaw : null);
+    const end = parseDateFlexible(typeof endRaw === 'string' ? endRaw : null);
 
     if (!start || !end) {
       return NextResponse.json(
@@ -194,7 +213,7 @@ export async function POST(req: NextRequest) {
         : '';
 
     /* FAQ ------------------------------- */
-    const faqFields  = formData.getAll('faq');
+    const faqFields = formData.getAll('faq');
     const faqQFields = formData.getAll('faqQuestion');
     const faqAFields = formData.getAll('faqAnswer');
 
@@ -214,6 +233,15 @@ export async function POST(req: NextRequest) {
       .getAll('galleryImages')
       .filter((f): f is File => f instanceof File && f.size > 0);
 
+    for (const gf of galleryFiles) {
+      if (gf.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json(
+          { success: false, message: `Gallery image "${gf.name}" must be less than 2MB.` },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+
     /* upload banner --------------------- */
     const bannerBuf = await fileToBuffer(bannerImageFile as File);
     const bannerUpload = await imagekit.upload({
@@ -223,9 +251,9 @@ export async function POST(req: NextRequest) {
     });
     const bannerImage = bannerUpload.url;
 
-      /* upload thumbnail --------------------- */
+    /* upload thumbnail --------------------- */
 
-      const thumbnailBuf = await fileToBuffer(thumbnailImageFile as File);
+    const thumbnailBuf = await fileToBuffer(thumbnailImageFile as File);
     const thumbnailUpload = await imagekit.upload({
       file: thumbnailBuf,
       fileName: `offer-banner-${Date.now()}-${(thumbnailImageFile as File).name}`,
