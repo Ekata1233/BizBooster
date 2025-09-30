@@ -4,19 +4,38 @@ import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
 import bcrypt from "bcryptjs";
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-// ✅ Handle Preflight
-export async function OPTIONS() {
-    return NextResponse.json({}, { status: 204, headers: corsHeaders });
+const allowedOrigins = [
+    'http://localhost:3001',
+    'https://biz-booster.vercel.app',
+    'http://localhost:3000',
+    'https://biz-booster-provider-panel.vercel.app',
+    'https://api.fetchtrue.com',// ✅ ADD THIS LINE
+    'http://localhost:3002',
+];
+function getCORSHeaders(origin: string) {
+    const headers = new Headers();
+    if (allowedOrigins.includes(origin)) {
+        headers.set('Access-Control-Allow-Origin', origin);
+        headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        headers.set('Access-Control-Allow-Credentials', 'true');
+    }
+    return headers;
 }
+
+// ✅ Preflight CORS support
+export async function OPTIONS(req: NextRequest) {
+    const origin = req.headers.get("origin") || "";
+    const headers = getCORSHeaders(origin);
+    return new NextResponse(null, { status: 204, headers });
+}
+
 
 export async function POST(req: NextRequest) {
     await connectToDatabase();
+
+    const origin = req.headers.get("origin") || "";
+    const corsHeaders = getCORSHeaders(origin);
 
     try {
         const { email, token, newPassword } = await req.json();
