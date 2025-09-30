@@ -129,7 +129,7 @@ function sanitizeFAQ(items: FAQItem[]): FAQItem[] {
 }
 
 /* ---------------- route ---------------- */
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     }
     if (bannerImageFile.size > MAX_IMAGE_SIZE) {
       return NextResponse.json(
-        { success: false, message: 'Banner image must be less than 2MB.' },
+        { success: false, message: 'Banner image must be less than 1MB.' },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     }
     if (thumbnailImageFile.size > MAX_IMAGE_SIZE) {
       return NextResponse.json(
-        { success: false, message: 'Thumbnail image must be less than 2MB.' },
+        { success: false, message: 'Thumbnail image must be less than 1MB.' },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -236,7 +236,7 @@ export async function POST(req: NextRequest) {
     for (const gf of galleryFiles) {
       if (gf.size > MAX_IMAGE_SIZE) {
         return NextResponse.json(
-          { success: false, message: `Gallery image "${gf.name}" must be less than 2MB.` },
+          { success: false, message: `Gallery image "${gf.name}" must be less than 1MB.` },
           { status: 400, headers: corsHeaders }
         );
       }

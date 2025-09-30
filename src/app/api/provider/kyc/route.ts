@@ -59,10 +59,9 @@ async function parseKycForm(
   const fd = await req.formData();
   const kyc: Record<string, any> = {};
 
-  // First, put text fields straight into kyc (with JSON parsing support)
+  // Handle text fields
   for (const [key, value] of fd.entries()) {
-    if (value instanceof File) continue; // files handled later
-
+    if (value instanceof File) continue; // skip files here
     try {
       kyc[key] = JSON.parse(value as string);
     } catch {
@@ -70,23 +69,29 @@ async function parseKycForm(
     }
   }
 
-  // Next, upload every file and store URLs
+  // Handle files with max 2 per field
   for (const [key, value] of fd.entries()) {
     if (!(value instanceof File) || value.size === 0) continue;
 
     const url = await uploadFile(providerId, key, value);
 
-    // Allow multiple files per key ➜ store array of URLs
-    if (kyc[key]) {
-      if (Array.isArray(kyc[key])) kyc[key].push(url);
-      else kyc[key] = [kyc[key], url];
+    // Initialize as array
+    if (!kyc[key]) {
+      kyc[key] = [url];
+    } else if (Array.isArray(kyc[key])) {
+      if (kyc[key].length < 2) {
+        kyc[key].push(url);
+      }
+      // If already 2, ignore additional uploads
     } else {
-      kyc[key] = url;
+      // Convert existing single value into array (respect 2 limit)
+      kyc[key] = [kyc[key], url].slice(0, 2);
     }
   }
 
   return kyc;
 }
+
 
 /* ------------------------------------------------------------------------ */
 /* API handlers                                                             */

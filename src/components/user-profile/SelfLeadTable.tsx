@@ -156,7 +156,9 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
     );
   }
 
-  const mappedData = checkouts.map((checkout, index) => {
+const mappedData = [...checkouts] // copy array to avoid mutating original
+  .reverse() // reverse order so latest data is first
+  .map((checkout, index) => {
     const customer = checkout?.serviceCustomer || {};
     const commissionEntry = commissions.find(
       (c) => c.checkoutId === checkout._id
@@ -179,7 +181,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
 
     return {
       id: checkout._id,
-      sr: index + 1,
+      sr: index + 1, // serial number starts from 1 for latest
       leadId: checkout?.bookingId || "N/A",
       serviceName: checkout?.service?.serviceName || "N/A",
       userName: customer?.fullName || "N/A",
@@ -189,15 +191,18 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       commission: commissionWithStatus,
       leadStatus:
         checkout?.isCanceled
-          ? "cancelled" : checkout?.isCompleted
-            ? "completed"
-            : checkout?.isAccepted
-              ? "Accepted"
-              : checkout?.orderStatus === "processing"
-                ? "ongoing"
-                : "pending",
+          ? "cancelled"
+          : checkout?.isCompleted
+          ? "completed"
+          : checkout?.isAccepted
+          ? "Accepted"
+          : checkout?.orderStatus === "processing"
+          ? "ongoing"
+          : "pending",
     };
   });
+
+
 
 
   return (
