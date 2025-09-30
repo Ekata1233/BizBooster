@@ -40,12 +40,9 @@ export async function POST(req: NextRequest) {
     try {
         const { email, token, newPassword } = await req.json();
 
-                console.log("email ; ", email)
-
-
-                        console.log("token ; ", token)
-
-                                console.log("newPassword ; ", newPassword)
+        console.log("email ; ", email)
+        console.log("token ; ", token)
+        console.log("newPassword ; ", newPassword)
 
 
         if (!email || !token || !newPassword) {
@@ -65,7 +62,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Hash and save new password
-        provider.password = await bcrypt.hash(newPassword, 10);
+        provider.password = newPassword;
         provider.resetPasswordToken = undefined;
         provider.resetPasswordExpires = undefined;
         await provider.save();
