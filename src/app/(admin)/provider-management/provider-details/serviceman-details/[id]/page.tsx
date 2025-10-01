@@ -21,6 +21,12 @@ const ServiceManDetailsPage = () => {
       });
     }
   }, [id]);
+  useEffect(() => {
+  if (serviceMan) {
+    console.log("ServiceMan State Updated:", serviceMan);
+  }
+}, [serviceMan]);
+
 
   if (loading) return <div className="p-4">Loading serviceman details...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -49,15 +55,12 @@ const ServiceManDetailsPage = () => {
             )}
 
             <div>
-              <h2 className="text-lg font-semibold">Name:</h2>
               <p className="text-gray-700 mt-1">
                 {serviceMan.name} {serviceMan.lastName}
               </p>
 
-              <h2 className="text-lg font-semibold mt-4">Email:</h2>
               <p className="text-gray-700 mt-1">{serviceMan.email}</p>
 
-              <h2 className="text-lg font-semibold mt-4">Phone:</h2>
               <p className="text-gray-700 mt-1">{serviceMan.phoneNo}</p>
             </div>
           </div>
@@ -100,30 +103,41 @@ const ServiceManDetailsPage = () => {
       <div className="my-5">
         <ComponentCard title="System Info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h2 className="text-lg font-semibold">ServiceMan ID:</h2>
-              <p className="text-gray-700">{serviceMan.serviceManId}</p>
-            </div>
+  <div>
+    <h2 className="text-lg font-semibold">ServiceMan ID:</h2>
+    <p className="text-gray-700">{serviceMan.serviceManId}</p>
+  </div>
 
-            <div>
-              <h2 className="text-lg font-semibold">Provider ID:</h2>
-              <p className="text-gray-700">{serviceMan.provider}</p>
-            </div>
+  <div>
+    <h2 className="text-lg font-semibold">Provider ID:</h2>
+    <p className="text-gray-700">{serviceMan.provider?.providerId || "N/A"}</p>
+  </div>
 
-            <div>
-              <h2 className="text-lg font-semibold">Created At:</h2>
-              <p className="text-gray-700">
-                {new Date(serviceMan.createdAt).toLocaleString()}
-              </p>
-            </div>
+  <div>
+    <h2 className="text-lg font-semibold">Provider Name:</h2>
+    <p className="text-gray-700">{serviceMan.provider?.fullName || "N/A"}</p>
+  </div>
 
-            <div>
-              <h2 className="text-lg font-semibold">Updated At:</h2>
-              <p className="text-gray-700">
-                {new Date(serviceMan.updatedAt).toLocaleString()}
-              </p>
-            </div>
-          </div>
+  <div>
+    <h2 className="text-lg font-semibold">Provider Email:</h2>
+    <p className="text-gray-700">{serviceMan.provider?.email || "N/A"}</p>
+  </div>
+
+  <div>
+    <h2 className="text-lg font-semibold">Created At:</h2>
+    <p className="text-gray-700">
+      {new Date(serviceMan.createdAt).toLocaleString()}
+    </p>
+  </div>
+
+  <div>
+    <h2 className="text-lg font-semibold">Updated At:</h2>
+    <p className="text-gray-700">
+      {new Date(serviceMan.updatedAt).toLocaleString()}
+    </p>
+  </div>
+</div>
+
         </ComponentCard>
       </div>
     </div>
