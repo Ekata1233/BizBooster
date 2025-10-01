@@ -79,16 +79,33 @@ const PackageTransaction = () => {
         {
             header: 'S.No',
             accessor: 'serial',
-            render: (_row: Payment, index: number) => <span>{(index + 1).toString()}</span>, // ✅ cast to string
+            render: (row: Payment) => {
+                // Find the index of this row in currentRows
+                const index = currentRows.findIndex(p => p._id === row._id);
+                const serialNumber = (currentPage - 1) * rowsPerPage + index + 1;
+                return <span>{serialNumber}</span>;
+            },
         },
         { header: 'Amount', accessor: 'amount' },
         {
-            header: 'Status', accessor: 'status', render: (row: Payment) => (
-                <span className={`px-2 py-1 rounded-full text-xs ${row.status === 'paid' ? 'text-green-600 bg-green-100' : 'text-yellow-600 bg-yellow-100'}`}>
-                    {row.status}
-                </span>
-            )
-        },
+            header: 'Status',
+            accessor: 'status',
+            render: (row: Payment) => {
+                const status = row.status?.toLowerCase(); // normalize to lowercase
+
+                return (
+                    <span
+                        className={`px-2 py-1 rounded-full text-xs ${status === 'paid'
+                            ? 'text-green-600 bg-green-100'
+                            : 'text-yellow-600 bg-yellow-100'
+                            }`}
+                    >
+                        {row.status}
+                    </span>
+                );
+            },
+        }
+        ,
         { header: 'Transaction ID', accessor: 'order_id' },
         { header: 'Created At', accessor: 'createdAt', render: (row: Payment) => new Date(row.createdAt).toLocaleString() },
     ];
@@ -130,7 +147,7 @@ const PackageTransaction = () => {
             };
 
             console.log("payload : ", payload)
-            const res = await axios.post("https://api.fetchtrue.com/api/payments", payload);
+            const res = await axios.post("/api/payments/mannual-packge-active", payload);
 
             if (res.status === 200 || res.status === 201) {
                 alert("Payment manually updated successfully!");

@@ -66,10 +66,9 @@ const Banner = () => {
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
   const serviceMap = Object.fromEntries(serviceData.map((cat) => [cat._id, cat.serviceName]));
 
-  console.log("service map : ", serviceMap)
 
   const [sort, setSort] = useState<string>('oldest');
-
+const [totalBanners, setTotalBanners] = useState(0);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedFile, setUpdatedFile] = useState<string>('');
@@ -81,10 +80,7 @@ const Banner = () => {
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
 
-  useEffect(() => {
-    setCurrentPage(1);
-    fetchFilteredBanners();
-  }, [searchQuery, selectedSubcategory, sort])
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
     try {
@@ -150,7 +146,6 @@ const Banner = () => {
     }
   };
 
-  if (!Array.isArray(banners)) return <div>Loading...</div>;
 
   // Helper function to get navigation target display text
   const getNavigationTarget = (banner: BannerType): string => {
@@ -189,7 +184,8 @@ const Banner = () => {
 
       const response = await axios.get('/api/banner', { params });
       const bannerData = response.data;
-      console.log("Banner data in frontend  : ", bannerData);
+
+      setTotalBanners(bannerData.length || 0);
 
       if (bannerData.length === 0) {
         setFilteredBanners([]);
@@ -213,8 +209,15 @@ const Banner = () => {
     }
   }
 
-
   const columns = [
+    {
+  header: 'Sr. No',
+  accessor: 'srNo',
+  render: (_row: TableData) => {
+    const idx = currentRows.findIndex(row => row.id === _row.id);
+    return <span>{(currentPage - 1) * rowsPerPage + idx + 1}</span>;
+  },
+},
     {
       header: 'Page',
       accessor: 'page',
@@ -302,6 +305,16 @@ const Banner = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredBanner.slice(indexOfFirstRow, indexOfLastRow);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchFilteredBanners();
+  }, [searchQuery, selectedSubcategory, sort])
+
+  console.log("Banner data in frontend  : ", banners);
+
+
+  if (!filteredBanner) return <div>Loading...</div>;
+
 
   return (
     <div>
@@ -365,7 +378,7 @@ const Banner = () => {
         <div className="w-full lg:w-1/4 my-5">
           <StatCard
             title="Total Banners"
-            value={banners.length}
+            value={totalBanners || 0}
             icon={UserIcon}
             badgeColor="success"
             badgeValue="0.00%"
@@ -455,58 +468,7 @@ const Banner = () => {
               </select>
             </div>
 
-            {/* Dynamic Field Based on Selection Type */}
-            {/* {currentBanner?.selectionType === 'category' && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium">Category</label>
-                <select
-                  className="w-full border px-3 py-2 rounded"
-                  value={
-                    typeof currentBanner?.category === 'object'
-                      ? currentBanner.category?._id
-                      : currentBanner?.category || ''
-                  }
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, category: e.target.value } : null
-                    )
-                  }
-                >
-                  <option value="">Select Category</option>
-                  {subcategoryData.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
 
-            {currentBanner?.selectionType === 'subcategory' && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium">Subcategory</label>
-                <select
-                  className="w-full border px-3 py-2 rounded"
-                  value={
-                    typeof currentBanner?.subcategory === 'object'
-                      ? currentBanner.subcategory?._id
-                      : currentBanner?.subcategory || ''
-                  }
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, subcategory: e.target.value } : null
-                    )
-                  }
-                >
-                  <option value="">Select Subcategory</option>
-                  {categoryData.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )} */}
 
             {/* Category Selection */}
             {currentBanner?.selectionType === 'category' && (

@@ -89,12 +89,6 @@ export async function POST(req: NextRequest) {
         const baseLevel1 = pkgCommission.level1Commission || 0;
         const baseLevel2 = pkgCommission.level2Commission || 0;
 
-        // if (userB) level1Amount = baseLevel1;
-        // else adminAmount += baseLevel1;
-
-        // if (userA) level2Amount = baseLevel2;
-        // else adminAmount += baseLevel2;
-
         if (userB && !userB.isDeleted) {
             level1Amount = baseLevel1;
         } else {
@@ -146,13 +140,7 @@ export async function POST(req: NextRequest) {
                     lastTransactionAt: new Date(),
                 });
             } else {
-                // wallet.balance += amount;
-                // wallet.totalCredits += amount;
-                // wallet.lastTransactionAt = new Date();
-                // if (level === "C") wallet.selfEarnings += amount;
-                // else if (level === "A" || level === "B") wallet.referralEarnings += amount;
-                // transaction.balanceAfterTransaction = wallet.balance;
-                // wallet.transactions.push(transaction);
+                
                 wallet.balance = Number((wallet.balance + amount).toFixed(2));   // ✅ ensure 2 decimals
                 wallet.totalCredits = Number((wallet.totalCredits + amount).toFixed(2));
                 wallet.lastTransactionAt = new Date();
@@ -221,24 +209,6 @@ export async function POST(req: NextRequest) {
         if (userA && !userA.isDeleted) {
             actualFranchiseEarnings += level2Amount;
         }
-
-        // const todayDate = new Date().toISOString().split("T")[0];
-        // const totalRevenue = adminAmount + actualFranchiseEarnings;
-        // await AdminEarnings.findOneAndUpdate(
-        //     { date: todayDate },
-        //     {
-        //         $inc: {
-        //             adminCommission: adminAmount,
-        //             providerEarnings: 0,
-        //             totalRevenue: totalRevenue,
-        //             extraFees: 0,
-        //             pendingPayouts: 0,
-        //             franchiseEarnings: actualFranchiseEarnings,
-        //             refundsToUsers: 0,
-        //         },
-        //     },
-        //     { upsert: true, new: true, setDefaultsOnInsert: true }
-        // );
 
         actualFranchiseEarnings = Math.round(actualFranchiseEarnings * 100) / 100;
         const adminAmountRounded = Math.round(adminAmount * 100) / 100;
