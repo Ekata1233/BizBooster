@@ -19,18 +19,19 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
 
         // Extract only the fields you want from body
-        const { amount, transactionId, description, updaterName, customerId } = body;
+        const { amount, payment_id, description, updaterName, customerId,status } = body;
 
         // Generate an order_id (must be unique)
         const orderId = `ORD-${Date.now()}`;
 
         const newPayment = new Payment({
-            order_id: orderId,
+            order_id: payment_id,
             amount: amount || 0,   // if not provided, default to 0
-            payment_id: transactionId || null,
+            payment_id: payment_id || null,
             description: description || null,
             updaterName: updaterName || null,
             customerId: customerId || null,
+            status: status || null,
             // other fields will remain null or default (status = "PENDING", currency = "INR")
         });
 

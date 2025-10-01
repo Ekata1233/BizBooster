@@ -11,6 +11,8 @@ import { FaBoxOpen, FaFileDownload } from 'react-icons/fa';
 import { BoxCubeIcon, DollarLineIcon } from '@/icons';
 import { Modal } from '../ui/modal';
 import Input from '../form/input/InputField';
+import axios from 'axios';
+
 
 interface Payment {
     _id: string;
@@ -121,13 +123,14 @@ const PackageTransaction = () => {
                 payment_id: manualUpdateData.transactionId,
                 amount: Number(manualUpdateData.amount),
                 currency: "INR",
-                status: "PENDING", // default, or make selectable in UI
+                status: "PAID", // default, or make selectable in UI
                 description: manualUpdateData.description,
                 updaterName: manualUpdateData.updaterName,
                 customerId: customerId, // ✅ from URL params
             };
 
-            const res = await axios.post("http://localhost:3000/api/payments", payload);
+            console.log("payload : ", payload)
+            const res = await axios.post("https://api.fetchtrue.com/api/payments", payload);
 
             if (res.status === 200 || res.status === 201) {
                 alert("Payment manually updated successfully!");
@@ -237,7 +240,7 @@ const PackageTransaction = () => {
 
             <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} className="max-w-sm">
                 <div className="p-4">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800 text-center">
+                    <h2 className="text-lg font-semibold mb-8 text-gray-800 text-center">
                         Enter Password to Confirm
                     </h2>
 
