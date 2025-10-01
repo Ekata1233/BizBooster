@@ -30,7 +30,7 @@ import {
 import SidebarWidget from "./SidebarWidget";
 import { useCheckout } from "@/context/CheckoutContext";
 import { useLead } from "@/context/LeadContext";
-import { CalendarIcon, DollarSignIcon, MapIcon, Megaphone } from "lucide-react";
+import { CalendarIcon, DollarSignIcon, HelpCircleIcon, MapIcon, Megaphone } from "lucide-react";
 
 // Define the new type for nested sub-items
 type SubNavItem = {
@@ -88,6 +88,11 @@ const customerItems: NavItem[] = [
     icon: <UserIcon />,
     name: "Users",
     path: "/customer-management/user/user-list",
+  },
+    {
+    icon: <HelpCircleIcon   />,
+    name: "Support",
+    path: "/customer-management/user/support",
   },
 ];
 
