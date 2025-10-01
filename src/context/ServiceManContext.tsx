@@ -9,6 +9,7 @@ export interface BusinessInformation {
 
 export interface ServiceMan {
   _id?: string;
+  serviceManId:string;
   name: string;
   lastName: string;
   phoneNo: string;
@@ -19,8 +20,14 @@ export interface ServiceMan {
   businessInformation: BusinessInformation;
   createdAt?: string;
   updatedAt?: string;
-}
+   provider?: Provider | null;
 
+}
+interface Provider {
+  providerId: string;
+  fullName: string;
+  email: string;
+}
 interface ServiceManContextType {
   serviceMen: ServiceMan[];
   fetchServiceMen: () => void;

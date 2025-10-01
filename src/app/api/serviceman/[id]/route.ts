@@ -15,6 +15,7 @@ export async function OPTIONS() {
 }
 
 // GET handler
+// GET handler
 export async function GET(req: Request) {
   await connectToDatabase();
 
@@ -22,13 +23,16 @@ export async function GET(req: Request) {
   const id = url.pathname.split("/").pop();
 
   try {
-    const serviceman = await ServiceMan.findById(id);
+    const serviceman = await ServiceMan.findById(id)
+      .populate("provider", "providerId fullName email phoneNo");
+
     if (!serviceman) {
       return NextResponse.json(
         { success: false, message: "ServiceMan not found" },
         { status: 404, headers: corsHeaders }
       );
     }
+
     return NextResponse.json(
       { success: true, data: serviceman },
       { headers: corsHeaders }
@@ -40,6 +44,7 @@ export async function GET(req: Request) {
     );
   }
 }
+
 
 // PUT handler
 export async function PUT(req: Request) {

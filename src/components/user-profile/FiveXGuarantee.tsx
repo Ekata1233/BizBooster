@@ -76,43 +76,49 @@ const FiveXGuarantee = () => {
   }, [id]);
 
   // ✅ calculate remaining months/days (fixed for proper month completion)
-  useEffect(() => {
-    if (!singleUser?.packageActivateDate || !fivexMonths) {
-      setRemainingMonths(0);
-      setRemainingDays(0);
-      return;
-    }
+useEffect(() => {
+  if (!singleUser?.packageActivateDate) {
+    setRemainingMonths(0);
+    setRemainingDays(0);
+    return;
+  }
 
-    const startDate = startOfDay(new Date(singleUser.packageActivateDate));
-    const expiry = addMonthsClamped(startDate, fivexMonths);
-    const today = startOfDay(new Date());
+  const startDate = startOfDay(new Date(singleUser.packageActivateDate)); // e.g. 20 Aug
+  const today = startOfDay(new Date());
 
-    if (expiry <= today) {
-      setRemainingMonths(0);
-      setRemainingDays(0);
-      return;
-    }
+  // ✅ Total target months (example 36)
+  const totalMonths = 36;
 
-    // months between today and expiry
-    let monthsCount =
-      (expiry.getFullYear() - today.getFullYear()) * 12 +
-      (expiry.getMonth() - today.getMonth());
+  // ✅ How many full months completed
+  let completedMonths =
+    (today.getFullYear() - startDate.getFullYear()) * 12 +
+    (today.getMonth() - startDate.getMonth());
 
-    // If today's day < activation day, one month is not yet fully completed
-    if (today.getDate() < startDate.getDate()) {
-      monthsCount -= 1;
-    }
+  // If today's date is before the activation "day", this month not yet completed
+  if (today.getDate() < startDate.getDate()) {
+    completedMonths -= 1;
+  }
 
-    const nextMonthDate = addMonthsClamped(today, monthsCount);
-    const msPerDay = 1000 * 60 * 60 * 24;
-    const daysLeft = Math.max(
-      0,
-      Math.round((expiry.getTime() - nextMonthDate.getTime()) / msPerDay)
-    );
+  // Clamp (can't go negative)
+  completedMonths = Math.max(0, completedMonths);
 
-    setRemainingMonths(Math.max(0, monthsCount));
-    setRemainingDays(daysLeft);
-  }, [singleUser, fivexMonths]);
+  // ✅ Remaining months
+  const monthsLeft = Math.max(0, totalMonths - completedMonths);
+
+  // ✅ Days left in current running month cycle
+  const nextCycle = addMonthsClamped(startDate, completedMonths + 1);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((nextCycle.getTime() - today.getTime()) / msPerDay)
+  );
+
+  setRemainingMonths(monthsLeft);
+  setRemainingDays(daysLeft);
+}, [singleUser]);
+
+
+
 
   // stats
   const totalLeads = userCheckouts.length;
