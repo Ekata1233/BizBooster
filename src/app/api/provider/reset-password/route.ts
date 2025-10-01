@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const allowedOrigins = [
     'http://localhost:3001',
@@ -49,10 +49,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: "Invalid request" }, { status: 400, headers: corsHeaders });
         }
 
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
         const provider = await Provider.findOne({
             email,
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() }, // ensure token not expired
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: Date.now() }, 
         });
 
         console.log("provider ; ", provider)
