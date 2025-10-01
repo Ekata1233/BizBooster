@@ -21,24 +21,24 @@ const UserStatCard = () => {
     fetchAllWallets();
   }, []);
 
-const excludedUserId = '444c44d4444be444d4444444';
+  const excludedUserId = '444c44d4444be444d4444444';
 
-const filteredWallets = allWallets.filter(
-  wallet =>
-    wallet.userId?._id &&
-    wallet.userId._id.toString() !== excludedUserId // convert ObjectId to string
-);
+  const filteredWallets = allWallets.filter(
+    wallet =>
+      wallet.userId?._id &&
+      wallet.userId._id.toString() !== excludedUserId // convert ObjectId to string
+  );
 
-const totalWalletBalance = filteredWallets.reduce(
-  (sum, wallet) => sum + (wallet.balance || 0),
-  0
-);
+  const totalWalletBalance = filteredWallets.reduce(
+    (sum, wallet) => sum + (wallet.balance || 0),
+    0
+  );
 
 
-const totalEarnings = filteredWallets.reduce(
-  (sum, wallet) => sum + (wallet.totalCredits || 0),
-  0
-);
+  const totalEarnings = filteredWallets.reduce(
+    (sum, wallet) => sum + (wallet.totalCredits || 0),
+    0
+  );
 
 
 
@@ -55,7 +55,7 @@ const totalEarnings = filteredWallets.reduce(
           value={users.length}
           icon={UserIcon}
           badgeColor="success"
-        
+
           badgeIcon={ArrowUpIcon}
           gradient="from-blue-100 to-blue-200"
           textColor="text-blue-800"
@@ -66,33 +66,33 @@ const totalEarnings = filteredWallets.reduce(
           value={checkouts?.length || 0}
           icon={CalenderIcon}
           badgeColor="success"
-        
+
           badgeIcon={ArrowUpIcon}
           gradient="from-green-100 to-green-200"
           textColor="text-green-800"
         />
 
-       <StatCard
-  title="Total Earnings"
-  value={`₹${Number(totalEarnings).toFixed(2)}`}
-  icon={DollarLineIcon}
-  badgeColor="success"
+        <StatCard
+          title="Total Earnings"
+          value={`₹${Number(totalEarnings).toFixed(2)}`}
+          icon={DollarLineIcon}
+          badgeColor="success"
 
-  badgeIcon={ArrowUpIcon}
-  gradient="from-red-100 to-red-200"
-  textColor="text-red-800"
-/>
+          badgeIcon={ArrowUpIcon}
+          gradient="from-red-100 to-red-200"
+          textColor="text-red-800"
+        />
 
-<StatCard
-  title="Total Wallet Balance"
-  value={`₹${Number(totalWalletBalance).toFixed(2)}`}
-  icon={BoxCubeIcon}
-  badgeColor="success"
+        <StatCard
+          title="Total Wallet Balance"
+          value={`₹${Number(totalWalletBalance).toFixed(2)}`}
+          icon={BoxCubeIcon}
+          badgeColor="success"
 
-  badgeIcon={ArrowUpIcon}
-  gradient="from-purple-100 to-purple-200"
-  textColor="text-purple-800"
-/>
+          badgeIcon={ArrowUpIcon}
+          gradient="from-purple-100 to-purple-200"
+          textColor="text-purple-800"
+        />
 
       </div>
     </div>

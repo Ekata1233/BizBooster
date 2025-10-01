@@ -14,6 +14,7 @@ import HelpSupport from '@/components/user-profile/HelpSupport';
 import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
 import Image from 'next/image';
+import PackageTransaction from '@/components/user-profile/PackageTransaction';
 
 const UserDetails = () => {
   const {
@@ -56,6 +57,7 @@ const UserDetails = () => {
     { key: 'guarantee', label: '5x Guarantee' },
     { key: 'support', label: 'Support' },
     { key: 'deposite', label: 'Deposite' },
+    { key: 'package', label: 'Package' },
   ];
 
   return (
@@ -85,8 +87,8 @@ const UserDetails = () => {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`flex-1 px-4 py-2 text-sm font-medium rounded-md border ${activeTab === tab.key
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
                 }`}
             >
               {tab.label}
@@ -132,7 +134,10 @@ const UserDetails = () => {
           {activeTab === 'guarantee' && <FiveXGuarantee />}
           {activeTab === 'deposite' && <UserDeposite />}
           {activeTab === 'support' && <HelpSupport />}
+          {activeTab === 'package' && <PackageTransaction />}
+
         </div>
+
       </div>
     </div>
   );
