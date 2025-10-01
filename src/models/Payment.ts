@@ -14,6 +14,8 @@ export interface IPayment extends Document {
   payment_method?: string;
   slug?: string;
   customerId?: string;
+  description?: string;
+  updaterName?: string;
 }
 
 const PaymentSchema = new Schema<IPayment>(
@@ -32,7 +34,9 @@ const PaymentSchema = new Schema<IPayment>(
     bank_reference: { type: String },
     payment_method: { type: String },
     slug: { type: String },
-    customerId:  { type: String },
+    customerId: { type: String },
+    description: { type: String },
+    updaterName: { type: String },
   },
   { timestamps: true }
 );

@@ -39,7 +39,6 @@ const UserDetails = () => {
     }
 
   }, [userId]);
-  console.log("user detail:", singleUser);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;

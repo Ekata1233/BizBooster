@@ -7,8 +7,10 @@ import BasicTableOne from '@/components/tables/BasicTableOne';
 import Pagination from '@/components/tables/Pagination';
 import StatCard from '../common/StatCard'; // ✅ Use your custom StatCard
 import * as XLSX from 'xlsx';
-import { FaFileDownload } from 'react-icons/fa';
+import { FaBoxOpen, FaFileDownload } from 'react-icons/fa';
 import { BoxCubeIcon, DollarLineIcon } from '@/icons';
+import { Modal } from '../ui/modal';
+import Input from '../form/input/InputField';
 
 interface Payment {
     _id: string;
@@ -40,10 +42,19 @@ interface PackageTransactionData {
 const PackageTransaction = () => {
     const params = useParams();
     const customerId = params?.id;
-
+    // Add new state for password
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [password, setPassword] = useState("");
     const { data, loading, error, fetchPackageTransaction } = usePackageTransaction();
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage] = useState(5);
+    const [showModal, setShowModal] = useState(false);
+    const [manualUpdateData, setManualUpdateData] = useState({
+        amount: '',
+        transactionId: '',
+        description: '',
+        updaterName: ''
+    });
 
     useEffect(() => {
         if (customerId) fetchPackageTransaction(customerId);
@@ -76,7 +87,7 @@ const PackageTransaction = () => {
                 </span>
             )
         },
-        { header: 'Order ID', accessor: 'order_id' },
+        { header: 'Transaction ID', accessor: 'order_id' },
         { header: 'Created At', accessor: 'createdAt', render: (row: Payment) => new Date(row.createdAt).toLocaleString() },
     ];
 
@@ -98,6 +109,44 @@ const PackageTransaction = () => {
         XLSX.writeFile(workbook, `PackageTransactions_${customerId}.xlsx`);
     };
 
+    const handleManualUpdateSubmit = async () => {
+        if (!manualUpdateData.amount || !manualUpdateData.transactionId) {
+            alert("Amount and Transaction ID are required!");
+            return;
+        }
+
+        try {
+            const payload = {
+                order_id: manualUpdateData.transactionId, // Or you can use manualUpdateData.transactionId as order_id if you want
+                payment_id: manualUpdateData.transactionId,
+                amount: Number(manualUpdateData.amount),
+                currency: "INR",
+                status: "PENDING", // default, or make selectable in UI
+                description: manualUpdateData.description,
+                updaterName: manualUpdateData.updaterName,
+                customerId: customerId, // ✅ from URL params
+            };
+
+            const res = await axios.post("http://localhost:3000/api/payments", payload);
+
+            if (res.status === 200 || res.status === 201) {
+                alert("Payment manually updated successfully!");
+                fetchPackageTransaction(customerId); // ✅ refresh data
+                setShowModal(false);
+                setManualUpdateData({
+                    amount: "",
+                    transactionId: "",
+                    description: "",
+                    updaterName: ""
+                });
+            }
+        } catch (err: any) {
+            console.error("Manual update failed:", err);
+            alert("Failed to update package. Please try again.");
+        }
+    };
+
+
     return (
         <div>
             {/* Stat Cards */}
@@ -111,7 +160,14 @@ const PackageTransaction = () => {
 
             {/* Payment Table */}
             <ComponentCard title="Package Payments">
-                <div className="flex justify-end mb-2">
+                <div className="flex justify-between mb-2">
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                    >
+                        <FaBoxOpen className="w-5 h-5" />
+                        <span>Manually Update Package</span>
+                    </button>
                     <button
                         onClick={handleDownload}
                         className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
@@ -130,6 +186,98 @@ const PackageTransaction = () => {
                     />
                 </div>
             </ComponentCard>
+
+            <Modal isOpen={showModal} onClose={() => setShowModal(false)} className="max-w-md">
+                <div className="p-4">
+                    <h2 className="text-lg font-semibold mb-8 text-gray-800 text-center">Manually Update Package</h2>
+
+                    <div className=''>
+                        <Input
+                            placeholder="Amount"
+                            value={manualUpdateData.amount}
+                            onChange={(e) => setManualUpdateData({ ...manualUpdateData, amount: e.target.value })}
+                            className="mb-4"
+                        />
+                        <Input
+                            placeholder="Transaction ID"
+                            value={manualUpdateData.transactionId}
+                            onChange={(e) => setManualUpdateData({ ...manualUpdateData, transactionId: e.target.value })}
+                            className="mb-4"
+                        />
+                        <Input
+                            placeholder="Description"
+                            value={manualUpdateData.description}
+                            onChange={(e) => setManualUpdateData({ ...manualUpdateData, description: e.target.value })}
+                            className="mb-4"
+                        />
+                        <Input
+                            placeholder="Name of Updater"
+                            value={manualUpdateData.updaterName}
+                            onChange={(e) => setManualUpdateData({ ...manualUpdateData, updaterName: e.target.value })}
+                            className="mb-4"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setShowModal(false)}
+                            className="px-4 py-2 text-sm bg-gray-300 rounded-lg hover:bg-gray-400"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} className="max-w-sm">
+                <div className="p-4">
+                    <h2 className="text-lg font-semibold mb-4 text-gray-800 text-center">
+                        Enter Password to Confirm
+                    </h2>
+
+                    <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="mb-4"
+                    />
+
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setShowPasswordModal(false)}
+                            className="px-4 py-2 text-sm bg-gray-300 rounded-lg hover:bg-gray-400"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={async () => {
+                                if (password !== "activate@2025") {
+                                    alert("Invalid password!");
+                                    return;
+                                }
+
+                                // ✅ Call your existing function
+                                await handleManualUpdateSubmit();
+
+                                // ✅ Close password modal + reset
+                                setShowPasswordModal(false);
+                                setPassword("");
+                            }}
+                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
         </div>
     );
 };
