@@ -179,12 +179,12 @@ const LeadRequests = () => {
                         >
                             <CheckLineIcon />
                         </button> */}
-                        <button
+                        {/* <button
                             onClick={() => alert(`Deleting lead ID: ${row.bookingId}`)}
                             className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
                         >
                             <TrashBinIcon />
-                        </button>
+                        </button> */}
                     </div>
                 );
             },
