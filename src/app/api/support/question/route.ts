@@ -39,7 +39,7 @@ export async function GET() {
     await connectToDatabase();
 
     const supportEntries = await HelpAndSupport.find()
-      .populate('user', 'fullName email') 
+      .populate('user', 'fullName email profilePhoto') 
       .sort({ createdAt: 1 });
 
     return NextResponse.json({ success: true, data: supportEntries });
