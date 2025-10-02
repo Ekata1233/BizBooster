@@ -60,6 +60,8 @@ const Banner = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
+  console.log("banner s : dd", banners)
+
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
@@ -68,7 +70,7 @@ const Banner = () => {
 
 
   const [sort, setSort] = useState<string>('oldest');
-const [totalBanners, setTotalBanners] = useState(0);
+  const [totalBanners, setTotalBanners] = useState(0);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentBanner, setCurrentBanner] = useState<BannerType | null>(null);
   const [updatedFile, setUpdatedFile] = useState<string>('');
@@ -211,13 +213,13 @@ const [totalBanners, setTotalBanners] = useState(0);
 
   const columns = [
     {
-  header: 'Sr. No',
-  accessor: 'srNo',
-  render: (_row: TableData) => {
-    const idx = currentRows.findIndex(row => row.id === _row.id);
-    return <span>{(currentPage - 1) * rowsPerPage + idx + 1}</span>;
-  },
-},
+      header: 'Sr. No',
+      accessor: 'srNo',
+      render: (_row: TableData) => {
+        const idx = currentRows.findIndex(row => row.id === _row.id);
+        return <span>{(currentPage - 1) * rowsPerPage + idx + 1}</span>;
+      },
+    },
     {
       header: 'Page',
       accessor: 'page',
@@ -269,25 +271,30 @@ const [totalBanners, setTotalBanners] = useState(0);
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: TableData) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              const selected = banners.find((b) => b._id === row.id);
-              if (selected) handleEdit(selected);
-            }}
-            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            onClick={() => handleDelete(row.id)}
-            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-          >
-            <TrashBinIcon />
-          </button>
-        </div>
-      ),
+      render: (row: TableData) => {
+        console.log('Row data of banner :', row);
+        return (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const selected = banners.find((b) => b._id === row.id);
+                if (selected) handleEdit(selected);
+              }}
+              className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+            >
+              <PencilIcon />
+            </button>
+            <button
+              onClick={() => handleDelete(row.id)}
+              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+            >
+              <TrashBinIcon />
+            </button>
+          </div>
+        );
+      }
+
+
     },
   ];
 
