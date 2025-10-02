@@ -16,19 +16,19 @@ interface SupportEntry {
     email: string;
   } | null;
   question: string;
-  answer?: string;
+  answer?: string;   // ✅ from API
   createdAt: string;
 }
 
 interface TableData {
-  id: string;       // question id
-  userId: string;   // user id
+  id: string;
+  userId: string;
   srNo: number;
   fullName: string;
   email: string;
   question: string;
-  action: string;   // can still keep question id for action
-  answered: boolean; // ✅ new field to track answered or not
+  answered: boolean;
+  createdAt: string;
 }
 
 const SupportQuestionsPage = () => {
@@ -37,23 +37,30 @@ const SupportQuestionsPage = () => {
 
   const fetchSupportQuestions = async () => {
     try {
-      const response = await axios.get<{ data: SupportEntry[] }>("/api/support/question");
-      const data = response.data.data;
+      const response = await axios.get<{ data: SupportEntry[] }>(
+        "/api/support/question"
+      );
+      let data = response.data.data;
+
+      // 🔹 Sort by createdAt (newest first)
+      data = data.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
       const tableData: TableData[] = data.map((entry, index) => ({
         id: entry._id,
-        userId: entry.user?._id || 'N/A',
+        userId: entry.user?._id || "N/A",
         srNo: index + 1,
-        fullName: entry.user?.fullName || 'N/A',
-        email: entry.user?.email || 'N/A',
+        fullName: entry.user?.fullName || "N/A",
+        email: entry.user?.email || "N/A",
         question: entry.question,
-        action: entry._id,
-        answered: !!entry.answer, // ✅ true if answer exists
+        answered: entry.answer && entry.answer.trim() !== "" ? true : false,
+        createdAt: entry.createdAt,
       }));
 
       setSupportData(tableData);
     } catch (error) {
-      console.error('Error fetching support questions:', error);
+      console.error("❌ Error fetching support questions:", error);
       setSupportData([]);
     }
   };
@@ -67,20 +74,31 @@ const SupportQuestionsPage = () => {
   };
 
   const columns = [
-    { header: 'Sr No', accessor: 'srNo' },
-    { header: 'Full Name', accessor: 'fullName' },
-    { header: 'Email', accessor: 'email' },
-    { header: 'Question', accessor: 'question' },
+    { header: "Sr No", accessor: "srNo" },
+    { header: "Full Name", accessor: "fullName" },
+    { header: "Email", accessor: "email" },
     {
-      header: 'Action',
-      accessor: 'action',
+      header: "Question",
+      accessor: "question",
+      render: (row: TableData) => (
+        <div className="flex items-center gap-2">
+          {!row.answered && (
+            <span className="h-2 w-2 rounded-full bg-red-500 inline-block"></span>
+          )}
+          <span>{row.question}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Action",
+      accessor: "answered",
       render: (row: TableData) =>
         row.answered ? (
-          <Button size="sm" disabled>
+          <Button size="sm" disabled className="bg-green-500 text-white">
             Answered
           </Button>
         ) : (
-          <Button size="sm" onClick={() => handleSendAnswer(row.action, row.userId)}>
+          <Button size="sm" onClick={() => handleSendAnswer(row.id, row.userId)}>
             Send Answer
           </Button>
         ),

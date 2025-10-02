@@ -169,6 +169,13 @@ const promotionItems: NavItem[] = [
       { name: "New Add Request", path: "/adds-management/add-request", pro: false },
     ],
   },
+  {
+    icon: <Megaphone />,
+    name: "Trending Services",
+    subItems: [
+      { name: "All Trending services", path: "/adds-management/trending-services", pro: false },
+    ],
+  },
 ];
 
 const bookingItems: NavItem[] = [
@@ -344,7 +351,6 @@ const AppSidebar: React.FC = () => {
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  console.log("unanscount :", unansweredCount);
 
   useEffect(() => {
     // ✅ Logs whenever leads change
