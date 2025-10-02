@@ -8,36 +8,36 @@ import { transporter } from "@/utils/nodemailer";
 export const runtime = "nodejs";
 
 const allowedOrigins = [
-    'http://localhost:3001',
-    'https://biz-booster.vercel.app',
-    'http://localhost:3000',
-    'https://biz-booster-provider-panel.vercel.app',
-    'https://api.fetchtrue.com',// ✅ ADD THIS LINE
-    'http://localhost:3002',
+  'http://localhost:3001',
+  'https://biz-booster.vercel.app',
+  'http://localhost:3000',
+  'https://biz-booster-provider-panel.vercel.app',
+  'https://api.fetchtrue.com',// ✅ ADD THIS LINE
+  'http://localhost:3002',
 ];
 function getCORSHeaders(origin: string) {
-    const headers = new Headers();
-    if (allowedOrigins.includes(origin)) {
-        headers.set('Access-Control-Allow-Origin', origin);
-        headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        headers.set('Access-Control-Allow-Credentials', 'true');
-    }
-    return headers;
+  const headers = new Headers();
+  if (allowedOrigins.includes(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    headers.set('Access-Control-Allow-Credentials', 'true');
+  }
+  return headers;
 }
 
 // ✅ Preflight CORS support
 export async function OPTIONS(req: NextRequest) {
-    const origin = req.headers.get("origin") || "";
-    const headers = getCORSHeaders(origin);
-    return new NextResponse(null, { status: 204, headers });
+  const origin = req.headers.get("origin") || "";
+  const headers = getCORSHeaders(origin);
+  return new NextResponse(null, { status: 204, headers });
 }
 
 export async function POST(req: NextRequest) {
-    await connectToDatabase();
+  await connectToDatabase();
 
-     const origin = req.headers.get("origin") || "";
-    const corsHeaders = getCORSHeaders(origin);
+  const origin = req.headers.get("origin") || "";
+  const corsHeaders = getCORSHeaders(origin);
 
   try {
     const { email } = await req.json();
@@ -51,12 +51,12 @@ export async function POST(req: NextRequest) {
 
     const provider = await Provider.findOne({ email });
     if (!provider) {
-      // Don’t expose whether email exists (security)
       return NextResponse.json(
-        { success: true, message: "If this email exists, a reset link was sent." },
-        { headers: corsHeaders }
+        { success: false, message: "The email address you entered is not registered with us." },
+        { status: 404, headers: corsHeaders }
       );
     }
+
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -78,19 +78,19 @@ export async function POST(req: NextRequest) {
         <p>Click <a href="${resetUrl}">here</a> to reset your password. This link is valid for 15 minutes.</p>
       `,
     });
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS:", process.env.EMAIL_PASS?.length);
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("EMAIL_PASS:", process.env.EMAIL_PASS?.length);
 
     return NextResponse.json(
       { success: true, message: "If this email exists, a reset link was sent." },
       { headers: corsHeaders }
     );
   } catch (err: any) {
-  console.error("Forgot password error:", err.message, err.stack);
-  return NextResponse.json(
-    { success: false, message: err.message }, // <== return real error to test
-    { status: 500, headers: corsHeaders }
-  );
-}
+    console.error("Forgot password error:", err.message, err.stack);
+    return NextResponse.json(
+      { success: false, message: err.message }, // <== return real error to test
+      { status: 500, headers: corsHeaders }
+    );
+  }
 
 }

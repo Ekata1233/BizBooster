@@ -242,7 +242,7 @@ export async function GET(req: NextRequest) {
     nextLine(12);
     drawText('+91 93096 517500', width - 250, y, 10);
     nextLine(12);
-    drawText('info@bizbooster2x.com', width - 250, y, 10);
+    drawText('info@FetchTrue.com', width - 250, y, 10);
     nextLine(30);
 
     // Customer Box

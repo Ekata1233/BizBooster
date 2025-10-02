@@ -65,9 +65,13 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
       setLoading(false);
     }
   };
-  console.log("Provider card ", providers);
 
   const displayedProviders = showAll ? providers : providers.slice(0, 2);
+
+  console.log("assignedProvider ", assignedProvider);
+  console.log("displayedProviders ", assignedProvider);
+
+
 
   if (!serviceId || !checkoutId) return <div>Loading...</div>;
   if (!checkoutDetails) return <div>No provider details found.</div>;
@@ -81,9 +85,9 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
       {assignedProvider && (
         <div className="flex items-center gap-5 mb-6">
           <img
-            src={(assignedProvider as any).generalImage || "/default-profile.png"}
+            src={assignedProvider.storeInfo?.logo || "/default-profile.png"}
             alt={assignedProvider.fullName}
-            className="w-14 h-12 rounded-full object-cover border border-gray-300"
+            className="w-14 h-14 rounded-full object-cover border border-gray-300"
           />
           <div className="space-y-1">
             <p className="text-sm text-gray-700 dark:text-gray-200">
@@ -110,8 +114,9 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
                 onChange={() => setProviderId(provider._id)}
                 className="form-checkbox h-5 w-5 text-blue-600"
               />
+              
               <img
-                src={provider?.storeInfo?.logo || "/default-profile.png"}
+                src={provider.storeInfo?.logo || "/default-profile.png"}
                 alt={provider.fullName}
                 className="w-14 h-12 rounded-full object-cover border border-gray-300"
               />
@@ -129,7 +134,9 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
               </p>
             </div>
           </div>
-        ))}
+        )
+        
+        )}
 
       {/* Show More Button */}
       {!assignedProvider && !showAll && providers.length > 2 && (

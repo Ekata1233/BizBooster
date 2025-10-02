@@ -107,7 +107,7 @@ export default function UserMetaCard({
         </div>
 
         {/* Right: Package Toggle */}
-        {isToggleButton && (
+        {/* {isToggleButton && (
           <div className="flex flex-col items-end gap-1 relative">
             <label className="text-sm font-semibold text-blue-600 dark:text-blue-600 tracking-wide uppercase">
               Package Active
@@ -133,7 +133,6 @@ export default function UserMetaCard({
               )}
             </div>
 
-            {/* Password Modal using <Modal /> */}
             <Modal
               isOpen={showPasswordModal}
               onClose={() => {
@@ -148,7 +147,6 @@ export default function UserMetaCard({
                   Enter Password
                 </h2>
 
-                {/* Password Input with Show/Hide */}
                 <div className="relative mb-3 pt-4">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -204,7 +202,7 @@ export default function UserMetaCard({
             </Modal>
 
           </div>
-        )}
+        )} */}
 
       </div>
     </div>

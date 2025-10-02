@@ -8,8 +8,8 @@ import TopServices from "@/components/ecommerce/TopServices";
 
 export const metadata: Metadata = {
   title:
-    "BizBooster Dashboard",
-  description: "This is Next.js Home for BizBooster Dashboard",
+    "FetchTrue Dashboard",
+  description: "This is Next.js Home for FetchTrue Dashboard",
 };
 
 export default function Ecommerce() {
