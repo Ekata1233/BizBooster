@@ -200,7 +200,7 @@ const PackageTransaction = () => {
                 <div className="flex justify-between mb-2">
                     <button
                         onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                        className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition"
                     >
                         <FaBoxOpen className="w-5 h-5" />
                         <span>Manually Update Package</span>
