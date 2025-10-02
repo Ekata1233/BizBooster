@@ -272,6 +272,8 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
       const res = await axios.get(
         `/api/checkout/${providerId}`
       );
+
+      console.log("provider checkout context : ", res)
       setCheckouts(res.data?.data || []);
       setError(null);
     } catch (err) {
