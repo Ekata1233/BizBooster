@@ -5,9 +5,9 @@ import Link from "next/link";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Next.js Error 404 | BizBooster Dashboard",
+  title: "Next.js Error 404 | FetchTrue Dashboard",
   description:
-    "This is Next.js Error 404 page for BizBooster - Next.js Tailwind CSS Admin Dashboard Template",
+    "This is Next.js Error 404 page for FetchTrue - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
 export default function Error404() {

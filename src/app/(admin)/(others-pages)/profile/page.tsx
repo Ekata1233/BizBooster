@@ -6,9 +6,9 @@ import React from "react";
 
 
 export const metadata: Metadata = {
-  title: "Next.js Profile | BizBooster Dashboard",
+  title: "Next.js Profile | FetchTrue Dashboard",
   description:
-    "This is Next.js Profile page for BizBooster - Next.js Tailwind CSS Admin Dashboard Template",
+    "This is Next.js Profile page for FetchTrue - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
 export default function Profile() {
@@ -22,7 +22,7 @@ export default function Profile() {
           <UserMetaCard
             userId={"123"}
             imageSrc="/images/logo/user1.png"
-            name="BizBooster Admin"
+            name="Fetch True Admin"
             role="Admin"
             location="Amanora Chember, Hadapsar, Pune"
             isCommissionDistribute={false}
@@ -31,8 +31,8 @@ export default function Profile() {
 
           />
           <UserInfoCard
-            fullName="BizBooster Admin"
-            email="BizBooster@admin.com"
+            fullName="FetchTrue Admin"
+            email="fetchtrue@admin.com"
             phone="+91 9988776655"
             referralCode={" "}
             address="Amanora Chember, Hadapsar, Pune"
