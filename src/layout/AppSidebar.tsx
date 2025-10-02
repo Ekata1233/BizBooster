@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
@@ -31,6 +30,7 @@ import SidebarWidget from "./SidebarWidget";
 import { useCheckout } from "@/context/CheckoutContext";
 import { useLead } from "@/context/LeadContext";
 import { CalendarIcon, DollarSignIcon, HelpCircleIcon, MapIcon, Megaphone } from "lucide-react";
+import axios from "axios";
 
 // Define the new type for nested sub-items
 type SubNavItem = {
@@ -48,6 +48,13 @@ type NavItem = {
   path?: string;
   subItems?: SubNavItem[]; // Main nav items use the new SubNavItem type
 };
+interface SupportQuestion {
+  _id: string;
+  question: string;
+  answer?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const navItems: NavItem[] = [
   {
@@ -89,8 +96,8 @@ const customerItems: NavItem[] = [
     name: "Users",
     path: "/customer-management/user/user-list",
   },
-    {
-    icon: <HelpCircleIcon   />,
+  {
+    icon: <HelpCircleIcon />,
     name: "Support",
     path: "/customer-management/user/support",
   },
@@ -325,18 +332,21 @@ const AppSidebar: React.FC = () => {
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { checkouts } = useCheckout();
   const { leads } = useLead();
-
+  const [supportQuestions, setSupportQuestions] = useState<SupportQuestion[]>([]);
+  const [unansweredCount, setUnansweredCount] = useState(0);
   useEffect(() => {
     // console.log("All Checkouts:", checkouts);
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
+  console.log("unanscount :", unansweredCount);
+
   useEffect(() => {
     // ✅ Logs whenever leads change
     // console.log("All Leads:", leads);
   }, [leads]);
+  
   // Helper function to recursively check if any descendant is active
-  // This needs to be defined here or outside, but not inside useCallback that depends on it
   const isDescendantOfActivePath = useCallback((
     item: NavItem | SubNavItem,
     checkPathname: string
@@ -464,6 +474,31 @@ const AppSidebar: React.FC = () => {
 
   }, [pathname, isActive, findActiveAndSetOpenSubmenus, updateSubmenuHeight]);
 
+  //help and support count 
+  useEffect(() => {
+    const fetchSupportQuestions = async () => {
+      try {
+        const res = await axios.get("/api/support/question");
+        const questions = res.data?.data || [];
+
+        setSupportQuestions(questions);
+
+        // 🔹 Count unanswered
+        const unanswered = questions.filter((q: SupportQuestion) => !q.answer).length;
+        console.log("unans", unanswered);
+
+        setUnansweredCount(unanswered);
+      } catch (err) {
+        console.error("Error fetching support questions:", err);
+      }
+    };
+
+    fetchSupportQuestions();
+
+    // Auto refresh every 30s (optional)
+    const interval = setInterval(fetchSupportQuestions, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmenuToggle = useCallback((key: string) => {
     setOpenSubmenu((prevOpenSubmenu) => {
@@ -538,12 +573,6 @@ const AppSidebar: React.FC = () => {
       return newOpen;
     });
   }, [updateSubmenuHeight]);
-
-
-
-
-
-
 
   const renderSubMenuItems = useCallback((
     subItems: SubNavItem[],
@@ -625,9 +654,15 @@ const AppSidebar: React.FC = () => {
                           pro
                         </span>
                       )}
+                      
+                      {/* 🔹 Support Badge - Only for Support item */}
+                      {subItem.name === "Support" && unansweredCount > 0 && (
+                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {unansweredCount}
+                        </span>
+                      )}
 
                       {/* 🔹 Booking Count Badge */}
-
                       {subItem.name === "All Bookings" && (
                         <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                           {checkouts.length}
@@ -679,16 +714,11 @@ const AppSidebar: React.FC = () => {
                 )
               )}
             </li>
-
           );
         })}
       </ul>
     );
-  }, [openSubmenu, subMenuHeight, updateSubmenuHeight, isActive, isDescendantOfActivePath, handleSubmenuToggle, pathname]);
-
-
-
-
+  }, [openSubmenu, subMenuHeight, updateSubmenuHeight, isActive, isDescendantOfActivePath, handleSubmenuToggle, pathname, unansweredCount, checkouts, leads]);
 
   const renderMenuItems = useCallback((
     items: NavItem[],
@@ -699,8 +729,6 @@ const AppSidebar: React.FC = () => {
         const topLevelKey = `${menuType}-${index}`;
         const isOpen = openSubmenu.includes(topLevelKey);
         const isActiveLink = nav.path && isActive(nav.path);
-
-
         const shouldBeActiveParent = isActiveLink || isOpen || isDescendantOfActivePath(nav, pathname);
 
         return (
@@ -728,8 +756,6 @@ const AppSidebar: React.FC = () => {
                   />
                 )}
               </button>
-
-
             ) : (
               nav.path && (
                 <Link
@@ -747,6 +773,12 @@ const AppSidebar: React.FC = () => {
                   </span>
                   {(isExpanded || isHovered || isMobileOpen) && (
                     <span className="menu-item-text">{nav.name}</span>
+                  )}
+                  {/* 🔹 Support Badge for top-level Support item */}
+                  {(isExpanded || isHovered || isMobileOpen) && nav.name === "Support" && unansweredCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {unansweredCount}
+                    </span>
                   )}
                 </Link>
               )
@@ -766,24 +798,14 @@ const AppSidebar: React.FC = () => {
                   minHeight: "0px", // Crucial for clean collapse
                 }}
               >
-
                 {renderSubMenuItems(nav.subItems, topLevelKey)}
               </div>
-
-
             )}
           </li>
         );
       })}
     </ul>
-  ), [openSubmenu, subMenuHeight, updateSubmenuHeight, isActive, isExpanded, isHovered, isMobileOpen, handleSubmenuToggle, renderSubMenuItems, pathname, isDescendantOfActivePath]); // Added pathname and isDescendantOfActivePath to dependencies
-
-
-
-
-
-
-
+  ), [openSubmenu, subMenuHeight, updateSubmenuHeight, isActive, isExpanded, isHovered, isMobileOpen, handleSubmenuToggle, renderSubMenuItems, pathname, isDescendantOfActivePath, unansweredCount]);
 
   return (
     <aside
@@ -858,6 +880,7 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(customerItems, "customer")}
             </div>
 
+            {/* Other menu sections remain the same */}
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-700 font-bold ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -1076,5 +1099,3 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
-
-
