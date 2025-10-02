@@ -111,15 +111,7 @@ const UserDetails = () => {
             />
           )}
 
-          {/* {activeTab === 'stats' && (
-            <UserStatCard
-              stat1={{ title: 'Total Booking', value: '20' }}
-              stat2={{ title: 'Total Revenue', value: '₹8420' }}
-              stat3={{ title: 'Other', value: '420' }}
-              stat4={{ title: 'Next Other', value: '320' }}
-            />
-          )} */}
-
+          
           {activeTab === 'selfLead' && (
             <SelfLeadTable userId={userId || ' '} isAction={true} />
           )}

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import ComponentCard from '../common/ComponentCard';
 import { usePackageTransaction } from '@/context/PackageTransactionContext';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Pagination from '@/components/tables/Pagination';
 import StatCard from '../common/StatCard'; // ✅ Use your custom StatCard
@@ -12,6 +12,7 @@ import { BoxCubeIcon, DollarLineIcon } from '@/icons';
 import { Modal } from '../ui/modal';
 import Input from '../form/input/InputField';
 import axios from 'axios';
+import { usePackage } from '@/context/PackageContext';
 
 
 interface Payment {
@@ -41,13 +42,15 @@ interface PackageTransactionData {
     packageDetails: PackageDetails;
 }
 
+
 const PackageTransaction = () => {
     const params = useParams();
     const customerId = params?.id;
-    // Add new state for password
+    const router = useRouter();
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [password, setPassword] = useState("");
     const { data, loading, error, fetchPackageTransaction } = usePackageTransaction();
+    const { packages } = usePackage();
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage] = useState(5);
     const [showModal, setShowModal] = useState(false);
@@ -62,11 +65,15 @@ const PackageTransaction = () => {
         if (customerId) fetchPackageTransaction(customerId);
     }, [customerId]);
 
+    console.log("database package price : ", packages)
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
     if (!data || (!data.payments.length && !data.packageDetails)) return <p>No data found</p>;
 
     const { packageDetails, payments } = data as PackageTransactionData;
+
+    console.log("package details of user : ", packageDetails)
 
     // Pagination
     const totalPages = Math.ceil(payments.length / rowsPerPage);
@@ -159,6 +166,8 @@ const PackageTransaction = () => {
                     description: "",
                     updaterName: ""
                 });
+
+                router.push("/customer-management/user/user-list");
             }
         } catch (err: any) {
             console.error("Manual update failed:", err);
@@ -171,11 +180,19 @@ const PackageTransaction = () => {
         <div>
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                <StatCard icon={BoxCubeIcon} title="Package Price" value={`₹${packageDetails.packagePrice}`} gradient="from-blue-100 to-blue-200" textColor="text-blue-800" />
+                <StatCard icon={BoxCubeIcon} title="Package Price"
+                    value={`₹${packageDetails.packagePrice > 0 ? packageDetails.packagePrice : packages?.[0]?.grandtotal || 0}`}
+                    gradient="from-blue-100 to-blue-200" textColor="text-blue-800" />
 
                 <StatCard icon={DollarLineIcon} title="Package Amount Paid" value={`₹${packageDetails.packageAmountPaid}`} gradient="from-green-100 to-green-200" textColor="text-green-800" />
 
-                <StatCard icon={BoxCubeIcon} title="Remaining Amount" value={`₹${packageDetails.remainingAmount}`} gradient="from-yellow-100 to-yellow-200" textColor="text-yellow-800" />
+                <StatCard icon={BoxCubeIcon} title="Remaining Amount"
+                    value={`₹${packageDetails.packageActive
+                            ? packageDetails.remainingAmount
+                            : packageDetails.remainingAmount > 0
+                                ? packageDetails.remainingAmount
+                                : packages?.[0]?.grandtotal || 0
+                        }`} gradient="from-yellow-100 to-yellow-200" textColor="text-yellow-800" />
             </div>
 
             {/* Payment Table */}
