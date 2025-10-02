@@ -280,7 +280,7 @@ export const CheckoutProvider = ({ children }: { children: React.ReactNode }) =>
       console.error("Error fetching checkouts:", err);
       setError("Failed to fetch checkouts.");
     } finally {
-      setError("Failed to fetch checkouts.");
+     setLoading(false); 
     }
   };
 

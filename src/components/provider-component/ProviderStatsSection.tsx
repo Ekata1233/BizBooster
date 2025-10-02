@@ -13,7 +13,7 @@ type Props = {
 const ProviderStatsSection = ({ provider }: Props) => {
 
   const { checkouts = [], fetchCheckoutsByProviderId, loading: checkoutLoading, error: checkoutError } = useCheckout();
-  const { serviceMen = [], loading: serviceManLoading, error: serviceManError } = useServiceMan();
+  const { serviceMen = [],serviceMenByProvider,fetchServiceMenByProvider, loading: serviceManLoading, error: serviceManError } = useServiceMan();
   const { wallet, fetchWalletByProvider } = useProvider(); // ⬅️ access wallet & fetch function
 
   useEffect(() => {
@@ -28,7 +28,13 @@ const ProviderStatsSection = ({ provider }: Props) => {
     }
   }, [provider?._id]);
 
-  console.log("provider checkoit :", checkouts?.length?.toString());
+    useEffect(() => {
+    if (provider?._id) {
+      fetchServiceMenByProvider(provider._id);
+    }
+  }, [provider?._id]);
+
+  console.log("provider serviceMen :", serviceMenByProvider);
   const subscribedServicesCount = provider?.subscribedServices?.length || 0;
 
   if (checkoutError || serviceManError) {
@@ -41,7 +47,7 @@ const ProviderStatsSection = ({ provider }: Props) => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6 my-5">
           <StatCard
             title="Total Serviceman"
-            value={serviceMen?.length?.toString() || "0"}
+            value={serviceMenByProvider?.length?.toString() || "0"}
             icon={UserIcon}
             badgeColor="success"
             badgeIcon={ArrowUpIcon}
