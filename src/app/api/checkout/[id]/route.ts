@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     }
 
     const checkouts = await Checkout.find({ provider: new mongoose.Types.ObjectId(id) })
-    .populate({ path: 'serviceCustomer', select: 'fullName email city' })
+    .populate({ path: 'serviceCustomer', select: 'fullName email city phone' })
     .populate({ path: 'service', select: 'serviceName price discount discountedPrice franchiseDetails.commission' });
 
     return NextResponse.json(
