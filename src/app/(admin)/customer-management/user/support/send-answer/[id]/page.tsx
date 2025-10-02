@@ -30,7 +30,6 @@ const searchParams = useSearchParams();
         const res = await axios.get<{ data: UserQuery[] }>(
           `/api/support/question/${userId}`
          
-          
         );
         console.log("responce",res);
         
