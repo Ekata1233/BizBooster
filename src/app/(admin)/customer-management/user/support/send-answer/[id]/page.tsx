@@ -87,14 +87,26 @@ const searchParams = useSearchParams();
     <div className="h-screen flex flex-col bg-gray-100">
       {/* Header */}
       {/* Header */}
-<div className="p-4 border-b bg-white shadow-sm">
-  <h2 className="font-bold">
-    Chat with {conversation[0]?.user.fullName || 'User'}
-  </h2>
-  <p className="text-sm text-gray-500">
-    {conversation[0]?.user.email || ''}
-  </p>
+{/* Header */}
+<div className="p-4 border-b bg-white shadow-sm flex items-center space-x-3">
+  {/* Profile Photo */}
+  <img
+    src={conversation[0]?.user.profilePhoto || "/default-avatar.png"}
+    alt={conversation[0]?.user.fullName || "User"}
+    className="w-10 h-10 rounded-full object-cover border"
+  />
+
+  {/* User Info */}
+  <div>
+    <h2 className="font-bold">
+      Chat with {conversation[0]?.user.fullName || "User"}
+    </h2>
+    <p className="text-sm text-gray-500">
+      {conversation[0]?.user.email || ""}
+    </p>
+  </div>
 </div>
+
 
 
       {/* Messages */}

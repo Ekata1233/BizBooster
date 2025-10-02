@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const id = url.pathname.split('/').pop() as string;
 
     const chats = await HelpAndSupport.find({ user: id }) // ⬅ correct field
-      .populate('user', 'fullName email')
+      .populate('user', 'fullName email profilePhoto') 
       .sort({ createdAt: 1 });
 
     return NextResponse.json({ success: true, data: chats });
