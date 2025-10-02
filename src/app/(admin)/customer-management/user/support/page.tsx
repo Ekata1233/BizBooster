@@ -28,6 +28,7 @@ interface TableData {
   email: string;
   question: string;
   action: string;   // can still keep question id for action
+  answered: boolean; // ✅ new field to track answered or not
 }
 
 const SupportQuestionsPage = () => {
@@ -36,20 +37,19 @@ const SupportQuestionsPage = () => {
 
   const fetchSupportQuestions = async () => {
     try {
-     const response = await axios.get<{ data: SupportEntry[] }>("/api/support/question");
-const data = response.data.data; // ✅ fully typed
+      const response = await axios.get<{ data: SupportEntry[] }>("/api/support/question");
+      const data = response.data.data;
 
-
-     const tableData: TableData[] = data.map((entry, index) => ({
-  id: entry._id,
-  userId: entry.user?._id || 'N/A', // <-- add user id here
-  srNo: index + 1,
-  fullName: entry.user?.fullName || 'N/A',
-  email: entry.user?.email || 'N/A',
-  question: entry.question,
-  action: entry._id, // still using question id for the button
-}));
-
+      const tableData: TableData[] = data.map((entry, index) => ({
+        id: entry._id,
+        userId: entry.user?._id || 'N/A',
+        srNo: index + 1,
+        fullName: entry.user?.fullName || 'N/A',
+        email: entry.user?.email || 'N/A',
+        question: entry.question,
+        action: entry._id,
+        answered: !!entry.answer, // ✅ true if answer exists
+      }));
 
       setSupportData(tableData);
     } catch (error) {
@@ -61,12 +61,10 @@ const data = response.data.data; // ✅ fully typed
   useEffect(() => {
     fetchSupportQuestions();
   }, []);
-console.log("supprtdata",supportData);
 
-const handleSendAnswer = (id: string, userId: string) => {
-  router.push(`/customer-management/user/support/send-answer/${id}?user=${userId}`);
-};
-
+  const handleSendAnswer = (id: string, userId: string) => {
+    router.push(`/customer-management/user/support/send-answer/${id}?user=${userId}`);
+  };
 
   const columns = [
     { header: 'Sr No', accessor: 'srNo' },
@@ -76,12 +74,16 @@ const handleSendAnswer = (id: string, userId: string) => {
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: TableData) => (
-   <Button size="sm" onClick={() => handleSendAnswer(row.action, row.userId)}>
-  Send Answer
-</Button>
-
-      ),
+      render: (row: TableData) =>
+        row.answered ? (
+          <Button size="sm" disabled>
+            Answered
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => handleSendAnswer(row.action, row.userId)}>
+            Send Answer
+          </Button>
+        ),
     },
   ];
 

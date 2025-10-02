@@ -48,6 +48,11 @@ type NavItem = {
   path?: string;
   subItems?: SubNavItem[]; // Main nav items use the new SubNavItem type
 };
+interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success?: boolean;
+}
 interface SupportQuestion {
   _id: string;
   question: string;
@@ -478,8 +483,8 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     const fetchSupportQuestions = async () => {
       try {
-        const res = await axios.get("/api/support/question");
-        const questions = res.data?.data || [];
+         const res = await axios.get<ApiResponse<SupportQuestion[]>>("/api/support/question");
+      const questions = res.data.data || []; // Now TypeScript knows this structure
 
         setSupportQuestions(questions);
 
