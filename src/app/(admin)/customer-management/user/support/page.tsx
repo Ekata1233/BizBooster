@@ -118,19 +118,19 @@ interface SupportEntry {
     email: string;
   } | null;
   question: string;
-  answer?: string;   // ✅ from API
+  answer?: string;
   createdAt: string;
 }
 
 interface TableData {
-  id: string;
-  userId: string;
+  id: string;     
+  userId: string;  
   srNo: number;
   fullName: string;
   email: string;
   question: string;
-  answer?: string;   // ✅ include answer
-  action: string;   // keep id for button
+  answer?: string;   
+  action: string;   
 }
 
 const SupportQuestionsPage = () => {
@@ -149,13 +149,13 @@ const SupportQuestionsPage = () => {
         fullName: entry.user?.fullName || 'N/A',
         email: entry.user?.email || 'N/A',
         question: entry.question,
-        answer: entry.answer || '', // ✅ capture answer
+        answer: entry.answer || '', 
         action: entry._id,
       }));
 
       setSupportData(tableData);
     } catch (error) {
-      console.error("❌ Error fetching support questions:", error);
+      console.error('Error fetching support questions:', error);
       setSupportData([]);
     }
   };
@@ -169,9 +169,10 @@ const SupportQuestionsPage = () => {
   };
 
   const columns = [
-    { header: "Sr No", accessor: "srNo" },
-    { header: "Full Name", accessor: "fullName" },
-    { header: "Email", accessor: "email" },
+    { header: 'Sr No', accessor: 'srNo' },
+    { header: 'Full Name', accessor: 'fullName' },
+    { header: 'Email', accessor: 'email' },
+    { header: 'Question', accessor: 'question' },
     {
       header: 'Action',
       accessor: 'action',
