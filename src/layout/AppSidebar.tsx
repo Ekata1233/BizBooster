@@ -48,11 +48,6 @@ type NavItem = {
   path?: string;
   subItems?: SubNavItem[]; // Main nav items use the new SubNavItem type
 };
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success?: boolean;
-}
 interface SupportQuestion {
   _id: string;
   question: string;
@@ -167,13 +162,6 @@ const promotionItems: NavItem[] = [
     subItems: [
       { name: "Adds List", path: "/adds-management/adds-list", pro: false },
       { name: "New Add Request", path: "/adds-management/add-request", pro: false },
-    ],
-  },
-  {
-    icon: <Megaphone />,
-    name: "Trending Services",
-    subItems: [
-      { name: "All Trending services", path: "/adds-management/trending-services", pro: false },
     ],
   },
 ];
@@ -351,11 +339,6 @@ const AppSidebar: React.FC = () => {
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-
-  useEffect(() => {
-    // ✅ Logs whenever leads change
-    // console.log("All Leads:", leads);
-  }, [leads]);
   
   // Helper function to recursively check if any descendant is active
   const isDescendantOfActivePath = useCallback((
@@ -489,8 +472,8 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     const fetchSupportQuestions = async () => {
       try {
-         const res = await axios.get<ApiResponse<SupportQuestion[]>>("/api/support/question");
-      const questions = res.data.data || []; // Now TypeScript knows this structure
+        const res = await axios.get("/api/support/question");
+        const questions = res.data?.data || [];
 
         setSupportQuestions(questions);
 

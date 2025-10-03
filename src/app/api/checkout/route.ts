@@ -6,6 +6,7 @@ import "@/models/Service"
 import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
+import Coupon from '@/models/Coupon';
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -112,6 +113,24 @@ export async function POST(req: NextRequest) {
       if (!value) {
         return NextResponse.json(
           { success: false, message: `Missing ${field} field.` },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+
+    if (coupon) {
+      const couponDoc = await Coupon.findById(coupon);
+
+      if (!couponDoc) {
+        return NextResponse.json(
+          { success: false, message: "Invalid coupon." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      if (!couponDoc.isActive) {
+        return NextResponse.json(
+          { success: false, message: "Coupon expired or not valid." },
           { status: 400, headers: corsHeaders }
         );
       }

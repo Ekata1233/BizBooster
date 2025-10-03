@@ -18,6 +18,7 @@ import StatCard from '@/components/common/StatCard';
 import axios from 'axios';
 import { useService } from '@/context/ServiceContext';
 import Pagination from '@/components/tables/Pagination';
+import { useModule } from '@/context/ModuleContext';
 
 interface BannerType {
   _id: string;
@@ -31,6 +32,7 @@ interface BannerType {
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  module?: string;
 }
 type ServiceType = { name?: string };
 interface TableData {
@@ -41,6 +43,7 @@ interface TableData {
   selectionType: string;
   navigationTarget: string;
   status: string;
+  screenCategory: string;
 }
 
 const options = [
@@ -53,14 +56,15 @@ const options = [
 const Banner = () => {
   const { banners, deleteBanner, updateBanner } = useBanner();
   const [searchQuery, setSearchQuery] = useState<string>('');
+
   const { categories: categoryData } = useCategory();
   const { subcategories: subcategoryData } = useSubcategory();
   const { services: serviceData } = useService();
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
-
-  console.log("banner s : dd", banners)
+  const { modules } = useModule();
+  console.log("modules : ", modules)
 
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
@@ -68,7 +72,7 @@ const Banner = () => {
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
   const serviceMap = Object.fromEntries(serviceData.map((cat) => [cat._id, cat.serviceName]));
 
-
+  const [selectedModule, setSelectedModule] = useState<string>("");
   const [sort, setSort] = useState<string>('oldest');
   const [totalBanners, setTotalBanners] = useState(0);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -99,6 +103,10 @@ const Banner = () => {
     setEditModalOpen(true);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModule(e.target.value);
+  };
+
   const handleUpdate = async () => {
     if (!currentBanner) return;
     setIsLoading(true);
@@ -107,7 +115,7 @@ const Banner = () => {
     formData.append('id', currentBanner._id);
     formData.append('page', currentBanner.page);
     formData.append('selectionType', currentBanner.selectionType);
-
+    formData.append("module", selectedModule);
     // Handle category object case
     const categoryId = typeof currentBanner.category === 'object'
       ? currentBanner.category?._id
@@ -116,6 +124,10 @@ const Banner = () => {
     const subcategoryId = typeof currentBanner.subcategory === 'object'
       ? currentBanner.subcategory?._id
       : currentBanner.subcategory;
+
+    if (currentBanner?.screenCategory) {
+      formData.append("whichCategory", currentBanner.screenCategory);
+    }
 
     if (currentBanner.selectionType === 'category' && categoryId) {
       formData.append('category', categoryId);
@@ -197,6 +209,7 @@ const Banner = () => {
           id: banner._id,
           file: banner.file,
           page: banner.page,
+          module: banner.module,
           selectionType: banner.selectionType,
           navigationTarget: getNavigationTarget(banner),
           status: banner.isDeleted ? 'Deleted' : 'Active',
@@ -445,6 +458,48 @@ const Banner = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Screen Category (only if page === "category") */}
+            {currentBanner?.page === "category" && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Screen Category</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={(currentBanner as any)?.screenCategory || ""}
+                  onChange={(e) =>
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, screenCategory: e.target.value } : null
+                    )
+                  }
+                >
+                  <option value="">Select Screen Category</option>
+                  {categoryData.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+
+            <div>
+                <label className="block text-sm font-medium">Select Module</label>
+              <select
+                className="w-full border px-3 py-2 rounded"
+                value={selectedModule}
+                onChange={handleChange}
+              >
+                <option value="">Select Module</option>
+                {modules.map((mod) => (
+                  <option key={mod._id} value={mod._id}>
+                    {mod.name}
+                  </option>
+                ))}
+              </select>
+
+
             </div>
 
             {/* Selection Type */}
