@@ -339,12 +339,6 @@ const AppSidebar: React.FC = () => {
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  console.log("unanscount :", unansweredCount);
-
-  useEffect(() => {
-    // ✅ Logs whenever leads change
-    // console.log("All Leads:", leads);
-  }, [leads]);
   
   // Helper function to recursively check if any descendant is active
   const isDescendantOfActivePath = useCallback((

@@ -37,6 +37,10 @@ export async function PUT(req: Request) {
     const subcategory = formData.get("subcategory") as string;
     const service = formData.get("service") as string;
     const referralUrl = formData.get("referralUrl") as string;
+    const screenCategory = formData.get("whichCategory") as string;
+    const module = formData.get("module") as string;
+
+console.log("module : ",module);
 
     let fileUrl = "";
     const file = formData.get("file") as File | null;
@@ -61,6 +65,8 @@ export async function PUT(req: Request) {
       subcategory: subcategory || undefined,
       service: service || undefined,
       referralUrl: referralUrl || undefined,
+      screenCategory: screenCategory || undefined,
+      module: module || undefined,
       isDeleted: false,
     };
 

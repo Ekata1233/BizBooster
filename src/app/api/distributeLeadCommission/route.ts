@@ -43,7 +43,6 @@ export async function POST(req: Request) {
         }
         const lead = await Lead.findOne({ checkout: checkoutId })
 
-
         const checkout = await Checkout.findById(checkoutId).populate("user").populate({
             path: "service",
             select: "franchiseDetails.commission"
@@ -129,9 +128,6 @@ export async function POST(req: Request) {
         console.log("B_share commission : ", B_share);
         console.log("A_share commission : ", A_share);
         console.log("adminShare commission : ", adminShare);
-
-        // if (!userB) adminShare += B_share;
-        // if (!userA) adminShare += A_share;
 
         if (!userB || userB.isDeleted) {
             adminShare += B_share;
@@ -248,12 +244,6 @@ export async function POST(req: Request) {
             });
         }
 
-        // providerWallet.balance += providerShare;
-        // providerWallet.withdrawableBalance += providerShare;
-        // providerWallet.pendingWithdraw += providerShare;
-        // providerWallet.totalCredits += providerShare;
-        // providerWallet.totalEarning += providerShare;
-        // providerWallet.updatedAt = new Date();
         providerWallet.balance = Number((providerWallet.balance + providerShare).toFixed(2));
         providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + providerShare).toFixed(2));
         providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + providerShare).toFixed(2));
@@ -323,8 +313,6 @@ export async function POST(req: Request) {
             console.log("extra A_share commission : ", extra_A_share);
             console.log("extra adminShare commission : ", extra_adminShare);
 
-            // if (!userB) extra_adminShare += extra_B_share;
-            // if (!userA) extra_adminShare += extra_A_share;
 
             if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
             if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
@@ -365,12 +353,6 @@ export async function POST(req: Request) {
                 amount: extra_adminShare,
             });
 
-            // providerWallet.balance += extraProviderShare;
-            // providerWallet.withdrawableBalance += extraProviderShare;
-            // providerWallet.pendingWithdraw += extraProviderShare;
-            // providerWallet.totalCredits += extraProviderShare;
-            // providerWallet.totalEarning += extraProviderShare;
-            // providerWallet.updatedAt = new Date();
             providerWallet.balance = Number((providerWallet.balance + extraProviderShare).toFixed(2));
             providerWallet.withdrawableBalance = Number((providerWallet.withdrawableBalance + extraProviderShare).toFixed(2));
             providerWallet.pendingWithdraw = Number((providerWallet.pendingWithdraw + extraProviderShare).toFixed(2));
@@ -396,22 +378,6 @@ export async function POST(req: Request) {
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
             const cashAmount = checkout.cashInHandAmount;
 
-            // providerWallet.withdrawableBalance = Math.max(providerWallet.withdrawableBalance - cashAmount, 0);
-            // providerWallet.pendingWithdraw = Math.max(providerWallet.pendingWithdraw - cashAmount, 0);
-            // providerWallet.balance = providerWallet.balance - cashAmount;
-            // providerWallet.totalDebits = providerWallet.totalDebits + cashAmount;
-
-            // providerWallet.transactions.push({
-            //     type: "debit",
-            //     amount: cashAmount,
-            //     description: "Cash in hand collected from customer",
-            //     referenceId: checkout._id.toString(),
-            //     method: "Cash",
-            //     source: "adjustment",
-            //     status: "success",
-            //     createdAt: new Date(),
-            //     leadId: checkout.bookingId,
-            // });
 
             await providerWallet.save();
         }
