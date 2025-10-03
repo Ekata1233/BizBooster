@@ -142,7 +142,7 @@ export async function POST(req: Request) {
             amount: number,
             description: string,
             referenceId?: string,
-            level?: "A" | "B" | "C",
+            level?: "A" | "B" | "C" |"Admin",
             leadId?: string,
             commissionFrom?: string
         ) => {
@@ -346,7 +346,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            await creditWallet(ADMIN_ID, extra_adminShare, "Team Revenue - Admin (Add On Service)", checkout._id.toString(), checkout.bookingId, userC.userId || userC._id);
+            await creditWallet(ADMIN_ID, extra_adminShare, "Team Revenue - Admin (Add On Service)", checkout._id.toString(),"Admin", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
                 receiver: ADMIN_ID,

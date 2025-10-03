@@ -16,7 +16,7 @@ interface UserQuery {
 }
 
 const SupportPage = () => {
-const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
   const userId = searchParams.get('user');
   const [conversation, setConversation] = useState<UserQuery[]>([]);
   const [message, setMessage] = useState('');
@@ -29,10 +29,10 @@ const searchParams = useSearchParams();
       try {
         const res = await axios.get<{ data: UserQuery[] }>(
           `/api/support/question/${userId}`
-         
+
         );
-        console.log("responce",res);
-        
+        console.log("responce", res);
+
         setConversation(res.data.data || []);
       } catch (error) {
         console.error('Error fetching user conversation:', error);
@@ -41,9 +41,9 @@ const searchParams = useSearchParams();
 
     fetchConversation();
   }, [userId]);
-  console.log("conv",conversation);
-  console.log("userid",userId);
-  
+  console.log("conv", conversation);
+  console.log("userid", userId);
+
   // Send reply
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,25 +87,25 @@ const searchParams = useSearchParams();
     <div className="h-screen flex flex-col bg-gray-100">
       {/* Header */}
       {/* Header */}
-{/* Header */}
-<div className="p-4 border-b bg-white shadow-sm flex items-center space-x-3">
-  {/* Profile Photo */}
-  <img
-    src={conversation[0]?.user.profilePhoto || "/default-avatar.png"}
-    alt={conversation[0]?.user.fullName || "User"}
-    className="w-10 h-10 rounded-full object-cover border"
-  />
+      {/* Header */}
+      <div className="p-4 border-b bg-white shadow-sm flex items-center space-x-3 ">
+        {/* Profile Photo */}
+        <img
+          src={conversation[0]?.user.profilePhoto || "/default-avatar.png"}
+          alt={conversation[0]?.user.fullName || "User"}
+          className="w-10 h-10 rounded-full object-cover border"
+        />
 
-  {/* User Info */}
-  <div>
-    <h2 className="font-bold">
-      Chat with {conversation[0]?.user.fullName || "User"}
-    </h2>
-    <p className="text-sm text-gray-500">
-      {conversation[0]?.user.email || ""}
-    </p>
-  </div>
-</div>
+        {/* User Info */}
+        <div>
+          <h2 className="font-bold">  
+            Chat with {conversation[0]?.user.fullName || "User"}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {conversation[0]?.user.email || ""}
+          </p>
+        </div>
+      </div>
 
 
 
@@ -138,7 +138,7 @@ const searchParams = useSearchParams();
       {/* Input Box */}
       <form
         onSubmit={handleSend}
-        className="p-4 border-t bg-white flex items-center space-x-2"
+        className="p-4 border-t bg-white flex items-center space-x-2 sticky bottom-0"
       >
         <textarea
           value={message}

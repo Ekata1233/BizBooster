@@ -123,14 +123,14 @@ interface SupportEntry {
 }
 
 interface TableData {
-  id: string;       // question id
-  userId: string;   // user id
+  id: string;     
+  userId: string;  
   srNo: number;
   fullName: string;
   email: string;
   question: string;
-  answer?: string;   // ✅ include answer
-  action: string;   // keep id for button
+  answer?: string;   
+  action: string;   
 }
 
 const SupportQuestionsPage = () => {
@@ -149,7 +149,7 @@ const SupportQuestionsPage = () => {
         fullName: entry.user?.fullName || 'N/A',
         email: entry.user?.email || 'N/A',
         question: entry.question,
-        answer: entry.answer || '', // ✅ capture answer
+        answer: entry.answer || '', 
         action: entry._id,
       }));
 
