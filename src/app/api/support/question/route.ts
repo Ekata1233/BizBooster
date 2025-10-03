@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/utils/db';
 import HelpAndSupport from '@/models/HelpandSupport';
 import mongoose from 'mongoose';
+import '@/models/User';
 
 export async function POST(req: NextRequest) {
   try {

@@ -85,7 +85,6 @@ const CouponSchema = new Schema<ICoupon>(
       type: Boolean,
       default: false,
     },
-    /* flags */
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

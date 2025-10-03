@@ -10,6 +10,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://biz-booster-provider-panel.vercel.app', // ✅ ADD THIS LINE
     'https://api.fetchtrue.com',
+      'https://provider.fetchtrue.com',
+
 ];
 function getCorsHeaders(origin: string | null) {
   const headers: Record<string, string> = {

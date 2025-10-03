@@ -48,9 +48,6 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                 const res = await fetch(
                     `https://api.fetchtrue.com/api/zone/${provider.storeInfo.zone}`
                 );
-
-                console.log("data of the res : ", res);
-
                 const data = await res.json();
 
                 console.log("data of the zone : ", data);
@@ -127,7 +124,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
 
                         <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-500 whitespace-nowrap">Zone Name :</p>
-                            <p className="font-medium">{zoneName || 'No Any Moduel Registered'}</p>
+                            <p className="font-medium">{zoneName || 'No Any Zone Registered'}</p>
                         </div>
                     </div>
                 </ComponentCard>

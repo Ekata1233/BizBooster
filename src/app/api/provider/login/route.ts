@@ -13,6 +13,8 @@ const allowedOrigins = [
   'https://biz-booster-provider-panel.vercel.app',
   'https://api.fetchtrue.com',// ✅ ADD THIS LINE
   'http://localhost:3002',
+  'https://provider.fetchtrue.com',
+  
 ];
 function getCORSHeaders(origin: string) {
   const headers = new Headers();
