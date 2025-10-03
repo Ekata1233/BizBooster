@@ -156,7 +156,7 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
     );
   }
 
-  const mappedData = checkouts.map((checkout, index) => {
+  const mappedData = [...checkouts].reverse().map((checkout, index) => {
     const customer = checkout?.serviceCustomer || {};
     const commissionEntry = commissions.find(
       (c) => c.checkoutId === checkout._id

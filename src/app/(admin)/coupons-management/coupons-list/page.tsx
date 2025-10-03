@@ -131,7 +131,7 @@ const CouponList: React.FC = () => {
         ...(sort && { sort }),
       };
 
-      const res = await axios.get<{ data: CouponType[] }>('/api/coupon', { params });
+      const res = await axios.get<{ data: CouponType[] }>('/api/coupon/all', { params });
       const data: CouponType[] = res.data.data ?? [];
 
       if (data.length === 0) {

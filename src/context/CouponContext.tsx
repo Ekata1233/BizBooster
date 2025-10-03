@@ -52,7 +52,7 @@ export const CouponProvider = ({ children }: { children: React.ReactNode }) => {
   // Fetch all coupons
   const fetchCoupons = async () => {
     try {
-      const response = await axios.get("/api/coupon");
+      const response = await axios.get("/api/coupon/all");
       setCoupons(response.data.data);
     } catch (error) {
       console.error("Error fetching coupons:", error);

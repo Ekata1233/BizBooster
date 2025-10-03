@@ -14,6 +14,8 @@ const allowedOrigins = [
   'https://biz-booster-provider-panel.vercel.app',
   'https://api.fetchtrue.com',// ✅ ADD THIS LINE
   'http://localhost:3002',
+    'https://provider.fetchtrue.com',
+
 ];
 function getCORSHeaders(origin: string) {
   const headers = new Headers();
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
     await provider.save({ validateBeforeSave: false });
 
     // Reset URL with plain token (hashed one stays in DB)
-    const resetUrl = `https://biz-booster-provider-panel.vercel.app/reset-password?token=${resetToken}&email=${email}`;
+    const resetUrl = `https://provider.fetchtrue.com/reset-password?token=${resetToken}&email=${email}`;
 
     await transporter.sendMail({
       from: `"Support" <${process.env.EMAIL_USER}>`,
