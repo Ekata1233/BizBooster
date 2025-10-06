@@ -121,7 +121,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
             );
             const json = await res.json();
 
-            console.log("json : ", json)
+            console.log("json in self lead : ", json)
             if (json.success && json.data) {
               results.push({
                 checkoutId: checkout._id,

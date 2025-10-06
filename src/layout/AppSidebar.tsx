@@ -479,7 +479,7 @@ const AppSidebar: React.FC = () => {
 
         // 🔹 Count unanswered
         const unanswered = questions.filter((q: SupportQuestion) => !q.answer).length;
-        console.log("unans", unanswered);
+        
 
         setUnansweredCount(unanswered);
       } catch (err) {
