@@ -298,20 +298,10 @@ export async function POST(req: Request) {
 
 
         if (extraLeadAmount > 0) {
-
-
             const extra_C_share = toFixed2(extraCommissionPool * 0.5);
             const extra_B_share = toFixed2(extraCommissionPool * 0.2);
             const extra_A_share = toFixed2(extraCommissionPool * 0.1);
             let extra_adminShare = toFixed2(extraCommissionPool * 0.2);
-
-
-            console.log("extra commission commission : ", extraCommissionPool);
-            console.log("extra proivder commission : ", extraProviderShare);
-            console.log("extra C_share commission : ", extra_C_share);
-            console.log("extra B_share commission : ", extra_B_share);
-            console.log("extra A_share commission : ", extra_A_share);
-            console.log("extra adminShare commission : ", extra_adminShare);
 
 
             if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;

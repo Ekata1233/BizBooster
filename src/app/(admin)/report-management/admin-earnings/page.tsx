@@ -46,8 +46,8 @@ const Page = () => {
 
         const leadEarningsTotal =
             wallet?.transactions
-                ?.filter((txn) => txn.description?.trim() === "Team Revenue - Admin")
-                .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+                ?.filter((txn) => txn.description?.trim() === "Team Revenue - Admin" ||
+                    txn.description?.trim() === "Team Revenue - Admin (Add On Service)").reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
         const depositTotal =
             wallet?.transactions
@@ -116,7 +116,8 @@ const Page = () => {
             );
         } else if (activeTab === "lead") {
             txns = wallet.transactions.filter(
-                (txn) => txn.description?.trim() === "Team Revenue - Admin"
+                (txn) => txn.description?.trim() === "Team Revenue - Admin" ||
+                    txn.description?.trim() === "Team Revenue - Admin (Add On Service)"
             );
         } else if (activeTab === "deposit") {
             txns = wallet.transactions.filter(
@@ -242,7 +243,8 @@ const Page = () => {
                                                     ).length
                                                     : tab === "lead"
                                                         ? wallet.transactions.filter(
-                                                            (txn) => txn.description === "Team Revenue - Admin"
+                                                            (txn) => txn.description === "Team Revenue - Admin" ||
+                                                                txn.description?.trim() === "Team Revenue - Admin (Add On Service)"
                                                         ).length
                                                         : tab === "deposit"
                                                             ? wallet.transactions.filter(

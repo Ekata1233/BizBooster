@@ -190,6 +190,7 @@ export async function POST(req: Request) {
     }
 
     const lead = await Lead.findOne({ checkout: checkoutId });
+    
     const checkout = await Checkout.findById(checkoutId)
       .populate("user")
       .populate({
@@ -215,10 +216,9 @@ export async function POST(req: Request) {
       )
       : 0;
 
-    const extraCommission =
-      Array.isArray(lead?.extraService) && lead?.extraService.length > 0
-        ? lead?.extraService[0]?.commission || 0
-        : 0;
+    const extraCommission = Array.isArray(lead?.extraService) && lead?.extraService.length > 0
+      ? (lead?.extraService[0]?.commission) || 0
+      : 0;
 
     const userC = checkout.user;
     const userB = userC?.referredBy
@@ -264,33 +264,43 @@ export async function POST(req: Request) {
       extra_adminShare = 0,
       extra_providerShare = 0;
 
-    if (extraLeadAmount > 0) {
-      let extraCommissionPool = 0;
 
-      if (typeof extraCommission === "string") {
-        const trimmed = extraCommission.trim();
-        if (trimmed.endsWith("%")) {
-          const percent = parseFloat(trimmed.replace("%", ""));
-          extraCommissionPool = (extraLeadAmount * percent) / 100;
-        } else {
-          extraCommissionPool = parseFloat(trimmed.replace("₹", "").trim());
-        }
-        extra_providerShare = extraLeadAmount - extraCommissionPool;
+    let extraCommissionPool = 0;
+
+    if (typeof extraCommission === "string") {
+      const trimmed = extraCommission.trim();
+
+      if (trimmed.endsWith("%")) {
+        const percent = parseFloat(trimmed.replace("%", ""));
+        extraCommissionPool = (extraLeadAmount * percent) / 100;
+      } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
+        const numericString = trimmed.replace("₹", "").trim();
+        extraCommissionPool = parseFloat(numericString);
       } else {
-        extraCommissionPool = extraCommission;
-        extra_providerShare = extraLeadAmount - extraCommissionPool;
+        throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
       }
 
+
+      extra_providerShare = extraLeadAmount - extraCommissionPool;
+    } else if (typeof extraCommission === "number") {
+      extraCommissionPool = extraCommission;
+      extra_providerShare = extraLeadAmount - extraCommissionPool;
+    } else {
+      throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
+    }
+
+    if (extraLeadAmount > 0) {
       extra_C_share =
         userC?.packageActive ? toFixed2(extraCommissionPool * 0.5) : 0;
       extra_B_share = userB ? toFixed2(extraCommissionPool * 0.2) : 0;
       extra_A_share = userA ? toFixed2(extraCommissionPool * 0.1) : 0;
 
-      extra_adminShare = toFixed2(
-        extraCommissionPool - (extra_C_share + extra_B_share + extra_A_share)
-      );
-    }
+      extra_adminShare = toFixed2(extraCommissionPool * 0.2);
 
+
+      if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
+      if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
+    }
     // ---------------- CHECK IF ALREADY DISTRIBUTED ----------------
     const existingCommission = await UpcomingCommission.findOne({ checkoutId });
     if (existingCommission) {
