@@ -121,29 +121,50 @@ export async function PUT(req: NextRequest) {
 }
 
 // ─── DELETE /api/provider/:id ──────────────────────────────────────
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request) {
   await connectToDatabase();
 
-  const origin = req.headers.get("origin");
-  const id = req.nextUrl.pathname.split("/").pop();
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-  if (!id) {
+    const origin = req.headers.get("origin");
+    const corsHeaders = getCorsHeaders(origin);
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // 🔹 Soft delete instead of hard delete
+    const deletedProvider = await Provider.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!deletedProvider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     return NextResponse.json(
-      { success: false, message: "Missing ID parameter." },
-      { status: 400, headers: getCorsHeaders(origin) }
+      { success: true, message: "Provider soft-deleted successfully" },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const origin = req.headers.get("origin");
+    const corsHeaders = getCorsHeaders(origin);
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
     );
   }
-
-  const deleted = await Provider.findByIdAndDelete(id);
-  if (!deleted) {
-    return NextResponse.json(
-      { success: false, message: "Provider not found." },
-      { status: 404, headers: getCorsHeaders(origin) }
-    );
-  }
-
-  return NextResponse.json(
-    { success: true, message: "Deleted successfully." },
-    { status: 200, headers: getCorsHeaders(origin) }
-  );
 }
