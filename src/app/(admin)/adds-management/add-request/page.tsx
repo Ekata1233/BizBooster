@@ -111,12 +111,12 @@ const page = () => {
                     >
                         <Check size={18} />
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => alert(`Delete Ad ID: ${row.id}`)}
                         className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
                     >
                         <TrashBinIcon size={16} />
-                    </button>
+                    </button> */}
                     <Link href={`/adds-management/add-request/${row.id}`} passHref>
                         <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
                             <EyeIcon size={16} />
