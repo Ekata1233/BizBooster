@@ -81,7 +81,7 @@ export async function PATCH(req: Request) {
     }
 
     // ── Prevent forbidden updates
-    const disallowed = ["_id", "providerId", "email", "phoneNo", "isDeleted"];
+    const disallowed = ["_id", "providerId", "isDeleted"];
     disallowed.forEach(f => delete updateData[f]);
 
     // ── Find provider

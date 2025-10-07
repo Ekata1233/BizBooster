@@ -223,7 +223,7 @@ export async function PUT(req: Request) {
             howToParticipate?: string;
             faq?: Record<string, string>;
             termsAndConditions?: string;
-            
+            isActive?: boolean; // ✅ added here
         } = {};
 
         const handleImageUpload = async (imageFile: File | null, folder: string, existingUrl?: string) => {
@@ -305,13 +305,23 @@ export async function PUT(req: Request) {
                         console.error(`Failed to parse JSON for field: ${field}`, e);
                     }
                 } else if (field === 'offerStartTime' || field === 'offerEndTime') {
-                    // Handle date fields
                     updateData[field] = new Date(value);
                 } else if (field === 'eligibilityCriteria' || field === 'howToParticipate' || field === 'termsAndConditions') {
                     updateData[field] = value;
                 }
             }
         });
+
+        // ✅ Auto isActive update logic
+        if (updateData.offerEndTime) {
+            const today = new Date();
+            const endDate = new Date(updateData.offerEndTime);
+            if (endDate <= today) {
+                updateData.isActive = false; // expired
+            } else {
+                updateData.isActive = true; // re-activated if date extended
+            }
+        }
 
         console.log("Final update data:", updateData);
 
@@ -339,8 +349,9 @@ export async function PUT(req: Request) {
             { success: false, message },
             { status: 500, headers: corsHeaders }
         );
-    }
+    
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();
