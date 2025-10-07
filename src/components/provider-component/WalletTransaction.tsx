@@ -67,7 +67,7 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
     {
       header: 'Balance',
       accessor: 'balance',
-      render: (row: any) => <span>₹{row.runningBalance ?? '-'}</span>,
+      render: (row: any) => <span>₹{row.balanceAfterTransaction ?? '-'}</span>,
     },
   ];
 
@@ -94,6 +94,8 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
       return { ...txn, runningBalance };
     });
   }, [filteredTransactions]);
+
+  console.log("enriched transactions of provider : ", enrichedTransactions)
 
   return (
     <div>
@@ -136,7 +138,7 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
           </p>
         </div>
       ) : (
-        <BasicTableOne columns={columns} data={enrichedTransactions} />
+        <BasicTableOne columns={columns} data={filteredTransactions} />
       )}
     </div>
   );

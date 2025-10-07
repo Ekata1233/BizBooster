@@ -36,7 +36,7 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchAds = async () => {
     try {
-      const res = await axios.get<{ data: AdType[] }>('/api/ads');
+      const res = await axios.get<{ data: AdType[] }>('/api/ads/all');
       setAds(res.data.data);
     } catch (err) {
       console.error('Failed to fetch ads:', err);
