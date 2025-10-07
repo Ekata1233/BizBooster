@@ -115,16 +115,8 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const checkout = formData.get("checkout") as string;
-    // const serviceCustomer = formData.get("serviceCustomer") as string;
-    // const serviceManRaw = formData.get("serviceMan") as string;
-    // const service = formData.get("service") as string;
     const amountRaw = formData.get("amount") as string | null;
     const amount = amountRaw && amountRaw.trim() !== "" ? parseFloat(amountRaw) : undefined;
-
-    // const serviceMan =
-    //   serviceManRaw && serviceManRaw.trim() !== "" && mongoose.Types.ObjectId.isValid(serviceManRaw)
-    //     ? serviceManRaw
-    //     : null;
     const serviceManRaw = formData.get("serviceMan") as string;
     const serviceMan =
       serviceManRaw &&

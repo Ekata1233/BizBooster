@@ -164,7 +164,7 @@ const ProviderServiceMan : React.FC<Props> = ({ provider }) => {
           </div>
 
           {getFilteredByStatus().length === 0 ? (
-            <p className="text-sm text-gray-500">No matching servicemen found.</p>
+            <p className="text-sm text-gray-500">No matching serviceman found.</p>
           ) : (
             <BasicTableOne columns={columns} data={getFilteredByStatus()} />
           )}
