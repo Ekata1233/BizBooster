@@ -295,8 +295,10 @@ export async function POST(req: Request) {
       } else if (typeof extraCommission === "number") {
         extraCommissionPool = extraCommission;
         extra_providerShare = extraLeadAmount - extraCommissionPool;
-      } 
-      
+      }
+
+      console.log("extraCommissionPool : ", extraCommissionPool);
+
       //NEW CODE FROM THE 06 OCT
       const validExtraC = userC && !userC.isDeleted && userC.packageActive;
       const validExtraB = userB && !userB.isDeleted;
@@ -307,6 +309,13 @@ export async function POST(req: Request) {
       extra_A_share = validExtraA ? toFixed2(extraCommissionPool * 0.1) : 0;
 
       extra_adminShare = toFixed2(extraCommissionPool - (extra_C_share + extra_B_share + extra_A_share));
+
+      console.log("extra_C_share : ", extra_C_share);
+      console.log("extra_B_share : ", extra_B_share);
+      console.log("extra_A_share : ", extra_A_share);
+      console.log("extra_adminShare : ", extra_adminShare);
+      console.log("extra_providerShare : ", extra_providerShare);
+
     }
 
     //OLD CODE TILL 6 OCT
@@ -333,7 +342,7 @@ export async function POST(req: Request) {
     }
 
     // ---------------- SAVE ----------------
-    await UpcomingCommission.create({
+    const newCommission = await UpcomingCommission.create({
       leadId: lead ? lead._id : null,
       checkoutId: checkout._id,
       share_1: C_share,
@@ -347,6 +356,8 @@ export async function POST(req: Request) {
       extra_admin_commission: extra_adminShare,
       extra_provider_share: toFixed2(extra_providerShare),
     });
+
+    console.log("🧾 UpcomingCommission saved:", newCommission.toObject());
 
     return NextResponse.json(
       { success: true, message: "Commission preview saved successfully." },
