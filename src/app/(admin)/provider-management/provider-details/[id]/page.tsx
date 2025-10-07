@@ -237,7 +237,7 @@ const ProviderDetailsPage = () => {
                 }`}
               onClick={() => setActiveTab('subscribe')}
             >
-              Subscribe Services
+              Subscribed Services
             </li>
             <li
               className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'bookings'

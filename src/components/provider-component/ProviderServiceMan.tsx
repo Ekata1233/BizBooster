@@ -134,7 +134,7 @@ const ProviderServiceMan : React.FC<Props> = ({ provider }) => {
                  <div className="mb-4">
             <Input
               type="text"
-              placeholder="Search servicemen…"
+              placeholder="Search serviceman"
               value={searchQuery}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
