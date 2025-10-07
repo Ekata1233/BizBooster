@@ -63,7 +63,7 @@ export function OfferProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get<{ success: boolean; data: Offer[] }>(API_BASE);
+      const res = await axios.get<{ success: boolean; data: Offer[] }>(`${API_BASE}/all`);
       setOffers(res.data.data ?? []);
     } catch (err: unknown) {
       console.error('Error fetching offers:', err);
