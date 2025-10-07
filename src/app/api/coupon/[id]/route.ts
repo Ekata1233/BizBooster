@@ -33,54 +33,73 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
-    console.log("formdata of the coupon for the update : ",formData)
+    console.log("formdata of the coupon for the update : ", formData);
 
-    /* Build an update object from whichever fields were supplied.
-       (Anything not in the request is left unchanged.)               */
     const updateData: Record<string, unknown> = {};
 
     const setIfPresent = (
       key: string,
       val: FormDataEntryValue | null,
-      transform: (v: FormDataEntryValue) => unknown = v => v
+      transform: (v: FormDataEntryValue) => unknown = (v) => v
     ) => {
       if (val !== null && val !== undefined && val !== "") {
         updateData[key] = transform(val);
       }
     };
 
-    setIfPresent("couponType",         formData.get("couponType"));
-    setIfPresent("couponCode",         formData.get("couponCode"), v => String(v).trim().toUpperCase());
-    setIfPresent("customer",           formData.get("customer"));
-    setIfPresent("discountType",       formData.get("discountType"));
-    setIfPresent("discountTitle",      formData.get("discountTitle"));
-    setIfPresent("category",           formData.get("category"));
-    setIfPresent("service",            formData.get("service"));
-    setIfPresent("zone",               formData.get("zone"));
+    setIfPresent("couponType", formData.get("couponType"));
+    setIfPresent(
+      "couponCode",
+      formData.get("couponCode"),
+      (v) => String(v).trim().toUpperCase()
+    );
+    setIfPresent("customer", formData.get("customer"));
+    setIfPresent("discountType", formData.get("discountType"));
+    setIfPresent("discountTitle", formData.get("discountTitle"));
+    setIfPresent("category", formData.get("category"));
+    setIfPresent("service", formData.get("service"));
+    setIfPresent("zone", formData.get("zone"));
     setIfPresent("discountAmountType", formData.get("discountAmountType"));
-    setIfPresent("amount",             formData.get("amount"),        Number);
-    setIfPresent("maxDiscount",        formData.get("maxDiscount"),   Number);
-    setIfPresent("minPurchase",        formData.get("minPurchase"),   Number);
-    setIfPresent("startDate",          formData.get("startDate"),     v => new Date(String(v)));
-    setIfPresent("endDate",            formData.get("endDate"),       v => new Date(String(v)));
-    setIfPresent("limitPerUser",       formData.get("limitPerUser"),  Number);
+    setIfPresent("amount", formData.get("amount"), Number);
+    setIfPresent("maxDiscount", formData.get("maxDiscount"), Number);
+    setIfPresent("minPurchase", formData.get("minPurchase"), Number);
+    setIfPresent("startDate", formData.get("startDate"), (v) => new Date(String(v)));
+    setIfPresent("endDate", formData.get("endDate"), (v) => new Date(String(v)));
+    setIfPresent("limitPerUser", formData.get("limitPerUser"), Number);
     setIfPresent("discountCostBearer", formData.get("discountCostBearer"));
-    setIfPresent("couponAppliesTo",    formData.get("couponAppliesTo"));
-    /* you can also expose isActive in UI if you want a hard toggle */
-    setIfPresent("isActive",           formData.get("isActive"), v => v === "true");
+    setIfPresent("couponAppliesTo", formData.get("couponAppliesTo"));
+    setIfPresent("isActive", formData.get("isActive"), (v) => v === "true");
 
     // If discountAmountType is updated to "Percentage", ensure maxDiscount is provided
     if (
       updateData.discountAmountType === "Percentage" &&
-      (updateData.maxDiscount === undefined || isNaN(updateData.maxDiscount as number))
+      (updateData.maxDiscount === undefined ||
+        isNaN(updateData.maxDiscount as number))
     ) {
       return NextResponse.json(
-        { success: false, message: "maxDiscount is required when discountAmountType is 'Percentage'." },
+        {
+          success: false,
+          message:
+            "maxDiscount is required when discountAmountType is 'Percentage'.",
+        },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const updatedCoupon = await Coupon.findByIdAndUpdate(id, updateData, { new: true });
+    // 🔹 Automatically handle expiration via isActive
+    if (updateData.endDate) {
+      const today = new Date();
+      const endDate = new Date(updateData.endDate as Date);
+      if (endDate <= today) {
+        updateData.isActive = false; // Coupon expired
+      } else {
+        updateData.isActive = true; // Coupon re-activated
+      }
+    }
+
+    const updatedCoupon = await Coupon.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedCoupon) {
       return NextResponse.json(
@@ -94,7 +113,8 @@ export async function PUT(req: Request) {
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
