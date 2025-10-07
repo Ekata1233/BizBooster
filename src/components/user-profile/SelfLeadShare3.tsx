@@ -17,7 +17,7 @@ interface CommissionData {
   share_1: number;
   share_2: number;
   share_3: number;
-
+  extra_share_3: number;
 }
 
 const columnsSelfLead = [
@@ -125,12 +125,14 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
                 share_1: json.data.share_1 ?? 0,
                 share_2: json.data.share_2 ?? 0,
                 share_3: json.data.share_3 ?? 0,
+                extra_share_3: json.data.extra_share_3 ?? 0,
+
               });
             } else {
-              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0 });
+              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0, extra_share_3: 0 });
             }
           } catch (err) {
-            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0 });
+            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0, share_3: 0, extra_share_3: 0 });
           }
         })
       );
@@ -159,7 +161,7 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
     );
   }
 
-  const mappedData = checkouts.map((checkout, index) => {
+  const mappedData = [...checkouts].reverse().map((checkout, index) => {
     const customer = checkout?.serviceCustomer || {};
     const commissionEntry = commissions.find(
       (c) => c.checkoutId === checkout._id
@@ -167,6 +169,11 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
     const myCommission = commissionEntry
       ? `₹${commissionEntry.share_3.toLocaleString()}`
       : "₹0";
+
+    const addOnCommission = commissionEntry
+      ? `₹${commissionEntry.extra_share_3.toLocaleString()}`
+      : "₹0";
+    const addOnCommissionValue: number = commissionEntry?.extra_share_3 || 0;
 
     let commissionWithStatus: React.ReactNode = (
       <div className="flex flex-col">
@@ -176,6 +183,18 @@ const SelfLeadShare3 = ({ userId, isAction }: SelfLeadProps) => {
         )}
         {!checkout?.isCompleted && checkout?.isAccepted && (
           <span className="text-xs text-blue-600">(expected)</span>
+        )}
+
+        {addOnCommissionValue > 0 && (
+          <div className="mt-1 flex flex-col">
+            <span>{addOnCommission}</span>
+            {checkout?.isCompleted && (
+              <span className="text-xs text-green-600">(Add On - completed)</span>
+            )}
+            {!checkout?.isCompleted && checkout?.isAccepted && (
+              <span className="text-xs text-blue-600">(Add On - expected)</span>
+            )}
+          </div>
         )}
       </div>
     );

@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { connectToDatabase } from '@/utils/db';
 import imagekit from '@/utils/imagekit';
 import Offer from '@/models/Offer';
+import '@/models/Service';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,22 @@ export function OPTIONS() {
 export async function GET() {
   try {
     await connectToDatabase();
-    const offers = await Offer.find().populate({
+
+    const now = new Date();
+
+    // 1️⃣ Set isActive = false for expired offers
+    await Offer.updateMany(
+      { offerEndTime: { $lt: now }, isActive: true },
+      { $set: { isActive: false } }
+    );
+
+    // 2️⃣ Set isActive = true for currently active offers
+    await Offer.updateMany(
+      { offerStartTime: { $lte: now }, offerEndTime: { $gte: now }, isActive: false },
+      { $set: { isActive: true } }
+    );
+
+    const offers = await Offer.find({isActive : true}).populate({
       path: 'service',
       select: 'serviceName name _id', // adapt to your Service schema
     }).sort({ createdAt: -1 });

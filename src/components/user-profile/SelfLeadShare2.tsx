@@ -16,6 +16,7 @@ interface CommissionData {
   checkoutId: string;
   share_1: number;
   share_2: number;
+  extra_share_2: number;
 }
 
 const columnsSelfLead = [
@@ -122,12 +123,13 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
                 checkoutId: checkout._id,
                 share_1: json.data.share_1 ?? 0,
                 share_2: json.data.share_2 ?? 0,
+                extra_share_2: json.data.extra_share_2 ?? 0,
               });
             } else {
-              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0 });
+              results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0,extra_share_2: 0 });
             }
           } catch (err) {
-            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0 });
+            results.push({ checkoutId: checkout._id, share_1: 0, share_2: 0,extra_share_2: 0 });
           }
         })
       );
@@ -165,6 +167,11 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
       ? `₹${commissionEntry.share_2.toLocaleString()}`
       : "₹0";
 
+      const addOnCommission = commissionEntry
+      ? `₹${commissionEntry.extra_share_2.toLocaleString()}`
+      : "₹0";
+       const addOnCommissionValue: number = commissionEntry?.extra_share_2 || 0;
+
     let commissionWithStatus: React.ReactNode = (
       <div className="flex flex-col">
         <span>{myCommission}</span>
@@ -173,6 +180,18 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
         )}
         {!checkout?.isCompleted && checkout?.isAccepted && (
           <span className="text-xs text-blue-600">(expected)</span>
+        )}
+
+        {addOnCommissionValue > 0 && (
+          <div className="mt-1 flex flex-col">
+            <span>{addOnCommission}</span>
+            {checkout?.isCompleted && (
+              <span className="text-xs text-green-600">(Add On - completed)</span>
+            )}
+            {!checkout?.isCompleted && checkout?.isAccepted && (
+              <span className="text-xs text-blue-600">(Add On - expected)</span>
+            )}
+          </div>
         )}
       </div>
     );

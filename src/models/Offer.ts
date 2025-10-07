@@ -34,7 +34,7 @@ const OfferSchema = new Schema<OfferDoc>(
 
     eligibilityCriteria:   { type: String, required: true },
     howToParticipate:      { type: String, required: true, },
-    faq:                   { type: [FAQSubSchema], required: true, },  // <-- use sub-schema
+    faq:                   { type: [FAQSubSchema], required: true, },  
     termsAndConditions:    { type: String, required: true },
 
     service: {
@@ -42,6 +42,7 @@ const OfferSchema = new Schema<OfferDoc>(
       ref: 'Service',
       required: true,
     },
+    isActive: { type: Boolean, default: true },
   },
   {
     timestamps: true,
@@ -58,11 +59,6 @@ OfferSchema.pre('validate', function (next) {
   next();
 });
 
-// Virtual
-OfferSchema.virtual('isActive').get(function (this: OfferDoc) {
-  const now = new Date();
-  return now >= this.offerStartTime && now <= this.offerEndTime;
-});
 
 const Offer = mongoose.models.Offer || mongoose.model<OfferDoc>('Offer', OfferSchema);
 export default Offer;

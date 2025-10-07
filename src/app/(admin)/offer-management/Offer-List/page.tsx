@@ -73,7 +73,7 @@ const OfferListPage: React.FC = () => {
   const fetchOffers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/offer');
+      const res = await axios.get('/api/offer/all');
       if (res.data.success) setOffers(res.data.data);
     } catch (err) {
       console.error('Error fetching offers:', err);
