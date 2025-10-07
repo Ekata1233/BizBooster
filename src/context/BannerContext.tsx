@@ -34,7 +34,6 @@ export const BannerProvider = ({ children }: { children: ReactNode }) => {
   try {
     // Type the response so TypeScript knows the structure
     const res = await axios.get<{ data: Banner[] }>('/api/banner');
-      console.log("banner s : ", res)
 
     setBanners(res.data); // ✅ now TypeScript knows it's Banner[]
   } catch (error) {

@@ -190,7 +190,7 @@ export async function POST(req: Request) {
     }
 
     const lead = await Lead.findOne({ checkout: checkoutId });
-    
+
     const checkout = await Checkout.findById(checkoutId)
       .populate("user")
       .populate({
@@ -246,61 +246,80 @@ export async function POST(req: Request) {
       providerShare = leadAmount - commissionPool;
     }
 
-    // Conditional shares (0 if user missing/inactive)
-    const C_share =
-      userC?.packageActive ? toFixed2(commissionPool * 0.5) : 0;
-    const B_share = userB ? toFixed2(commissionPool * 0.2) : 0;
-    const A_share = userA ? toFixed2(commissionPool * 0.1) : 0;
+    // OLD CODE UPTO 06 OCT
+    // const C_share =
+    //   userC?.packageActive ? toFixed2(commissionPool * 0.5) : 0;
+    // const B_share = userB ? toFixed2(commissionPool * 0.2) : 0;
+    // const A_share = userA ? toFixed2(commissionPool * 0.1) : 0;
+    // const adminShare = toFixed2(
+    //   commissionPool - (C_share + B_share + A_share)
+    // );
 
-    // Admin gets leftover
-    const adminShare = toFixed2(
-      commissionPool - (C_share + B_share + A_share)
-    );
+    //NEW CODE FROM 6 OCT 
+    let adminShare = 0;
+
+    // Shares only if user exists & not deleted
+    const validC = userC && !userC.isDeleted && userC.packageActive;
+    const validB = userB && !userB.isDeleted;
+    const validA = userA && !userA.isDeleted;
+
+    const C_share = validC ? toFixed2(commissionPool * 0.5) : 0;
+    const B_share = validB ? toFixed2(commissionPool * 0.2) : 0;
+    const A_share = validA ? toFixed2(commissionPool * 0.1) : 0;
+    adminShare = toFixed2(commissionPool - (C_share + B_share + A_share));
 
     // ---------------- EXTRA COMMISSION ----------------
     let extra_C_share = 0,
       extra_B_share = 0,
       extra_A_share = 0,
       extra_adminShare = 0,
-      extra_providerShare = 0;
+      extra_providerShare = 0,
+      extraCommissionPool = 0;
+
+    if (extraLeadAmount > 0 && extraCommission) {
+      if (typeof extraCommission === "string") {
+        const trimmed = extraCommission.trim();
+
+        if (trimmed.endsWith("%")) {
+          const percent = parseFloat(trimmed.replace("%", ""));
+          extraCommissionPool = (extraLeadAmount * percent) / 100;
+        } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
+          const numericString = trimmed.replace("₹", "").trim();
+          extraCommissionPool = parseFloat(numericString);
+        } else {
+          throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
+        }
 
 
-    let extraCommissionPool = 0;
+        extra_providerShare = extraLeadAmount - extraCommissionPool;
+      } else if (typeof extraCommission === "number") {
+        extraCommissionPool = extraCommission;
+        extra_providerShare = extraLeadAmount - extraCommissionPool;
+      } 
+      
+      //NEW CODE FROM THE 06 OCT
+      const validExtraC = userC && !userC.isDeleted && userC.packageActive;
+      const validExtraB = userB && !userB.isDeleted;
+      const validExtraA = userA && !userA.isDeleted;
 
-    if (typeof extraCommission === "string") {
-      const trimmed = extraCommission.trim();
+      extra_C_share = validExtraC ? toFixed2(extraCommissionPool * 0.5) : 0;
+      extra_B_share = validExtraB ? toFixed2(extraCommissionPool * 0.2) : 0;
+      extra_A_share = validExtraA ? toFixed2(extraCommissionPool * 0.1) : 0;
 
-      if (trimmed.endsWith("%")) {
-        const percent = parseFloat(trimmed.replace("%", ""));
-        extraCommissionPool = (extraLeadAmount * percent) / 100;
-      } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
-        const numericString = trimmed.replace("₹", "").trim();
-        extraCommissionPool = parseFloat(numericString);
-      } else {
-        throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
-      }
-
-
-      extra_providerShare = extraLeadAmount - extraCommissionPool;
-    } else if (typeof extraCommission === "number") {
-      extraCommissionPool = extraCommission;
-      extra_providerShare = extraLeadAmount - extraCommissionPool;
-    } else {
-      throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
+      extra_adminShare = toFixed2(extraCommissionPool - (extra_C_share + extra_B_share + extra_A_share));
     }
 
-    if (extraLeadAmount > 0) {
-      extra_C_share =
-        userC?.packageActive ? toFixed2(extraCommissionPool * 0.5) : 0;
-      extra_B_share = userB ? toFixed2(extraCommissionPool * 0.2) : 0;
-      extra_A_share = userA ? toFixed2(extraCommissionPool * 0.1) : 0;
+    //OLD CODE TILL 6 OCT
+    // if (extraLeadAmount > 0) {
+    //   extra_C_share =
+    //     userC?.packageActive ? toFixed2(extraCommissionPool * 0.5) : 0;
+    //   extra_B_share = userB ? toFixed2(extraCommissionPool * 0.2) : 0;
+    //   extra_A_share = userA ? toFixed2(extraCommissionPool * 0.1) : 0;
 
-      extra_adminShare = toFixed2(extraCommissionPool * 0.2);
-
-
-      if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
-      if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
-    }
+    //   extra_adminShare = toFixed2(extraCommissionPool * 0.2);
+    //   if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
+    //   if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
+    // }
     // ---------------- CHECK IF ALREADY DISTRIBUTED ----------------
     const existingCommission = await UpcomingCommission.findOne({ checkoutId });
     if (existingCommission) {
