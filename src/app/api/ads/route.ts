@@ -88,7 +88,7 @@ export async function GET() {
     );
 
     // Fetch updated ads with relations
-    const ads = await Ad.find().populate("category service provider");
+    const ads = await Ad.find({isExpired : false}).populate("category service provider");
 
     return NextResponse.json(
       { success: true, data: ads },
