@@ -112,6 +112,7 @@ const providerItems: NavItem[] = [
       { name: "Provider Request", path: "/provider-management/provider-request", pro: false },
       { name: "Provider List", path: "/provider-management/provider-list", pro: false },
       { name: "Provider Gallery", path: "/provider-management/provider-gallery", pro: false },
+      { name: "Payment Adjustment", path: "/provider-management/payment-adjustment", pro: false },
     ],
   },
   {
@@ -339,7 +340,7 @@ const AppSidebar: React.FC = () => {
   }, [checkouts]);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  
+
   // Helper function to recursively check if any descendant is active
   const isDescendantOfActivePath = useCallback((
     item: NavItem | SubNavItem,
@@ -479,7 +480,7 @@ const AppSidebar: React.FC = () => {
 
         // 🔹 Count unanswered
         const unanswered = questions.filter((q: SupportQuestion) => !q.answer).length;
-        
+
 
         setUnansweredCount(unanswered);
       } catch (err) {
@@ -648,7 +649,7 @@ const AppSidebar: React.FC = () => {
                           pro
                         </span>
                       )}
-                      
+
                       {/* 🔹 Support Badge - Only for Support item */}
                       {subItem.name === "Support" && unansweredCount > 0 && (
                         <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
