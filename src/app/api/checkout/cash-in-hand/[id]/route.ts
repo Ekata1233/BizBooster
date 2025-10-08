@@ -333,6 +333,11 @@ export async function PUT(req: NextRequest) {
             remainingCash = Math.abs(newBalance);
             newBalance = 0;
         }
+
+        if (!Array.isArray(providerWallet.transactions)) {
+            providerWallet.transactions = [];
+        }
+
         providerWallet.adjustmentCash = round2((providerWallet.adjustmentCash || 0) + remainingCash);
 
         const newCashInHand = round2((providerWallet.cashInHand || 0) + fetchedAmount);
@@ -358,11 +363,6 @@ export async function PUT(req: NextRequest) {
             createdAt: new Date(),
             leadId: checkout.bookingId,
         });
-
-        // providerWallet.balance = newBalance;
-        // providerWallet.totalCredits += fetchedAmount;
-        // providerWallet.totalEarning = round2((providerWallet.totalEarning || 0) - fetchedAmount);
-        // providerWallet.totalCredits = round2((providerWallet.totalCredits || 0) - fetchedAmount);
 
         const deductedFromBalance = fetchedAmount - remainingCash;
         providerWallet.totalEarning = round2((providerWallet.totalEarning || 0) - deductedFromBalance);
