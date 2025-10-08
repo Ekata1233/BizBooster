@@ -44,7 +44,7 @@ const libraries: ("drawing" | "geometry" | "places" | "visualization")[] = [
 ];
 
 const ZoneList = () => {
-  const { zones, updateZone, deleteZone } = useZone();
+  const { zones, updateZone, deleteZone, fetchAllZones } = useZone(); // ✅ fetchAllZones
   const { isOpen, openModal, closeModal } = useModal();
 
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
@@ -59,6 +59,10 @@ const ZoneList = () => {
     libraries,
   });
 
+  // ✅ Fetch all zones when page loads
+  useEffect(() => {
+    fetchAllZones();
+  }, [fetchAllZones]);
   // ✅ when polygon is drawn
   const handlePolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     const path = polygon.getPath().getArray().map(latLng => ({

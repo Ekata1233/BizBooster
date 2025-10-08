@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -25,6 +25,8 @@ interface ZoneContextType {
   addZone: (zone: { name: string; coordinates: ICoordinate[] }) => Promise<void>;
   updateZone: (id: string, zone: { name: string; coordinates: ICoordinate[] }) => Promise<void>;
   deleteZone: (id: string) => Promise<void>;
+  fetchZones: () => Promise<void>;      // for active/filtered zones
+  fetchAllZones: () => Promise<void>;   // fetch all zones including deleted
 }
 
 const ZoneContext = createContext<ZoneContextType | null>(null);
@@ -32,25 +34,35 @@ const ZoneContext = createContext<ZoneContextType | null>(null);
 export const ZoneProvider = ({ children }: { children: React.ReactNode }) => {
   const [zones, setZones] = useState<IZone[]>([]);
 
-  // Fetch all zones
+  // Fetch only active zones (example: not deleted)
   const fetchZones = async () => {
     try {
-      const response = await axios.get("/api/zone");
+      const response = await axios.get("/api/zone"); // your endpoint for active zones
       setZones(response.data.data);
     } catch (error) {
       console.error("Error fetching zones:", error);
     }
   };
 
+  // Fetch all zones (including deleted)
+  const fetchAllZones = async () => {
+    try {
+      const response = await axios.get("/api/zone/all-zone"); // endpoint for all zones
+      setZones(response.data.data);
+    } catch (error) {
+      console.error("Error fetching all zones:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchZones();
+    fetchZones(); // fetch active zones on load
   }, []);
 
   // Add a new zone
   const addZone = async (zone: { name: string; coordinates: ICoordinate[] }) => {
     try {
       await axios.post("/api/zone", zone);
-      fetchZones();
+      fetchZones(); // update active zones after add
     } catch (error) {
       console.error("Error adding zone:", error);
     }
@@ -77,7 +89,7 @@ export const ZoneProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <ZoneContext.Provider value={{ zones, addZone, updateZone, deleteZone }}>
+    <ZoneContext.Provider value={{ zones, addZone, updateZone, deleteZone, fetchZones, fetchAllZones }}>
       {children}
     </ZoneContext.Provider>
   );
