@@ -47,7 +47,7 @@ const AdListPage = () => {
 
         setFilteredAds(filtered);
     }, [ads, searchQuery]);
-
+    console.log('Raw ads:', ads);
     const getFilteredByStatus = () => {
         if (activeTab === 'approved') return filteredAds.filter(ad => ad.status === 'Approved');
         if (activeTab === 'pending') return filteredAds.filter(ad => ad.status === 'Pending');

@@ -45,7 +45,7 @@ interface OfferResponse {
   service?: string | { _id: string };
 }
 
-// Image validation function
+// Updated image validation function - allows exactly 1MB or less
 const validateImage = (file: File, maxSizeMB: number = 1): string | null => {
   // Check file type
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -56,7 +56,7 @@ const validateImage = (file: File, maxSizeMB: number = 1): string | null => {
   // Check file size (1MB = 1024 * 1024 bytes)
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
-    return `Image size must be less than ${maxSizeMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
+    return `Image size must be less than or equal to ${maxSizeMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
   }
 
   return null;
@@ -483,8 +483,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
       <ComponentCard title={offerIdToEdit ? 'Edit Offer' : 'Add New Offer'}>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-          {/* DROPDOWNS, IMAGES, DATES, GALLERY, EDITORS same as original but lazy-loaded */}
-          {/* ... keep your existing JSX for form fields ... */}
           {/* --- MODULE, CATEGORY, SUBCATEGORY, SERVICE --- */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Module */}
