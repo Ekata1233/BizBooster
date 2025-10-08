@@ -147,6 +147,8 @@ export async function DELETE(req: Request) {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
 
+    console.log("id of ads deleted  : ", id);
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing ID parameter." },

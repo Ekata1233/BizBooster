@@ -12,12 +12,9 @@ export interface AdType {
   fileUrl: string;
   isApproved: boolean; 
   isExpired: boolean;
-  category: {
-    name: string;
-  };
-  service: {
-    serviceName: string;
-  };
+  isDeleted: boolean; // ✅ include isDeleted
+  category: { name: string };
+  service: { serviceName: string };
 }
 
 interface AdContextType {
@@ -37,7 +34,7 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchAds = async () => {
     try {
       const res = await axios.get<{ data: AdType[] }>('/api/ads/all');
-      setAds(res.data.data);
+      setAds(res.data.data); // all ads, including isDeleted
     } catch (err) {
       console.error('Failed to fetch ads:', err);
     }
@@ -54,19 +51,25 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-    const deleteAd = async (id: string): Promise<boolean> => {
-    try {
-      const res = await axios.delete(`/api/ads/${id}`);
-      if (res.data.success) {
-        setAds((prev) => prev.filter((ad) => ad._id !== id));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error deleting ad:", error);
-      return false;
+  // AdContext.tsx
+const deleteAd = async (id: string) => {
+  try {
+    const res = await fetch(`/api/ads/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    console.log("data of ads : ", data)
+    if (data.success) {
+      // Update context state immediately
+      setAds(prev => prev.map(ad => ad._id === id ? { ...ad, isDeleted: true } : ad));
+      return true;
     }
-  };
+    return false;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
+
 
   const updateAd = async (id: string, data: Partial<AdType>) => {
     try {
@@ -82,7 +85,7 @@ export const AdProvider = ({ children }: { children: React.ReactNode }) => {
       await axios.put(`/api/ads/approve/${id}`);
       fetchAds();
     } catch (err) {
-      console.error('Error approving ad:', err);
+      console.error('Failed to approve ad:', err);
     }
   };
 
