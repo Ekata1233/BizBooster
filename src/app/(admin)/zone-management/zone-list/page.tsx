@@ -121,7 +121,7 @@ const ZoneList = () => {
   const columns = [
     { header: 'Zone Name', accessor: 'name' },
     { header: 'Providers', accessor: 'providerCount' },
-    { header: 'Category', accessor: 'categoryCount' },
+    // { header: 'Category', accessor: 'categoryCount' },
     {
       header: 'Status',
       accessor: 'status',
@@ -177,7 +177,7 @@ const ZoneList = () => {
     .map((zone) => ({
       id: zone._id,
       name: zone.name,
-      providerCount: 0,
+      providerCount: zone.providerCount,
       categoryCount: 0,
       status: zone.isDeleted ? 'Deleted' : 'Active',
     }));

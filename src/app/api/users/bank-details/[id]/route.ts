@@ -25,7 +25,7 @@ export async function GET(req: Request) {
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, message: "Valid provider ID is required." },
+        { success: false, message: "No bank details found for this user." },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
 
     if (!bankDetails) {
       return NextResponse.json(
-        { success: false, message: "No bank details found for this provider." },
+        { success: false, message: "No bank details found for this user." },
         { status: 404, headers: corsHeaders }
       );
     }
