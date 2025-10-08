@@ -97,6 +97,7 @@ export async function PUT(req: Request) {
       fileUrl = uploadResponse.url;
     }
 
+    // ✅ Build update data
     const updateData: Record<string, unknown> = {
       addType,
       category,
@@ -108,6 +109,16 @@ export async function PUT(req: Request) {
     };
 
     if (fileUrl) updateData.fileUrl = fileUrl;
+
+    // ✅ Handle isExpired logic
+    const currentDate = new Date();
+    const end = new Date(endDate);
+
+    // If endDate is in the past or today → expired
+    let isExpired = end < currentDate || end.toDateString() === currentDate.toDateString();
+
+    // When ad is updated with new endDate → recheck and reset isExpired if needed
+    updateData.isExpired = isExpired;
 
     const updatedAd = await Ad.findByIdAndUpdate(id, updateData, {
       new: true,
@@ -126,6 +137,7 @@ export async function PUT(req: Request) {
     );
   }
 }
+
 
 // ✅ DELETE AD
 export async function DELETE(req: Request) {
