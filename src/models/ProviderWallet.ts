@@ -28,6 +28,7 @@ export interface IProviderWallet extends Document {
   totalCredits: number;
   totalDebits: number;
   cashInHand: number;
+  adjustmentCash: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +135,11 @@ const ProviderWalletSchema = new Schema<IProviderWallet>(
       min: [0, 'Total debits cannot be negative'],
     },
     cashInHand: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    adjustmentCash: {
       type: Number,
       default: 0,
       min: 0,

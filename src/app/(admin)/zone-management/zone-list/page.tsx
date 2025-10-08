@@ -59,11 +59,14 @@ const ZoneList = () => {
     libraries,
   });
 
+
+  console.log("zones : ", zones);
   // ✅ Fetch all zones when page loads
   useEffect(() => {
     fetchAllZones();
-  }, [fetchAllZones]);
-  // ✅ when polygon is drawn
+  }, []);
+
+  // When polygon is drawn
   const handlePolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     const path = polygon.getPath().getArray().map(latLng => ({
       lat: latLng.lat(),
@@ -73,7 +76,7 @@ const ZoneList = () => {
     polygon.setMap(null); // remove temp overlay
   }, []);
 
-  // ✅ when polygon is edited
+  // When polygon is edited
   const handlePolygonEdit = (polygon: google.maps.Polygon) => {
     const path = polygon.getPath().getArray().map(latLng => ({
       lat: latLng.lat(),
@@ -125,9 +128,9 @@ const ZoneList = () => {
     const formatted: TableData[] = zones.map(zone => ({
       id: zone._id,
       name: zone.name,
-      providerCount: 0,
+      providerCount: zone.providerCount,
       categoryCount: 0,
-      status: zone.isDeleted ? 'Inactive' : 'Active', // soft-delete mapping
+      status: zone.isDeleted ? 'Inactive' : 'Active',
     }));
 
     const filtered = formatted.filter(zone =>
@@ -159,7 +162,7 @@ const ZoneList = () => {
   const columns = [
     { header: 'Zone Name', accessor: 'name' },
     { header: 'Providers', accessor: 'providerCount' },
-    { header: 'Category', accessor: 'categoryCount' },
+    // { header: 'Category', accessor: 'categoryCount' },
     {
       header: 'Status',
       accessor: 'status',
@@ -238,9 +241,8 @@ const ZoneList = () => {
           ].map(tab => (
             <li
               key={tab.key}
-              className={`cursor-pointer px-4 py-2 ${
-                activeTab === tab.key ? 'border-b-2 border-blue-600 text-blue-600' : ''
-              }`}
+              className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                }`}
               onClick={() => setActiveTab(tab.key)}
             >
               {tab.label}
@@ -256,7 +258,7 @@ const ZoneList = () => {
         <BasicTableOne columns={columns} data={getFilteredByStatus()} />
       </div>
 
-      {/* ✅ Modal for editing zone */}
+      {/* Modal for editing zone */}
       <div>
         <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
           <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 h-[70vh]">

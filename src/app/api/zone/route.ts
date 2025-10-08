@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import Zone from "@/models/Zone"
 import { connectToDatabase } from "@/utils/db"
+import Provider from "@/models/Provider";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,12 +37,46 @@ export async function POST(req: Request) {
   }
 }
 
-// GET /api/zones
+// GET /api/zones PRODUCTION 
+// export async function GET() {
+//   try {
+//     await connectToDatabase()
+//     const zones = await Zone.find({isDeleted: false});
+//     return NextResponse.json({ data: zones }, { status: 200, headers: corsHeaders })
+//   } catch (error) {
+//     console.error("Error fetching zones:", error)
+//     return NextResponse.json({ message: "Server Error" }, { status: 500, headers: corsHeaders })
+//   }
+// }
+
+
+//CHANGE 08 OCT 2025
 export async function GET() {
   try {
     await connectToDatabase()
-    const zones = await Zone.find({isDeleted: false})
-    return NextResponse.json({ data: zones }, { status: 200, headers: corsHeaders })
+    const zones = await Zone.find();
+
+  const providerCounts = await Provider.aggregate([
+    { $match: { "storeInfo.zone": { $ne: null } } },
+    { $group: { _id: "$storeInfo.zone", count: { $sum: 1 } } },
+  ]);
+
+  console.log("Provider counts:", providerCounts);
+
+
+    const countsMap = providerCounts.reduce((acc, item) => {
+      acc[item._id.toString()] = item.count;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const data = zones.map((zone) => ({
+      ...zone.toObject(),
+      providerCount: countsMap[zone._id.toString()] || 0,
+    }));
+
+
+    return NextResponse.json({ data }, { status: 200, headers: corsHeaders })
+
   } catch (error) {
     console.error("Error fetching zones:", error)
     return NextResponse.json({ message: "Server Error" }, { status: 500, headers: corsHeaders })

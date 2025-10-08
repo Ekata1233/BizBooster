@@ -13,6 +13,7 @@ export interface ICoordinate {
 interface IZone {
   _id: string;
   name: string;
+  providerCount: number;
   coordinates: ICoordinate[];
   createdAt?: string;
   updatedAt?: string;
