@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { FaMoneyBillWave, FaMoneyCheckAlt, FaWallet } from 'react-icons/fa';
+import { FaMoneyBillWave } from 'react-icons/fa';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import { IProviderWallet } from '@/models/ProviderWallet';
 
@@ -16,7 +16,7 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
   loading,
   error
 }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit' >('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'credit' | 'debit'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   if (loading) return <p>Loading transactions...</p>;
@@ -71,12 +71,15 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
     },
   ];
 
+  // ✅ Filter transactions based on tab, searchTerm (including leadId)
   const filteredTransactions = useMemo(() => {
     return wallet.transactions
       .filter((txn) => {
+        const search = searchTerm.toLowerCase();
         const matchSearch =
-          txn.referenceId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          txn.description?.toLowerCase().includes(searchTerm.toLowerCase());
+          txn.referenceId?.toLowerCase().includes(search) ||
+          txn.description?.toLowerCase().includes(search) ||
+          txn.leadId?.toLowerCase().includes(search); // ✅ include leadId
         const matchTab = activeTab === 'all' || txn.type === activeTab;
         return matchSearch && matchTab;
       })
@@ -95,19 +98,14 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
     });
   }, [filteredTransactions]);
 
-  console.log("enriched transactions of provider : ", enrichedTransactions)
-
   return (
     <div>
-      {/* Summary Cards */}
-  
-
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
         {['all', 'credit', 'debit'].map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit' )}
+            onClick={() => setActiveTab(tab as 'all' | 'credit' | 'debit')}
             className={`min-w-[120px] px-4 py-2 rounded-md text-sm font-medium border ${
               activeTab === tab
                 ? 'bg-blue-600 text-white border-blue-600'
@@ -122,7 +120,7 @@ const WalletTransaction: React.FC<WalletTransactionProps> = ({
       {/* Search */}
       <input
         type="text"
-        placeholder="Search transactions..."
+        placeholder="Search By LeadID..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full mb-4 p-2 border rounded"
