@@ -41,7 +41,7 @@ const CouponSchema = new Schema<ICoupon>(
       uppercase: true,
       trim: true,
     },
-    customer: { type: Schema.Types.ObjectId, ref: 'ServiceCustomer' },
+    customer: { type: Schema.Types.ObjectId, ref: 'User' },
     discountType: {
       type: String,
       enum: ['Category Wise', 'Service Wise', 'Mixed'],
