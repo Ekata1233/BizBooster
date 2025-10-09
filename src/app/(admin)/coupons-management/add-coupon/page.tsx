@@ -14,6 +14,7 @@ import { useService } from "@/context/ServiceContext";
 import { useZone } from "@/context/ZoneContext";
 import { useCoupon } from "@/context/CouponContext";
 import { useServiceCustomer } from "@/context/ServiceCustomerContext";
+import { useUserContext } from "@/context/UserContext";
 
 const couponTypeOptions = [
     { value: "default", label: "Default" },
@@ -36,6 +37,7 @@ type Option = {
 const AddCouponPage = () => {
     const { addCoupon } = useCoupon();
     const { customers } = useServiceCustomer();
+    const { users } = useUserContext();
     const { categories } = useCategory();
     const { services } = useService();
     const { zones } = useZone();
@@ -45,6 +47,13 @@ const AddCouponPage = () => {
     // })) ?? [];  
     const customersOptions: Option[] = Array.isArray(customers)
         ? customers.map(cus => ({
+            value: String(cus._id),
+            label: cus.fullName,
+        }))
+        : [];
+
+    const usersOptions: Option[] = Array.isArray(users)
+        ? users.map(cus => ({
             value: String(cus._id),
             label: cus.fullName,
         }))
@@ -136,7 +145,7 @@ const AddCouponPage = () => {
         }
     };
 
-    console.log("customers in to the cooupon : ", customers)
+    console.log("users in to the cooupon : ", usersOptions)
 
     const renderDynamicSelects = () => {
         const selects = [] as React.ReactElement[];
@@ -288,10 +297,10 @@ const AddCouponPage = () => {
                     <div className="md:col-span-2 flex flex-wrap items-center gap-8">
                         {form.couponType === "customerWise" && (
                             <div className="w-full">            {/* or: basis-full */}
-                                <Label>Select Customer</Label>
+                                <Label>Select User</Label>
                                 <Select
-                                    options={customersOptions}
-                                    placeholder="Select customer"
+                                    options={usersOptions}
+                                    placeholder="Select User"
                                     value={form.customer}
                                     onChange={val => handleChange("customer", val)}
                                     className="w-full dark:bg-dark-900"
