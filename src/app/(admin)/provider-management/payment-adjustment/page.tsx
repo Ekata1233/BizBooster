@@ -503,30 +503,32 @@ export default function PaymentAdjustment() {
 
                 <ComponentCard title="Payment Adjustment">
                     <div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                            <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                                {["all", "pending", "approved", "completed", "rejected"].map((tab) => (
-                                    <li
-                                        key={tab}
-                                        className={`cursor-pointer px-4 py-2 ${activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
-                                            }`}
-                                        onClick={() => setActiveTab(tab)}
-                                    >
-                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                        <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                                            {providers.filter(
-                                                (p) => tab === "all" || p.status.toLowerCase() === tab
-                                            ).length}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
 
                         {loading ? (
-                            <div className="text-center py-8">Loading providers...</div>
-                        ) : message ? (
-                            <p className="text-red-500 text-center my-4">{message}</p>
+                            <div className="text-center py-8 text-gray-500">Loading providers...</div>
+                        ) : filteredProviders.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-6">
+                                <div className="w-24 h-24 mb-4 flex items-center justify-center rounded-full bg-gray-100">
+                                    <svg
+                                        className="w-12 h-12 text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 17v-6m4 6v-4m4 4v-2m-8 2h8a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h4z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-700">No Providers Found</h3>
+                                <p className="text-gray-500 mt-2 text-center max-w-xs">
+                                    There are no providers available at the moment. Please check back later .
+                                </p>
+                            </div>
                         ) : (
                             <>
                                 <BasicTableOne columns={columns} data={currentRows} />
@@ -540,6 +542,7 @@ export default function PaymentAdjustment() {
                                 </div>
                             </>
                         )}
+
                     </div>
                 </ComponentCard>
             </div>
