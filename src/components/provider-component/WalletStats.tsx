@@ -18,18 +18,19 @@ interface WalletStatsProps {
     pendingWithdraw: number;
     alreadyWithdrawn: number;
     totalEarning: number;
+    adjustmentCash: number;
   };
 }
 
 const WalletStats: React.FC<WalletStatsProps> = ({ wallet }) => {
   const stats = [
-    {
-      title: "Receivable Balance",
-      value: wallet.receivableBalance.toFixed(2),
-      icon: <FaUsers size={48} />,
-      gradient: 'from-red-100 to-red-200',
-      textColor: 'text-red-800',
-    },
+    // {
+    //   title: "Receivable Balance",
+    //   value: wallet.receivableBalance.toFixed(2),
+    //   icon: <FaUsers size={48} />,
+    //   gradient: 'from-red-100 to-red-200',
+    //   textColor: 'text-red-800',
+    // },
     {
       title: "Cash in Hand",
       value: wallet.cashInHand.toFixed(2),
@@ -38,8 +39,8 @@ const WalletStats: React.FC<WalletStatsProps> = ({ wallet }) => {
       textColor: 'text-blue-800',
     },
     {
-      title: "Withdrawable Balance",
-      value: wallet.withdrawableBalance.toFixed(2),
+      title: "Pay to Fetch True",
+      value: wallet.adjustmentCash.toFixed(2),
       icon: <FaMoneyBill size={48} />,
       gradient: 'from-green-100 to-green-200',
       textColor: 'text-green-800',

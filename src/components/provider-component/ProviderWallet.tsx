@@ -27,6 +27,7 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
         pendingWithdraw: 0,
         alreadyWithdrawn: 0,
         totalEarning: 0,
+        adjustmentCash: 0,
     };
 
     const finalWallet = wallet || defaultWallet;
@@ -44,11 +45,13 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
                         pendingWithdraw: finalWallet.pendingWithdraw,
                         alreadyWithdrawn: finalWallet.alreadyWithdrawn,
                         totalEarning: finalWallet.totalEarning,
+                        adjustmentCash: finalWallet.adjustmentCash,
+
                     }}
                 />
             </ComponentCard>
             <ComponentCard title="Transaction ">
-               <WalletTransaction wallet={wallet} loading={loading} error={error} />
+                <WalletTransaction wallet={wallet} loading={loading} error={error} />
             </ComponentCard>
         </div>
     )
