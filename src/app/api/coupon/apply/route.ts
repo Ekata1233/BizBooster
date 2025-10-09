@@ -4,16 +4,25 @@ import Coupon from '@/models/Coupon';
 import { Types } from 'mongoose';
 import { connectToDatabase } from '@/utils/db';
 import CouponUsage from '@/models/CouponUsage';
+import Checkout from '@/models/Checkout';
 
 export async function POST(req: NextRequest) {
     await connectToDatabase();
     try {
         const body = await req.json();
-        const { couponCode, userId, leadCount, purchaseAmount, serviceId, zoneId } = body;
+        const { couponCode, userId, purchaseAmount, serviceId, zoneId } = body;
 
         if (!couponCode || !userId || purchaseAmount == null) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
+
+        const leadCount = await Checkout.countDocuments({
+            user: userId,
+            isDeleted: false,
+            isCanceled: false,
+        });
+
+        console.log("lead count : ", leadCount)
 
         const now = new Date();
         const coupon = await Coupon.findOne({ couponCode: couponCode.toUpperCase(), isDeleted: false, isActive: true });
