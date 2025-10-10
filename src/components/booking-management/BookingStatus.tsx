@@ -7,19 +7,19 @@ const BookingStatus = ({ checkout }: { checkout: string }) => {
     const { getLeadByCheckoutId } = useLead();
     const [lead, setLead] = useState<Lead | null>(null);
 
-    console.log("checkout  : ", checkout);
-    console.log("lead  : ", lead);
-
+    console.log("checkout in status : ", checkout?._id)
+    console.log("lead in status : ", lead)
 
     useEffect(() => {
         const fetchLead = async () => {
-            if (!checkout) return;
+            if (!checkout?._id) return;
 
             try {
-                const fetchedLead = await getLeadByCheckoutId(checkout);
+                const fetchedLead = await getLeadByCheckoutId(checkout?._id);
+
+                console.log("fetched lead : ", fetchedLead)
 
                 if (!fetchedLead) {
-                    console.warn("No lead found for ID:", checkout);
                     return;
                 }
 
@@ -52,7 +52,6 @@ const BookingStatus = ({ checkout }: { checkout: string }) => {
         isAdminApproved: lead.isAdminApproved ?? false,
     })) ?? [];
 
-    console.log("steps in status : ", steps)
 
 
     return (

@@ -39,7 +39,7 @@ export interface Lead {
   leads: IStatus[];
   isAdminApproved: boolean;
   serviceCustomer: any;
-    service?: {
+  service?: {
     name?: string;
   };
   amount?: number;
@@ -55,7 +55,7 @@ interface LeadContextType {
   updateLead: (id: string, formData: FormData) => Promise<Lead>;
   deleteLead: (id: string) => Promise<void>;
   getLeadByCheckoutId: (checkoutId: string) => Promise<Lead | null>;
-   getLeadById: (id: string) => Promise<Lead | null>;
+  getLeadById: (id: string) => Promise<Lead | null>;
 }
 
 // Create the context
@@ -95,16 +95,16 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Update an existing lead
-    const updateLead = async (id: string, formData: FormData) => {
-      try {
-        const res = await axios.put(`/api/leads/${id}`, formData);
-        await fetchLeads();
-        return res.data;
-      } catch (error) {
-        console.error("Error updating lead:", error);
-        throw error;
-      }
-    };
+  const updateLead = async (id: string, formData: FormData) => {
+    try {
+      const res = await axios.put(`/api/leads/${id}`, formData);
+      await fetchLeads();
+      return res.data;
+    } catch (error) {
+      console.error("Error updating lead:", error);
+      throw error;
+    }
+  };
 
   // Delete a lead
   const deleteLead = async (id: string) => {
@@ -118,9 +118,13 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getLeadByCheckoutId = async (checkoutId: string): Promise<Lead | null> => {
     try {
+
       const res = await axios.get(
         `/api/leads/FindByCheckout/${checkoutId}`
       );
+
+      console.log("checkout id lead res : ", res)
+
       return res.data?.data || null;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -134,18 +138,18 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const getLeadById = async (id: string): Promise<Lead | null> => {
-  try {
-    const res = await axios.get(`/api/leads/${id}`);
-    return res.data?.data || null;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      console.warn("Lead not found for ID:", id);
+    try {
+      const res = await axios.get(`/api/leads/${id}`);
+      return res.data?.data || null;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn("Lead not found for ID:", id);
+        return null;
+      }
+      console.error("Unexpected error in getLeadById:", error.message || error);
       return null;
     }
-    console.error("Unexpected error in getLeadById:", error.message || error);
-    return null;
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -154,7 +158,7 @@ export const LeadProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <LeadContext.Provider
-      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead, getLeadByCheckoutId,  getLeadById,}}
+      value={{ leads, loading, error, fetchLeads, addLead, updateLead, deleteLead, getLeadByCheckoutId, getLeadById, }}
     >
       {children}
     </LeadContext.Provider>

@@ -18,7 +18,7 @@ const AllBookingsDetails = () => {
   const [checkoutDetails, setCheckoutDetails] = useState<any>(null);
   const { getLeadByCheckoutId } = useLead();
   const [leadDetails, setLead] = useState<Lead | null>(null);
-  console.log("checkout details : ", checkoutDetails);
+  console.log("status data : ", leadDetails);
 
 
   const {
@@ -28,7 +28,6 @@ const AllBookingsDetails = () => {
     loading,
     error,
   } = useServiceCustomer();
-  console.log("service customer :", serviceCustomer);
 
   const handleDownload = async () => {
     if (!checkoutDetails?._id) return;
@@ -59,9 +58,7 @@ const AllBookingsDetails = () => {
 
       try {
         const fetchedLead = await getLeadByCheckoutId(checkoutDetails._id);
-
         if (!fetchedLead) {
-          console.log("No lead found for ID:", checkoutDetails._id);
           return;
         }
 
@@ -267,7 +264,7 @@ const AllBookingsDetails = () => {
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
                   [`Service GST (${checkoutDetails?.gst ?? 0}%)`, checkoutDetails?.serviceGSTPrice ?? 0],
-                 [`Platform Fee (₹${checkoutDetails?.platformFeePrice ?? 0})`, checkoutDetails?.platformFeePrice ?? 0],
+                  [`Platform Fee (₹${checkoutDetails?.platformFeePrice ?? 0})`, checkoutDetails?.platformFeePrice ?? 0],
 
                   [`Fetch True Assurity Charges (${checkoutDetails?.assurityfee ?? 0}%)`, checkoutDetails?.assurityChargesPrice ?? 0],
                   ['Service Total', checkoutDetails?.totalAmount ?? 0],
