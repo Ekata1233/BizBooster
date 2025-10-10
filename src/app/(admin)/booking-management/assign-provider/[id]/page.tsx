@@ -33,11 +33,12 @@ const AllBookingsDetails = () => {
     const fetchLead = async () => {
       if (!checkoutDetails?._id) return;
 
+      console.log("checkout id for the lead : ", checkoutDetails?._id)
+
       try {
         const fetchedLead = await getLeadByCheckoutId(checkoutDetails._id);
 
         if (!fetchedLead) {
-          console.log("No lead found for ID:", checkoutDetails._id);
           return;
         }
 

@@ -29,7 +29,6 @@ function ProviderAssignedCard({ serviceId, checkoutId }: Props) {
   const fetchCheckout = async () => {
     setLoading(true);
     const data = await fetchCheckoutById(checkoutId);
-    console.log("chekcout details : : ", data)
     if (data) {
       setCheckoutDetails(data);
       if (data.provider) {
