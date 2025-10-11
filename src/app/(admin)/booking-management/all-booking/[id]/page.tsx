@@ -335,13 +335,9 @@ const AllBookingsDetails = () => {
 
                   const champaignDiscount = checkoutDetails.champaignDiscount || 0;
                   const gstPercent = checkoutDetails?.gst ?? gstValue ?? 0;
-
-                  // GST calculated only on priceAfterDiscount
                   const serviceGST = (gstPercent / 100) * priceAfterDiscount; const platformFee = platformFeeValue || 0;
-                  // percentage value (from checkoutDetails or fallback)
                   const assurityFeePercent = checkoutDetails?.assurityfee ?? assurityFeeValue ?? 0;
 
-                  // ✅ calculated assurity fee amount
                   const assurityFee = (assurityFeePercent / 100) * priceAfterDiscount;
                   const grandTotal = priceAfterDiscount + serviceGST + assurityFee;
                   finalGrandTotal = (checkoutDetails?.totalAmount ?? 0) + (grandTotal || 0);
