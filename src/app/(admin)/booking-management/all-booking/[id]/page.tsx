@@ -276,6 +276,56 @@ const AllBookingsDetails = () => {
                   </div>
                 ))}
 
+                {!hasExtraServices && (
+                  (() => {
+                    const extraServices = leadDetails?.extraService || [];
+                    console.log("extra services : ", extraServices);
+
+                    const allCommissionInvalid = extraServices.every(service => {
+                      const commissionValue = parseFloat(service.commission || "0");
+                      return !commissionValue || commissionValue <= 0;
+                    });
+
+
+                    return (
+                      <>
+                        <h4 className="text-sm font-semibold text-gray-700 my-3">Extra Services</h4>
+                        <table className="w-full table-auto border border-gray-200 text-sm mb-5">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="border px-4 py-2 text-left">SL</th>
+                              <th className="border px-4 py-2 text-left">Service Name</th>
+                              <th className="border px-4 py-2 text-left">Price</th>
+                              <th className="border px-4 py-2 text-left">Discount</th>
+                              <th className="border px-4 py-2 text-left">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extraServices.map((service, index) => (
+                              <tr key={index}>
+                                <td className="border px-4 py-2 text-left">{index + 1}</td>
+                                <td className="border px-4 py-2 text-left">{service.serviceName}</td>
+                                <td className="border px-4 py-2 text-left">{formatPrice(service.price)}</td>
+                                <td className="border px-4 py-2 text-left">{formatPrice(service.discount)}</td>
+                                <td className="border px-4 py-2 text-left">{formatPrice(service.total)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        {allCommissionInvalid && (
+                          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-5 rounded-md">
+                            <p className="font-medium">Approval Pending</p>
+                            <p className="text-sm">
+                              The commission for this service is not approved yet by the admin. Please wait for admin approval to see detailed calculations.
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                )}
+
 
                 {hasExtraServices && (() => {
                   const extraServices = leadDetails!.extraService!;
@@ -285,13 +335,9 @@ const AllBookingsDetails = () => {
 
                   const champaignDiscount = checkoutDetails.champaignDiscount || 0;
                   const gstPercent = checkoutDetails?.gst ?? gstValue ?? 0;
-
-                  // GST calculated only on priceAfterDiscount
                   const serviceGST = (gstPercent / 100) * priceAfterDiscount; const platformFee = platformFeeValue || 0;
-                  // percentage value (from checkoutDetails or fallback)
                   const assurityFeePercent = checkoutDetails?.assurityfee ?? assurityFeeValue ?? 0;
 
-                  // ✅ calculated assurity fee amount
                   const assurityFee = (assurityFeePercent / 100) * priceAfterDiscount;
                   const grandTotal = priceAfterDiscount + serviceGST + assurityFee;
                   finalGrandTotal = (checkoutDetails?.totalAmount ?? 0) + (grandTotal || 0);

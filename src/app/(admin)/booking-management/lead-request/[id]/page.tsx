@@ -135,6 +135,18 @@ const LeadRequestDetails = () => {
         });
       }
 
+      if (checkoutInfo?._id) {
+        const res = await fetch("/api/upcoming-lead-commission", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ checkoutId: checkoutInfo?._id }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to create upcoming commission.");
+        console.log("Upcoming commission API success:", data);
+      }
+
       if (response.data.success) {
         alert('Commission and Lead approved successfully');
         fetchLeads();
