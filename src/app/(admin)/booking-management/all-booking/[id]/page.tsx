@@ -286,6 +286,9 @@ const AllBookingsDetails = () => {
                       return !commissionValue || commissionValue <= 0;
                     });
 
+                    if (extraServices.length === 0) {
+                      return null; // 👈 Don't render anything if no extra services
+                    }
 
                     return (
                       <>
