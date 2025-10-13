@@ -331,14 +331,30 @@ export async function POST(req: Request) {
     // }
     // ---------------- CHECK IF ALREADY DISTRIBUTED ----------------
     const existingCommission = await UpcomingCommission.findOne({ checkoutId });
+    // if (existingCommission) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "Commission already distributed for this Lead.",
+    //     },
+    //     { status: 400, headers: corsHeaders }
+    //   );
+    // }
+
     if (existingCommission) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Commission already distributed for this Lead.",
-        },
-        { status: 400, headers: corsHeaders }
-      );
+      // Add extra commission to existing shares
+      existingCommission.extra_share_1 += extra_C_share;
+      existingCommission.extra_share_2 += extra_B_share;
+      existingCommission.extra_share_3 += extra_A_share;
+      existingCommission.extra_admin_commission += extra_adminShare;
+      existingCommission.extra_provider_share += extra_providerShare;
+
+      await existingCommission.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "Extra commission added successfully.",
+      }, { status: 200, headers: corsHeaders });
     }
 
     // ---------------- SAVE ----------------
