@@ -286,6 +286,9 @@ const AllBookingsDetails = () => {
                       return !commissionValue || commissionValue <= 0;
                     });
 
+                    if (extraServices.length === 0) {
+                      return null; // 👈 Don't render anything if no extra services
+                    }
 
                     return (
                       <>
@@ -418,7 +421,7 @@ const AllBookingsDetails = () => {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Details</h3>
               <div className="flex flex-col md:flex-row justify-between gap-6">
                 <div className="flex-1 space-y-2">
-                  <p className="text-gray-700"><strong>Payment Method:</strong> {checkoutDetails?.paymentMethod?.[0] || 'N/A'}</p>
+                  <p className="text-gray-700"><strong>Payment Method:</strong> <span className="text-green-600 capitalize">{checkoutDetails?.paymentMethod?.[0] || 'N/A'}</span></p>
                   <p className="text-gray-700"><strong>Total Amount :</strong> {formatPrice(grandTotal || 0)}</p>
                 </div>
                 <div className="flex-1 space-y-2">

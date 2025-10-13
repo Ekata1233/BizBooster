@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema({
 
   password: {
     type: String,
-    required: true
+    // required: true
   },
   referralCode: {
     type: String,
@@ -148,9 +148,18 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   fcmTokens: {
-  type: [String],  // array of tokens
-  default: []
-}
+    type: [String],  // array of tokens
+    default: []
+  },
+  socialProvider: {
+    type: String,
+    enum: ['manual', 'google', 'facebook'],
+    default: 'manual'
+  },
+  socialProviderId: {
+    type: String,
+    default: null
+  },
 
 }, { timestamps: true });
 

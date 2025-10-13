@@ -35,6 +35,7 @@ const AllBookings = () => {
     fetchCheckouts();
   }, []);
 
+
   const columns = [
     {
       header: 'S.No',

@@ -20,6 +20,7 @@ interface IExtraService {
     discount: number;
     total: number;
     isLeadApproved?: boolean;
+    commission: string;
 }
 
 interface LeadRow {

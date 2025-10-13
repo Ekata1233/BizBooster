@@ -10,6 +10,7 @@ interface IExtraService {
   discount: number;
   total: number;
   isLeadApproved?: boolean;
+  commission: string;
 }
 
 export interface IStatus {
