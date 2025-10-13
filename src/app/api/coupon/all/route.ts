@@ -20,15 +20,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const search  = searchParams.get("search");
-    const active  = searchParams.get("active");
+    const search = searchParams.get("search");
+    const active = searchParams.get("active"); // "true" | "false" | null
 
-    const filter: Record<string, unknown> = { };
-
-     await Coupon.updateMany(
+    // First, deactivate expired coupons
+    await Coupon.updateMany(
       { endDate: { $lt: new Date() }, isActive: true },
       { $set: { isActive: false } }
     );
+
+    // Build filter object
+    const filter: Record<string, unknown> = {};
 
     if (search) {
       const regex = { $regex: search, $options: "i" };
@@ -38,8 +40,8 @@ export async function GET(req: NextRequest) {
     if (active === "true") {
       const now = new Date();
       filter.startDate = { $lte: now };
-      filter.endDate   = { $gte: now };
-      filter.isActive  = true;
+      filter.endDate = { $gte: now };
+      filter.isActive = true;
     } else if (active === "false") {
       filter.$or = [
         { isActive: false },
@@ -47,12 +49,12 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const coupons = await Coupon
-      .find(filter)
-      .populate("category", "name")
-      .populate("service", "serviceName")
-      .populate("zone", "name")
-      .sort();
+    // Fetch coupons with proper population
+    const coupons = await Coupon.find(filter)
+      .populate("category", "name")      // category id + name
+      .populate("service", "serviceName")// service id + serviceName
+      .populate("zone", "name")          // zone id + name
+      .sort({ createdAt: -1 });          // sort by latest
 
     return NextResponse.json(
       { success: true, data: coupons },
