@@ -37,7 +37,7 @@ const amountTypes: CouponType["discountAmountType"][] = [
 
 const costBearers: CouponType["discountCostBearer"][] = [
   "Provider",
-  "Customer",
+  "Admin",
 ];
 
 const appliesTo = ["Growth Partner", "Customer"] as const;

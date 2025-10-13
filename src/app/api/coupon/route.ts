@@ -22,18 +22,16 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    console.log("formdata of the coupon : ", formData);
-
     /* ── extract & coerce form values ───────────────── */
-    const couponType          = formData.get("couponType") as string;          // enum
+    const couponType          = formData.get("couponType") as string;
     const couponCode          = (formData.get("couponCode") as string)?.trim();
     const customer            = formData.get("customer") as string | null;
-    const discountType        = formData.get("discountType") as string;        // enum
+    const discountType        = formData.get("discountType") as string;
     const discountTitle       = formData.get("discountTitle") as string;
     const category            = formData.get("category") as string | null;
     const service             = formData.get("service") as string | null;
     const zone                = formData.get("zone") as string;
-    const discountAmountType  = formData.get("discountAmountType") as string;  // enum
+    const discountAmountType  = formData.get("discountAmountType") as string;
     const amount              = Number(formData.get("amount"));
     const maxDiscountRaw      = formData.get("maxDiscount");
     const maxDiscount         = maxDiscountRaw ? Number(maxDiscountRaw) : undefined;
@@ -41,8 +39,8 @@ export async function POST(req: Request) {
     const startDate           = new Date(formData.get("startDate") as string);
     const endDate             = new Date(formData.get("endDate") as string);
     const limitPerUser        = Number(formData.get("limitPerUser"));
-    const discountCostBearer  = formData.get("discountCostBearer") as string;  // enum
-    const couponAppliesTo     = formData.get("couponAppliesTo") as string;     // enum
+    const discountCostBearer  = formData.get("discountCostBearer") as string;
+    const couponAppliesTo     = formData.get("couponAppliesTo") as string;
 
     /* ── basic validation ───────────────────────────── */
     if (
@@ -57,7 +55,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // percentage coupons need a maxDiscount cap
     if (discountAmountType === "Percentage" && (maxDiscount == null || isNaN(maxDiscount))) {
       return NextResponse.json(
         { success: false, message: "maxDiscount is required for percentage coupons." },
@@ -65,7 +62,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // basic date sanity
     if (startDate >= endDate) {
       return NextResponse.json(
         { success: false, message: "endDate must be later than startDate." },
@@ -73,7 +69,16 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ── create document ────────────────────────────── */
+    /* ── check duplicate coupon code ─────────────────── */
+    const existingCoupon = await Coupon.findOne({ couponCode });
+    if (existingCoupon) {
+      return NextResponse.json(
+        { success: false, message: `Coupon code "${couponCode}" already exists.` },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    /* ── create document ─────────────────────────────── */
     const newCoupon = await Coupon.create({
       couponType,
       couponCode,
@@ -98,14 +103,27 @@ export async function POST(req: Request) {
       { success: true, data: newCoupon },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+
+  } catch (error: any) {
+    console.error("Error creating coupon:", error);
+
+    // Handle Mongo duplicate key error (E11000)
+    if (error?.code === 11000 && error?.keyPattern?.couponCode) {
+      return NextResponse.json(
+        { success: false, message: `Coupon code "${error.keyValue.couponCode}" already exists.` },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Default error fallback
+    const message = error instanceof Error ? error.message : "Unknown server error";
     return NextResponse.json(
       { success: false, message },
-      { status: 400, headers: corsHeaders }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
+
 
 export async function GET(req: NextRequest) {
   await connectToDatabase();
