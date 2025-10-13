@@ -3,6 +3,16 @@ import { connectToDatabase } from '@/utils/db';
 import '@/models/Coupon';
 import CouponUsage from '@/models/CouponUsage';
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 204, headers: corsHeaders });
+}
+
 export async function GET(req: NextRequest) {
     await connectToDatabase();
     try {
@@ -10,7 +20,10 @@ export async function GET(req: NextRequest) {
         const userId = url.pathname.split("/").pop();
 
         if (!userId) {
-            return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Missing userId' }, 
+                { status: 400, headers: corsHeaders }
+            );
         }
 
         // ✅ Find coupon usages for this user
@@ -20,7 +33,10 @@ export async function GET(req: NextRequest) {
 
         // If no coupons used
         if (!usedCoupons || usedCoupons.length === 0) {
-            return NextResponse.json({ success: true, data: [] });
+            return NextResponse.json(
+                { success: true, message: 'No coupons used by this user.' },
+                { headers: corsHeaders }
+            );
         }
 
         // ✅ Format response
@@ -36,8 +52,11 @@ export async function GET(req: NextRequest) {
             endDate: usage.coupon?.endDate,
         }));
 
-        return NextResponse.json({ success: true, data: result });
+        return NextResponse.json({ success: true, data: result }, { headers: corsHeaders });
     } catch (err: any) {
-        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+        return NextResponse.json(
+            { success: false, error: err.message },
+            { status: 500, headers: corsHeaders }
+        );
     }
 }
