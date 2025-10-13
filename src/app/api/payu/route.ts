@@ -18,20 +18,24 @@ export async function POST(req: NextRequest) {
 
   const txnid = "TXN" + new Date().getTime();
 
-  const hashString = `${PAYU_KEY}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_SALT}`;
-  const hash = crypto.createHash("sha512").update(hashString).digest("hex");
+  const amt = parseFloat(amount).toFixed(2); // e.g., 100.00
 
-  return NextResponse.json({
-    key: PAYU_KEY,
-    txnid,
-    amount,
-    productinfo,
-    firstname,
-    email,
-    phone,
-    hash,
-    url: PAYU_BASE_URL,
-  });
+const hashString = `${PAYU_KEY}|${txnid}|${amt}|${productinfo}|${firstname}|${email}|||||||||||${PAYU_SALT}`;
+const hash = crypto.createHash("sha512").update(hashString).digest("hex");
+
+
+ return NextResponse.json({
+  key: PAYU_KEY,
+  txnid,
+  amount: amt,
+  productinfo,
+  firstname,
+  email,
+  phone,
+  hash,
+  url: PAYU_BASE_URL,
+});
+
 }
 
 // Optional: handle other methods to avoid 405
