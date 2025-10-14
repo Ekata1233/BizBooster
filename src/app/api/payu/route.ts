@@ -24,18 +24,17 @@ const hashString = `${PAYU_KEY}|${txnid}|${amt}|${productinfo}|${firstname}|${em
 const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
 
- return NextResponse.json({
-  key: PAYU_KEY,
-  txnid,
-  amount: amt,
-  productinfo,
-  firstname,
-  email,
-  phone,
-  hash,
-  url: PAYU_BASE_URL,
-});
-
+  return NextResponse.json({
+    key: PAYU_KEY,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    phone,
+    hash,
+    url: PAYU_BASE_URL,
+  });
 }
 
 // Optional: handle other methods to avoid 405
