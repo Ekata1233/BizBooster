@@ -102,6 +102,8 @@ export async function POST(req: NextRequest) {
                 audience: process.env.GOOGLE_CLIENT_ID,
             });
             userInfo = ticket.getPayload();
+
+            console.log("user info of google  : ", userInfo);
         } else {
             return NextResponse.json(
                 { error: "Unsupported social provider" },
@@ -122,11 +124,12 @@ export async function POST(req: NextRequest) {
         if (!user) {
             // 🆕 Create new user
             user = await User.create({
-                name: userInfo.name,
+                fullName: userInfo.name,
                 email: userInfo.email,
                 socialProvider,
                 providerId: userInfo.sub || userInfo.id,
-                picture: userInfo.picture,
+                profilePhoto: userInfo.picture,
+                isAgree: true,
             });
         }
 
