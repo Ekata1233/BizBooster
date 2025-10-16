@@ -74,7 +74,7 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  console.log("console service : ", service);
+  console.log("console service id : ", id);
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataType>({

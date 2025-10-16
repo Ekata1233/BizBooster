@@ -249,6 +249,10 @@ const ProviderBookings: React.FC<Props> = ({ provider }) => {
     }, [provider, fetchCheckoutsByProviderId]);
 
     const columns = [
+         {
+      header: 'S.No',
+      accessor: 'serialNo', // Serial number column
+    },
         { header: 'Booking ID', accessor: 'bookingId' },
         {
             header: 'Customer Info',
@@ -372,7 +376,12 @@ const ProviderBookings: React.FC<Props> = ({ provider }) => {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const paginatedData = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+const paginatedData = filteredData
+  .slice(indexOfFirstRow, indexOfLastRow)
+  .map((row, idx) => ({
+    ...row,
+    serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx), // 🔹 descending S.No
+  }));
 
     return (
         <div>
