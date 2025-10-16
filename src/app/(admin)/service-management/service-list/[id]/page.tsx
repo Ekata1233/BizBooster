@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+
 import { useService } from '@/context/ServiceContext';
 import BasicDetailsForm from '@/components/service-component/BasicDetailsForm';
 import ServiceDetailsForm from '@/components/service-component/ServiceDetailsForm';
@@ -73,6 +74,7 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  console.log("console service : ", service);
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -109,10 +111,8 @@ const EditService: React.FC = () => {
     },
   });
 
-  // ✅ Reset initialization when ID changes
   useEffect(() => {
     if (id) {
-      setHasInitialized(false); // 👈 Important line to fix stale data issue
       fetchSingleService(id as string);
     }
   }, [id]);
@@ -142,9 +142,11 @@ const EditService: React.FC = () => {
         },
         service: {
           overview: service.serviceDetails?.overview || '',
+          // highlight: [], 
           highlight: Array.isArray(service.serviceDetails?.highlight)
             ? service.serviceDetails.highlight.filter((item: any) => typeof item === 'string')
             : [],
+
           highlightPreviews: Array.isArray(service.serviceDetails?.highlight)
             ? service.serviceDetails.highlight.filter(item => typeof item === 'string')
             : [],
@@ -164,14 +166,16 @@ const EditService: React.FC = () => {
           rows: service.franchiseDetails?.extraSections || [],
         },
       });
+      // console.log("Initialized FAQs:", service);
 
       if (service.serviceName && service.category?._id && service.subcategory?._id && service.price) {
         setCompletedSteps([1]);
       }
 
       setHasInitialized(true);
+
     }
-  }, [service, hasInitialized]);
+  }, [service]);
 
   const isStepComplete = (stepNumber: number): boolean => {
     switch (stepNumber) {
@@ -205,6 +209,8 @@ const EditService: React.FC = () => {
     if (step > 1) setStep(step - 1);
   };
 
+  console.log("formddta of hightlight : ", formData)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!service || !isStepComplete(3)) return;
@@ -225,6 +231,7 @@ const EditService: React.FC = () => {
       if (formData.basic.thumbnail) {
         formDataToSend.append('thumbnailImage', formData.basic.thumbnail);
       }
+      console.log("Banner Images to upload:", formData.basic.bannerImages);
 
       formData.basic.bannerImages.forEach(file => {
         formDataToSend.append('bannerImages', file);
@@ -238,6 +245,7 @@ const EditService: React.FC = () => {
         formDataToSend.append(`keyValues[${index}][value]`, pair.value);
       });
 
+
       formDataToSend.append('serviceDetails[overview]', formData.service.overview);
       if (formData.service.highlight) {
         const filesArray = Array.isArray(formData.service.highlight)
@@ -247,6 +255,18 @@ const EditService: React.FC = () => {
           formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
         });
       }
+      // if (formData.service.highlight) {
+      //   const highlightsArray = Array.isArray(formData.service.highlight)
+      //     ? formData.service.highlight
+      //     : Array.from(formData.service.highlight);
+
+      //   highlightsArray.forEach((item, index) => {
+      //     // if (item instanceof File) {
+      //     formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
+      //     // }
+      //   });
+      // }
+
 
       formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
       formDataToSend.append('serviceDetails[howItWorks]', formData.service.howItWorks);
@@ -334,6 +354,7 @@ const EditService: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {step === 1 && (
+
               <BasicDetailsForm
                 data={formData.basic}
                 setData={(newData) => {
@@ -353,6 +374,7 @@ const EditService: React.FC = () => {
                   }));
                 }}
               />
+
             )}
 
             {step === 2 && (
