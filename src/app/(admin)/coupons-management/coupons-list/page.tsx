@@ -30,7 +30,7 @@ export interface CouponType {
   couponCode: string;
   discountType: 'Category Wise' | 'Service Wise' | 'Mixed';
   discountAmountType: 'Fixed Amount' | 'Percentage';
-  discountCostBearer: 'Provider' | 'Customer';
+  discountCostBearer: 'Provider' | 'Admin';
   discountTitle: string;
   amount?: number;
   maxDiscount?: number;
@@ -133,14 +133,13 @@ const CouponList: React.FC = () => {
 
       const res = await axios.get<{ data: CouponType[] }>('/api/coupon/all', { params });
       const data: CouponType[] = res.data.data ?? [];
-
+  console.log('📦 Raw coupon data from API:', data);
       if (data.length === 0) {
         setRows([]);
         setAllRows([]);
         setMessage('No coupons found.');
         return;
       }
-
       /* map to table-friendly rows */
       const mapped = data.map<TableData>((c, index) => ({
         id: c._id,

@@ -139,13 +139,15 @@ export async function PUT(req: Request) {
 }
 
 
-// ✅ DELETE AD
+// ✅ DELETE AD (Soft Delete)
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
   try {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
+
+    console.log("id of ads deleted  : ", id);
 
     if (!id) {
       return NextResponse.json(
@@ -154,7 +156,12 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const deletedAd = await Ad.findByIdAndDelete(id);
+    // ✅ Soft delete: set isDeleted to true instead of removing
+    const deletedAd = await Ad.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
 
     if (!deletedAd) {
       return NextResponse.json(
@@ -164,7 +171,7 @@ export async function DELETE(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, message: "Ad deleted successfully." },
+      { success: true, message: "Ad deleted successfully (soft delete)." },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {
@@ -176,3 +183,4 @@ export async function DELETE(req: Request) {
     );
   }
 }
+

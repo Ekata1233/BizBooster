@@ -125,8 +125,8 @@ const PackageTransaction = () => {
             Status: p.status,
             'Created At': new Date(p.createdAt).toLocaleString(),
             'Order ID': p.order_id,
-            Name: p.name,
-            Email: p.email,
+            // Name: p.name,
+            // Email: p.email,
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);

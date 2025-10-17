@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import ComponentCard from '@/components/common/ComponentCard'
 import {
   GoogleMap,
@@ -16,7 +17,7 @@ import { Modal } from '@/components/ui/modal';
 import { useZone } from '@/context/ZoneContext';
 import { useModal } from '@/hooks/useModal';
 import { ArrowUpIcon, PencilIcon, TrashBinIcon, UserIcon } from '@/icons';
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 
 export interface TableData {
   id: string;
@@ -43,23 +44,29 @@ const libraries: ("drawing" | "geometry" | "places" | "visualization")[] = [
 ];
 
 const ZoneList = () => {
-  const { zones, updateZone, deleteZone } = useZone();
+  const { zones, updateZone, deleteZone, fetchAllZones } = useZone(); // ✅ fetchAllZones
   const { isOpen, openModal, closeModal } = useModal();
 
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneName, setZoneName] = useState<string>("");
   const [coords, setCoords] = useState<google.maps.LatLngLiteral[]>([]);
-
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState('all');
+  const [filteredZones, setFilteredZones] = useState<TableData[]>([]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
   });
-  console.log("all zone :",zones);
-  
-  // ✅ when polygon is drawn
+
+
+  console.log("zones : ", zones);
+  // ✅ Fetch all zones when page loads
+  useEffect(() => {
+    fetchAllZones();
+  }, []);
+
+  // When polygon is drawn
   const handlePolygonComplete = useCallback((polygon: google.maps.Polygon) => {
     const path = polygon.getPath().getArray().map(latLng => ({
       lat: latLng.lat(),
@@ -69,7 +76,7 @@ const ZoneList = () => {
     polygon.setMap(null); // remove temp overlay
   }, []);
 
-  // ✅ when polygon is edited (drag/move)
+  // When polygon is edited
   const handlePolygonEdit = (polygon: google.maps.Polygon) => {
     const path = polygon.getPath().getArray().map(latLng => ({
       lat: latLng.lat(),
@@ -89,11 +96,9 @@ const ZoneList = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteZone(id); 
-      alert("Zone deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting zone:", error);
+    if (confirm("Are you sure you want to mark this zone as inactive?")) {
+      await deleteZone(id); // soft-delete handled in context
+      alert("Zone marked as inactive.");
     }
   };
 
@@ -118,6 +123,42 @@ const ZoneList = () => {
     }
   };
 
+  // Format zones for table
+  useEffect(() => {
+    const formatted: TableData[] = zones.map(zone => ({
+      id: zone._id,
+      name: zone.name,
+      providerCount: zone.providerCount,
+      categoryCount: 0,
+      status: zone.isDeleted ? 'Inactive' : 'Active',
+    }));
+
+    const filtered = formatted.filter(zone =>
+      zone.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    setFilteredZones(filtered);
+  }, [zones, searchQuery]);
+
+  // Filter zones by tab
+  const getFilteredByStatus = () => {
+    switch (activeTab) {
+      case 'active':
+        return filteredZones.filter(z => z.status === 'Active');
+      case 'inactive':
+        return filteredZones.filter(z => z.status === 'Inactive');
+      default:
+        return filteredZones;
+    }
+  };
+
+  // Counts for tabs
+  const counts = {
+    all: filteredZones.length,
+    active: filteredZones.filter(z => z.status === 'Active').length,
+    inactive: filteredZones.filter(z => z.status === 'Inactive').length,
+  };
+
   const columns = [
     { header: 'Zone Name', accessor: 'name' },
     { header: 'Providers', accessor: 'providerCount' },
@@ -126,21 +167,13 @@ const ZoneList = () => {
       header: 'Status',
       accessor: 'status',
       render: (row: TableData) => {
-        const status = row.status;
-        let colorClass = '';
-        switch (status) {
-          case 'Deleted':
-            colorClass = 'text-red-500 bg-red-100 border border-red-300';
-            break;
-          case 'Active':
-            colorClass = 'text-green-600 bg-green-100 border border-green-300';
-            break;
-          default:
-            colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-        }
+        const isActive = row.status === 'Active';
+        const colorClass = isActive
+          ? 'text-green-600 bg-green-100 border border-green-300'
+          : 'text-red-500 bg-red-100 border border-red-300';
         return (
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-            {status}
+            {row.status}
           </span>
         );
       },
@@ -156,31 +189,18 @@ const ZoneList = () => {
           >
             <PencilIcon />
           </button>
-          <button
-            onClick={() => handleDelete(row.id)}
-            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-          >
-            <TrashBinIcon />
-          </button>
+          {row.status === 'Active' && (
+            <button
+              onClick={() => handleDelete(row.id)}
+              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+            >
+              <TrashBinIcon />
+            </button>
+          )}
         </div>
       ),
     },
   ];
-
-  const filteredZones = zones
-    .filter((zone) => {
-      const matchQuery = zone.name.toLowerCase().includes(searchQuery.toLowerCase());
-      if (activeTab === 'all') return matchQuery;
-      if (activeTab === 'active') return matchQuery && !zone.isDeleted;
-      if (activeTab === 'inactive') return matchQuery && zone.isDeleted;
-    })
-    .map((zone) => ({
-      id: zone._id,
-      name: zone.name,
-      providerCount: zone.providerCount,
-      categoryCount: 0,
-      status: zone.isDeleted ? 'Deleted' : 'Active',
-    }));
 
   return (
     <div>
@@ -188,7 +208,7 @@ const ZoneList = () => {
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-2/4 my-5">
-          <ComponentCard title="Zone List" >
+          <ComponentCard title="Zone List">
             <div className='py-6'>
               <Input
                 type="text"
@@ -211,20 +231,34 @@ const ZoneList = () => {
         </div>
       </div>
 
-      <div>
-        <div className="border-b border-gray-200">
-          <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-            <li className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`} onClick={() => setActiveTab('all')}>All</li>
-            {/* <li className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`} onClick={() => setActiveTab('inactive')}>Inactive</li> */}
-          </ul>
-        </div>
-
-        <div className="mt-5">
-          <BasicTableOne columns={columns} data={filteredZones} />
-        </div>
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-4">
+        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
+          {[
+            { key: 'all', label: 'All', count: counts.all },
+            { key: 'active', label: 'Active', count: counts.active },
+            { key: 'inactive', label: 'Inactive', count: counts.inactive },
+          ].map(tab => (
+            <li
+              key={tab.key}
+              className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                }`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+              <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                {tab.count}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* ✅ Modal for editing zone */}
+      <div>
+        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
+      </div>
+
+      {/* Modal for editing zone */}
       <div>
         <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
           <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 h-[70vh]">

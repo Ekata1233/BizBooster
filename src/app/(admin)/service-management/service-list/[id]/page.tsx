@@ -74,7 +74,10 @@ const EditService: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  console.log("console service : ", service);
+  console.log("console service id : ", id);
+    console.log("console service : ", service);
+  // console.log("console singleService : ", singleService);
+
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -118,7 +121,7 @@ const EditService: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (service && !hasInitialized) {
+    if (service) {
       const mappedKeyValues = Array.isArray(service.keyValues) && service.keyValues.length > 0
         ? service.keyValues.map(({ key, value }) => ({ key, value }))
         : [{ key: '', value: '' }];
@@ -175,7 +178,7 @@ const EditService: React.FC = () => {
       setHasInitialized(true);
 
     }
-  }, [service]);
+  }, [service,id]);
 
   const isStepComplete = (stepNumber: number): boolean => {
     switch (stepNumber) {

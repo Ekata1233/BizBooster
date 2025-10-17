@@ -13,7 +13,7 @@ const tabs = [
   "Add Package",
   "Package Commision",
   "5XGuarantee",
-  "Trending Modules",
+  // "Trending Modules",
   // "Customers",
   // "Providers",
   // "Servicemen",
@@ -156,10 +156,10 @@ function VendorDashboardPage() {
               <FiveXGurrentee />
             </div>
           )}
-          {activeTab === "Trending Modules" && (
+          {/* {activeTab === "Trending Modules" && (
             
             <div className="space-y-4"><TrendingModules/></div>
-            )}
+            )} */}
           {/*{activeTab === "Customers" && <div>Customers Content</div>}
           {activeTab === "Providers" && <div>Providers Content</div>}
           {activeTab === "Servicemen" && <div>Servicemen Content</div>} */}

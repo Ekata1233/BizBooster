@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     await connectToDatabase()
-    const zones = await Zone.find({ isDeleted: false });
+    const zones = await Zone.find();
 
   const providerCounts = await Provider.aggregate([
     { $match: { "storeInfo.zone": { $ne: null } } },

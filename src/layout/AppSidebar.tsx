@@ -165,6 +165,13 @@ const promotionItems: NavItem[] = [
       { name: "New Add Request", path: "/adds-management/add-request", pro: false },
     ],
   },
+  {
+    icon: <Megaphone />,
+    name: "Trendings",
+    subItems: [
+      { name: "Add Trend ", path: "/adds-management/trending-services", pro: false },
+    ],
+  },
 ];
 
 const bookingItems: NavItem[] = [

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -45,6 +44,23 @@ interface OfferResponse {
   termsAndConditions: string;
   service?: string | { _id: string };
 }
+
+// Updated image validation function - allows exactly 1MB or less
+const validateImage = (file: File, maxSizeMB: number = 1): string | null => {
+  // Check file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    return `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`;
+  }
+
+  // Check file size (1MB = 1024 * 1024 bytes)
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    return `Image size must be less than or equal to ${maxSizeMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
+  }
+
+  return null;
+};
 
 function toDatetimeLocalValue(dateStr?: string | null): string {
   if (!dateStr) return '';
@@ -119,15 +135,18 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   /* ---------------- Offer Form State ---------------- */
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   const [existingBannerUrl, setExistingBannerUrl] = useState<string | null>(null);
+  const [bannerImageError, setBannerImageError] = useState<string | null>(null);
 
   const [thumbnailImageFile, setThumbnailImageFile] = useState<File | null>(null);
   const [existingThumbnailUrl, setExistingThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailImageError, setThumbnailImageError] = useState<string | null>(null);
 
   const [offerStartTime, setOfferStartTime] = useState('');
   const [offerEndTime, setOfferEndTime] = useState('');
 
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
+  const [galleryImagesError, setGalleryImagesError] = useState<string | null>(null);
 
   const [eligibilityCriteria, setEligibilityCriteria] = useState('');
   const [howToParticipate, setHowToParticipate] = useState('');
@@ -175,7 +194,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     value: extractId(serv._id ?? serv),
     label: serv.serviceName ?? 'Unnamed Service',
   }));
-
 
   const fetchOffer = useCallback(async () => {
     if (!offerIdToEdit) {
@@ -250,15 +268,12 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     }
   }, [offerIdToEdit, services, categories]);
 
-
-
   useEffect(() => {
     // Wait for context data to be available before fetching
     if ((offerIdToEdit && services.length > 0 && categories.length > 0) || !offerIdToEdit) {
       fetchOffer();
     }
   }, [offerIdToEdit, services, categories, fetchOffer]);
-
 
   useEffect(() => {
     if (selectedService && services.length > 0 && categories.length > 0) {
@@ -290,12 +305,15 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
   const resetForm = () => {
     setBannerImageFile(null);
     setExistingBannerUrl(null);
+    setBannerImageError(null);
     setThumbnailImageFile(null);
     setExistingThumbnailUrl(null);
+    setThumbnailImageError(null);
     setOfferStartTime('');
     setOfferEndTime('');
     setGalleryFiles([]);
     setExistingGalleryUrls([]);
+    setGalleryImagesError(null);
     setEligibilityCriteria('');
     setHowToParticipate('');
     setFaqList([{ question: '', answer: '' }]);
@@ -306,28 +324,89 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
     setSelectedService('');
   };
 
-  /* ---------------- Handlers ---------------- */
+  /* ---------------- Image Validation Handlers ---------------- */
   const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setBannerImageFile(file);
-    if (file) setExistingBannerUrl(null);
+    
+    if (file) {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        setBannerImageError(validationError);
+        setBannerImageFile(null);
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+      setBannerImageError(null);
+      setBannerImageFile(file);
+      setExistingBannerUrl(null);
+    } else {
+      setBannerImageFile(null);
+      setBannerImageError(null);
+    }
   };
 
   const handleThumbnailImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setThumbnailImageFile(file);
-    if (file) setExistingThumbnailUrl(null);
+    
+    if (file) {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        setThumbnailImageError(validationError);
+        setThumbnailImageFile(null);
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+      setThumbnailImageError(null);
+      setThumbnailImageFile(file);
+      setExistingThumbnailUrl(null);
+    } else {
+      setThumbnailImageFile(null);
+      setThumbnailImageError(null);
+    }
   };
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setGalleryFiles(files);
+    
+    if (files.length > 0) {
+      const validationErrors: string[] = [];
+      const validFiles: File[] = [];
+      
+      files.forEach((file, index) => {
+        const validationError = validateImage(file, 1);
+        if (validationError) {
+          validationErrors.push(`Image ${index + 1}: ${validationError}`);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (validationErrors.length > 0) {
+        setGalleryImagesError(validationErrors.join(' | '));
+        setGalleryFiles(validFiles); // Only set valid files
+        // Note: We can't easily clear the file input for multiple files
+        // The user will see which files were rejected and can re-upload
+      } else {
+        setGalleryImagesError(null);
+        setGalleryFiles(files);
+      }
+    } else {
+      setGalleryFiles([]);
+      setGalleryImagesError(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Final validation before submit
+    if (bannerImageError || thumbnailImageError || galleryImagesError) {
+      alert('Please fix image validation errors before submitting.');
+      setLoading(false);
+      return;
+    }
 
     const startVal = tryFormatDMYtoISO(normalizeDateForSubmit(offerStartTime.trim()));
     const endVal = tryFormatDMYtoISO(normalizeDateForSubmit(offerEndTime.trim()));
@@ -404,8 +483,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
       <ComponentCard title={offerIdToEdit ? 'Edit Offer' : 'Add New Offer'}>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-8">
-          {/* DROPDOWNS, IMAGES, DATES, GALLERY, EDITORS same as original but lazy-loaded */}
-          {/* ... keep your existing JSX for form fields ... */}
           {/* --- MODULE, CATEGORY, SUBCATEGORY, SERVICE --- */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Module */}
@@ -462,7 +539,6 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
               )}
             </div>
 
-
             {/* Service */}
             <div>
               <Label>Select Service</Label>
@@ -479,9 +555,18 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Label htmlFor="bannerImage">Banner Image</Label>
-              <FileInput id="bannerImage" accept="image/*" onChange={handleBannerImageChange} />
-              {bannerImageFile && (
-                <p className="text-xs text-gray-500 mt-1">New: {bannerImageFile.name}</p>
+              <FileInput 
+                id="bannerImage" 
+                accept="image/*" 
+                onChange={handleBannerImageChange} 
+              />
+              {bannerImageError && (
+                <p className="text-red-500 text-xs mt-1">{bannerImageError}</p>
+              )}
+              {bannerImageFile && !bannerImageError && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Valid: {bannerImageFile.name} ({(bannerImageFile.size / (1024 * 1024)).toFixed(2)}MB)
+                </p>
               )}
               {existingBannerUrl && !bannerImageFile && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -496,13 +581,23 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                   </a>
                 </p>
               )}
+              <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
             </div>
 
             <div>
               <Label htmlFor="thumbnailImage">Thumbnail Image</Label>
-              <FileInput id="thumbnailImage" accept="image/*" onChange={handleThumbnailImageChange} />
-              {thumbnailImageFile && (
-                <p className="text-xs text-gray-500 mt-1">New: {thumbnailImageFile.name}</p>
+              <FileInput 
+                id="thumbnailImage" 
+                accept="image/*" 
+                onChange={handleThumbnailImageChange} 
+              />
+              {thumbnailImageError && (
+                <p className="text-red-500 text-xs mt-1">{thumbnailImageError}</p>
+              )}
+              {thumbnailImageFile && !thumbnailImageError && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Valid: {thumbnailImageFile.name} ({(thumbnailImageFile.size / (1024 * 1024)).toFixed(2)}MB)
+                </p>
               )}
               {existingThumbnailUrl && !thumbnailImageFile && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -517,6 +612,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                   </a>
                 </p>
               )}
+              <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
             </div>
 
             <div>
@@ -549,9 +645,13 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
               accept="image/*"
               onChange={handleGalleryChange}
             />
-            {galleryFiles.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                Selected: {galleryFiles.map((f) => f.name).join(', ')}
+            {galleryImagesError && (
+              <p className="text-red-500 text-xs mt-1">{galleryImagesError}</p>
+            )}
+            {galleryFiles.length > 0 && !galleryImagesError && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ {galleryFiles.length} valid image(s) selected
+                {galleryFiles.length > 0 && ` | Total size: ${(galleryFiles.reduce((acc, file) => acc + file.size, 0) / (1024 * 1024)).toFixed(2)}MB`}
               </p>
             )}
             {existingGalleryUrls.length > 0 && galleryFiles.length === 0 && (
@@ -573,6 +673,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                 </ul>
               </div>
             )}
+            <p className="text-xs text-gray-500 mt-1">Max size per image: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
           </div>
 
           {/* Rich Text Sections */}
@@ -655,7 +756,12 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
           </div>
 
           <div className="pt-6">
-            <Button size="sm" variant="primary" type="submit" disabled={loading}>
+            <Button 
+              size="sm" 
+              variant="primary" 
+              type="submit" 
+              disabled={loading || !!bannerImageError || !!thumbnailImageError || !!galleryImagesError}
+            >
               {offerIdToEdit ? 'Update Offer' : 'Add Offer'}
             </Button>
           </div>
@@ -666,9 +772,3 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
 };
 
 export default AddOffer;
-
-
-
-
-
-

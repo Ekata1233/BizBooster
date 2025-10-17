@@ -249,6 +249,10 @@ const ProviderBookings: React.FC<Props> = ({ provider }) => {
     }, [provider, fetchCheckoutsByProviderId]);
 
     const columns = [
+         {
+      header: 'S.No',
+      accessor: 'serialNo', // Serial number column
+    },
         { header: 'Booking ID', accessor: 'bookingId' },
         {
             header: 'Customer Info',
@@ -351,26 +355,33 @@ const ProviderBookings: React.FC<Props> = ({ provider }) => {
 
     // Filter data by search
     const filteredData = useMemo(() => {
-        return checkouts
-            .map((checkout) => ({
-                bookingId: checkout.bookingId,
-                serviceCustomer: checkout.serviceCustomer as unknown as ServiceCustomer,
-                totalAmount: checkout.totalAmount,
-                paymentStatus: checkout.paymentStatus,
-                scheduleDate: checkout.createdAt,
-                bookingDate: checkout.createdAt,
-                orderStatus: checkout.orderStatus,
-                _id: checkout._id,
-            }))
-            .filter((item) =>
-                item.bookingId.toLowerCase().includes(search.toLowerCase())
-            );
-    }, [checkouts, search]);
+    return checkouts
+        .map((checkout) => ({
+            bookingId: checkout.bookingId,
+            serviceCustomer: checkout.serviceCustomer as unknown as ServiceCustomer,
+            totalAmount: checkout.totalAmount,
+            paymentStatus: checkout.paymentStatus,
+            scheduleDate: checkout.createdAt,
+            bookingDate: checkout.createdAt,
+            orderStatus: checkout.orderStatus,
+            _id: checkout._id,
+        }))
+        .filter((item) =>
+            item.bookingId.toLowerCase().includes(search.toLowerCase())
+        )
+        .reverse(); // 👈 show latest first
+}, [checkouts, search]);
+
 
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const paginatedData = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+const paginatedData = filteredData
+  .slice(indexOfFirstRow, indexOfLastRow)
+  .map((row, idx) => ({
+    ...row,
+    serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx), // 🔹 descending S.No
+  }));
 
     return (
         <div>

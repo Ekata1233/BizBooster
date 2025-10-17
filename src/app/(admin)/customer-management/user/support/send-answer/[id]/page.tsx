@@ -13,6 +13,9 @@ interface UserQuery {
   question: string;
   answer?: string;
   createdAt: string;
+   updatedAt: string;
+
+  user: { _id: string; fullName: string; email: string; profilePhoto?: string; }
 }
 
 const SupportPage = () => {
@@ -59,6 +62,7 @@ const SupportPage = () => {
         question: lastQuery.question,
         answer: message,
       });
+
 
       if (res.data?.success) {
         // Update local state
@@ -128,6 +132,9 @@ const SupportPage = () => {
               <div className="flex justify-end">
                 <div className="bg-green-100 text-gray-800 px-4 py-2 rounded-xl max-w-md">
                   <p>{msg.answer}</p>
+                  <span className="text-xs text-gray-500 block mt-1">
+                  {new Date(msg.updatedAt).toLocaleString()}
+                </span>
                 </div>
               </div>
             )}

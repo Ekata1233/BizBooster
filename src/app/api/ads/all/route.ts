@@ -5,6 +5,7 @@ import imagekit from "@/utils/imagekit";
 import { v4 as uuidv4 } from "uuid";
 import "@/models/Category"
 import "@/models/Service"
+import "@/models/Provider"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
