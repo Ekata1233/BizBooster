@@ -188,16 +188,14 @@ const TrendingModules = () => {
           </label> */}
           <button
             onClick={() => toggleServiceStatus(row)}
-            className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-300 border-2 ${
-              row.status
+            className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-300 border-2 ${row.status
                 ? "bg-gradient-to-r from-green-400 to-green-600 border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"
                 : "bg-gray-300 border-gray-400"
-            }`}
+              }`}
           >
             <span
-              className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
-                row.status ? "translate-x-8" : ""
-              }`}
+              className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${row.status ? "translate-x-8" : ""
+                }`}
             ></span>
           </button>
         </div>
@@ -211,6 +209,10 @@ const TrendingModules = () => {
 
       <div className="my-5">
         <ComponentCard title="Filter Services">
+          <p className="text-red-600 text-sm">
+            Trending services are available in the Franchise, Education, and Marketing modules.
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block mb-1">Select Module</label>
