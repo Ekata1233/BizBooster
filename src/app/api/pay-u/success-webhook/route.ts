@@ -6,6 +6,7 @@ import User from "@/models/User";
 import { connectToDatabase } from "@/utils/db";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
+import axios from 'axios';
 
 const PAYU_KEY = process.env.PAYU_KEY;
 const PAYU_SALT = process.env.PAYU_SALT;
