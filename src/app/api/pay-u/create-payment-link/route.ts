@@ -1,15 +1,17 @@
+import Payment from "@/models/Payment";
+import { connectToDatabase } from "@/utils/db";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     try {
-        const body = await req.json();
+        await connectToDatabase();
 
-        console.log("body : ", body);
+        const body = await req.json();
 
         // 1️⃣ Get OAuth Access Token
         const tokenRes = await axios.post(
-            "https://uat-accounts.payu.in/oauth/token",
+            "https://accounts.payu.in/oauth/token",
             new URLSearchParams({
                 grant_type: "client_credentials",
                 client_id: process.env.PAYU_CLIENT_ID,
@@ -21,8 +23,6 @@ export async function POST(req) {
 
         const accessToken = tokenRes.data.access_token;
 
-                console.log("accesstoken : ", accessToken)
-
 
         const payload = {
             subAmount: body.subAmount || 0,
@@ -30,17 +30,24 @@ export async function POST(req) {
             description: body.description || "Fetch True Payment",
             source: "API",
             order_id: body.orderId,
-            transactionId:body.checkoutId,
+            // transactionId: body.checkoutId,
             customer: {
                 customerId: body?.customer.customer_id?.toString() ?? "",
                 name: body?.customer.customer_name?.toString() ?? "",
                 email: body?.customer.customer_email?.toString() ?? "",
                 phone: body?.customer.customer_phone?.toString() ?? ""
             },
+            udf: {
+                udf1: body.udf?.udf1 || "orderIdDefault",
+                udf2: body.udf?.udf2 || "customerIdDefault",
+                udf3: body.udf?.udf3 || "checkoutIdDefault",
+                udf4: body.udf?.udf4 || "",
+                udf5: body.udf?.udf5 || ""
+            }
         };
 
         // ✅ Make POST request to PayU API
-        const response = await fetch(`https://uatoneapi.payu.in/payment-links/`, {
+        const response = await fetch(`https://oneapi.payu.in/payment-links/`, {
             method: "POST",
             headers: {
                 "merchantId": process.env.PAYU_MERCHANT_ID!,
@@ -52,8 +59,6 @@ export async function POST(req) {
 
         const data = await response.json();
 
-        console.log("PayU Payload:", JSON.stringify(payload, null, 2));
-
 
         if (!response.ok) {
             return NextResponse.json(
@@ -61,6 +66,22 @@ export async function POST(req) {
                 { status: response.status }
             );
         }
+
+        const paymentDoc = await Payment.create({
+            order_id: body.orderId,
+            amount: body.subAmount || 0,
+            currency: "INR", // or from body if dynamic
+            status: "PENDING",
+            name: payload.customer.name,
+            email: payload.customer.email,
+            phone: payload.customer.phone,
+            description: payload.description,
+            customerId: payload.customer.customerId,
+            slug: data?.guid || "", // PayU payment link ID as slug
+            updaterName: "system", // optional: who created it
+        });
+
+        console.log("Payment saved in DB:", paymentDoc);
 
         return NextResponse.json(data, { status: 200 });
 
