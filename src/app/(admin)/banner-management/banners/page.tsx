@@ -100,6 +100,7 @@ const Banner = () => {
   const handleEdit = (banner: BannerType) => {
     setCurrentBanner(banner);
     setUpdatedFile(banner.file);
+    setSelectedModule(typeof banner.module === 'object' ? banner.module._id : banner.module || '');
     setEditModalOpen(true);
   };
 
