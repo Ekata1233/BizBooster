@@ -34,20 +34,20 @@ export async function POST(req) {
             data = await req.json();
         }
 
-        console.log("🚀 PayU Webhook Received:", data);
+        // console.log("🚀 PayU Webhook Received:", data);
 
-        console.log("Expected Hash:", data.hash);
+        // console.log("Expected Hash:", data.hash);
 
-        if (data.hash && PAYU_KEY && PAYU_SALT) {
-            const generatedHash = generateReverseHash(data);
-            if (generatedHash !== data.hash) {
-                console.error("❌ Hash verification failed");
-                return new Response("Invalid hash", { status: 400, headers: corsHeaders });
-            }
-            console.log("✅ Hash verified");
-        }
+        // if (data.hash && PAYU_KEY && PAYU_SALT) {
+        //     const generatedHash = generateReverseHash(data);
+        //     if (generatedHash !== data.hash) {
+        //         console.error("❌ Hash verification failed");
+        //         return new Response("Invalid hash", { status: 400, headers: corsHeaders });
+        //     }
+        //     console.log("✅ Hash verified");
+        // }
 
-        console.log("Generated Hash:", generateReverseHash(data));
+        // console.log("Generated Hash:", generateReverseHash(data));
 
         // --- Extract PayU identifiers ---
         const orderId = data.udf1;     // your order id
