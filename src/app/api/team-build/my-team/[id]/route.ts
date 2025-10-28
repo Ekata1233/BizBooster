@@ -48,7 +48,6 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const userId = url.pathname.split("/").pop();
 
-    console.log("user I d;", userId)
 
     if (!userId) {
         return NextResponse.json(
