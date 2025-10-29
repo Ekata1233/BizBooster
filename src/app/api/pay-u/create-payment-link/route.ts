@@ -3,6 +3,16 @@ import { connectToDatabase } from "@/utils/db";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
+
 export async function POST(req) {
     try {
         await connectToDatabase();
@@ -63,7 +73,7 @@ export async function POST(req) {
         if (!response.ok) {
             return NextResponse.json(
                 { error: "Failed to create payment link", details: data },
-                { status: response.status }
+                { status: response.status, headers: corsHeaders }
             );
         }
 
@@ -83,15 +93,24 @@ export async function POST(req) {
 
         console.log("Payment saved in DB:", paymentDoc);
 
-        return NextResponse.json(data, { status: 200 });
-
-
-
+        return new NextResponse(JSON.stringify(data), {
+            status: 200,
+            headers: {
+                ...corsHeaders,
+                "Content-Type": "application/json",
+            },
+        });
     } catch (err) {
         console.error("PayU error:", err.response?.data || err.message);
-        return new Response(
-            JSON.stringify({ error: "Failed to create payment link", details: err.response?.data }),
-            { status: err.response?.status || 500, headers: { "Content-Type": "application/json" } }
+        return new NextResponse(
+            JSON.stringify({
+                error: "Failed to create payment link",
+                details: err.response?.data || err.message,
+            }),
+            {
+                status: err.response?.status || 500,
+                headers: corsHeaders,
+            }
         );
     }
 }
