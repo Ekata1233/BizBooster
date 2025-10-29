@@ -58,7 +58,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 onChange(data);
             }}
             config={{
-                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjA0ODYzOTksImp0aSI6IjI2NzAwN2M0LTRkYmMtNDdjNC1iOGQxLTJiYjAyZWM2ZGRjMyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjM1NjBmODA2In0.2vjfN8IbH-Twmx8vstP5rRjPMCaiZ3Gtu8uerPoy9ZrAEH98T2exmDfTPdPvW4S-zZFt5BHX5kYY3tj5jGiQjg',
+                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjI5OTE5OTksImp0aSI6ImU0NTM5ZGNkLTk4MWQtNGQ2Ny04YWRjLTI5NWMzNjVhM2YzZSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjAwMGJmMzA5In0.inoDcAqnul2qiBd0oR02Uzd_TWpbi9FSQPJFMEcpGQqZmk51x2GJJPMWiia05HPXAPAy1LhLZWX-zWkfoT14dA',
                 plugins: [
                     Essentials,
                     Paragraph,
