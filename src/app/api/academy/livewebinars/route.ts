@@ -147,48 +147,52 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET ALL Certifications
 export async function GET() {
   await connectToDatabase();
   try {
-    const webinarEntry = await LiveWebinars.find({});
+    const webinars = await LiveWebinars.find({});
 
-   const now = new Date();
-  //  console.log("🕒 Current Time:", now.toString());
+    const now = new Date();
+    const nowIST = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
 
-for (let webinar of webinarEntry) {
-  const webinarDate = new Date(webinar.date);
-  const [endHour, endMinute] = webinar.endTime.split(":").map(Number);
+    await Promise.all(
+      webinars.map(async (webinar) => {
+        const [endHour, endMinute] = webinar.endTime.split(":").map(Number);
 
-  webinarDate.setHours(endHour, endMinute, 0, 0);
-//  console.log("📅 Webinar:", webinar.name || webinar._id);
-      // console.log("➡️ Webinar End Time:", webinarDate.toString());
-  // ✅ When current time >= end time, close webinar
-  if (now >= webinarDate && webinar.closeStatus !== true) {
-    webinar.closeStatus = true;
-    await webinar.save();
-  }
-  
-  // ✅ If webinar is still ongoing or future, keep it open
-  if (now < webinarDate && webinar.closeStatus !== false) {
-    webinar.closeStatus = false;
-    await webinar.save();
-  }
-}
+        const webinarDate = new Date(webinar.date);
+        webinarDate.setHours(endHour, endMinute, 0, 0);
 
+        const webinarEndIST = new Date(
+          webinarDate.getTime() + 5.5 * 60 * 60 * 1000
+        );
+
+        const shouldClose = nowIST >= webinarEndIST;
+
+        // ✅ Update only if status changed
+        if (webinar.closeStatus !== shouldClose) {
+          await LiveWebinars.findByIdAndUpdate(
+            webinar._id as string,
+            { $set: { closeStatus: shouldClose } },
+            { new: true, runValidators: true } // ✅ Avoid TS error
+          );
+        }
+      })
+    );
+
+    // Fetch latest updated data
+    const updatedWebinars = await LiveWebinars.find({});
 
     return NextResponse.json(
-      { success: true, data: webinarEntry },
+      { success: true, data: updatedWebinars },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error) {
-    console.error("GET /api/webinars error:", error);
+  } catch (err) {
+    console.error("Webinar list error:", err);
     return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || "Internal Server Error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+
+
