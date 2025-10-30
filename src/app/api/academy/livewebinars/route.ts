@@ -158,20 +158,14 @@ export async function GET() {
     await Promise.all(
       webinars.map(async (webinar) => {
         const [endHour, endMinute] = webinar.endTime.split(":").map(Number);
-
-        const webinarDate = new Date(webinar.date);
-        webinarDate.setHours(endHour, endMinute, 0, 0);
-        const webinarEndIST = new Date(
-          webinarDate.getTime() + 5.5 * 60 * 60 * 1000
-        );
-
-        const shouldClose = nowIST >= webinarEndIST;
-
+        const [year, month, day] = webinar.date.split("-").map(Number);
+        const webinarEndUTC = new Date(Date.UTC(year, month - 1, day, endHour - 5, endMinute - 30));
+        const nowUTC = new Date();
+        const shouldClose = nowUTC >= webinarEndUTC;
         if (shouldClose && webinar.closeStatus !== true) {
-          await LiveWebinars.findByIdAndUpdate(webinar._id, {
-            closeStatus: true,
-          });
+          await LiveWebinars.findByIdAndUpdate(webinar._id, { closeStatus: true });
         }
+
       })
     );
 
