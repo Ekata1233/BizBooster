@@ -183,6 +183,17 @@ export async function POST(req) {
                     checkout.isPartialPayment = false;
                 }
                 await checkout.save();
+
+                let leadDoc = await Lead.findOne({ checkout: checkoutId });
+                if (!leadDoc) leadDoc = new Lead({ checkout: checkoutId, leads: [] });
+
+                leadDoc.leads.push({
+                    statusType: "Payment failed",
+                    description: `Payment of ₹${paymentAmount} failed via PayU`,
+                    createdAt: new Date(),
+                });
+
+                await leadDoc.save();
             }
         }
 
