@@ -7,7 +7,8 @@ export interface ILiveWebinar extends Document {
   date: string;
   startTime: string;
   endTime: string;
-   user: {
+  closeStatus:boolean;
+  user: {
     user: mongoose.Types.ObjectId;
     status: boolean;
   }[];
@@ -15,50 +16,55 @@ export interface ILiveWebinar extends Document {
 }
 
 const LiveWebinarsSchema: Schema = new Schema<ILiveWebinar>({
-    name:{
-    type : String,
-    required : [true, 'Category name is required'],
-    unique : true,
-    trim : true
-    },
+  name: {
+    type: String,
+    required: [true, 'Category name is required'],
+    unique: true,
+    trim: true
+  },
 
-    imageUrl:{
-        type : String,
-        required : [true, 'Category is URL is required'],
-    },
-    description : {
-       type : String,
-       default : "",
-    },
+  imageUrl: {
+    type: String,
+    required: [true, 'Category is URL is required'],
+  },
+  description: {
+    type: String,
+    default: "",
+  },
 
-    displayVideoUrls : {
-       type : [String],
-       default : [],
-    },
-    date: {
-        type: String,
-        required: [true, 'Date is required'],
-    },
-    startTime: {
-        type: String,
-        required: [true, 'Start time is required'],
-    },
+  displayVideoUrls: {
+    type: [String],
+    default: [],
+  },
+  date: {
+    type: String,
+    required: [true, 'Date is required'],
+  },
+  startTime: {
+    type: String,
+    required: [true, 'Start time is required'],
+  },
 
-    endTime: {
-        type: String,
-        required: [true, 'End time is required'],
-    },
-    // user: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    user: [
-  {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    status: { type: Boolean, default: false },
-  }
-]
+  endTime: {
+    type: String,
+    required: [true, 'End time is required'],
+  },
+  closeStatus: {
+    type: Boolean,
+    default: false,
+  },
+
+  // user: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  user: [
+    {
+      user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      status: { type: Boolean, default: false },
+    }
+  ]
 
 
 
-    
+
 
 }, { timestamps: true }
 );

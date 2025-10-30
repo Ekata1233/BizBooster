@@ -153,20 +153,36 @@ export async function GET() {
   try {
     const webinarEntry = await LiveWebinars.find({});
 
-    if (!webinarEntry) {
-      return NextResponse.json(
-        { success: false, message: "Webinar not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+   const now = new Date();
+  //  console.log("🕒 Current Time:", now.toString());
+
+for (let webinar of webinarEntry) {
+  const webinarDate = new Date(webinar.date);
+  const [endHour, endMinute] = webinar.endTime.split(":").map(Number);
+
+  webinarDate.setHours(endHour, endMinute, 0, 0);
+//  console.log("📅 Webinar:", webinar.name || webinar._id);
+      // console.log("➡️ Webinar End Time:", webinarDate.toString());
+  // ✅ When current time >= end time, close webinar
+  if (now >= webinarDate && webinar.closeStatus !== true) {
+    webinar.closeStatus = true;
+    await webinar.save();
+  }
+  
+  // ✅ If webinar is still ongoing or future, keep it open
+  if (now < webinarDate && webinar.closeStatus !== false) {
+    webinar.closeStatus = false;
+    await webinar.save();
+  }
+}
+
 
     return NextResponse.json(
       { success: true, data: webinarEntry },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("GET /api/webinars error:", error);
-
     return NextResponse.json(
       {
         success: false,
