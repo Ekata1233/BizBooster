@@ -62,6 +62,8 @@ export async function POST(req) {
         const paymentAmount = Number(data.amount);
         const paymentMethod = data.mode;
 
+        console.log(" amount paid : ", paymentAmount)
+
         if (!orderId || !paymentStatus) {
             return NextResponse.json({ error: "Missing order_id or payment_status" }, { status: 400, headers: corsHeaders });
         }
@@ -96,6 +98,7 @@ export async function POST(req) {
                 const isFullPayment = checkout.paidAmount >= total;
                 checkout.paymentStatus = isFullPayment ? "paid" : "pending";
                 // checkout.isPartialPayment = !isFullPayment;
+                console.log("remaining amount : ", checkout.remainingAmount);
 
                 if (!isFullPayment) {
                     checkout.isPartialPayment = true;
