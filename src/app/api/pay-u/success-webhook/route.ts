@@ -21,6 +21,10 @@ export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
 
+function roundToTwo(num) {
+    return Number(num.toFixed(2));
+}
+
 export async function POST(req) {
     try {
         await connectToDatabase();
@@ -87,7 +91,8 @@ export async function POST(req) {
 
                 checkout.cashfreeMethod = paymentMethod; // keeping naming consistent
                 checkout.paidAmount = (checkout.paidAmount || 0) + paymentAmount;
-                checkout.remainingAmount = Math.max(total - checkout.paidAmount, 0);
+                checkout.remainingAmount = roundToTwo(Math.max(total - checkout.paidAmount, 0));
+                if (checkout.remainingAmount < 0.01) checkout.remainingAmount = 0;
                 const isFullPayment = checkout.paidAmount >= total;
                 checkout.paymentStatus = isFullPayment ? "paid" : "pending";
                 // checkout.isPartialPayment = !isFullPayment;
@@ -111,7 +116,6 @@ export async function POST(req) {
                 });
 
                 await leadDoc.save();
-                console.log("remaining amount  : ", checkout.remainingAmount);
 
                 // --- Prevent duplicate verification entries ---
                 const existingLead = await Lead.findOne({ checkout: checkoutId });
@@ -168,7 +172,8 @@ export async function POST(req) {
                     ? Number(checkout.grandTotal)
                     : Number(checkout.totalAmount ?? 0);
 
-                checkout.remainingAmount = Math.max(total - (checkout.paidAmount || 0), 0);
+                checkout.remainingAmount = roundToTwo(Math.max(total - (checkout.paidAmount || 0), 0));
+                if (checkout.remainingAmount < 0.01) checkout.remainingAmount = 0;
                 if (checkout.paidAmount > 0 && checkout.paidAmount < total) {
                     checkout.isPartialPayment = true;
                 } else {
@@ -179,7 +184,7 @@ export async function POST(req) {
         }
 
         // --- Customer package handling ---
-        if (paymentStatus === "SUCCESS" && orderId?.startsWith("package_")  && customerId) {
+        if (paymentStatus === "SUCCESS" && orderId?.startsWith("package_") && customerId) {
             try {
                 const amountPaid = Number(paymentAmount);
 
@@ -202,7 +207,9 @@ export async function POST(req) {
                 const remaining = effectivePackagePrice - newTotalPaid;
 
                 user.packageAmountPaid = newTotalPaid;
-                user.remainingAmount = Math.max(remaining, 0);
+                user.remainingAmount = roundToTwo(Math.max(remaining, 0));
+                if (user.remainingAmount < 0.01) user.remainingAmount = 0;
+
                 user.packageType = newTotalPaid >= effectivePackagePrice ? "full" : "partial";
 
                 // Trigger commission if fully paid
