@@ -147,32 +147,52 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET ALL Certifications
 export async function GET() {
   await connectToDatabase();
   try {
-    const webinarEntry = await LiveWebinars.find({});
+    const webinars = await LiveWebinars.find({});
 
-    if (!webinarEntry) {
-      return NextResponse.json(
-        { success: false, message: "Webinar not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
+    const now = new Date();
+    const nowIST = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+
+    await Promise.all(
+      webinars.map(async (webinar) => {
+        const [endHour, endMinute] = webinar.endTime.split(":").map(Number);
+
+        const webinarDate = new Date(webinar.date);
+        webinarDate.setHours(endHour, endMinute, 0, 0);
+
+        const webinarEndIST = new Date(
+          webinarDate.getTime() + 5.5 * 60 * 60 * 1000
+        );
+
+        const shouldClose = nowIST >= webinarEndIST;
+
+        // ✅ Update only if status changed
+        if (webinar.closeStatus !== shouldClose) {
+          await LiveWebinars.findByIdAndUpdate(
+            webinar._id as string,
+            { $set: { closeStatus: shouldClose } },
+            { new: true, runValidators: true } // ✅ Avoid TS error
+          );
+        }
+      })
+    );
+
+    // Fetch latest updated data
+    const updatedWebinars = await LiveWebinars.find({});
 
     return NextResponse.json(
-      { success: true, data: webinarEntry },
+      { success: true, data: updatedWebinars },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    console.error("GET /api/webinars error:", error);
-
+  } catch (err) {
+    console.error("Webinar list error:", err);
     return NextResponse.json(
-      {
-        success: false,
-        message: (error as Error).message || "Internal Server Error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+
+

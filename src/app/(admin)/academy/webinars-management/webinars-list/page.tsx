@@ -127,8 +127,8 @@ const WebinarPage = () => {
     const router = useRouter();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeTab, setActiveTab] = useState<'all' | 'Active' | 'Inactive'>('all'); // Match types from CertificatePage
-
+    const [activeTab, setActiveTab] = useState<'all' | 'Active' | 'Inactive'>('all'); 
+    
     // Consolidated state for row expansion
     const [expandedRowIds, setExpandedRowIds] = useState<string[]>([]);
     const toggleRowExpansion = (id: string) => {
@@ -223,13 +223,13 @@ const WebinarPage = () => {
                         <table className="min-w-full border-collapse text-sm">
                             <thead>
                                 <tr>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Webinar Name</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Main Image</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Webinar Description</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Details</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Images</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Video Files</th>
-                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Videos Count</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Name</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Image</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Description</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Details</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Images</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Files</th>
+                                    <th className="px-5 py-3 text-left text-gray-500 border-b">Count</th>
                                     <th className="px-5 py-3 text-center text-gray-500 border-b">Action</th>
                                 </tr>
                             </thead>
