@@ -17,8 +17,8 @@ interface TableData {
     categoryName: string;
     subCategoryName: string;
     status: string;
-    price: string | number;              // added
-    discountedPrice: string | number;    // added
+    price: string | number;              
+    discountedPrice: string | number;    
     providerPrice: string | number;
     id: string;
 }
@@ -35,37 +35,36 @@ const SubscribeRequestPage = () => {
         router.push(`/subscribe-management/subscribe-request/${row.id}/${row.providerId}`);
     };
 
-    // console.log("service in subsribe request : ", services)
-    /* build (or rebuild) the list any time `services` changes */
     useEffect(() => {
         fetchServices();   // 👈 refresh on mount
     }, []);
 
-    useEffect(() => {
-        const pending: TableData[] = [];
+useEffect(() => {
+    const pending: TableData[] = [];
 
-        services.forEach((service: any) => {
-            (service.providerPrices || []).forEach((p: any) => {
-                const rawStatus = service.status ?? p.status ?? '';
-                if (rawStatus.toLowerCase() === 'pending') {
-                    pending.push({
-                        name: service.serviceName,
-                        providerId: p?.provider?._id || 'N/A',
-                        providerName: p?.provider?.fullName || 'N/A',
-                        price: service.price || "N/A",
-                        discountedPrice: service.discountedPrice || "N/A",
-                        providerPrice: p?.providerPrice || "N/A",
-                        categoryName: service.category?.name || 'N/A',
-                        subCategoryName: service.subcategory?.name || 'N/A',
-                        status: service.status ?? p.status ?? 'Accept',
-                        id: service._id,
-                    });
-                }
-            });
+    services.forEach((service: any) => {
+        (service.providerPrices || []).forEach((p: any) => {
+            const rawStatus = service.status ?? p.status ?? '';
+            if (rawStatus.toLowerCase() === 'pending') {
+                pending.push({
+                    name: service.serviceName,
+                    providerId: p?.provider?._id || 'N/A',
+                    providerName: p?.provider?.fullName || 'N/A',
+                    price: service.price || "N/A",
+                    discountedPrice: service.discountedPrice || "N/A",
+                    providerPrice: p?.providerPrice || "N/A",
+                    categoryName: service.category?.name || 'N/A',
+                    subCategoryName: service.subcategory?.name || 'N/A',
+                    status: service.status ?? p.status ?? 'Accept',
+                    id: service._id,
+                });
+            }
         });
+    });
 
-        setTableData(pending);
-    }, [services]);
+    // ✅ Reverse the array before setting it
+    setTableData(pending.reverse());
+}, [services]);
 
 
 
@@ -124,12 +123,6 @@ const SubscribeRequestPage = () => {
             accessor: 'action',
             render: (row: TableData) => (
                 <div className="flex gap-2">
-                    {/* <button
-                        onClick={() => handleAccept(row.id, row.providerId)}
-                        className="text-green-600 border border-green-600 rounded-md px-3 py-2 hover:bg-green-600 hover:text-white"
-                    >
-                        Approve
-                    </button> */}
                     <button
                         onClick={() => handleNavigate(row)}
                         className="text-blue-500 border border-blue-500 rounded-md px-3 py-2 hover:bg-blue-500 hover:text-white"
