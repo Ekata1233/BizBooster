@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const date = formData.get("date") as string;
     const startTime = formData.get("startTime") as string;
     const endTime = formData.get("endTime") as string;
-    
+
     // const videoNames = formData.getAll("videoName") as string[];
     // const videoDescriptions = formData.getAll("videoDescription") as string[];
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-  
+
     const existingWebinar = await LiveWebinars.findOne({ name });
 
     if (existingWebinar) {
@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
       const updatedFields: Partial<typeof existingWebinar> = {};
 
       if (description) updatedFields.description = description;
-    //   if (videoToAppend.length > 0) {
-    //     existingWebinar.video.push(...videoToAppend);
-    //   }
+      //   if (videoToAppend.length > 0) {
+      //     existingWebinar.video.push(...videoToAppend);
+      //   }
 
       Object.assign(existingWebinar, updatedFields);
       await existingWebinar.save();
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      
+
 
       const newWebinar = await LiveWebinars.create({
         name,
@@ -118,23 +118,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-   if (
-  typeof error === "object" &&
-  error !== null &&
-  "name" in error &&
-  (error as { name: string }).name === "ValidationError" &&
-  "errors" in error
-) {
-  const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
-  const messages = Object.values(validationErrors).map((err) => err.message);
-  return NextResponse.json(
-    {
-      success: false,
-      message: `Validation Error: ${messages.join(", ")}`,
-    },
-    { status: 400, headers: corsHeaders }
-  );
-}
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "ValidationError" &&
+      "errors" in error
+    ) {
+      const validationErrors = (error as { errors: Record<string, { message: string }> }).errors;
+      const messages = Object.values(validationErrors).map((err) => err.message);
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Validation Error: ${messages.join(", ")}`,
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
 
     return NextResponse.json(
@@ -161,20 +161,16 @@ export async function GET() {
 
         const webinarDate = new Date(webinar.date);
         webinarDate.setHours(endHour, endMinute, 0, 0);
-
         const webinarEndIST = new Date(
           webinarDate.getTime() + 5.5 * 60 * 60 * 1000
         );
 
         const shouldClose = nowIST >= webinarEndIST;
 
-        // ✅ Update only if status changed
-        if (webinar.closeStatus !== shouldClose) {
-          await LiveWebinars.findByIdAndUpdate(
-            webinar._id as string,
-            { $set: { closeStatus: shouldClose } },
-            { new: true, runValidators: true } // ✅ Avoid TS error
-          );
+        if (shouldClose && webinar.closeStatus !== true) {
+          await LiveWebinars.findByIdAndUpdate(webinar._id, {
+            closeStatus: true,
+          });
         }
       })
     );
