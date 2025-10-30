@@ -73,7 +73,7 @@ const LiveWebinar = () => {
 
   const columns = [
     {
-      header: 'Webinar Name',
+      header: 'Name',
       accessor: 'name',
     },
     // {
@@ -97,45 +97,45 @@ const LiveWebinar = () => {
     //     </div>
     //   ),
     // },
-   {
-  header: 'Image',
-  accessor: 'imageUrl',
-  render: (row: TableData) => (
-    <div className="px-5 py-4"> {/* Added px-5 py-4 from your example */}
-      <div className="relative w-20 h-20"> {/* Apply relative, fixed w/h */}
-        {row.imageUrl ? (
-          <Image
-            src={row.imageUrl}
-            alt={row.name || 'certification image'}
-            fill // Use fill for the object-cover effect
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Recommended for responsive images
-            className="object-cover rounded-md ring-1 ring-gray-200" // Apply object-cover, rounded, ring
-            unoptimized={true} // Keep unoptimized if your images are not optimized by Next.js Image component (e.g., external URLs)
-          />
-        ) : (
-          <span className="flex items-center justify-center w-full h-full text-gray-400 bg-gray-100 rounded-md">No Image</span>
-        )}
-      </div>
-    </div>
-  ),
-},
     {
-      header: 'Webinar Description',
-      accessor: 'description',
+      header: 'Image',
+      accessor: 'imageUrl',
       render: (row: TableData) => (
-        <div className="flex flex-col">
-          {row.description ? (
-            row.description.split(',').map((desc: string, idx: number) => (
-              <p key={idx}>{desc.trim()}</p>
-            ))
-          ) : (
-            <span>N/A</span>
-          )}
+        <div className="px-5 py-4"> {/* Added px-5 py-4 from your example */}
+          <div className="relative w-20 h-20"> {/* Apply relative, fixed w/h */}
+            {row.imageUrl ? (
+              <Image
+                src={row.imageUrl}
+                alt={row.name || 'certification image'}
+                fill // Use fill for the object-cover effect
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Recommended for responsive images
+                className="object-cover rounded-md ring-1 ring-gray-200" // Apply object-cover, rounded, ring
+                unoptimized={true} // Keep unoptimized if your images are not optimized by Next.js Image component (e.g., external URLs)
+              />
+            ) : (
+              <span className="flex items-center justify-center w-full h-full text-gray-400 bg-gray-100 rounded-md">No Image</span>
+            )}
+          </div>
         </div>
       ),
     },
+    // {
+    //   header: 'Webinar Description',
+    //   accessor: 'description',
+    //   render: (row: TableData) => (
+    //     <div className="flex flex-col">
+    //       {row.description ? (
+    //         row.description.split(',').map((desc: string, idx: number) => (
+    //           <p key={idx}>{desc.trim()}</p>
+    //         ))
+    //       ) : (
+    //         <span>N/A</span>
+    //       )}
+    //     </div>
+    //   ),
+    // },
     {
-      header: 'Live Webinar Link',
+      header: 'Link',
       accessor: 'liveWebinarLink',
       render: (row: TableData) => (
         <div className="flex flex-col gap-1">
@@ -158,7 +158,7 @@ const LiveWebinar = () => {
       ),
     },
     {
-      header: 'Webinar Date',
+      header: 'Date',
       accessor: 'date',
       render: (row: TableData) => (
         <div className="flex justify-center items-center">
@@ -167,7 +167,7 @@ const LiveWebinar = () => {
       ),
     },
     {
-      header: 'Webinar Start Time',
+      header: 'Start Time',
       accessor: 'startTime',
       render: (row: TableData) => (
         <div className="flex justify-center items-center">
@@ -176,7 +176,7 @@ const LiveWebinar = () => {
       ),
     },
     {
-      header: 'Webinar End Time',
+      header: 'End Time',
       accessor: 'endTime',
       render: (row: TableData) => (
         <div className="flex justify-center items-center">
@@ -196,7 +196,7 @@ const LiveWebinar = () => {
       },
     },
     {
-      header: 'User Ids Count',
+      header: 'Users Count',
       accessor: 'userIdsCount',
       render: (row: TableData) => {
         return (
