@@ -2,15 +2,11 @@
 
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import FileInput from '@/components/form/input/FileInput';
 import Input from '@/components/form/input/InputField';
-import Label from '@/components/form/Label';
 import AddModule from '@/components/module-component/AddModule';
 import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import RouteLoader from '@/components/RouteLoader';
 import BasicTableOne from '@/components/tables/BasicTableOne';
-import Button from '@/components/ui/button/Button';
-import { Modal } from '@/components/ui/modal';
 import { useModule } from '@/context/ModuleContext';
 import { useModal } from '@/hooks/useModal';
 import { useRouter } from 'next/navigation';
@@ -18,332 +14,224 @@ import { PencilIcon, TrashBinIcon } from '@/icons';
 import axios from 'axios';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-// Define types
-interface Module {
-    _id: string;
-    name: string;
-    image: string;
-    categoryCount: number;
-    isDeleted: boolean;
-    createdAt: string;
-    updatedAt?: string;
-    __v?: number;
+interface ModuleType {
+  _id: string;
+  name: string;
+  image: string;
+  categoryCount: number;
+  isDeleted: boolean;
+  sortOrder?: number;
 }
 
 interface TableData {
-    id: string;
-    name: string;
-    image: string;
-    categoryCount: number;
-    status: string;
+  id: string;
+  name: string;
+  image: string;
+  categoryCount: number;
+  status: string;
+  sortOrder?: number;
 }
 
 const Module = () => {
-    const { modules, updateModule, deleteModule } = useModule();
-    const { isOpen, closeModal } = useModal();
-    const [moduleName, setModuleName] = useState('');
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
-    const [activeTab, setActiveTab] = useState('all');
-    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
-    const router = useRouter();
+  const { modules, setModules, deleteModule } = useModule();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filteredModules, setFilteredModules] = useState<TableData[]>([]);
+  const [activeTab, setActiveTab] = useState('all');
+  const router = useRouter();
 
 
-   
-    const fetchFilteredModules = async () => {
-        try {
-            const params = {
-                ...(searchQuery && { search: searchQuery }),
-            };
+  const onDragEnd = async (result: any) => {
+    if (!result.destination) return;
 
-            const response = await axios.get('/api/modules', { params });
-            const data = response.data.data;
+    const updated = [...filteredModules];
+    const [moved] = updated.splice(result.source.index, 1);
+    updated.splice(result.destination.index, 0, moved);
 
-            if (data.length === 0) {
-                setFilteredModules([]);
-            } else {
-                const tableData: TableData[] = data.map((mod: Module) => ({
-                    id: mod._id,
-                    name: mod.name,
-                    image: mod.image,
-                    categoryCount: mod.categoryCount,
-                    status: mod.isDeleted ? 'Deleted' : 'Active',
-                }));
-                setFilteredModules(tableData);
-            }
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            setFilteredModules([]);
-        }
+    const sorted = updated.map((m, i) => ({ ...m, sortOrder: i }));
+    setFilteredModules(sorted);
+
+    await axios.post("/api/modules/reorder", {
+      modules: sorted.map((m) => ({ _id: m.id, sortOrder: m.sortOrder })),
+    });
+
+    setModules((prev) =>
+      prev.map((mod) => {
+        const found = sorted.find((s) => s.id === mod._id);
+        return found ? { ...mod, sortOrder: found.sortOrder } : mod;
+      })
+    );
+  };
+
+  const fetchFilteredModules = async () => {
+    try {
+      const params = searchQuery ? { search: searchQuery } : {};
+      const res = await axios.get('/api/modules', { params });
+      const data = res.data.data;
+
+      const tableData = data.map((m: ModuleType) => ({
+        id: m._id,
+        name: m.name,
+        image: m.image,
+        categoryCount: m.categoryCount,
+        status: m.isDeleted ? 'Deleted' : 'Active',
+        sortOrder: m.sortOrder || 0,
+      }));
+
+      setFilteredModules(tableData.sort((a, b) => a.sortOrder! - b.sortOrder!));
+    } catch (e) {
+      setFilteredModules([]);
     }
+  };
 
-    useEffect(() => {
-        fetchFilteredModules();
-    }, [searchQuery]);
+  useEffect(() => {
+    fetchFilteredModules();
+  }, [searchQuery]);
 
-      const handleEdit = (id: string) => {
+  const handleDelete = async (id: string) => {
+    await deleteModule(id);
+    setFilteredModules((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleEdit = (id: string) => {
     router.push(`/module-management/module/modals/${id}`);
   };
 
-    const columns = [
-        {
-            header: 'Module Name',
-            accessor: 'name',
-        },
-        {
-            header: 'Image',
-            accessor: 'image',
-            render: (row: TableData) => (
-                <div className="flex items-center gap-3">
-                    <div className="w-20 h-20 overflow-hidden">
-                        <Image
-                            width={130}
-                            height={130}
-                            src={row.image}
-                            alt={row.name || "module image"}
-                            className="object-cover rounded"
-                        />
-                    </div>
-                </div>
-            ),
-        },
-        {
-            header: 'category Count',
-            accessor: 'categoryCount',
-            render: (row: TableData) => (
-                <div className="flex justify-center items-center">
-                    {row.categoryCount}
-                </div>
-            ),
-        },
-        {
-            header: 'Status',
-            accessor: 'status',
-            render: (row: TableData) => {
-                const status = row.status;
-                let colorClass = '';
+  const getFilteredByStatus = () => {
+    if (activeTab === 'active') return filteredModules.filter(m => m.status === 'Active');
+    if (activeTab === 'inactive') return filteredModules.filter(m => m.status === 'Deleted');
+    return filteredModules;
+  };
+  
 
-                switch (status) {
-                    case 'Deleted':
-                        colorClass = 'text-red-500 bg-red-100 border border-red-300';
-                        break;
-                    case 'Active':
-                        colorClass = 'text-green-600 bg-green-100 border border-green-300';
-                        break;
-                    default:
-                        colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-                }
-
-                return (
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-                        {status}
-                    </span>
-                );
-            },
-        },
-        {
-            header: 'Action',
-            accessor: 'action',
-            render: (row: TableData) => {
-                return (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => handleEdit(row.id)}
-                            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500">
-                            <PencilIcon />
-                        </button>
-                        <button onClick={() => handleDelete(row.id)} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
-                            <TrashBinIcon />
-                        </button>
-                    </div>
-                )
-            },
-        },
-    ];
-
-    // const handleEdit = (id: string) => {
-    //     const selectedModule = modules.find(item => item._id === id);
-
-    //     if (selectedModule) {
-    //         setEditingModuleId(id);
-    //         setModuleName(selectedModule.name);
-    //         setExistingImageUrl(selectedModule.image || null);
-    //         setSelectedFile(null);
-    //         openModal();
-    //     }
-    // };
-
-    const handleUpdateData = async () => {
-        if (!editingModuleId) return;
-
-        const formData = new FormData();
-        formData.append('name', moduleName);
-        if (selectedFile) {
-            formData.append('image', selectedFile);
-        }
-
-        try {
-            await updateModule(editingModuleId, formData);
-            alert('Module updated successfully');
-            closeModal();
-            setEditingModuleId(null);
-            setModuleName('');
-            setSelectedFile(null);
-            setExistingImageUrl(null);
-            fetchFilteredModules(); // ✅ refresh UI
-        } catch (error) {
-            console.error('Error updating module:', error);
-        }
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        try {
-            await deleteModule(id);
-            alert('Module deleted successfully');
-            // ✅ Immediately remove from UI
-            setFilteredModules(prev => prev.filter(mod => mod.id !== id));
-        } catch (error) {
-            console.error('Error deleting module:', error);
-        }
-    };
-
-    const getFilteredByStatus = () => {
-        if (activeTab === 'active') {
-            return filteredModules.filter(mod => mod.status === 'Active');
-        } else if (activeTab === 'inactive') {
-            return filteredModules.filter(mod => mod.status === 'Deleted');
-        }
-        return filteredModules;
-    };
-
-    if (!modules || !Array.isArray(modules)) {
-        return <div><RouteLoader /></div>;
-    }
-
-    return (
-        <div>
-            <PageBreadcrumb pageTitle="Module" />
-            <div className="my-5">
-                <AddModule />
-            </div>
-
-            <div>
-                <ModuleStatCard />
-            </div>
-
-            <div className="my-5">
-                <ComponentCard title="All Modules">
-                    <div>
-                        <Input
-                            type="text"
-                            placeholder="Search by module name"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="border-b border-gray-200">
-                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('all')}
-                            >
-                                All
-                            </li>
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('active')}
-                            >
-                                Active
-                            </li>
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('inactive')}
-                            >
-                                Inactive
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <BasicTableOne columns={columns} data={getFilteredByStatus()} />
-                    </div>
-                </ComponentCard>
-            </div>
-
-            <div>
-                <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-                    <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                        <div className="px-2 pr-14">
-                            <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                                Edit Module Information
-                            </h4>
-                        </div>
-
-                        <form className="flex flex-col">
-                            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
-                                <div className="">
-                                    <div className="grid grid-cols-1 gap-x-6 gap-y-5 ">
-                                        <div>
-                                            <Label>Module Name</Label>
-                                            <Input
-                                                type="text"
-                                                value={moduleName}
-                                                placeholder="Enter Module"
-                                                onChange={(e) => setModuleName(e.target.value)}
-                                            />
-
-                                        </div>
-
-
-                                        <div>
-                                            <Label>Select Image</Label>
-                                            <FileInput onChange={handleFileChange} className="custom-class" />
-                                            {selectedFile ? (
-                                                <Image
-                                                    src={URL.createObjectURL(selectedFile)}
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Selected Module"
-                                                    className="mt-2 w-20 h-20 object-cover rounded border"
-                                                />
-                                            ) : existingImageUrl ? (
-                                                <Image
-                                                    src={existingImageUrl}
-                                                    width={80}
-                                                    height={80}
-                                                    alt="Current Module"
-                                                    className="mt-2 w-20 h-20 object-cover rounded border"
-                                                />
-                                            ) : null}
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                                <Button size="sm" variant="outline" onClick={closeModal}>
-                                    Close
-                                </Button>
-                                <Button size="sm" onClick={handleUpdateData}>
-                                    Update Changes
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </Modal>
-            </div>
+  const columns = [
+    { header: 'Module Name', accessor: 'name' },
+    {
+      header: 'Image',
+      accessor: 'image',
+      render: (row: TableData) => (
+        <Image width={70} height={70} src={row.image} alt={row.name} className="rounded h-16 w-16 object-cover" />
+      ),
+    },
+    {
+      header: 'Category Count',
+      accessor: 'categoryCount',
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row: TableData) => (
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+          row.status === 'Deleted' ? 'text-red-500 bg-red-100' : 'text-green-600 bg-green-100'
+        }`}>
+          {row.status}
+        </span>
+      )
+    },
+    {
+      header: 'Action',
+      accessor: 'action',
+      render: (row: TableData) => (
+        <div className="flex gap-2">
+          <button onClick={() => handleEdit(row.id)} className="text-yellow-500 p-2 border rounded-md">
+            <PencilIcon />
+          </button>
+          <button onClick={() => handleDelete(row.id)} className="text-red-500 p-2 border rounded-md">
+            <TrashBinIcon />
+          </button>
         </div>
-    );
+      ),
+    },
+  ];
+
+  if (!modules) return <RouteLoader />;
+
+  return (
+    <div>
+      <PageBreadcrumb pageTitle="Module" />
+      <div className="my-5"><AddModule /></div>
+      <ModuleStatCard />
+
+      <ComponentCard title="All Modules">
+
+        <Input placeholder="Search by module name" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+
+        <div className="border-b border-gray-200 mt-2">
+          <ul className="flex space-x-6 text-sm font-medium text-gray-500">
+            {['all','active','inactive'].map((tab) => (
+              <li key={tab}
+                className={`cursor-pointer px-4 py-2 ${activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                onClick={() => setActiveTab(tab)}>
+                {tab.charAt(0).toUpperCase()+tab.slice(1)}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+       <DragDropContext onDragEnd={onDragEnd}>
+  <Droppable droppableId="modules">
+    {(provided) => (
+      <table className="min-w-full divide-y divide-gray-200" ref={provided.innerRef} {...provided.droppableProps}>
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.header} className="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody className="bg-white divide-y divide-gray-200">
+          {getFilteredByStatus().map((row, index) => (
+            <Draggable key={row.id} draggableId={row.id} index={index}>
+              {(provided) => (
+                <tr
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  className="cursor-move hover:bg-gray-50"
+                >
+                  <td className="px-4 py-2">{row.name}</td>
+
+                  <td className="px-4 py-2">
+                    <Image src={row.image} width={60} height={60} alt="" className="rounded object-cover h-12 w-12"/>
+                  </td>
+
+                  <td className="px-4 py-2">{row.categoryCount}</td>
+
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                      row.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                    }`}>
+                      {row.status}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-2 flex gap-2">
+                    <button onClick={() => handleEdit(row.id)} className="text-yellow-500 p-2 border rounded-md">
+                      <PencilIcon />
+                    </button>
+                    <button onClick={() => handleDelete(row.id)} className="text-red-500 p-2 border rounded-md">
+                      <TrashBinIcon />
+                    </button>
+                  </td>
+                </tr>
+              )}
+            </Draggable>
+          ))}
+          {provided.placeholder}
+        </tbody>
+      </table>
+    )}
+  </Droppable>
+</DragDropContext>
+
+
+      </ComponentCard>
+    </div>
+  );
 };
 
 export default Module;
