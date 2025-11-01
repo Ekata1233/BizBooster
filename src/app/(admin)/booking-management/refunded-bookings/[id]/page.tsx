@@ -58,7 +58,7 @@ const RefundedBookingsDetails = () => {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
     }
   }, [checkoutDetails]);
-const handleDownload = async () => {
+  const handleDownload = async () => {
     if (!checkoutDetails?._id) return;
 
     try {
@@ -255,7 +255,7 @@ const handleDownload = async () => {
               {/* Summary Values */}
               <div className="mt-6 space-y-2 text-sm text-gray-800">
                 {([
-                  ['Listing Price',  checkoutDetails?.listingPrice ?? 0],
+                  ['Listing Price', checkoutDetails?.listingPrice ?? 0],
                   [`Service Discount (${checkoutDetails?.serviceDiscount ?? 0}%)`, -(checkoutDetails?.serviceDiscountPrice ?? 0)],
                   ['Price After Discount', checkoutDetails?.priceAfterDiscount ?? 0],
                   [`Coupon Discount (${checkoutDetails?.couponDiscount ?? 0}%)`, -(checkoutDetails?.couponDiscountPrice ?? 0)],
@@ -270,6 +270,8 @@ const handleDownload = async () => {
                     <span>₹{amount}</span>
                   </div>
                 ))}
+
+                <hr className="my-4 border-t border-gray-500" />
 
 
                 {hasExtraServices && (() => {
