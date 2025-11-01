@@ -72,15 +72,22 @@ export async function POST(req: NextRequest) {
             discount = coupon.amount;
         }
 
-        if (coupon.limitPerUser > 0) {
-            await CouponUsage.findOneAndUpdate(
-                { coupon: coupon._id, user: userId },
-                { $inc: { usedCount: 1 } },
-                { upsert: true, new: true }
-            );
-        }
+        // if (coupon.limitPerUser > 0) {
+        //     await CouponUsage.findOneAndUpdate(
+        //         { coupon: coupon._id, user: userId },
+        //         { $inc: { usedCount: 1 } },
+        //         { upsert: true, new: true }
+        //     );
+        // }
 
-        return NextResponse.json({ success: true, data: { couponId: coupon._id, discount } });
+        return NextResponse.json({
+            success: true, data: {
+                couponId: coupon._id,
+                couponCode: coupon.couponCode,
+                discount,
+                message: 'Coupon is valid...',
+            }
+        });
     } catch (err: any) {
         return NextResponse.json({ success: false, error: err.message }, { status: 400 });
     }

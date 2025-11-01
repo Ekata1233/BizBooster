@@ -6,7 +6,9 @@ import "@/models/Service"
 import "@/models/ServiceCustomer"
 import "@/models/User"
 import "@/models/Provider"
+import "@/models/CouponUsage"
 import Coupon from '@/models/Coupon';
+import CouponUsage from '@/models/CouponUsage';
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -118,22 +120,34 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // if (coupon) {
+    //   const couponDoc = await Coupon.findById(coupon);
+
+    //   if (!couponDoc) {
+    //     return NextResponse.json(
+    //       { success: false, message: "Invalid coupon." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+
+    //   if (!couponDoc.isActive) {
+    //     return NextResponse.json(
+    //       { success: false, message: "Coupon expired or not valid." },
+    //       { status: 400, headers: corsHeaders }
+    //     );
+    //   }
+    // }
+
+     let validCouponDoc = null;
     if (coupon) {
       const couponDoc = await Coupon.findById(coupon);
-
       if (!couponDoc) {
-        return NextResponse.json(
-          { success: false, message: "Invalid coupon." },
-          { status: 400, headers: corsHeaders }
-        );
+        return NextResponse.json({ success: false, message: "Invalid coupon." }, { status: 400, headers: corsHeaders });
       }
-
-      if (!couponDoc.isActive) {
-        return NextResponse.json(
-          { success: false, message: "Coupon expired or not valid." },
-          { status: 400, headers: corsHeaders }
-        );
+      if (!couponDoc.isActive || couponDoc.isDeleted) {
+        return NextResponse.json({ success: false, message: "Coupon expired or not valid." }, { status: 400, headers: corsHeaders });
       }
+      validCouponDoc = couponDoc;
     }
 
     const now = new Date();
@@ -187,6 +201,17 @@ export async function POST(req: NextRequest) {
     console.log('Checkout before save:', checkout);
 
     await checkout.save();
+
+    console.log("valid coupon : ", validCouponDoc);
+
+     if (validCouponDoc) {
+      await CouponUsage.findOneAndUpdate(
+        { coupon: validCouponDoc._id, user },
+        { $inc: { usedCount: 1 } },
+        { upsert: true, new: true }
+      );
+    }
+
     // return NextResponse.json(
     //   { success: true, data: checkout },
     //   { status: 201, headers: corsHeaders }
