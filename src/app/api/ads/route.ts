@@ -91,6 +91,8 @@ export async function GET() {
     // Fetch updated ads with relations
     const ads = await Ad.find({isExpired : false,isDeleted: false, }).populate("category service provider");
 
+    console.log("ads : ",ads);
+
     return NextResponse.json(
       { success: true, data: ads },
       { headers: corsHeaders }
