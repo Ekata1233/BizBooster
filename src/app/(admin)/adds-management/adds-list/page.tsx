@@ -40,6 +40,7 @@ const AdListPage = () => {
       serviceName: ad.service?.serviceName || 'N/A',
       status: ad.isApproved ? 'Approved' : 'Pending',
       activeStatus: ad.isDeleted ? 'Inactive' : 'Active', // soft-delete mapping
+      expireStatus: ad.isExpired ? 'Expired' : 'Active',
     }));
 
     const filtered = formatted.filter(ad =>
@@ -103,7 +104,7 @@ const AdListPage = () => {
     { header: 'Category', accessor: 'categoryName' },
     { header: 'Service', accessor: 'serviceName' },
     {
-      header: 'Status',
+      header: 'Approve Status',
       accessor: 'status',
       render: (row: AdTableData) => {
         const isApproved = row.status === 'Approved';
@@ -118,7 +119,22 @@ const AdListPage = () => {
       },
     },
     {
-      header: 'Active Status',
+      header: 'Expire Status',
+      accessor: 'expireStatus',
+      render: (row: AdTableData) => {
+        const isActive = row.activeStatus === 'Active';
+        const color = isActive ? 'green' : 'red';
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
+          >
+            {row.activeStatus}
+          </span>
+        );
+      },
+    },
+    {
+      header: 'Delete Status',
       accessor: 'activeStatus',
       render: (row: AdTableData) => {
         const isActive = row.activeStatus === 'Active';
