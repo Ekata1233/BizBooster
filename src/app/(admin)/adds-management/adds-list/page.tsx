@@ -76,14 +76,14 @@ const AdListPage = () => {
   };
 
   // Soft-delete handler
- const handleDelete = async (id: string) => {
-  if (confirm("Are you sure you want to mark this ad as inactive?")) {
-    const success = await deleteAd(id); // context handles state update
-    if (success) {
-      alert("Ad marked as inactive.");
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to mark this ad as inactive?")) {
+      const success = await deleteAd(id); // context handles state update
+      if (success) {
+        alert("Ad marked as inactive.");
+      }
     }
-  }
-};
+  };
 
 
   const columns = [
@@ -153,14 +153,17 @@ const AdListPage = () => {
       accessor: 'action',
       render: (row: AdTableData) => (
         <div className="flex gap-2">
-          {row.activeStatus === 'Active' && (
-            <button
-              onClick={() => handleDelete(row.id)}
-              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            >
-              <TrashBinIcon size={16} />
-            </button>
-          )}
+          <button
+            onClick={() => row.activeStatus === 'Active' && handleDelete(row.id)}
+            disabled={row.activeStatus !== 'Active'}
+            className={`rounded-md p-2 border transition-all ${row.activeStatus === 'Active'
+                ? 'text-red-500 border-red-500 hover:bg-red-500 hover:text-white cursor-pointer'
+                : 'text-gray-400 border-gray-300 cursor-not-allowed bg-gray-100'
+              }`}
+          >
+            <TrashBinIcon size={16} />
+          </button>
+
           <Link href={`/adds-management/adds-list/${row.id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
               <EyeIcon size={16} />
@@ -198,9 +201,8 @@ const AdListPage = () => {
               ].map(tab => (
                 <li
                   key={tab.key}
-                  className={`cursor-pointer px-4 py-2 ${
-                    activeTab === tab.key ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                  }`}
+                  className={`cursor-pointer px-4 py-2 ${activeTab === tab.key ? 'border-b-2 border-blue-600 text-blue-600' : ''
+                    }`}
                   onClick={() => setActiveTab(tab.key)}
                 >
                   {tab.label}
