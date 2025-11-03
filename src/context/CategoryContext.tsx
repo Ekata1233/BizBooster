@@ -18,6 +18,7 @@ interface CategoryContextType {
   addCategory: (data: FormData) => void;
   updateCategory: (id: string, data: FormData) => void;
   deleteCategory: (id: string) => void;
+    reorderCategories: (reorderedCategories: Category[]) => void;
   loading: boolean;
 }
 interface CategoryResponse {
@@ -77,6 +78,10 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
       setLoading(false);
     }
   };
+const reorderCategories = async (updatedList: any[]) => {
+  await axios.post("/api/category/reorder", { categories: updatedList });
+  setCategories(updatedList);
+};
 
   const updateCategory = async (id: string, formData: FormData) => {
     setLoading(true);
@@ -108,7 +113,7 @@ export const CategoryProvider = ({ children }: { children: React.ReactNode }) =>
 
   return (
     <CategoryContext.Provider
-      value={{ categories, fetchCategories, addCategory, updateCategory, deleteCategory, loading }}
+      value={{ categories, fetchCategories, addCategory, updateCategory, deleteCategory,reorderCategories, loading }}
     >
       {children}
     </CategoryContext.Provider>

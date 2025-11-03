@@ -87,7 +87,9 @@ export async function GET(req: NextRequest) {
 
   try {
     // Always fetch all with populate
-    const categories = await Category.find({}).populate("module");
+const categories = await Category.find({})
+  .populate("module")
+  .sort({ sortOrder: 1, createdAt: 1 }); // ✅ SORT BY order
 
     // Filter in-memory for `name` and `module.name`
     let filteredCategories = categories;
