@@ -22,10 +22,28 @@ export async function POST(req: Request) {
   await connectToDatabase();
 
   try {
+    // ✅ Check if this is a reorder request (JSON body)
+    const contentType = req.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
+      const { categories } = await req.json();
+
+      if (Array.isArray(categories)) {
+        for (let item of categories) {
+          await Category.findByIdAndUpdate(item._id, { sortOrder: item.sortOrder });
+        }
+
+        return NextResponse.json(
+          { success: true, message: "Category order updated" },
+          { status: 200, headers: corsHeaders }
+        );
+      }
+    }
+
+    // ✅ Otherwise, treat as form-data: CREATE CATEGORY (your original code)
     const formData = await req.formData();
     const name = formData.get("name") as string;
-    const moduleId = formData.get("module") as string; 
-    
+    const moduleId = formData.get("module") as string;
 
     if (!name) {
       return NextResponse.json(
@@ -34,7 +52,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const existing = await Category.findOne({ name: { $regex: new RegExp("^" + name + "$", "i") }, isDeleted: false });
+    const existing = await Category.findOne({
+      name: { $regex: new RegExp("^" + name + "$", "i") },
+      isDeleted: false
+    });
     if (existing) {
       return NextResponse.json(
         { success: false, message: "Category already exists" },
@@ -50,9 +71,9 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(arrayBuffer);
 
       const uploadResponse = await imagekit.upload({
-        file: buffer, // binary file
+        file: buffer,
         fileName: `${uuidv4()}-${file.name}`,
-        folder: "/uploads", // optional folder in ImageKit
+        folder: "/uploads",
       });
 
       imageUrl = uploadResponse.url;
@@ -60,7 +81,7 @@ export async function POST(req: Request) {
 
     const newCategory = await Category.create({
       name,
-      module: moduleId, // keep field name as 'module'
+      module: moduleId,
       image: imageUrl,
     });
 
@@ -68,6 +89,7 @@ export async function POST(req: Request) {
       { success: true, data: newCategory },
       { status: 201, headers: corsHeaders }
     );
+
   } catch (error: unknown) {
     const err = error as Error;
     return NextResponse.json(

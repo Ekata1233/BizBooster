@@ -191,29 +191,43 @@ const CategoryPage = () => {
 
   /* ✅ Drag End */
   const onDragEnd = async (e: DragEndEvent) => {
-    const { active, over } = e;
-    setActiveId(null);
-    setOverlayItem(null);
-    if (!over || active.id === over.id) return;
+  const { active, over } = e;
+  setActiveId(null);
+  setOverlayItem(null);
+  if (!over || active.id === over.id) return;
 
-    const from = findIndex(active.id as string);
-    const to = findIndex(over.id as string);
-    if (from === -1 || to === -1) return;
+  const from = findIndex(active.id as string);
+  const to = findIndex(over.id as string);
+  if (from === -1 || to === -1) return;
 
-    const newDisplayed = arrayMove(displayed, from, to);
-    const others = filteredCategories.filter((f) => !displayed.some((d) => d.id === f.id));
-    const merged = [...newDisplayed, ...others].map((c, i) => ({ ...c, sortOrder: i }));
+  // reorder only the displayed items
+  const newDisplayed = arrayMove(displayed, from, to);
+  const others = filteredCategories.filter((f) => !displayed.some((d) => d.id === f.id));
+  // merge and assign stable sortOrder based on total list positions
+  const merged = [...newDisplayed, ...others].map((c, i) => ({ ...c, sortOrder: i }));
 
-    setFilteredCategories(merged);
+  // update UI immediately
+  setFilteredCategories(merged);
 
-    try {
-      await axios.post("/api/category/reorder", {
-        categories: merged.map((c) => ({ _id: c.id, sortOrder: c.sortOrder })),
-      });
-    } catch (err) {
-      fetchCategories();
-    }
-  };
+  try {
+    // Send the expected payload: array of {_id, sortOrder}
+    const payload = merged.map((c) => ({ _id: c.id, sortOrder: c.sortOrder }));
+
+    await axios.post(
+      "/api/category/reorder", // IMPORTANT: matches your backend route that handles JSON reorder
+      { categories: payload },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    // re-fetch to ensure UI shows server truth (and populate any server-side changes)
+    await fetchCategories();
+  } catch (err) {
+    console.error("Reorder failed, reloading categories:", err);
+    // rollback UI from server
+    await fetchCategories();
+  }
+};
+
 
   return (
     <div>
