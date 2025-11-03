@@ -13,7 +13,6 @@ import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import RouteLoader from '@/components/RouteLoader';
 import { PencilIcon, TrashBinIcon } from '@/icons';
 
-// dnd-kit imports (no modifiers)
 import {
   DndContext,
   closestCenter,
@@ -49,14 +48,14 @@ interface TableData {
   sortOrder?: number;
 }
 
+/* ✅ Sortable Card */
 const SortableItem: React.FC<{
   item: TableData;
   handleEdit: (id: string) => void;
   handleDelete: (id: string) => void;
 }> = ({ item, handleEdit, handleDelete }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -71,8 +70,7 @@ const SortableItem: React.FC<{
       {...attributes}
       {...listeners}
       className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3
-        ${isDragging ? 'ring-2 ring-blue-400 bg-blue-50 shadow-lg' : ''}
-        transition-all duration-150 ease-out`}
+        ${isDragging ? 'ring-2 ring-blue-400 bg-blue-50 shadow-lg' : ''} transition-all duration-150`}
     >
       <div className="flex justify-between items-center cursor-grab">
         <h3 className="font-semibold truncate">{item.name}</h3>
@@ -96,9 +94,12 @@ const SortableItem: React.FC<{
       </span>
 
       <div className="flex gap-2 mt-2">
+        {/* ✅ EDIT */}
         <button onClick={() => handleEdit(item.id)} className="text-yellow-600 p-2 border rounded hover:bg-yellow-50">
           <PencilIcon />
         </button>
+
+        {/* ✅ DELETE */}
         <button onClick={() => handleDelete(item.id)} className="text-red-600 p-2 border rounded hover:bg-red-50">
           <TrashBinIcon />
         </button>
@@ -107,8 +108,9 @@ const SortableItem: React.FC<{
   );
 };
 
+/* ✅ MAIN PAGE */
 const ModulePage: React.FC = () => {
-  const { modules, setModules, deleteModule } = useModule();
+  const { modules, setModules } = useModule();
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,9 +119,9 @@ const ModulePage: React.FC = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overlayItem, setOverlayItem] = useState<TableData | null>(null);
 
-  // dnd-kit sensors
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
+  /* ✅ Fetch Modules */
   const fetchFilteredModules = async () => {
     try {
       const params = searchQuery ? { search: searchQuery } : {};
@@ -132,29 +134,33 @@ const ModulePage: React.FC = () => {
         image: m.image,
         categoryCount: m.categoryCount ?? 0,
         status: m.isDeleted ? 'Deleted' : 'Active',
-        sortOrder: typeof m.sortOrder === 'number' ? m.sortOrder : 0,
+        sortOrder: m.sortOrder ?? 0,
       }));
 
       tableData.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
       setFilteredModules(tableData);
     } catch (e) {
-      console.error('fetchFilteredModules error', e);
+      console.error(e);
       setFilteredModules([]);
     }
   };
 
   useEffect(() => {
     fetchFilteredModules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const handleEdit = (id: string) => router.push(`/module-management/module/modals/${id}`);
+  /* ✅ EDIT MODULE */
+  const handleEdit = (id: string) => {
+    router.push(`/module-management/module/modals/${id}`);
+  };
 
+  /* ✅ DELETE MODULE (Soft Delete) */
   const handleDelete = async (id: string) => {
     try {
-      await deleteModule(id);
-    } finally {
-      fetchFilteredModules();
+      await axios.patch(`/api/modules/${id}`, { isDeleted: true });
+      await fetchFilteredModules();
+    } catch (e) {
+      console.error("Delete failed", e);
     }
   };
 
@@ -171,42 +177,36 @@ const ModulePage: React.FC = () => {
     return displayedModules.findIndex((d) => d.id === id);
   };
 
+  /* ✅ Drag End */
   const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+
     setActiveId(null);
     setOverlayItem(null);
-
     if (!over || active.id === over.id) return;
 
     const oldIndex = findIndexById(active.id as string);
     const newIndex = findIndexById(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // reorder visible list
     const newDisplayed = arrayMove(displayedModules, oldIndex, newIndex);
-
-    // merge newDisplayed back into filteredModules (to preserve items filtered out)
     const other = filteredModules.filter((f) => !displayedModules.some((d) => d.id === f.id));
     const merged = [...newDisplayed, ...other].map((it, idx) => ({ ...it, sortOrder: idx }));
 
     setFilteredModules(merged);
 
-    // Persist reorder to server
     try {
       await axios.post('/api/modules/reorder', {
         modules: merged.map((m) => ({ _id: m.id, sortOrder: m.sortOrder })),
       });
 
-      // update context modules if provided
       setModules?.((prev) =>
         prev?.map((pm) => {
           const found = merged.find((u) => u.id === pm._id);
           return found ? { ...pm, sortOrder: found.sortOrder } : pm;
         })
       );
-    } catch (err) {
-      console.error('Reorder failed:', err);
-      // revert by re-fetching
+    } catch {
       fetchFilteredModules();
     }
   };
@@ -222,11 +222,7 @@ const ModulePage: React.FC = () => {
       <ModuleStatCard />
 
       <ComponentCard title="All Modules">
-        <Input
-          placeholder="Search by module name"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <Input placeholder="Search by module name" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
 
         <div className="border-b border-gray-200 mt-2">
           <ul className="flex space-x-6 text-sm font-medium text-gray-500">
@@ -234,9 +230,7 @@ const ModulePage: React.FC = () => {
               <li
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className={`cursor-pointer px-4 py-2 ${
-                  activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : ''
-                }`}
+                className={`cursor-pointer px-4 py-2 ${activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
               >
                 {tab.toUpperCase()}
               </li>
@@ -253,16 +247,15 @@ const ModulePage: React.FC = () => {
             </div>
           </SortableContext>
 
-          <DragOverlay dropAnimation={{ duration: 160, easing: 'cubic-bezier(.2,.8,.2,1)' }}>
-            {/* simple overlay - show name while dragging */}
-            {activeId && overlayItem ? (
+          <DragOverlay>
+            {activeId && overlayItem && (
               <div className="w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow bg-white flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <h3 className="font-semibold">{overlayItem.name}</h3>
                   <span className="text-xl select-none">⠿</span>
                 </div>
               </div>
-            ) : null}
+            )}
           </DragOverlay>
         </DndContext>
       </ComponentCard>
