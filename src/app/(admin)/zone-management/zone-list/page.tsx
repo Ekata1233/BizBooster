@@ -161,12 +161,12 @@ const ZoneList = () => {
 
   const columns = [
     {
-    header: 'Sr No',
-    accessor: 'srNo',
-    render: (_: any, index: number) => index + 1,
-  },
+      header: 'Sr No',
+      accessor: 'srNo',
+      render: (_: any, index: number) => index + 1,
+    },
     { header: 'Zone Name', accessor: 'name' },
-    { header: 'Providers', accessor: 'providerCount' },
+    // { header: 'Providers', accessor: 'providerCount' },
     // { header: 'Category', accessor: 'categoryCount' },
     {
       header: 'Status',
@@ -194,14 +194,18 @@ const ZoneList = () => {
           >
             <PencilIcon />
           </button>
-          {row.status === 'Active' && (
-            <button
-              onClick={() => handleDelete(row.id)}
-              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            >
-              <TrashBinIcon />
-            </button>
-          )}
+          <button
+            onClick={() => row.status === 'Active' && handleDelete(row.id)}
+            disabled={row.status !== 'Active'}
+            className={`border rounded-md p-2 
+    ${row.status === 'Active'
+                ? 'text-red-500 border-red-500 hover:bg-red-500 hover:text-white cursor-pointer'
+                : 'text-gray-400 border-gray-300 cursor-not-allowed opacity-60'
+              }`}
+          >
+            <TrashBinIcon />
+          </button>
+
         </div>
       ),
     },
