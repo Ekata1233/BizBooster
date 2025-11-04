@@ -33,6 +33,8 @@ export async function POST(req) {
 
         const accessToken = tokenRes.data.access_token;
 
+        console.log("access token : ", accessToken);    
+
 
         const payload = {
             subAmount: body.subAmount || 0,

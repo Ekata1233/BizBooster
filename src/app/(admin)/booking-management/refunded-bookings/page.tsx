@@ -9,6 +9,7 @@ import { EyeIcon } from '@/icons';
 import Link from 'next/link';
 import { useCheckout } from '@/context/CheckoutContext';
 import { useLead } from '@/context/LeadContext';
+import { useServiceCustomer } from '@/context/ServiceCustomerContext';
 import { useParams } from 'next/navigation';
 import Pagination from '@/components/tables/Pagination';
 import * as XLSX from 'xlsx';
@@ -35,17 +36,63 @@ interface BookingRow {
 const RefundedBookings = () => {
   const { checkouts, loading, error, fetchCheckouts } = useCheckout();
   const { leads, fetchLeads } = useLead();
+  const { fetchServiceCustomer } = useServiceCustomer();
+
+  const [customerDetails, setCustomerDetails] = useState<Record<string, any>>({});
   const [search, setSearch] = useState('');
   const params = useParams();
   const id = params?.id as string;
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
+  /*───────────────────────────────────────────────*
+   * Fetch Leads & Checkouts
+   *───────────────────────────────────────────────*/
   useEffect(() => {
-    fetchCheckouts();
-    fetchLeads();
+    const loadData = async () => {
+      await Promise.all([fetchCheckouts(), fetchLeads()]);
+    };
+    loadData();
   }, []);
 
+  /*───────────────────────────────────────────────*
+   * Fetch Missing Customer Details by ID
+   *───────────────────────────────────────────────*/
+  useEffect(() => {
+    const uniqueIds = [
+      ...new Set(
+        leads
+          .map((lead: any) => lead.checkout?.serviceCustomer)
+          .filter((id: string) => typeof id === 'string')
+      ),
+    ];
+
+    const fetchCustomerDetails = async () => {
+      const newDetails: Record<string, any> = { ...customerDetails };
+
+      for (const id of uniqueIds) {
+        if (id && !newDetails[id]) {
+          try {
+            const res = await fetch(`/api/service-customer/${id}`);
+            const data = await res.json();
+            newDetails[id] = data.data;
+          } catch (err) {
+            console.error(`Failed to fetch service customer ${id}`, err);
+          }
+        }
+      }
+
+      setCustomerDetails(newDetails);
+    };
+
+    if (leads.length > 0) {
+      fetchCustomerDetails();
+    }
+  }, [leads]);
+
+  /*───────────────────────────────────────────────*
+   * Table Columns
+   *───────────────────────────────────────────────*/
   const columns = [
     { header: 'S.No', accessor: 'serialNo' },
     { header: 'Booking ID', accessor: 'bookingId' },
@@ -54,7 +101,9 @@ const RefundedBookings = () => {
       accessor: 'customerInfo',
       render: (row: BookingRow) => (
         <div className="text-sm">
-          <p className="font-medium text-gray-900">{row.serviceCustomer?.fullName || 'N/A'}</p>
+          <p className="font-medium text-gray-900">
+            {row.serviceCustomer?.fullName || 'N/A'}
+          </p>
           <p className="text-gray-500">{row.serviceCustomer?.email || ''}</p>
           <p className="text-gray-400">{row.serviceCustomer?.city || ''}</p>
         </div>
@@ -63,12 +112,16 @@ const RefundedBookings = () => {
     {
       header: 'Total Amount',
       accessor: 'totalAmount',
-      render: (row: BookingRow) => <span className="text-gray-800 font-semibold">₹ {row.totalAmount}</span>,
+      render: (row: BookingRow) => (
+        <span className="text-gray-800 font-semibold">₹ {row.totalAmount}</span>
+      ),
     },
     {
       header: 'Booking Date',
       accessor: 'bookingDate',
-      render: (row: BookingRow) => <span>{new Date(row.bookingDate).toLocaleString()}</span>,
+      render: (row: BookingRow) => (
+        <span>{new Date(row.bookingDate).toLocaleString()}</span>
+      ),
     },
     {
       header: 'Provider Status',
@@ -79,7 +132,11 @@ const RefundedBookings = () => {
         const colorClass = isAssigned
           ? 'bg-green-100 text-green-700 border border-green-300'
           : 'bg-yellow-100 text-yellow-700 border border-yellow-300';
-        return <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>{label}</span>;
+        return (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+            {label}
+          </span>
+        );
       },
     },
     {
@@ -94,12 +151,16 @@ const RefundedBookings = () => {
           status === 'paid'
             ? 'bg-green-100 text-green-700 border-green-300'
             : status === 'unpaid'
-            ? 'bg-red-100 text-red-700 border-red-300'
-            : status === 'partpay'
-            ? 'bg-purple-100 text-purple-700 border-purple-300'
-            : 'bg-yellow-100 text-yellow-700 border-yellow-300';
+              ? 'bg-red-100 text-red-700 border-red-300'
+              : status === 'partpay'
+                ? 'bg-purple-100 text-purple-700 border-purple-300'
+                : 'bg-yellow-100 text-yellow-700 border-yellow-300';
 
-        return <span className={`px-3 py-1 rounded-full text-sm border ${statusColor}`}>{status}</span>;
+        return (
+          <span className={`px-3 py-1 rounded-full text-sm border ${statusColor}`}>
+            {status}
+          </span>
+        );
       },
     },
     {
@@ -121,7 +182,11 @@ const RefundedBookings = () => {
           label = 'Pending';
           colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-300';
         }
-        return <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>{label}</span>;
+        return (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+            {label}
+          </span>
+        );
       },
     },
     {
@@ -139,17 +204,26 @@ const RefundedBookings = () => {
     },
   ];
 
-  // ✅ Filter refunded bookings & search all fields
+  /*───────────────────────────────────────────────*
+   * Filter Refunded Bookings + Search
+   *───────────────────────────────────────────────*/
   const filteredData = leads
     .filter((lead) => lead.leads?.some((l: any) => l.statusType === 'Refund'))
     .map((lead) => {
       const checkout = lead.checkout;
+
       return {
         bookingId: checkout.bookingId,
         fullName: checkout.serviceCustomer?.fullName,
         email: checkout.serviceCustomer?.email,
-        serviceCustomer: checkout.serviceCustomer,
-        totalAmount: Number(checkout.grandTotal ?? checkout.totalAmount),
+        serviceCustomer:
+          typeof checkout.serviceCustomer === 'string'
+            ? customerDetails[checkout.serviceCustomer]
+            : checkout.serviceCustomer,
+        totalAmount:
+          checkout.grandTotal && Number(checkout.grandTotal) > 0
+            ? Number(checkout.grandTotal)
+            : Number(checkout.totalAmount),
         paymentStatus: checkout.paymentStatus || 'unpaid',
         bookingDate: checkout.createdAt,
         orderStatus: checkout.orderStatus,
@@ -172,7 +246,9 @@ const RefundedBookings = () => {
       const isCompleted = row.isCompleted ? 'completed' : '';
       const isAccepted = row.isAccepted ? 'accepted' : '';
       const isCancel = row.isCancel ? 'cancelled' : '';
-      const bookingDate = new Date(row.bookingDate).toLocaleDateString().toLowerCase();
+      const bookingDate = new Date(row.bookingDate)
+        .toLocaleDateString()
+        .toLowerCase();
 
       return (
         bookingId.includes(term) ||
@@ -187,11 +263,13 @@ const RefundedBookings = () => {
       );
     });
 
+  /*───────────────────────────────────────────────*
+   * Pagination & Serial Numbers
+   *───────────────────────────────────────────────*/
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
-  // ✅ Add serial numbers descending
   const currentRows = filteredData
     .slice(indexOfFirstRow, indexOfLastRow)
     .map((row, idx) => ({
@@ -199,7 +277,9 @@ const RefundedBookings = () => {
       serialNo: filteredData.length - ((currentPage - 1) * rowsPerPage + idx),
     }));
 
-  // ✅ Excel Download
+  /*───────────────────────────────────────────────*
+   * Excel Download
+   *───────────────────────────────────────────────*/
   const handleDownload = () => {
     if (filteredData.length === 0) {
       alert('No refunded booking data available');
@@ -209,13 +289,19 @@ const RefundedBookings = () => {
     const dataToExport = filteredData.map((b, idx) => ({
       'S.No': filteredData.length - idx,
       'Booking ID': b.bookingId,
-      'Customer Name': b.fullName,
-      Email: b.email,
+      'Customer Name': b.serviceCustomer?.fullName || '',
+      Email: b.serviceCustomer?.email || '',
       'Total Amount': b.totalAmount,
       'Payment Status': b.paymentStatus,
       'Booking Date': new Date(b.bookingDate).toLocaleString(),
       'Provider Status': b.provider ? 'Assigned' : 'Unassigned',
-      'Booking Status': b.isCancel ? 'Cancelled' : b.isCompleted ? 'Completed' : b.isAccepted ? 'Accepted' : 'Pending',
+      'Booking Status': b.isCancel
+        ? 'Cancelled'
+        : b.isCompleted
+          ? 'Completed'
+          : b.isAccepted
+            ? 'Accepted'
+            : 'Pending',
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -224,6 +310,9 @@ const RefundedBookings = () => {
     XLSX.writeFile(workbook, 'Refunded_Bookings.xlsx');
   };
 
+  /*───────────────────────────────────────────────*
+   * Render UI
+   *───────────────────────────────────────────────*/
   return (
     <div>
       <PageBreadcrumb pageTitle="Refunded Bookings" />

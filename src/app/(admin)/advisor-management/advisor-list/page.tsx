@@ -61,22 +61,21 @@ const AdvisorListPage: React.FC = () => {
                     <table className="min-w-full text-sm">
                         <thead>
                             <tr className="text-gray-600">
+                                <th className="px-5 py-3 text-left">Sr No</th>
                                 <th className="px-5 py-3 text-left">Image</th>
                                 <th className="px-5 py-3 text-left">Name</th>
                                 <th className="px-5 py-3 text-left">Phone</th>
                                 <th className="px-5 py-3 text-left">Language</th>
-                                <th className="px-5 py-3 text-left">Rating</th>
-                                <th className="px-5 py-3 text-left">Tags</th>
-                                <th className="px-5 py-3 text-left">Chat</th>
                                 <th className="px-5 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAdvisors.map((advisor) => (
+                            {filteredAdvisors.map((advisor ,index) => (
                                 <tr
                                     key={advisor._id}
                                     className="border-t border-gray-100 hover:bg-gray-50 transition"
                                 >
+                                     <td className="px-5 py-3">{index + 1}</td>
                                     <td className="px-5 py-3">
                                         <div className="relative w-20 h-20">
                                             {advisor.imageUrl ? (
@@ -96,15 +95,6 @@ const AdvisorListPage: React.FC = () => {
                                     <td className="px-5 py-3">{advisor.name}</td>
                                     <td className="px-5 py-3">{advisor.phoneNumber}</td>
                                     <td className="px-5 py-3">{advisor.language}</td>
-                                    <td className="px-5 py-3">{advisor.rating.toFixed(1)}</td>
-                                    <td className="px-5 py-3">
-                                        {advisor.tags?.length > 0 &&
-                                            `#${advisor.tags.join(', #')}`
-                                        }
-                                    </td>
-                                    <td className="px-5 py-3">{advisor.chat}</td>
-
-                                    {/* <td className="px-5 py-3">{advisor.tags.join(", ")}</td> */}
                                     <td className="px-5 py-3">
                                         <div className="flex justify-center gap-2">
                                             <Link

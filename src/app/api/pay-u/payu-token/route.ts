@@ -2,6 +2,9 @@ import axios from 'axios';
 
 export async function GET(req: Request) {
   const params = new URLSearchParams();
+  console.log('Client ID:', process.env.PAYU_CLIENT_ID);
+console.log('Client Secret:', process.env.PAYU_CLIENT_SECRET);
+
   params.append('grant_type', 'client_credentials');
   params.append('client_id', process.env.PAYU_CLIENT_ID!);
   params.append('client_secret', process.env.PAYU_CLIENT_SECRET!);
@@ -9,7 +12,7 @@ export async function GET(req: Request) {
 
   try {
     const { data } = await axios.post(
-      'https://uat-accounts.payu.in/oauth/token',
+      'https://payout.payumoney.com/oauth/token',
       params,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
