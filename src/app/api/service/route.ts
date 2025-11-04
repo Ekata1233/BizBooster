@@ -361,7 +361,7 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
-    const page = parseInt(searchParams.get("page") || "1", 10); 
+    const page = parseInt(searchParams.get("page") || "1", 10);
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : null;
     const skip = limit ? (page - 1) * limit : 0;
@@ -419,7 +419,7 @@ export async function GET(req: NextRequest) {
         model: 'Provider',
         select: 'fullName storeInfo.storeName storeInfo.logo',
       })
-      .sort(sortOption);
+      .sort({ sortOrder: 1, ...sortOption });
 
     if (limit) {
       query = query.skip(skip).limit(limit);
@@ -428,7 +428,7 @@ export async function GET(req: NextRequest) {
     const services = await query.exec();
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         page: limit ? page : 1,
         limit: limit ?? total, // if no limit, return total count

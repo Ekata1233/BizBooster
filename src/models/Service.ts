@@ -146,7 +146,9 @@ const serviceSchema = new mongoose.Schema({
   isDeleted: {
     type: Boolean,
     default: false
-  }
+  },
+  sortOrder: { type: Number, default: 0 },
+
 }, {
   timestamps: true
 });

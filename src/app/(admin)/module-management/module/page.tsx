@@ -73,9 +73,19 @@ const SortableItem: React.FC<{
         ${isDragging ? 'ring-2 ring-blue-400 bg-blue-50 shadow-lg' : ''} transition-all duration-150`}
     >
       <div className="flex justify-between items-center cursor-grab">
-        <h3 className="font-semibold truncate">{item.name}</h3>
+        <div className="flex items-center gap-2">
+          {/* ✅ Sort Order Badge */}
+          <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
+            #{item.sortOrder}
+          </span>
+
+          <h3 className="font-semibold truncate">{item.name}</h3>
+        </div>
+
+        {/* Drag icon */}
         <span className="text-xl select-none">⠿</span>
       </div>
+
 
       <div className="flex justify-center">
         {item.image ? (
@@ -87,9 +97,8 @@ const SortableItem: React.FC<{
 
       <p className="text-sm text-gray-600">Categories: {item.categoryCount}</p>
 
-      <span className={`px-2 py-1 rounded text-xs font-bold ${
-        item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`}>
+      <span className={`px-2 py-1 rounded text-xs font-bold ${item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        }`}>
         {item.status}
       </span>
 
@@ -136,7 +145,7 @@ const ModulePage: React.FC = () => {
         status: m.isDeleted ? 'Deleted' : 'Active',
         sortOrder: m.sortOrder ?? 0,
       }));
-
+      console.log("✅ Converted Table Data:", tableData);
       tableData.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
       setFilteredModules(tableData);
     } catch (e) {
@@ -155,19 +164,19 @@ const ModulePage: React.FC = () => {
   };
 
   /* ✅ DELETE MODULE (Soft Delete) */
- /* ✅ DELETE MODULE (Soft Delete) with Confirm Alert */
-const handleDelete = async (id: string) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this module?");
-  if (!confirmDelete) return; // ❌ cancel delete
+  /* ✅ DELETE MODULE (Soft Delete) with Confirm Alert */
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this module?");
+    if (!confirmDelete) return; // ❌ cancel delete
 
-  try {
-    await axios.delete(`https://api.fetchtrue.com/api/modules/${id}`);
-    await fetchFilteredModules();
-  } catch (e) {
-    console.error("Delete failed", e);
-    alert("Failed to delete module. Please try again.");
-  }
-};
+    try {
+      await axios.delete(`https://api.fetchtrue.com/api/modules/${id}`);
+      await fetchFilteredModules();
+    } catch (e) {
+      console.error("Delete failed", e);
+      alert("Failed to delete module. Please try again.");
+    }
+  };
 
 
 
