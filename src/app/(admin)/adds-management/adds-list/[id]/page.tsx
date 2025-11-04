@@ -122,7 +122,7 @@ const AdDetailsPage = () => {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Approve Status : </h2>
+              <h2 className="text-lg font-semibold">Approval Status : </h2>
               <p
                 className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
                   ad.isApproved
