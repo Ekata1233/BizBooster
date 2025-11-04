@@ -13,6 +13,13 @@ interface Props {
 const ProviderSubscribedServices: React.FC<Props> = ({ data }) => {
     const columns = [
         {
+            header: 'Sr No',
+            accessor: 'srNo',
+            render: (_row: TableData, index: number) => (
+                <span className="text-gray-700 text-sm font-medium">{index + 1}</span>
+            ),
+        },
+        {
             header: 'Service Name',
             accessor: 'serviceName',
         },

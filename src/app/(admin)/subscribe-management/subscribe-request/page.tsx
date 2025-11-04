@@ -17,8 +17,8 @@ interface TableData {
     categoryName: string;
     subCategoryName: string;
     status: string;
-    price: string | number;              
-    discountedPrice: string | number;    
+    price: string | number;
+    discountedPrice: string | number;
     providerPrice: string | number;
     id: string;
 }
@@ -39,32 +39,32 @@ const SubscribeRequestPage = () => {
         fetchServices();   // 👈 refresh on mount
     }, []);
 
-useEffect(() => {
-    const pending: TableData[] = [];
+    useEffect(() => {
+        const pending: TableData[] = [];
 
-    services.forEach((service: any) => {
-        (service.providerPrices || []).forEach((p: any) => {
-            const rawStatus = service.status ?? p.status ?? '';
-            if (rawStatus.toLowerCase() === 'pending') {
-                pending.push({
-                    name: service.serviceName,
-                    providerId: p?.provider?._id || 'N/A',
-                    providerName: p?.provider?.fullName || 'N/A',
-                    price: service.price || "N/A",
-                    discountedPrice: service.discountedPrice || "N/A",
-                    providerPrice: p?.providerPrice || "N/A",
-                    categoryName: service.category?.name || 'N/A',
-                    subCategoryName: service.subcategory?.name || 'N/A',
-                    status: service.status ?? p.status ?? 'Accept',
-                    id: service._id,
-                });
-            }
+        services.forEach((service: any) => {
+            (service.providerPrices || []).forEach((p: any) => {
+                const rawStatus = service.status ?? p.status ?? '';
+                if (rawStatus.toLowerCase() === 'pending') {
+                    pending.push({
+                        name: service.serviceName,
+                        providerId: p?.provider?._id || 'N/A',
+                        providerName: p?.provider?.fullName || 'N/A',
+                        price: service.price || "N/A",
+                        discountedPrice: service.discountedPrice || "N/A",
+                        providerPrice: p?.providerPrice || "N/A",
+                        categoryName: service.category?.name || 'N/A',
+                        subCategoryName: service.subcategory?.name || 'N/A',
+                        status: service.status ?? p.status ?? 'Accept',
+                        id: service._id,
+                    });
+                }
+            });
         });
-    });
 
-    // ✅ Reverse the array before setting it
-    setTableData(pending.reverse());
-}, [services]);
+        // ✅ Reverse the array before setting it
+        setTableData(pending.reverse());
+    }, [services]);
 
 
 
@@ -94,6 +94,13 @@ useEffect(() => {
 
     /* ------------- columns -------------- */
     const columns = [
+        {
+            header: 'Sr No',
+            accessor: 'srNo',
+            render: (_row: TableData, index: number) => (
+                <span className="text-gray-700 text-sm font-medium">{index + 1}</span>
+            ),
+        },
         { header: 'Provider Name', accessor: 'providerName' },
         { header: 'Service Name', accessor: 'name' },
         { header: 'Price', accessor: 'price' },

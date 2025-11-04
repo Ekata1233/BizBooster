@@ -79,6 +79,13 @@ const LeadRequests = () => {
     console.log("leads data checkout id : ", leads)
     const columns = [
         {
+            header: 'Sr No',
+            accessor: 'srNo',
+            render: (_row: LeadRow, index: number) => (
+                <div className="text-center text-gray-700">{index + 1}</div>
+            ),
+        },
+        {
             header: 'Booking ID',
             accessor: 'bookingId',
         },
@@ -200,8 +207,8 @@ const LeadRequests = () => {
             console.log("customer id : ", customerId)
             const customerResponse = serviceCustomers[customerId];
 
-    // Extract the actual data from API response
-    const customerData = customerResponse?.data;
+            // Extract the actual data from API response
+            const customerData = customerResponse?.data;
             console.log("customer customer : ", customerData)
 
             return {

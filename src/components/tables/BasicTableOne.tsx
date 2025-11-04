@@ -10,7 +10,8 @@ import {
 type Column<T> = {
   header: string;
   accessor: keyof T | string;
-  render?: (row: T) => React.ReactNode;
+  // render?: (row: T) => React.ReactNode;
+  render?: (row: T, index: number) => React.ReactNode;
 };
 
 interface BasicTableOneProps<T> {
@@ -49,7 +50,8 @@ export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T
                       className="px-2 py-4 text-start text-gray-500 text-sm dark:text-gray-400"
                     >
                       {column.render ? (
-                        column.render(row)
+                        // column.render(row)
+                        column.render(row, rowIndex)
                       ) : (
                         (row[column.accessor as keyof T] as React.ReactNode) ?? ""
                       )}

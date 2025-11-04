@@ -82,6 +82,13 @@ const ProviderServiceMan : React.FC<Props> = ({ provider }) => {
   };
 
   const columns = [
+    {
+      header: 'Sr No',
+      accessor: 'srNo',
+      render: (_row: ServiceManTableData, index: number) => (
+        <span className="text-gray-700 text-sm font-medium">{index + 1}</span>
+      ),
+    },
     { header: 'Name', accessor: 'name' },
     { header: 'Last Name', accessor: 'lastName' },
     { header: 'Phone Number', accessor: 'phoneNo' },

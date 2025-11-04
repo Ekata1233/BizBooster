@@ -87,6 +87,11 @@ const AdListPage = () => {
   };
 
   const columns = [
+    {
+    header: 'Sr No',
+    accessor: 'srNo',
+    render: (_: any, index: number) => index + 1,
+  },
     { header: 'Title', accessor: 'title' },
     {
       header: 'Preview',

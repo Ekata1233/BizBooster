@@ -102,7 +102,11 @@ export async function POST(req: NextRequest) {
         }
 
 
-        adminAmount += packagePrice - (baseLevel1 + baseLevel2);
+        // adminAmount += packagePrice - (baseLevel1 + baseLevel2); 
+        //because package price is less then amount goes to negative
+        const remaining = packagePrice - (baseLevel1 + baseLevel2);
+        adminAmount += remaining > 0 ? remaining : 0;
+
 
         const creditWallet = async (
             userId: Types.ObjectId,
@@ -140,7 +144,7 @@ export async function POST(req: NextRequest) {
                     lastTransactionAt: new Date(),
                 });
             } else {
-                
+
                 wallet.balance = Number((wallet.balance + amount).toFixed(2));   // ✅ ensure 2 decimals
                 wallet.totalCredits = Number((wallet.totalCredits + amount).toFixed(2));
                 wallet.lastTransactionAt = new Date();

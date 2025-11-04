@@ -67,50 +67,57 @@ const Page = () => {
   };
 
   const handleSubmit = async () => {
-  const formData = new FormData();
+    const formData = new FormData();
 
-  formData.append("title", formState.title || "");
-  formData.append("description", formState.description || "");
+    formData.append("title", formState.title || "");
+    formData.append("description", formState.description || "");
 
-  if (selectedFile) {
-    formData.append("image", selectedFile);
-  } else if (formState.image && !formState.image.startsWith('blob:')) {
-    formData.append("image", formState.image);
-  }
+    if (selectedFile) {
+      formData.append("image", selectedFile);
+    } else if (formState.image && !formState.image.startsWith('blob:')) {
+      formData.append("image", formState.image);
+    }
 
-  const extraSections = formState.extraSections
-    ? JSON.stringify(
+    const extraSections = formState.extraSections
+      ? JSON.stringify(
         formState.extraSections
           .split(',')
           .map(desc => ({ description: desc.trim() }))
       )
-    : "[]";
+      : "[]";
 
-  formData.append("extraSections", extraSections);
+    formData.append("extraSections", extraSections);
 
-  try {
-    if (editItem) {
-      await updateItem(editItem._id!, formData);
-      alert("Item updated successfully");
-    } else {
-      await addItem(formData);
-      alert("Item added successfully");
+    try {
+      if (editItem) {
+        await updateItem(editItem._id!, formData);
+        alert("Item updated successfully");
+      } else {
+        await addItem(formData);
+        alert("Item added successfully");
+      }
+      setFormState({
+        title: '',
+        description: '',
+        image: '',
+        extraSections: ''
+      });
+      setShowModal(false);
+      setEditItem(null);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-    setFormState({
-      title: '',
-      description: '',
-      image: '',
-      extraSections: ''
-    });
-    setShowModal(false);
-    setEditItem(null);
-    setSelectedFile(null);
-  } catch (error) {
-    console.error("Error submitting form:", error);
-  }
-};
+  };
 
   const columns = useMemo(() => [
+    {
+      header: "Sr No",
+      accessor: "srNo",
+      render: (_row: WhyChooseItem, index: number) => (
+        <span className="text-gray-700 text-sm font-medium">{index + 1}</span>
+      ),
+    },
     {
       header: "Image",
       accessor: "image",

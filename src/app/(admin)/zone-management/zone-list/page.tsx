@@ -160,6 +160,11 @@ const ZoneList = () => {
   };
 
   const columns = [
+    {
+    header: 'Sr No',
+    accessor: 'srNo',
+    render: (_: any, index: number) => index + 1,
+  },
     { header: 'Zone Name', accessor: 'name' },
     { header: 'Providers', accessor: 'providerCount' },
     // { header: 'Category', accessor: 'categoryCount' },

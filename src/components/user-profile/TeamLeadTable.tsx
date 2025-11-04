@@ -156,6 +156,13 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
 
   const columnsTeamLead = [
     {
+      header: 'Sr No',
+      accessor: 'srNo',
+      render: (_row: TeamLeadData, index: number) => (
+        <div className="text-center text-gray-700">{index + 1}</div>
+      ),
+    },
+    {
       header: 'User Details',
       accessor: 'userDetails',
       render: (row: TeamLeadData) => (

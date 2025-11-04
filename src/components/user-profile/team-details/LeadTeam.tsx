@@ -50,7 +50,7 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const params = useParams();
 
   const parentId = params?.id as string;
-        console.log("My E 3: ", myEarnings3Data);
+  console.log("My E 3: ", myEarnings3Data);
 
 
   /** Safely coerce context users into AppUser[] */
@@ -205,6 +205,13 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
 
   const columnsTeamLead = [
     {
+      header: 'Sr No',
+      accessor: 'srNo',
+      render: (_row: TeamLeadData, index: number) => (
+        <div className="text-center text-gray-700">{index + 1}</div>
+      ),
+    },
+    {
       header: 'User Details',
       accessor: 'userDetails',
       render: (row: TeamLeadData) => (
@@ -269,23 +276,23 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
       ),
     },
     {
-  header: 'My Earnings',
-  accessor: 'myEarnings',
-  render: (row: TeamLeadData) => {
-    // Find the earnings for this userId in the array
-    console.log("row of my earnigs: ", row)
-    const userEarnings = myEarnings3Data.find(
-      (item) => item.userId === row.id
-    )?.totalEarningsFromShare_3 || 0; // fallback to 0 if not found
+      header: 'My Earnings',
+      accessor: 'myEarnings',
+      render: (row: TeamLeadData) => {
+        // Find the earnings for this userId in the array
+        console.log("row of my earnigs: ", row)
+        const userEarnings = myEarnings3Data.find(
+          (item) => item.userId === row.id
+        )?.totalEarningsFromShare_3 || 0; // fallback to 0 if not found
 
-    return (
-      <div className="text-sm text-center">
-        <div>₹{userEarnings.toLocaleString()}</div>
-        <div className="text-xs text-green-600 font-medium">(Completed)</div>
-      </div>
-    );
-  },
-},
+        return (
+          <div className="text-sm text-center">
+            <div>₹{userEarnings.toLocaleString()}</div>
+            <div className="text-xs text-green-600 font-medium">(Completed)</div>
+          </div>
+        );
+      },
+    },
     {
       header: 'Lead',
       accessor: 'leadCount',

@@ -6,7 +6,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import { useAdContext } from '@/context/AdContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Check} from 'lucide-react';
+import { Check } from 'lucide-react';
 import { EyeIcon, TrashBinIcon } from '@/icons';
 import Input from '@/components/form/input/InputField';
 import BasicTableOne from '@/components/tables/BasicTableOne';
@@ -33,23 +33,23 @@ const page = () => {
 
     console.log("ads  : ", ads);
 
-  useEffect(() => {
-    const formatted: AdTableData[] = ads
-        .filter(ad => ad.isApproved === false) // 👈 Only include unapproved ads
-        .map(ad => ({
-            id: ad._id!, // ✅ non-null assertion
-            title: ad.title,
-            fileUrl: ad.fileUrl,
-            categoryName: ad.category?.name || 'N/A',
-            serviceName: ad.service?.serviceName || 'N/A',
-            status: 'Pending',
-        }))
-        .filter(ad =>
-            ad.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+    useEffect(() => {
+        const formatted: AdTableData[] = ads
+            .filter(ad => ad.isApproved === false) // 👈 Only include unapproved ads
+            .map(ad => ({
+                id: ad._id!, // ✅ non-null assertion
+                title: ad.title,
+                fileUrl: ad.fileUrl,
+                categoryName: ad.category?.name || 'N/A',
+                serviceName: ad.service?.serviceName || 'N/A',
+                status: 'Pending',
+            }))
+            .filter(ad =>
+                ad.title.toLowerCase().includes(searchQuery.toLowerCase())
+            );
 
-    setFilteredAds(formatted);
-}, [ads, searchQuery]);
+        setFilteredAds(formatted);
+    }, [ads, searchQuery]);
 
 
 
@@ -60,6 +60,11 @@ const page = () => {
     };
 
     const columns = [
+        {
+            header: 'Sr No',
+            accessor: 'srNo',
+            render: (_: any, index: number) => index + 1,
+        },
         {
             header: 'Title',
             accessor: 'title',
