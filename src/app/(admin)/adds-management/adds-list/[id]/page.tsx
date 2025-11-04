@@ -27,6 +27,7 @@ interface AdType {
   endDate?: string;
   isApproved?: boolean;
   isExpired?: boolean;
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -87,41 +88,41 @@ const AdDetailsPage = () => {
         <ComponentCard title="Additional Info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-lg font-semibold">Category:</h2>
+              <h2 className="text-lg font-semibold">Category : </h2>
               <p className="text-gray-700">{ad.category?.name || 'N/A'}</p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Service:</h2>
+              <h2 className="text-lg font-semibold">Service : </h2>
               <p className="text-gray-700">{ad.service?.serviceName || 'N/A'}</p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Provider ID:</h2>
+              <h2 className="text-lg font-semibold">Provider ID : </h2>
               <p className="text-gray-700">  {ad.provider ? ad.provider.providerId : 'N/A'}</p>
             </div>
 
-            <div>
-              <h2 className="text-lg font-semibold">Ad Type:</h2>
+            {/* <div>
+              <h2 className="text-lg font-semibold">Ad Type : </h2>
               <p className="text-gray-700 capitalize">{ad.addType || 'N/A'}</p>
-            </div>
+            </div> */}
 
             <div>
-              <h2 className="text-lg font-semibold">Start Date:</h2>
+              <h2 className="text-lg font-semibold">Start Date : </h2>
               <p className="text-gray-700">
                 {ad.startDate ? new Date(ad.startDate).toLocaleDateString() : 'N/A'}
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">End Date:</h2>
+              <h2 className="text-lg font-semibold">End Date : </h2>
               <p className="text-gray-700">
                 {ad.endDate ? new Date(ad.endDate).toLocaleDateString() : 'N/A'}
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Status:</h2>
+              <h2 className="text-lg font-semibold">Approve Status : </h2>
               <p
                 className={`px-3 py-1 rounded-full text-sm font-semibold inline-block ${
                   ad.isApproved
@@ -134,19 +135,24 @@ const AdDetailsPage = () => {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Expired:</h2>
-              <p className="text-gray-700">{ad.isExpired ? 'Yes' : 'No'}</p>
+              <h2 className="text-lg font-semibold">Expired :</h2>
+              <p className="text-gray-700">{ad.isExpired ? 'Expired' : 'Live'}</p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Created At:</h2>
+              <h2 className="text-lg font-semibold">Delete Status :</h2>
+              <p className="text-gray-700">{ad.isDeleted ? 'Deleted' : 'Active'}</p>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold">Created At : </h2>
               <p className="text-gray-700">
                 {ad.createdAt ? new Date(ad.createdAt).toLocaleString() : 'N/A'}
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Updated At:</h2>
+              <h2 className="text-lg font-semibold">Updated At : </h2>
               <p className="text-gray-700">
                 {ad.updatedAt ? new Date(ad.updatedAt).toLocaleString() : 'N/A'}
               </p>
