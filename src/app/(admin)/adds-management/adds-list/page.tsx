@@ -16,8 +16,9 @@ interface AdTableData {
   fileUrl: string;
   categoryName: string;
   serviceName: string;
-  status: string;
-  activeStatus: string; // 'Active' or 'Inactive'
+  approveStatus: string;
+  expireStatus: string;
+  deleteStatus: string;
 }
 
 const AdListPage = () => {
@@ -38,8 +39,11 @@ const AdListPage = () => {
       fileUrl: ad.fileUrl,
       categoryName: ad.category?.name || 'N/A',
       serviceName: ad.service?.serviceName || 'N/A',
-      status: ad.isApproved ? 'Approved' : 'Pending',
-      activeStatus: ad.isDeleted ? 'Inactive' : 'Active', // soft-delete mapping
+
+      // ✅ Status fields
+      approveStatus: ad.isApproved ? 'Approved' : 'Pending',
+      expireStatus: ad.isExpired ? 'Expired' : 'Active',
+      deleteStatus: ad.isDeleted ? 'Deleted' : 'Active',
     }));
 
     const filtered = formatted.filter(ad =>
@@ -53,37 +57,34 @@ const AdListPage = () => {
   const getFilteredByStatus = () => {
     switch (activeTab) {
       case 'approved':
-        return filteredAds.filter(ad => ad.status === 'Approved');
+        return filteredAds.filter(ad => ad.approveStatus === 'Approved');
       case 'pending':
-        return filteredAds.filter(ad => ad.status === 'Pending');
-      case 'active':
-        return filteredAds.filter(ad => ad.activeStatus === 'Active');
-      case 'inactive':
-        return filteredAds.filter(ad => ad.activeStatus === 'Inactive');
+        return filteredAds.filter(ad => ad.approveStatus === 'Pending');
+      case 'expired':
+        return filteredAds.filter(ad => ad.expireStatus === 'Expired');
+      case 'deleted':
+        return filteredAds.filter(ad => ad.deleteStatus === 'Deleted');
       default:
         return filteredAds;
     }
   };
 
-  // Count ads for tabs
+  // Count tabs
   const counts = {
     all: filteredAds.length,
-    approved: filteredAds.filter(ad => ad.status === 'Approved').length,
-    pending: filteredAds.filter(ad => ad.status === 'Pending').length,
-    active: filteredAds.filter(ad => ad.activeStatus === 'Active').length,
-    inactive: filteredAds.filter(ad => ad.activeStatus === 'Inactive').length,
+    approved: filteredAds.filter(ad => ad.approveStatus === 'Approved').length,
+    pending: filteredAds.filter(ad => ad.approveStatus === 'Pending').length,
+    expired: filteredAds.filter(ad => ad.expireStatus === 'Expired').length,
+    deleted: filteredAds.filter(ad => ad.deleteStatus === 'Deleted').length,
   };
 
   // Soft-delete handler
- const handleDelete = async (id: string) => {
-  if (confirm("Are you sure you want to mark this ad as inactive?")) {
-    const success = await deleteAd(id); // context handles state update
-    if (success) {
-      alert("Ad marked as inactive.");
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this ad?")) {
+      const success = await deleteAd(id);
+      if (success) alert("Ad deleted.");
     }
-  }
-};
-
+  };
 
   const columns = [
     { header: 'Title', accessor: 'title' },
@@ -102,49 +103,70 @@ const AdListPage = () => {
     },
     { header: 'Category', accessor: 'categoryName' },
     { header: 'Service', accessor: 'serviceName' },
+
+    // ✅ Approve Status
     {
-      header: 'Status',
-      accessor: 'status',
-      render: (row: AdTableData) => {
-        const isApproved = row.status === 'Approved';
-        const color = isApproved ? 'green' : 'yellow';
-        return (
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
-          >
-            {row.status}
-          </span>
-        );
-      },
+      header: 'Approve Status',
+      accessor: 'approveStatus',
+      render: (row: AdTableData) => (
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold
+          ${row.approveStatus === 'Approved' 
+            ? 'text-green-600 bg-green-100 border border-green-300'
+            : 'text-yellow-600 bg-yellow-100 border border-yellow-300'}
+        `}>
+          {row.approveStatus}
+        </span>
+      ),
     },
+
+    // ✅ Expired
     {
-      header: 'Active Status',
-      accessor: 'activeStatus',
-      render: (row: AdTableData) => {
-        const isActive = row.activeStatus === 'Active';
-        const color = isActive ? 'green' : 'red';
-        return (
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-semibold text-${color}-600 bg-${color}-100 border border-${color}-300`}
-          >
-            {row.activeStatus}
-          </span>
-        );
-      },
+      header: 'Expire Status',
+      accessor: 'expireStatus',
+      render: (row: AdTableData) => (
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold
+          ${row.expireStatus === 'Expired' 
+            ? 'text-red-600 bg-red-100 border border-red-300'
+            : 'text-green-600 bg-green-100 border border-green-300'}
+        `}>
+          {row.expireStatus}
+        </span>
+      ),
     },
+
+    // ✅ Deleted
+    {
+      header: 'Delete Status',
+      accessor: 'deleteStatus',
+      render: (row: AdTableData) => (
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold
+          ${row.deleteStatus === 'Deleted' 
+            ? 'text-gray-600 bg-gray-100 border border-gray-300'
+            : 'text-green-600 bg-green-100 border border-green-300'}
+        `}>
+          {row.deleteStatus}
+        </span>
+      ),
+    },
+
+    // ✅ Actions
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: AdTableData) => (
+      render: (row: any) => (
         <div className="flex gap-2">
-          {row.activeStatus === 'Active' && (
-            <button
-              onClick={() => handleDelete(row.id)}
-              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            >
-              <TrashBinIcon size={16} />
-            </button>
-          )}
+          <button
+            onClick={() => handleDelete(row.id)}
+            disabled={row.deleteStatus === 'Deleted'}
+            className={`rounded-md p-2 border 
+              ${row.deleteStatus === 'Deleted'
+                ? 'text-gray-400 border-gray-300 cursor-not-allowed opacity-60'
+                : 'text-red-500 border-red-500 hover:bg-red-500 hover:text-white'}
+            `}
+          >
+            <TrashBinIcon size={16} />
+          </button>
+
           <Link href={`/adds-management/adds-list/${row.id}`} passHref>
             <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
               <EyeIcon size={16} />
@@ -160,6 +182,7 @@ const AdListPage = () => {
       <PageBreadcrumb pageTitle="Ads List" />
       <div className="my-5">
         <ComponentCard title="Ads List">
+
           {/* Search */}
           <div className="flex justify-between mb-4">
             <Input
@@ -177,8 +200,8 @@ const AdListPage = () => {
                 { key: 'all', label: 'All', count: counts.all },
                 { key: 'approved', label: 'Approved', count: counts.approved },
                 { key: 'pending', label: 'Pending', count: counts.pending },
-                { key: 'active', label: 'Active', count: counts.active },
-                { key: 'inactive', label: 'Inactive', count: counts.inactive },
+                { key: 'expired', label: 'Expired', count: counts.expired },
+                { key: 'deleted', label: 'Deleted', count: counts.deleted },
               ].map(tab => (
                 <li
                   key={tab.key}
@@ -188,7 +211,7 @@ const AdListPage = () => {
                   onClick={() => setActiveTab(tab.key)}
                 >
                   {tab.label}
-                  <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                  <span className="ml-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                     {tab.count}
                   </span>
                 </li>

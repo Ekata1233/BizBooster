@@ -18,12 +18,14 @@ interface Subcategory {
 
 // Define the context value type
 interface SubcategoryContextType {
-  fetchSubcategories : () => Promise<void>;
+  fetchSubcategories: () => Promise<void>;
   subcategories: Subcategory[];
   addSubcategory: (formData: FormData) => Promise<void>;
   updateSubcategory: (id: string, formData: FormData) => Promise<void>;
   deleteSubcategory: (id: string) => Promise<void>;
+  updateSubcategoryOrder: (subcategories: { _id: string; sortOrder: number }[]) => Promise<void>;
 }
+
 
 const SubcategoryContext = createContext<SubcategoryContextType | null>(null);
 
@@ -76,6 +78,15 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
+  const updateSubcategoryOrder = async (reordered: any[]) => {
+  try {
+    await axios.post("/api/subcategory/reorder", { subcategories: reordered });
+    setSubcategories(reordered);
+  } catch (err) {
+    console.error("Order update failed", err);
+  }
+};
+
   const deleteSubcategory = async (id: string) => {
     try {
       await axios.delete(`/api/subcategory/${id}`);
@@ -87,7 +98,8 @@ export const SubcategoryProvider = ({ children }: { children: React.ReactNode })
 
   return (
     <SubcategoryContext.Provider
-      value={{ subcategories, addSubcategory, updateSubcategory, deleteSubcategory,fetchSubcategories  }}
+      value={{ subcategories, addSubcategory, updateSubcategory, deleteSubcategory,fetchSubcategories, updateSubcategoryOrder, 
+  }}
     >
       {children}
     </SubcategoryContext.Provider>
