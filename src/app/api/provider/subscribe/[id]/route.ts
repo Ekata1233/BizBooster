@@ -78,6 +78,8 @@ export async function GET(req: NextRequest) {
                 providerMRP,
                 providerDiscount,
                 providerCommission,
+                 averageRating: svc.averageRating ?? 0,
+                totalReviews: svc.totalReviews ?? 0,
                 status: "Subscribed",
             };
         });
