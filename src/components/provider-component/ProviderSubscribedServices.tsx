@@ -62,11 +62,21 @@ const ProviderSubscribedServices: React.FC<Props> = ({ data }) => {
     ];
 
     return (
-        <div className="">
-            <ComponentCard title="Subscribed Services">
+        <div>
+        <ComponentCard title="Subscribed Services">
+            {data && data.length > 0 ? (
                 <BasicTableOne columns={columns} data={data} />
-            </ComponentCard>
-        </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                    <EyeIcon className="w-12 h-12 mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-1">No Subscribed Services Found</h3>
+                    <p className="text-sm text-gray-500 text-center">
+                        This provider has not subscribed to any services yet.
+                    </p>
+                </div>
+            )}
+        </ComponentCard>
+    </div>
     );
 };
 

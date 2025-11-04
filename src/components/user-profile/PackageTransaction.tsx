@@ -188,10 +188,10 @@ const PackageTransaction = () => {
 
                 <StatCard icon={BoxCubeIcon} title="Remaining Amount"
                     value={`₹${packageDetails.packageActive
+                        ? packageDetails.remainingAmount
+                        : packageDetails.remainingAmount > 0
                             ? packageDetails.remainingAmount
-                            : packageDetails.remainingAmount > 0
-                                ? packageDetails.remainingAmount
-                                : packages?.[0]?.grandtotal || 0
+                            : packages?.[0]?.grandtotal || 0
                         }`} gradient="from-yellow-100 to-yellow-200" textColor="text-yellow-800" />
             </div>
 
@@ -213,15 +213,25 @@ const PackageTransaction = () => {
                         <span>Download Excel</span>
                     </button>
                 </div>
-                <BasicTableOne columns={columns} data={currentRows} />
-                <div className="flex justify-center mt-4">
-                    <Pagination
-                        currentPage={currentPage}
-                        totalItems={payments.length}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
+                {payments.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                        <FaBoxOpen className="text-5xl mb-4 text-gray-400" />
+                        <h3 className="text-lg font-semibold mb-1">No Transactions Found</h3>
+                        <p className="text-sm text-gray-500 text-center">
+                            There are no payment records for this package yet.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <BasicTableOne columns={columns} data={currentRows} />
+                        <div className="flex justify-center mt-4">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalItems={payments.length}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div></>)}
             </ComponentCard>
 
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} className="max-w-md">

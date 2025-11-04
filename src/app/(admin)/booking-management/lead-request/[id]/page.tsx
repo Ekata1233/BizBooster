@@ -161,7 +161,7 @@ const LeadRequestDetails = () => {
       }
     } catch (error) {
       console.error(error);
-      alert('Error during approval');
+      alert('Commission details are required before proceeding with approval.');
     }
   };
 
