@@ -39,10 +39,16 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}
-      className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3 ${
-        isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
-      } transition-all duration-150`}
+      className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3 ${isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
+        } transition-all duration-150`}
     >
+      <div className="flex items-center gap-2">
+        {/* ✅ Sort Order Badge */}
+        <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
+          #{item.sortOrder}
+        </span>
+
+      </div>
       <div className="flex justify-between items-center cursor-grab">
         <h3 className="font-semibold truncate">{item.name}</h3>
         <span className="text-xl select-none">⠿</span>
@@ -62,11 +68,10 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
       <p className="text-sm text-gray-600">Subcategories: {item.subcategoryCount}</p>
 
       <span
-        className={`px-2 py-1 rounded text-xs font-bold ${
-          item.status === "Active"
+        className={`px-2 py-1 rounded text-xs font-bold ${item.status === "Active"
             ? "bg-green-100 text-green-700"
             : "bg-red-100 text-red-700"
-        }`}
+          }`}
       >
         {item.status}
       </span>
@@ -178,8 +183,7 @@ const CategoryPage = () => {
 
         <div className="border-b border-gray-200">
           {["all", "active", "inactive"].map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-4 py-2 ${
-                activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-4 py-2 ${activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
               }`}
             >
               {tab.toUpperCase()}

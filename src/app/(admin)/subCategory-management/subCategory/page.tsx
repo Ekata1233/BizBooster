@@ -46,6 +46,13 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
         isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
       } transition-all duration-150`}
     >
+        <div className="flex items-center gap-2">
+    {/* ✅ Sort Order Badge */}
+    <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
+      #{item.sortOrder}
+    </span>
+
+  </div>
       <div className="flex justify-between items-center cursor-grab">
         <h3 className="font-semibold truncate">{item.name}</h3>
         <span className="text-xl select-none">⠿</span>
