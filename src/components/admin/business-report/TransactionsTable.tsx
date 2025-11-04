@@ -123,26 +123,45 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
         </span>
       ),
     },
+    // {
+    //   header: 'Credit',
+    //   accessor: 'credit',
+    //   className: "w-28",
+    //   render: (row: Transaction) => `₹${row.credit || '-'}`
+    // },
+    // {
+    //   header: 'Debit',
+    //   accessor: 'debit',
+    //   className: "w-28",
+    //   render: (row: Transaction) => `₹${row.debit || '-'}`
+    // },
     {
-      header: 'Credit',
-      accessor: 'credit',
-      className: "w-28",
-      render: (row: Transaction) => `₹${row.credit || '-'}`
+      header: 'Amount',
+      accessor: 'amount',
+      className: "w-32 text-right",
+      render: (row: Transaction) => {
+        const amount = row.type === 'credit' ? row.credit : row.debit;
+        const color =
+          row.type === 'credit'
+            ? 'text-green-600'
+            : 'text-red-600';
+
+        return (
+          <span className={`font-semibold ${color}`}>
+            {row.type === 'credit' ? '+' : '-'}₹{amount || 0}
+          </span>
+        );
+      },
     },
+
     {
-      header: 'Debit',
-      accessor: 'debit',
-      className: "w-28",
-      render: (row: Transaction) => `₹${row.debit || '-'}`
+      header: 'Balance',
+      accessor: 'balance',
+      className: "w-32",
+      render: (row: Transaction) => {
+        return row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`;
+      }
     },
-   {
-  header: 'Balance',
-  accessor: 'balance',
-  className: "w-32",
-  render: (row: Transaction) => {
-    return row.balance === '-' ? '-' : `₹${Number(row.balance).toLocaleString()}`;
-  }
-},
     {
       header: 'Status',
       accessor: 'status',
@@ -173,14 +192,18 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     const exportData = filteredTransactions.map((row) => ({
       Date: new Date(row.date).toLocaleString(),
       TransactionID: row.transactionId,
-      leadId : row.leadId || "-",
+      leadId: row.leadId || "-",
       To: row.to,
       Wallet: row.walletType,
       Source: row.source,
       Method: row.method,
       Type: row.type,
-      Credit: row.credit || "-",
-      Debit: row.debit || "-",
+      // Credit: row.credit || "-",
+      // Debit: row.debit || "-",
+      Amount:
+        row.type === 'credit'
+          ? `+₹${row.credit}`
+          : `-₹${row.debit}`,
       Balance: row.balance,
       Status: row.status,
     }));
@@ -206,8 +229,8 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
                   setActiveTab(tab.key);
                 }}
                 className={`cursor-pointer px-4 py-2 ${activeTab === tab.key
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : ''
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : ''
                   }`}
               >
                 {tab.label}

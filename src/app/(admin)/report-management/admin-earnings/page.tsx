@@ -54,27 +54,39 @@ const Page = () => {
                 ?.filter((txn) => txn.description?.trim() === "Deposit")
                 .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
+                const cashAdjustment =
+            wallet?.transactions
+                ?.filter((txn) => txn.commissionFrom?.trim() === "adjustment" ||
+                    txn.commissionFrom?.trim() === "adjustment").reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+
         return [
             {
-                title: "Balance",
+                title: "Total Balance",
                 amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
                 icon: <FaWallet />,
                 gradient: "from-green-100 to-green-200",
                 textColor: "text-green-800",
             },
-            {
-                title: "Total Earnings",
-                amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
-                icon: <FaMoneyBillWave />,
-                gradient: "from-blue-100 to-blue-200",
-                textColor: "text-blue-800",
-            },
+            // {
+            //     title: "Total Earnings",
+            //     amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
+            //     icon: <FaMoneyBillWave />,
+            //     gradient: "from-blue-100 to-blue-200",
+            //     textColor: "text-blue-800",
+            // },
             {
                 title: "Extra Fee",
                 amount: `₹${summary?.extraFees?.toLocaleString() || 0}`, // ✅ from context
                 icon: <FaMoneyBillWave />,
                 gradient: "from-red-100 to-red-200",
                 textColor: "text-red-800",
+            },
+            {
+                title: "Cash Adjustment",
+                amount: `₹${cashAdjustment.toLocaleString()}`,
+                icon: <FaMoneyBillWave />,
+                gradient: "from-blue-100 to-blue-200",
+                textColor: "text-blue-800",
             },
             {
                 title: "Lead Earnings",
