@@ -54,7 +54,7 @@ const UserDetails = () => {
     { key: 'teamLead', label: 'Team Lead' },
     { key: 'wallet', label: 'Wallet' },
     { key: 'guarantee', label: '5x Guarantee' },
-    { key: 'support', label: 'Support' },
+    // { key: 'support', label: 'Support' },
     { key: 'deposite', label: 'Deposite' },
     { key: 'package', label: 'Package' },
   ];
@@ -124,7 +124,7 @@ const UserDetails = () => {
 
           {activeTab === 'guarantee' && <FiveXGuarantee />}
           {activeTab === 'deposite' && <UserDeposite />}
-          {activeTab === 'support' && <HelpSupport />}
+          {/* {activeTab === 'support' && <HelpSupport />} */}
           {activeTab === 'package' && <PackageTransaction />}
 
         </div>

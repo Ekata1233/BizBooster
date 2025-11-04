@@ -10,6 +10,8 @@ import {
   FaPiggyBank,
 } from "react-icons/fa";
 import { useUserWallet } from "@/context/WalletContext";
+import { startOfDay } from "date-fns";
+
 
 interface Deposite {
   _id: string;
@@ -79,6 +81,8 @@ export default function UserDepositePage() {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(1);
   const { wallet, error, fetchWalletByUser } = useUserWallet();
+const [remainingMonths, setRemainingMonths] = useState(0);
+const [remainingDays, setRemainingDays] = useState(0);
 
   // Fetch wallet when component mounts (or when userId changes)
   useEffect(() => {
@@ -115,30 +119,53 @@ export default function UserDepositePage() {
   }, [id]);
 
   // ─────────────── Calculate Progress ───────────────
-  useEffect(() => {
-    if (!deposite) return;
+  // ✅ Safe month add with clamp for shorter months
+const addMonthsClamped = (date: Date, months: number) => {
+  const y = date.getFullYear();
+  const m = date.getMonth() + months;
+  const day = date.getDate();
+  const candidate = new Date(y, m, 1);
+  const daysInTarget = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 0).getDate();
+  return new Date(candidate.getFullYear(), candidate.getMonth(), Math.min(day, daysInTarget));
+};
 
-    const startDate = deposite.packageActivateDate
-      ? new Date(deposite.packageActivateDate)
-      : null;
+// ✅ Remaining months/days logic
+useEffect(() => {
+  if (!deposite?.packageActivateDate) {
+    setRemainingMonths(0);
+    setRemainingDays(0);
+    return;
+  }
 
-    if (startDate) {
-      const now = new Date();
-      const monthsPassed =
-        (now.getFullYear() - startDate.getFullYear()) * 12 +
-        (now.getMonth() - startDate.getMonth());
+  const startDate = startOfDay(new Date(deposite.packageActivateDate));
+  const today = startOfDay(new Date());
 
-      const safeMonths = Math.max(0, Math.min(36, monthsPassed)); // clamp 0–36
-      setCompletedMonths(safeMonths);
+  const totalMonths = 36;
 
-      const progress = (safeMonths / 36) * 100;
-      setLeadPercent(progress);
+  let completed =
+    (today.getFullYear() - startDate.getFullYear()) * 12 +
+    (today.getMonth() - startDate.getMonth());
 
-      setCurrentLevel(Math.min(5, Math.floor((progress / 100) * 5)));
-    }
+  if (today.getDate() < startDate.getDate()) {
+    completed -= 1;
+  }
 
+  completed = Math.max(0, completed);
 
-  }, [deposite]);
+  const monthsLeft = Math.max(0, totalMonths - completed);
+
+  const nextCycle = addMonthsClamped(startDate, completed + 1);
+  const msPerDay = 1000 * 60 * 60 * 24;
+
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((nextCycle.getTime() - today.getTime()) / msPerDay)
+  );
+
+  setRemainingMonths(monthsLeft);
+  setRemainingDays(daysLeft);
+}, [deposite]);
+
 
   if (loading) return <p className="p-6 text-gray-600">Loading...</p>;
 

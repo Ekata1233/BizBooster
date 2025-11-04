@@ -155,14 +155,21 @@ const ModulePage: React.FC = () => {
   };
 
   /* ✅ DELETE MODULE (Soft Delete) */
-  const handleDelete = async (id: string) => {
-    try {
-      await axios.patch(`/api/modules/${id}`, { isDeleted: true });
-      await fetchFilteredModules();
-    } catch (e) {
-      console.error("Delete failed", e);
-    }
-  };
+ /* ✅ DELETE MODULE (Soft Delete) with Confirm Alert */
+const handleDelete = async (id: string) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this module?");
+  if (!confirmDelete) return; // ❌ cancel delete
+
+  try {
+    await axios.delete(`https://api.fetchtrue.com/api/modules/${id}`);
+    await fetchFilteredModules();
+  } catch (e) {
+    console.error("Delete failed", e);
+    alert("Failed to delete module. Please try again.");
+  }
+};
+
+
 
   const getFilteredByStatus = () => {
     if (activeTab === 'active') return filteredModules.filter((m) => m.status === 'Active');

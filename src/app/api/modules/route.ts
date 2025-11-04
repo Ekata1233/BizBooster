@@ -114,9 +114,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search");
 
-  const filter: {
-    $or?: { [key: string]: { $regex: string; $options: string } }[];
-  } = {};
+  const filter: any = {};
 
   if (search) {
     const searchRegex = { $regex: search, $options: "i" };
@@ -124,53 +122,46 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // 👇 add sorting (Franchise = 0, others = 1)
+
     const modules = await Module.aggregate([
       { $match: filter },
+
+      // ✅ Add sortKey for "Franchise"
       {
         $addFields: {
-          sortKey: {
-            $cond: [{ $eq: ["$name", "Franchise"] }, 0, 1],
-          },
-        },
+          sortKey: { $cond: [{ $eq: ["$name", "Franchise"] }, 0, 1] }
+        }
       },
-      { $sort: { sortKey: 1, createdAt: 1 } },
+
+      // ✅ FIRST sort Franchise → THEN sort by sortOrder
+      {
+        $sort: { sortKey: 1, sortOrder: 1 }
+      }
     ]);
 
-    // Count categories for each module
+    // ✅ Count categories
     const modulesWithCategoryCount = await Promise.all(
       modules.map(async (module) => {
-        const categoryCount = await Category.countDocuments({
-          module: module._id,
-        });
-
-        return {
-          ...module,
-          categoryCount,
-        };
+        const categoryCount = await Category.countDocuments({ module: module._id });
+        return { ...module, categoryCount };
       })
     );
 
-     const latestUpdated = await Module.aggregate([
-      {
-        $group: {
-          _id: null,
-          latestUpdatedAt: { $max: "$updatedAt" },
-        },
-      },
+    // ✅ Get last update date
+    const latestUpdated = await Module.aggregate([
+      { $group: { _id: null, latestUpdatedAt: { $max: "$updatedAt" } } }
     ]);
 
-    const newUpdatedAt =
-      latestUpdated.length > 0 ? latestUpdated[0].latestUpdatedAt : null;
+    const newUpdatedAt = latestUpdated.length > 0 ? latestUpdated[0].latestUpdatedAt : null;
 
     return NextResponse.json(
-      { success: true, data: modulesWithCategoryCount,newUpdatedAt },
+      { success: true, data: modulesWithCategoryCount, newUpdatedAt },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: error.message || "Unknown error" },
       { status: 500, headers: corsHeaders }
     );
   }

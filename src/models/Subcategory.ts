@@ -6,6 +6,7 @@ const subcategorySchema = new mongoose.Schema(
     image: { type: String },
     isDeleted: { type: Boolean, default: false },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    sortOrder: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

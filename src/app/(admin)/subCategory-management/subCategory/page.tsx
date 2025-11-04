@@ -1,431 +1,218 @@
 "use client";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import ComponentCard from '@/components/common/ComponentCard';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import FileInput from '@/components/form/input/FileInput';
-import Label from '@/components/form/Label';
-import BasicTableOne from '@/components/tables/BasicTableOne';
-import Button from '@/components/ui/button/Button';
-import { Modal } from '@/components/ui/modal';
-import { useSubcategory } from '@/context/SubcategoryContext';
-import { useModal } from '@/hooks/useModal';
-import { ChevronDownIcon, EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/common/ComponentCard";
+import AddSubcategory from "@/components/subcategory-component/AddSubcategory";
+import Input from "@/components/form/input/InputField";
+import Select from "@/components/form/Select";
+import ModuleStatCard from "@/components/module-component/ModuleStatCard";
+import { PencilIcon, TrashBinIcon, EyeIcon, ChevronDownIcon } from "@/icons";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import AddSubcategory from '@/components/subcategory-component/AddSubcategory';
-import Input from '@/components/form/input/InputField';
-import Select from '@/components/form/Select';
-import ModuleStatCard from '@/components/module-component/ModuleStatCard';
-import Pagination from '@/components/tables/Pagination';
+import axios from "axios";
+import { useSubcategory } from "@/context/SubcategoryContext";
 
-// Types
-interface Category {
-    _id: string;
-    name: string;
-    image: string;
-    isDeleted: boolean;
-    createdAt: string;
-    updatedAt?: string;
-    __v?: number;
-}
+// drag n drop
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-interface Subcategory {
-    _id: string;
-    name: string;
-    image: string;
-    isDeleted?: boolean;
-    createdAt: string;
-    updatedAt?: string;
-    __v?: number;
-    category: Category | null;
-}
+const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id });
 
-interface TableData {
-    id: string;
-    // _id: string;
-    name: string;
-    categoryName: string;
-    image: string;
-    status: string;
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
+      className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3 ${
+        isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
+      } transition-all duration-150`}
+    >
+      <div className="flex justify-between items-center cursor-grab">
+        <h3 className="font-semibold truncate">{item.name}</h3>
+        <span className="text-xl select-none">⠿</span>
+      </div>
 
-}
+      <div className="flex justify-center">
+        <Image
+          src={item.image || "/placeholder.jpg"}
+          alt={item.name}
+          width={90}
+          height={90}
+          className="rounded-md object-cover h-20 w-20"
+        />
+      </div>
+
+      <p className="text-sm text-gray-600">Category: {item.categoryName}</p>
+      <span
+        className={`px-2 py-1 rounded text-xs font-bold ${
+          item.status === "Active"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
+        }`}
+      >
+        {item.status}
+      </span>
+
+      <div className="flex gap-2 mt-2">
+        <button onClick={() => handleEdit(item.id)} className="text-yellow-600 p-2 border rounded hover:bg-yellow-50">
+          <PencilIcon />
+        </button>
+        <button onClick={() => handleDelete(item.id)} className="text-red-600 p-2 border rounded hover:bg-red-50">
+          <TrashBinIcon />
+        </button>
+        <Link href={`/subCategory-management/subCategory/${item.id}`}>
+          <button className="text-blue-600 p-2 border rounded hover:bg-blue-50">
+            <EyeIcon />
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 const Subcategory = () => {
-    const { subcategories, updateSubcategory, deleteSubcategory } = useSubcategory();
-    const { isOpen, closeModal } = useModal();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [subcategoryName, setSubcategoryName] = useState<string>('');
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const [filteredSubcategory, setFilteredSubcategory] = useState<TableData[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [activeTab, setActiveTab] = useState('all');
-    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1); // ✅ pagination state
-    const rowsPerPage = 10;
-    const router = useRouter();
+  // NOTE: use the actual function name from your context
+  const { subcategories, fetchSubcategories, deleteSubcategory, updateSubcategoryOrder } =
+    useSubcategory();
+  const router = useRouter();
 
-    useEffect(() => {
-        axios.get("/api/category")
-            .then(res => setCategories(res.data.data))
-            .catch(err => console.error("Error fetching categories", err));
-    }, []);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "inactive">("all");
+  const [localSubcats, setLocalSubcats] = useState<any[]>([]);
 
-    const categoryOptions = categories.map((cat) => ({
-        value: cat._id, // or value: module if you want full object
-        label: cat.name,
-        image: cat.image,
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  useEffect(() => {
+    fetchSubcategories();
+    axios.get("/api/category").then((res) => setCategories(res.data.data)).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    let list = subcategories.map((s: any) => ({
+      id: s._id,
+      name: s.name,
+      image: s.image,
+      categoryName: s.category?.name || "N/A",
+      status: s.isDeleted ? "Deleted" : "Active",
+      sortOrder: s.sortOrder ?? 0,
     }));
 
-    const fetchFilteredSubcategory = async () => {
-        try {
-            const params = {
-                ...(selectedCategory && { selectedCategory }),
-                ...(searchQuery && { search: searchQuery }),
-            };
+    if (searchQuery) list = list.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (selectedCategory) list = list.filter((s: any) => s.category?._id === selectedCategory);
+    if (activeTab === "active") list = list.filter((s) => s.status === "Active");
+    if (activeTab === "inactive") list = list.filter((s) => s.status === "Deleted");
 
-            const response = await axios.get('/api/subcategory', { params });
-            const data = response.data.data;
+    list = list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-            if (data.length === 0) {
-                setFilteredSubcategory([]);
-            } else {
-                const tableData: TableData[] = data.map((subcat: Subcategory) => ({
-                    id: subcat._id,
-                    categoryName: subcat.category?.name || 'N/A',
-                    name: subcat.name,
-                    image: subcat.image || '',
-                    status: subcat.isDeleted ? 'Deleted' : 'Active',
-                }));
-                setFilteredSubcategory(tableData);
-            }
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            setFilteredSubcategory([]);
-        }
+    setLocalSubcats(list);
+  }, [subcategories, searchQuery, selectedCategory, activeTab]);
+
+  const handleEdit = (id: string) => router.push(`/subCategory-management/subCategory/modals/${id}`);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete subcategory?")) return;
+    await deleteSubcategory(id);
+    // fetchSubcategories(); // not needed; deleteSubcategory already refreshes via context
+  };
+
+  const onDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = localSubcats.findIndex((i) => i.id === active.id);
+    const newIndex = localSubcats.findIndex((i) => i.id === over.id);
+
+    const reordered = arrayMove(localSubcats, oldIndex, newIndex).map((c, i) => ({
+      ...c,
+      // start sortOrder at 1 (optional but conventional)
+      sortOrder: i + 1,
+    }));
+
+    // update local state immediately for snappy UI
+    setLocalSubcats(reordered);
+
+    try {
+      // use the function name exported by your context
+      await updateSubcategoryOrder(
+        reordered.map((c) => ({ _id: c.id, sortOrder: c.sortOrder }))
+      );
+      // no extra fetch here — updateSubcategoryOrder calls fetchSubcategories internally
+    } catch (err) {
+      console.error("Drag reorder failed:", err);
+      // revert local order on failure (refetch from source)
+      fetchSubcategories();
     }
+  };
 
-    useEffect(() => {
-        fetchFilteredSubcategory()
-    }, [selectedCategory, searchQuery])
+  const categoryOptions = categories.map((cat) => ({ value: cat._id, label: cat.name }));
 
-    // const handleEdit = (id: string) => {
-    //     const subcat = subcategories.find(item => item._id === id);
+  return (
+    <div>
+      <PageBreadcrumb pageTitle="Subcategory" />
 
-    //     if (subcat) {
-    //         setEditingId(id);
-    //         setSubcategoryName(subcat.name);
-    //         setSelectedCategoryId((subcat.category as Category)?._id || '');
-    //         setSelectedFile(null);
-    //         setExistingImageUrl(subcat.image || null);
-    //         openModal();
-    //     }
-    // };
+      <div className="my-5">
+        <AddSubcategory />
+      </div>
 
-    const handleEdit = (id: string) => {
-        router.push(`/subCategory-management/subCategory/modals/${id}`);
-    };
+      <ModuleStatCard />
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) setSelectedFile(file);
-    };
+      <ComponentCard title="All Subcategories">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <Input placeholder="Search Subcategory" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
 
-    const handleUpdateData = async () => {
-
-        if (!editingId || !subcategoryName || !selectedCategoryId) return;
-        const formData = new FormData();
-        formData.append("name", subcategoryName);
-        formData.append("category", selectedCategoryId);
-        if (selectedFile) formData.append("image", selectedFile);
-        try {
-            await updateSubcategory(editingId, formData);
-            alert('Subcategory updated successfully');
-            closeModal();
-            setEditingId(null);
-            setSubcategoryName('');
-            setSelectedFile(null);
-            setExistingImageUrl(null);
-            fetchFilteredSubcategory();
-        } catch (error) {
-            console.error('Error updating subcategory:', error);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        const confirmDelete = window.confirm('Are you sure you want to delete this Subcategory?');
-        if (!confirmDelete) return;
-
-        try {
-            await deleteSubcategory(id);
-            alert('Subcategory deleted successfully');
-            fetchFilteredSubcategory();
-        } catch (error) {
-            console.error("Error deleting subcategory:", error);
-        }
-    };
-
-    if (!subcategories || !Array.isArray(subcategories)) return <div>Loading...</div>;
-
-
-    const columns = [
-        { header: 'Subcategory Name', accessor: 'name' },
-        {
-            header: 'Category Name',
-            accessor: 'categoryName',
-            render: (row: TableData) => (
-                <span className="font-medium text-blue-600">{row.categoryName}</span>
-            ),
-        },
-        {
-            header: 'Image',
-            accessor: 'image',
-            render: (row: TableData) => (
-                <div className="flex items-center gap-3">
-                    <div className="w-20 h-20 overflow-hidden">
-                        <Image
-                            width={130}
-                            height={130}
-                            src={row.image}
-                            alt={row.name || "subcategory image"}
-                            className="object-cover object-center w-full h-full rounded"
-                        />
-                    </div>
-                </div>
-            ),
-        },
-        {
-            header: 'Status',
-            accessor: 'status',
-            render: (row: TableData) => {
-                const status = row.status;
-                let colorClass = '';
-
-                switch (status) {
-                    case 'Deleted':
-                        colorClass = 'text-red-500 bg-red-100 border border-red-300';
-                        break;
-                    case 'Active':
-                        colorClass = 'text-green-600 bg-green-100 border border-green-300';
-                        break;
-                    default:
-                        colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-                }
-
-                return (
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-                        {status}
-                    </span>
-                );
-            },
-        },
-        {
-            header: 'Action',
-            accessor: 'action',
-            render: (row: TableData) => {
-                return (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => handleEdit(row.id)}
-                            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500"
-                        >
-                            <PencilIcon />
-                        </button>
-
-                        <button
-                            onClick={() => handleDelete(row.id)}
-                            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
-                        >
-                            <TrashBinIcon />
-                        </button>
-
-                        <Link href={`/subCategory-management/subCategory/${row.id}`} passHref>
-                            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                                <EyeIcon />
-                            </button>
-                        </Link>
-                    </div>
-                )
-            },
-        },
-    ];
-
-    const getFilteredByStatus = () => {
-        if (activeTab === 'active') {
-            return filteredSubcategory.filter(subCat => subCat.status === 'Active');
-        } else if (activeTab === 'inactive') {
-            return filteredSubcategory.filter(subCat => subCat.status === 'Deleted');
-        }
-        return filteredSubcategory;
-    };
-
-    const paginatedData = getFilteredByStatus();
-    const totalPages = Math.ceil(paginatedData.length / rowsPerPage);
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentRows = paginatedData.slice(indexOfFirstRow, indexOfLastRow);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery, selectedCategory, activeTab]);
-
-    return (
-        <div>
-            <PageBreadcrumb pageTitle="Module" />
-            <div className="my-5">
-                <AddSubcategory />
-            </div>
-
-            <div>
-                <ModuleStatCard />
-            </div>
-
-            <div className="my-5">
-                <ComponentCard title="All Subcategories">
-                    <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
-                        <div>
-                            <Label>Filter by Name</Label>
-                            <Input
-                                type="text"
-                                placeholder="Search by Subcategory and Category name"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label>Select Input</Label>
-                            <div className="relative">
-                                <Select
-                                    options={categoryOptions}
-                                    placeholder="Categories"
-                                    onChange={(value: string) => setSelectedCategory(value)}
-                                    className="dark:bg-dark-900"
-                                />
-                                <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                    <ChevronDownIcon />
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="border-b border-gray-200">
-                        <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('all')}
-                            >
-                                All
-                            </li>
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('active')}
-                            >
-                                Active
-                            </li>
-                            <li
-                                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                                onClick={() => setActiveTab('inactive')}
-                            >
-                                Inactive
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <BasicTableOne columns={columns} data={currentRows} />
-
-                        {/* ✅ Pagination */}
-                        <div className="flex justify-center mt-4">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalItems={paginatedData.length}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                            />
-                        </div>
-                    </div>
-                </ComponentCard>
-            </div>
-
-            <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-                <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                    <div className="px-2 pr-14">
-                        <h4 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                            Edit Subcategory
-                        </h4>
-                    </div>
-
-                    <form className="flex flex-col">
-                        <div className="custom-scrollbar h-[300px] overflow-y-auto px-2 pb-3 space-y-4">
-                            <div>
-                                <Label>Subcategory Name</Label>
-                                <input
-                                    type="text"
-                                    value={subcategoryName}
-                                    onChange={(e) => setSubcategoryName(e.target.value)}
-                                    className="w-full p-2 border rounded"
-                                    placeholder="Enter subcategory name"
-                                />
-                            </div>
-
-                            <div>
-                                <Label>Select Category</Label>
-                                <select
-                                    value={selectedCategoryId}
-                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                                    className="w-full p-2 border rounded"
-                                >
-                                    <option value="">Select category</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat._id} value={cat._id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <Label>Upload Image</Label>
-                                <FileInput onChange={handleFileChange} />
-
-                                {(selectedFile || existingImageUrl) && (
-                                    <div className="mt-2">
-                                        <Image
-                                            src={
-                                                selectedFile
-                                                    ? URL.createObjectURL(selectedFile)
-                                                    : existingImageUrl ?? ''
-                                            }
-                                            width={120}
-                                            height={120}
-                                            alt="Category Image"
-                                            className="mt-2 w-20 h-20 object-cover rounded border"
-                                        />
-                                    </div>
-                                )}
-
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                            <Button size="sm" variant="outline" onClick={closeModal}>
-                                Close
-                            </Button>
-                            <Button size="sm" onClick={handleUpdateData}>
-                                Update Changes
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            </Modal>
+          <div className="relative">
+            <Select options={categoryOptions} placeholder="Categories" onChange={(value) => setSelectedCategory(value)} />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+              <ChevronDownIcon />
+            </span>
+          </div>
         </div>
-    );
+
+        <div className="border-b border-gray-200">
+          {["all", "active", "inactive"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-4 py-2 ${activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""}`}
+            >
+              {tab.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={localSubcats.map((d) => d.id)} strategy={rectSortingStrategy}>
+            <div className="flex flex-wrap gap-5 mt-5">
+              {localSubcats.map((s) => (
+                <SortableItem key={s.id} item={s} handleEdit={handleEdit} handleDelete={handleDelete} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </ComponentCard>
+    </div>
+  );
 };
 
 export default Subcategory;
