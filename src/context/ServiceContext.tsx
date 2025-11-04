@@ -62,6 +62,7 @@ type ServiceContextType = {
   updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
   fetchSingleService: (id: string) => Promise<void>;
+    reorderServices: (items: { _id: string; sortOrder: number }[]) => Promise<void>;
   singleService: Service | null;
   singleServiceLoading: boolean;
   singleServiceError: string | null;
@@ -155,6 +156,14 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
+const reorderServices = async (items: { _id: string; sortOrder: number }[]) => {
+  try {
+    await axios.post("/api/service/reorder", { services: items });
+    await fetchServices(); // refresh list
+  } catch (err) {
+    console.error("Service reorder failed:", err);
+  }
+};
 
   const deleteService = async (id: string) => {
     try {
@@ -177,6 +186,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
         singleService,
         singleServiceLoading,
         singleServiceError,
+        reorderServices,
       }}
     >
       {children}

@@ -178,7 +178,7 @@ const SortableServiceItem: React.FC<{
 
       {/* Action Buttons */}
       <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100">
-        <button 
+        {/* <button 
           onClick={(e) => {
             e.stopPropagation();
             handleEdit(item.id);
@@ -187,8 +187,8 @@ const SortableServiceItem: React.FC<{
           title="Edit"
         >
           <PencilIcon className="w-3 h-3" />
-        </button>
-        <button 
+        </button> */}
+        {/* <button 
           onClick={(e) => {
             e.stopPropagation();
             handleDelete(item.id);
@@ -197,7 +197,7 @@ const SortableServiceItem: React.FC<{
           title="Delete"
         >
           <TrashBinIcon className="w-3 h-3" />
-        </button>
+        </button> */}
       </div>
     </div>
   );
@@ -377,40 +377,29 @@ const ServiceList = () => {
   };
 
   // Drag and Drop Handlers
-  const onDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+  const { reorderServices } = useService();
 
-    setActiveId(null);
-    setOverlayItem(null);
-    if (!over || active.id === over.id) return;
+const onDragEnd = async ({ active, over }) => {
+  if (!over || active.id === over.id) return;
 
-    const oldIndex = dragServices.findIndex((item) => item.id === active.id);
-    const newIndex = dragServices.findIndex((item) => item.id === over.id);
-    
-    if (oldIndex === -1 || newIndex === -1) return;
+  const oldIndex = dragServices.findIndex((i) => i.id === active.id);
+  const newIndex = dragServices.findIndex((i) => i.id === over.id);
 
-    const newServices = arrayMove(dragServices, oldIndex, newIndex);
-    const updatedServices = newServices.map((item, index) => ({
-      ...item,
-      sortOrder: index,
-    }));
+  const newList = arrayMove(dragServices, oldIndex, newIndex).map((item, i) => ({
+    ...item,
+    sortOrder: i,
+  }));
 
-    setDragServices(updatedServices);
+  setDragServices(newList);
 
-    try {
-      // Update sort order in backend
-      await axios.post('/api/service/reorder', {
-        services: updatedServices.map((service) => ({ 
-          _id: service.id, 
-          sortOrder: service.sortOrder 
-        })),
-      });
-    } catch (error) {
-      console.error('Error reordering services:', error);
-      // Revert on error
-      fetchAllServicesForDrag();
-    }
-  };
+  try {
+    await reorderServices(
+      newList.map((s) => ({ _id: s.id, sortOrder: s.sortOrder }))
+    );
+  } catch {
+    fetchAllServicesForDrag();
+  }
+};
 
   const columns = [
     {
