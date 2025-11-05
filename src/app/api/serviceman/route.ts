@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 export async function OPTIONS() {
-return NextResponse.json({}, { headers: corsHeaders });
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
 export async function GET() {
@@ -75,6 +75,28 @@ export async function POST(req: NextRequest) {
       });
       identityImageUrl = res.url;
     }
+    // ✅ Check duplicates before save
+    const exists = await ServiceMan.findOne({
+      $or: [
+        { email },
+        { phoneNo },
+        { "businessInformation.identityNumber": identityNumber }
+      ]
+    });
+
+    if (exists) {
+      let message = "Duplicate record found";
+
+      if (exists.email === email) message = "email already exists";
+      else if (exists.phoneNo === phoneNo) message = "phoneNo already exists";
+      else if (exists.businessInformation?.identityNumber === identityNumber)
+        message = "identityNumber already exists";
+
+      return NextResponse.json(
+        { message },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -103,8 +125,16 @@ export async function POST(req: NextRequest) {
     // ✅ Duplicate key handling
     if (err?.code === 11000 && err?.keyPattern) {
       const field = Object.keys(err.keyPattern)[0];
+
+      let message = "Duplicate value exists";
+
+      if (field === "email") message = "email already exists";
+      else if (field === "phoneNo") message = "phoneNo already exists";
+      else if (field.includes("identityNumber"))
+        message = "identityNumber already exists";
+
       return NextResponse.json(
-        { message: `${field} already exists` },
+        { message },
         { status: 400, headers: corsHeaders }
       );
     }
