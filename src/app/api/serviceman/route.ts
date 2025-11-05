@@ -110,11 +110,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(newServiceMan, { status: 201, headers: corsHeaders });
 
   } catch (error: any) {
-    console.error("Error in POST /serviceman:", error);
+  console.error("Error in POST /serviceman:", error);
+
+  // ✅ Duplicate key error handling
+  if (error.code === 11000) {
+    // Get field name from MongoDB duplicate error
+    const duplicatedField = Object.keys(error.keyPattern)[0];
+
     return NextResponse.json(
-      { message: "Internal Server Error", error: error?.message || "Unexpected error" },
-      { status: 500, headers: corsHeaders }
+      {
+        success: false,
+        message: `${duplicatedField} already exists`,
+        duplicatedField
+      },
+      { status: 400, headers: corsHeaders }
     );
   }
-}
 
+  return NextResponse.json(
+    { message: "Internal Server Error", error: error?.message || "Unexpected error" },
+    { status: 500, headers: corsHeaders }
+  );
+}
