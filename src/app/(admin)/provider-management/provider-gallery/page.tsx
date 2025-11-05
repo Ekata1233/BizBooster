@@ -40,7 +40,6 @@ const ProviderGalleryPage = () => {
         provider.galleryImages.length > 0
     );
 
-    // Filter by search
     if (searchQuery) {
       filtered = filtered.filter((provider) =>
         provider.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -48,7 +47,6 @@ const ProviderGalleryPage = () => {
       );
     }
 
-    // Sort
     switch (sort) {
       case 'a-z':
         filtered.sort((a, b) => a.fullName.localeCompare(b.fullName));
@@ -74,6 +72,11 @@ const ProviderGalleryPage = () => {
 
   const columns = [
     {
+      header: 'SL No',
+      accessor: 'serial',
+      render: (_: ProviderType, index: number) => <span>{index + 1}</span>,
+    },
+    {
       header: 'Name',
       accessor: 'fullName',
       render: (row: ProviderType) => <span>{row.fullName}</span>,
@@ -86,19 +89,17 @@ const ProviderGalleryPage = () => {
     {
       header: 'Gallery Images',
       accessor: 'galleryImages',
-      render: (row: ProviderType) => (
-        <span>{row.galleryImages.length}</span>
-      ),
+      render: (row: ProviderType) => <span>{row.galleryImages.length}</span>,
     },
     {
       header: 'Action',
       accessor: 'action',
       render: (row: ProviderType) => (
         <Link href={`/provider-management/provider-gallery/${row._id}`} passHref>
-      <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-        <EyeIcon />
-      </button>
-    </Link>
+          <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
+            <EyeIcon />
+          </button>
+        </Link>
       ),
     },
   ];
@@ -108,44 +109,39 @@ const ProviderGalleryPage = () => {
       <PageBreadcrumb pageTitle="Provider Gallery List" />
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left: Search Filter */}
-       <div className="w-full lg:w-3/4 my-5">
-  <ComponentCard title="Search Filter">
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-3">
-      
-      {/* Sort Select */}
-      <div className="w-full">
-        <Label>Sort By</Label>
-        <div className="relative">
-          <Select
-            options={sortOptions}
-            placeholder="Sort By"
-            onChange={(value) => setSort(value)}
-            className="dark:bg-dark-900 w-full"
-          />
-          <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2">
-            <ChevronDownIcon />
-          </span>
+        <div className="w-full lg:w-3/4 my-5">
+          <ComponentCard title="Search Filter">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-3">
+              
+              <div className="w-full">
+                <Label>Sort By</Label>
+                <div className="relative">
+                  <Select
+                    options={sortOptions}
+                    placeholder="Sort By"
+                    onChange={(value) => setSort(value)}
+                    className="dark:bg-dark-900 w-full"
+                  />
+                  <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+
+              <div className="w-full">
+                <Label>Search</Label>
+                <Input
+                  type="text"
+                  placeholder="Search by name or email"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </ComponentCard>
         </div>
-      </div>
 
-      {/* Search Input */}
-      <div className="w-full">
-        <Label>Search</Label>
-        <Input
-          type="text"
-          placeholder="Search by name or email"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full"
-        />
-      </div>
-    </div>
-  </ComponentCard>
-</div>
-
-
-        {/* Right: Stat Card */}
         <div className="w-full lg:w-1/4 my-5">
           <StatCard
             title="Total Images"
@@ -158,7 +154,6 @@ const ProviderGalleryPage = () => {
         </div>
       </div>
 
-      {/* Provider Table */}
       <div className="my-5">
         <ComponentCard title="Providers With Gallery">
           {filteredProviders.length === 0 ? (
