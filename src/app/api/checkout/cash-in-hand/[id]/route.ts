@@ -350,7 +350,7 @@ export async function PUT(req: NextRequest) {
         providerWallet.balance = newBalance;
 
         providerWallet.transactions.push({
-            type: "debit",
+            type: "credit",
             amount: round2(fetchedAmount),
             description: remainingCash > 0
                 ? `Cash in hand received from customer (adjusted ₹${remainingCash} due to insufficient balance)`
