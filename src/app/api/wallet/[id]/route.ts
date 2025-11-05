@@ -73,13 +73,13 @@ export async function PATCH(req: NextRequest) {
       const adminEarnings = await AdminEarnings.findOne({ date: today });
 
       if (adminEarnings) {
-        adminEarnings.extraFees += amount; 
+        // adminEarnings.extraFees += amount; 
         adminEarnings.totalRevenue += amount;
         await adminEarnings.save();
       } else {
         await AdminEarnings.create({
           date: today,
-          extraFees: amount,
+          extraFees: 0,
           totalRevenue: amount,
           adminCommission: 0,
           providerEarnings: 0,
