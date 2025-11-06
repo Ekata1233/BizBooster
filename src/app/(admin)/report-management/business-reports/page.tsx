@@ -22,11 +22,14 @@ const Page = () => {
   if (loading) return <p className="p-6 text-lg">Loading earnings summary...</p>;
   if (!summary) return <p className="p-6 text-red-600">No summary data available.</p>;
 
-  const formatAmount = (amount: number) =>
-    `₹${amount.toLocaleString('en-IN', {
+  const formatAmount = (amount: number | undefined | null) => {
+    if (typeof amount !== 'number' || isNaN(amount)) return '₹0.00';
+    return `₹${amount.toLocaleString('en-IN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
+  };
+
 
   const cards = [
     {

@@ -32,11 +32,14 @@ interface Props {
 }
 
 const SummaryCards: React.FC<Props> = ({ summary, transactionDetails = [] }) => {
-  const formatAmount = (amount: number) =>
-    `₹${amount.toLocaleString("en-IN", {
+  const formatAmount = (amount?: number) => {
+    const num = Number(amount) || 0; // converts undefined/null/"string" → 0
+    return `₹${num.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
+  };
+
 
   console.log("summary : ", summary);
   console.log("transactions : ", transactionDetails);
