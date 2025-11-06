@@ -30,26 +30,29 @@ const SubscribeRequestPage = () => {
     const { isOpen, openModal, closeModal } = useModal();
     const { approveService, deleteService } = useSubscribe();
     const [tableData, setTableData] = useState<TableData[]>([]);
-       const [filteredProviders, setFilteredProviders] = useState<TableData[]>([]);
+    const [filteredProviders, setFilteredProviders] = useState<TableData[]>([]);
     const [providerCommission, setProviderCommission] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedService, setSelectedService] = useState<TableData | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    console.log("service in subsribe request : ", services)
+    console.log("service in subsribe request : ", services);
+
     /* build (or rebuild) the list any time `services` changes */
     useEffect(() => {
         const pending = services
             .filter((service: any) => {
-    const rawStatus =
-        service.status ?? service.providerPrices?.[0]?.status ?? '';
-    return ['pending', 'approved', 'rejected'].includes(rawStatus.toLowerCase());
-}).map((service: any) => ({
+                const rawStatus =
+                    service.status ?? service.providerPrices?.[0]?.status ?? '';
+                return ['pending', 'approved', 'rejected'].includes(rawStatus.toLowerCase());
+            })
+            .map((service: any) => ({
                 name: service.serviceName,
                 providerId: service.providerPrices?.[0]?.provider?._id || 'N/A',
                 providerName: service.providerPrices?.[0]?.provider?.fullName || 'N/A',
-                price: service.price || "N/A",
-                discountedPrice: service.discountedPrice || "N/A",
-                providerPrice: service.providerPrices?.[0]?.providerPrice || "N/A",
+                price: service.price || 'N/A',
+                discountedPrice: service.discountedPrice || 'N/A',
+                providerPrice: service.providerPrices?.[0]?.providerPrice || 'N/A',
                 categoryName: service.category?.name || 'N/A',
                 subCategoryName: service.subcategory?.name || 'N/A',
                 status: service.status ?? service.providerPrices?.[0]?.status ?? 'Accept',
@@ -57,15 +60,26 @@ const SubscribeRequestPage = () => {
             }));
 
         setTableData(pending);
-         setFilteredProviders(pending); 
+        setFilteredProviders(pending);
     }, [services]);
+
+    /* ------------ search handler ------------- */
+    useEffect(() => {
+        const query = searchQuery.toLowerCase();
+        const filtered = tableData.filter(
+            (item) =>
+                item.providerName.toLowerCase().includes(query) ||
+                item.name.toLowerCase().includes(query)
+        );
+        setFilteredProviders(filtered);
+    }, [searchQuery, tableData]);
 
     /* ------------ handlers ------------- */
     const handleAccept = async (serviceId: string, providerId: string) => {
         try {
             await approveService(serviceId, providerId);
             /* remove the row right away */
-            setTableData(prev => prev.filter(row => row.id !== serviceId));
+            setTableData((prev) => prev.filter((row) => row.id !== serviceId));
             alert('Service approved successfully!');
         } catch (err) {
             console.error(err);
@@ -81,7 +95,7 @@ const SubscribeRequestPage = () => {
         try {
             await deleteService(serviceId);
             /* remove the row right away */
-            setTableData(prev => prev.filter(row => row.id !== serviceId));
+            setTableData((prev) => prev.filter((row) => row.id !== serviceId));
             alert('Service rejected successfully!');
         } catch (err) {
             console.error(err);
@@ -92,11 +106,14 @@ const SubscribeRequestPage = () => {
         if (!selectedService) return;
         setIsSubmitting(true);
         try {
-            await approveService(selectedService.id, selectedService.providerId, providerCommission);
-            setTableData(prev => prev.filter(row => row.id !== selectedService.id));
+            await approveService(
+                selectedService.id,
+                selectedService.providerId,
+                providerCommission
+            );
+            setTableData((prev) => prev.filter((row) => row.id !== selectedService.id));
             alert('Service Edited successfully!');
             closeModal();
-            // Optional: update your tableData if you want to reflect the changes in UI immediately
         } catch (err) {
             console.error(err);
         } finally {
@@ -107,11 +124,10 @@ const SubscribeRequestPage = () => {
     /* ------------- columns -------------- */
     const columns = [
         {
-            header: "S.No",
-            accessor: "serial",
+            header: 'S.No',
+            accessor: 'serial',
             render: (row: TableData) => {
-                const serial =
-                    filteredProviders.findIndex((u) => u.id === row.id) + 1;
+                const serial = filteredProviders.findIndex((u) => u.id === row.id) + 1;
                 return <span>{serial}</span>;
             },
         },
@@ -129,42 +145,19 @@ const SubscribeRequestPage = () => {
                     status.toLowerCase() === 'rejected'
                         ? 'text-red-500 bg-red-100 border border-red-300'
                         : status.toLowerCase() === 'approved' || status.toLowerCase() === 'accept'
-                            ? 'text-green-600 bg-green-100 border border-green-300'
-                            : 'text-yellow-600 bg-yellow-100 border border-yellow-300';
+                        ? 'text-green-600 bg-green-100 border border-green-300'
+                        : 'text-yellow-600 bg-yellow-100 border border-yellow-300';
 
                 return (
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
+                    <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}
+                    >
                         {status}
                     </span>
                 );
             },
         },
-        // {
-        //     header: 'Action',
-        //     accessor: 'action',
-        //     render: (row: TableData) => (
-        //         <div className="flex gap-2">
-        //             <button
-        //                 onClick={() => handleAccept(row.id, row.providerId)}
-        //                 className="text-green-600 border border-green-600 rounded-md px-3 py-1 hover:bg-green-600 hover:text-white"
-        //             >
-        //                 Approve
-        //             </button>
-        //             <button
-        //                 onClick={() => handleEdit(row)}
-        //                 className="text-blue-500 border border-blue-500 rounded-md px-3 py-1 hover:bg-blue-500 hover:text-white"
-        //             >
-        //                 <PencilIcon />
-        //             </button>
-        //             <button
-        //                 onClick={() => handleDelete(row.id)}
-        //                 className="text-red-500 border border-red-500 rounded-md px-3 py-1 hover:bg-red-500 hover:text-white"
-        //             >
-        //                 <TrashBinIcon />
-        //             </button>
-        //         </div>
-        //     ),
-        // },
+        // Action buttons (commented in your version)
     ];
 
     /* ------------- render -------------- */
@@ -173,18 +166,31 @@ const SubscribeRequestPage = () => {
             <PageBreadcrumb pageTitle="Subscribe List" />
             <div className="my-5">
                 <ComponentCard title="Subscribe List">
-                    {tableData.length > 0 ? (
-                        <BasicTableOne columns={columns} data={[...filteredProviders].reverse()} />
+                    {/* 🔍 Search bar */}
+                    <div className="flex justify-end mb-4">
+                        <Input
+                            type="text"
+                            placeholder="Search by Provider or Service Name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-[300px]"
+                        />
+                    </div>
 
+                    {filteredProviders.length > 0 ? (
+                        <BasicTableOne
+                            columns={columns}
+                            data={[...filteredProviders].reverse()}
+                        />
                     ) : (
-                        /* fallback when nothing to review */
                         <p className="text-center py-8 text-gray-500">
-                            No any subsribe service.
+                            No matching subscribe service found.
                         </p>
                     )}
                 </ComponentCard>
             </div>
 
+            {/* -------- Modal -------- */}
             <div>
                 <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
                     <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
@@ -205,25 +211,24 @@ const SubscribeRequestPage = () => {
                                                 min="0"
                                                 value={providerCommission}
                                                 placeholder="Enter Provider Commission"
-                                                onChange={(e) => setProviderCommission((e.target.value))}
+                                                onChange={(e) =>
+                                                    setProviderCommission(e.target.value)
+                                                }
                                             />
-
                                         </div>
-
-
                                     </div>
                                 </div>
-
                             </div>
+
                             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                                 <Button size="sm" variant="outline" onClick={closeModal}>
                                     Close
                                 </Button>
                                 <Button size="sm" onClick={submitEdit} disabled={isSubmitting}>
-                                    {isSubmitting ? "Updating..." : "Update Commission & Approve"}
+                                    {isSubmitting
+                                        ? 'Updating...'
+                                        : 'Update Commission & Approve'}
                                 </Button>
-
-
                             </div>
                         </form>
                     </div>

@@ -56,6 +56,7 @@ export async function PUT(req: Request) {
   try {
     const formData = await req.formData();
 
+    // Build updates object as before (keep same logic)
     const updates: Record<string, any> = {};
     for (const [key, value] of formData.entries()) {
       if (key === "generalImage" || key === "identityImage") {
@@ -71,6 +72,7 @@ export async function PUT(req: Request) {
           if (key === "generalImage") {
             updates.generalImage = uploadResponse.url;
           } else {
+            // store nested field path as string key
             updates["businessInformation.identityImage"] = uploadResponse.url;
           }
         }
@@ -84,9 +86,64 @@ export async function PUT(req: Request) {
       }
     }
 
-    const updatedServiceMan = await ServiceMan.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
+    // === DUPLICATE CHECK (exclude current id) ===
+    // Get incoming candidate values (prefer updates, fallback to formData)
+    const incomingEmail =
+      updates.email ?? (formData.get("email") ? String(formData.get("email")) : undefined);
+    const incomingPhone =
+      updates.phoneNo ?? (formData.get("phoneNo") ? String(formData.get("phoneNo")) : undefined);
+    const incomingIdentityNumber =
+      updates["businessInformation.identityNumber"] ??
+      (formData.get("businessInformation.identityNumber")
+        ? String(formData.get("businessInformation.identityNumber"))
+        : undefined);
+
+    const orConditions: any[] = [];
+    if (incomingEmail) orConditions.push({ email: incomingEmail });
+    if (incomingPhone) orConditions.push({ phoneNo: incomingPhone });
+    if (incomingIdentityNumber)
+      orConditions.push({ "businessInformation.identityNumber": incomingIdentityNumber });
+
+    if (orConditions.length > 0) {
+      const duplicate = await ServiceMan.findOne({
+        _id: { $ne: id },
+        $or: orConditions,
+      }).lean();
+
+      if (duplicate) {
+        // determine which field(s) collided
+        const conflicts: string[] = [];
+        if (incomingEmail && duplicate.email === incomingEmail) conflicts.push("Email");
+        if (incomingPhone && duplicate.phoneNo === incomingPhone) conflicts.push("Phone number");
+        if (
+          incomingIdentityNumber &&
+          duplicate.businessInformation?.identityNumber === incomingIdentityNumber
+        )
+          conflicts.push("Identity number");
+
+        const message =
+          conflicts.length > 1
+            ? `${conflicts.join(", ")} are already used by another ServiceMan`
+            : `${conflicts[0]} is already used by another ServiceMan`;
+
+        return NextResponse.json(
+          { success: false, message },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+
+    // === Perform update (use $set for nested fields safety) ===
+    const setObj: Record<string, any> = {};
+    for (const [k, v] of Object.entries(updates)) {
+      setObj[k] = v;
+    }
+
+    const updatedServiceMan = await ServiceMan.findByIdAndUpdate(
+      id,
+      { $set: setObj },
+      { new: true }
+    ).populate("provider", "providerId fullName email phoneNo");
 
     return NextResponse.json(
       { success: true, data: updatedServiceMan },
@@ -97,7 +154,7 @@ export async function PUT(req: Request) {
       error instanceof Error ? error.message : "Unknown error during update";
     return NextResponse.json(
       { success: false, message },
-      { status: 400, headers: corsHeaders }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

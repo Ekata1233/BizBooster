@@ -156,6 +156,13 @@ const SortableServiceItem: React.FC<{
       className={`w-full p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-2 min-h-[120px]
         ${isDragging ? 'ring-2 ring-blue-400 bg-blue-50 shadow-lg' : ''} transition-all duration-150 cursor-grab`}
     >
+      <div className="flex items-center gap-2">
+    {/* ✅ Sort Order Badge */}
+    <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
+      #{item.sortOrder}
+    </span>
+
+  </div>
       {/* Service Name - First Line */}
       <div className="flex justify-between items-start">
         <h3 className="font-semibold text-sm text-gray-800 truncate flex-1">

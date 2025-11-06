@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 export async function OPTIONS() {
-return NextResponse.json({}, { headers: corsHeaders });
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
 export async function GET() {
@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
     const identityNumber = (formData.get("identityNumber") as string)?.trim() || "";
     const provider = (formData.get("provider") as string)?.trim() || "";
 
-    // ✅ Field-wise validation
     const errors: { [key: string]: string } = {};
 
     if (!name) errors.name = "Name is required";
@@ -47,24 +46,16 @@ export async function POST(req: NextRequest) {
     if (!identityType) errors.identityType = "Identity type is required";
     if (!identityNumber) errors.identityNumber = "Identity number is required";
     if (!provider) errors.provider = "Provider is required";
-
     if (password && confirmPassword && password !== confirmPassword) {
       errors.confirmPassword = "Passwords do not match";
-    }
-
-    const allowedTypes = ['passport', 'driving_license', 'addharcard', 'pancard'];
-    if (identityType && !allowedTypes.includes(identityType)) {
-      errors.identityType = "Invalid identity type";
     }
 
     if (Object.keys(errors).length > 0) {
       return NextResponse.json({ errors }, { status: 400, headers: corsHeaders });
     }
 
-    // ✅ Helper to handle file buffers
     const bufferFromFile = async (file: File) => Buffer.from(await file.arrayBuffer());
 
-    // ✅ Upload general image
     let generalImageUrl = "";
     const generalImageFile = formData.get("generalImage") as File;
     if (generalImageFile && generalImageFile.size > 0) {
@@ -75,7 +66,6 @@ export async function POST(req: NextRequest) {
       generalImageUrl = res.url;
     }
 
-    // ✅ Upload identity image
     let identityImageUrl = "";
     const identityImageFile = formData.get("identityImage") as File;
     if (identityImageFile && identityImageFile.size > 0) {
@@ -85,11 +75,31 @@ export async function POST(req: NextRequest) {
       });
       identityImageUrl = res.url;
     }
+    // ✅ Check duplicates before save
+    const exists = await ServiceMan.findOne({
+      $or: [
+        { email },
+        { phoneNo },
+        { "businessInformation.identityNumber": identityNumber }
+      ]
+    });
 
-    // ✅ Hash the password
+    if (exists) {
+      let message = "Duplicate record found";
+
+      if (exists.email === email) message = "email already exists";
+      else if (exists.phoneNo === phoneNo) message = "phoneNo already exists";
+      else if (exists.businessInformation?.identityNumber === identityNumber)
+        message = "identityNumber already exists";
+
+      return NextResponse.json(
+        { message },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Create and save new serviceman
     const newServiceMan = new ServiceMan({
       name,
       lastName,
@@ -109,27 +119,29 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(newServiceMan, { status: 201, headers: corsHeaders });
 
-  } catch (error: any) {
-  console.error("Error in POST /serviceman:", error);
+  } catch (err: any) {
+    console.error("Error saving serviceman:", err);
 
-  // ✅ Duplicate key error handling
-  if (error.code === 11000) {
-    // Get field name from MongoDB duplicate error
-    const duplicatedField = Object.keys(error.keyPattern)[0];
+    // ✅ Duplicate key handling
+    if (err?.code === 11000 && err?.keyPattern) {
+      const field = Object.keys(err.keyPattern)[0];
+
+      let message = "Duplicate value exists";
+
+      if (field === "email") message = "email already exists";
+      else if (field === "phoneNo") message = "phoneNo already exists";
+      else if (field.includes("identityNumber"))
+        message = "identityNumber already exists";
+
+      return NextResponse.json(
+        { message },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     return NextResponse.json(
-      {
-        success: false,
-        message: `${duplicatedField} already exists`,
-        duplicatedField
-      },
-      { status: 400, headers: corsHeaders }
+      { message: err?.message || "Internal Server Error" },
+      { status: 500, headers: corsHeaders }
     );
   }
-
-  return NextResponse.json(
-    { message: "Internal Server Error", error: error?.message || "Unexpected error" },
-    { status: 500, headers: corsHeaders }
-  );
-}
 }
