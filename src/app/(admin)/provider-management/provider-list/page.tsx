@@ -27,6 +27,7 @@ interface ProviderTableData {
   status: "Completed" | "Pending" | "Approved" | "Rejected";
   isApproved: boolean;
   isRejected: boolean;
+  isDeleted: boolean;
   step1Completed: boolean;
   storeInfoCompleted: boolean;
   kycCompleted: boolean;
@@ -34,7 +35,7 @@ interface ProviderTableData {
 
 const ProviderList = () => {
   const { modules } = useModule();
-  const { deleteProvider } = useProvider(); // ✅ Get deleteProvider from context
+  const { deleteProvider } = useProvider();
 
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [providers, setProviders] = useState<ProviderTableData[]>([]);
@@ -84,13 +85,14 @@ const ProviderList = () => {
           logo: storeInfo.logo || "",
           isRejected: provider.isRejected || false,
           isApproved: provider.isApproved || false,
+          isDeleted: provider.isDeleted || false,
           status,
           step1Completed: provider.step1Completed || false,
           storeInfoCompleted: provider.storeInfoCompleted || false,
           kycCompleted: provider.kycCompleted || false,
         };
       });
-
+      console.log("✅ Provider List (Processed):", updatedProviders);
       setProviders(updatedProviders);
       setMessage("");
     } catch (error) {
@@ -106,12 +108,15 @@ const ProviderList = () => {
     fetchProviders();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this provider?")) return;
+  const handleDelete = async (id: string, isDeleted: boolean) => {
+    if (isDeleted) return; // Disable delete if already deleted
 
+    if (!confirm("Are you sure you want to delete this provider?")) return;
     try {
-      await deleteProvider(id); // ✅ Call delete from context
-      setProviders((prev) => prev.filter((p) => p.id !== id));
+      await deleteProvider(id);
+      setProviders((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isDeleted: true } : p))
+      );
     } catch (error) {
       console.error("Failed to delete provider:", error);
     }
@@ -174,8 +179,7 @@ const ProviderList = () => {
       header: "S.No",
       accessor: "serial",
       render: (row: ProviderTableData) => {
-        const serial =
-          filteredProviders.findIndex((u) => u.id === row.id) + 1;
+        const serial = filteredProviders.findIndex((u) => u.id === row.id) + 1;
         return <span>{serial}</span>;
       },
     },
@@ -206,28 +210,48 @@ const ProviderList = () => {
         </div>
       ),
     },
-    { header: "Name", accessor: "fullName" },
+   
     { header: "Email", accessor: "email" },
     { header: "Phone", accessor: "phone" },
     { header: "City", accessor: "city" },
-    {
-      header: "Status",
-      accessor: "status",
+     {
+      header: "Approved Status",
+      accessor: "approvedStatus",
       render: (row: ProviderTableData) => {
-        const statusMap: any = {
-          Completed: "text-green-600 bg-green-100 border-green-300",
-          Pending: "text-yellow-500 bg-yellow-100 border-yellow-300",
-          Approved: "text-blue-600 bg-blue-100 border-blue-300",
-          Rejected: "text-red-600 bg-red-100 border-red-300",
-        };
+        let text = "Pending";
+        let colorClass = "text-yellow-600 bg-yellow-100 border-yellow-300";
+
+        if (row.isApproved) {
+          text = "Approved";
+          colorClass = "text-green-600 bg-green-100 border-green-300";
+        } else if (row.isRejected) {
+          text = "Rejected";
+          colorClass = "text-red-600 bg-red-100 border-red-300";
+        }
+
         return (
           <span
-            className={`px-3 py-1 rounded-full text-sm font-semibold ${statusMap[row.status]} border`}
+            className={`px-3 py-1 rounded-full text-sm font-semibold border ${colorClass}`}
           >
-            {row.status}
+            {text}
           </span>
         );
       },
+    },
+    {
+      header: "Active Status",
+      accessor: "activeStatus",
+      render: (row: ProviderTableData) => (
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-semibold border ${
+            row.isDeleted
+              ? "text-red-600 bg-red-100 border-red-300"
+              : "text-green-600 bg-green-100 border-green-300"
+          }`}
+        >
+          {row.isDeleted ? "Deleted" : "Active"}
+        </span>
+      ),
     },
     {
       header: "Action",
@@ -235,8 +259,13 @@ const ProviderList = () => {
       render: (row: ProviderTableData) => (
         <div className="flex gap-2">
           <button
-            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
-            onClick={() => handleDelete(row.id)} // ✅ Delete integrated
+            className={`border rounded-md p-2 ${
+              row.isDeleted
+                ? "text-gray-400 border-gray-300 cursor-not-allowed"
+                : "text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+            }`}
+            disabled={row.isDeleted}
+            onClick={() => handleDelete(row.id, row.isDeleted)}
           >
             <TrashBinIcon />
           </button>
@@ -256,7 +285,7 @@ const ProviderList = () => {
 
       <div className="mb-6">
         <ComponentCard title="Search & Filter">
-          <div className=" gap-4">
+          <div className="gap-4">
             <div>
               <Label htmlFor="search">Search Providers</Label>
               <Input

@@ -167,7 +167,7 @@ const SubscribeRequestPage = () => {
             <div className="my-5">
                 <ComponentCard title="Subscribe List">
                     {/* 🔍 Search bar */}
-                    <div className="flex justify-end mb-4">
+                    <div className="mb-4">
                         <Input
                             type="text"
                             placeholder="Search by Provider or Service Name..."
