@@ -23,7 +23,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://biz-booster-provider-panel.vercel.app',
   'https://api.fetchtrue.com', // ✅ ADD THIS LINE
-    'https://provider.fetchtrue.com',
+  'https://provider.fetchtrue.com',
 
 ];
 function getCorsHeaders(origin: string | null): HeadersInit {
@@ -120,11 +120,12 @@ export async function POST(req: NextRequest) {
       totalDebits: 0,
       cashInHand: 0,
       transactions: [],
+      adjustmentCash: 0,
     });
 
     const token = signToken(provider._id.toString());
 
-    const res = NextResponse.json({ message: "Registered", provider,token  }, { headers: corsHeaders });
+    const res = NextResponse.json({ message: "Registered", provider, token }, { headers: corsHeaders });
     res.cookies.set("token", token, { httpOnly: true, secure: true, sameSite: "none", path: "/" });
 
     return res;
