@@ -79,6 +79,7 @@ export async function GET(req: Request) {
                 if (wallet) {
                     wallet.balance += amount;
                     wallet.totalCredits += amount;
+                    wallet.pendingWithdraw += amount;
                     wallet.transactions.push({
                         type: "credit",
                         amount,

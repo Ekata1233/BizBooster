@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
                     userId,
                     balance: amount,
                     totalCredits: amount,
+                    pendingWithdraw: amount,
                     totalDebits: 0,
                     selfEarnings: level === "C" ? amount : 0,
                     referralEarnings: level === "A" || level === "B" ? amount : 0,
@@ -145,8 +146,9 @@ export async function POST(req: NextRequest) {
                 });
             } else {
 
-                wallet.balance = Number((wallet.balance + amount).toFixed(2));   // ✅ ensure 2 decimals
+                wallet.balance = Number((wallet.balance + amount).toFixed(2));
                 wallet.totalCredits = Number((wallet.totalCredits + amount).toFixed(2));
+                wallet.pendingWithdraw = Number((wallet.pendingWithdraw + amount).toFixed(2));
                 wallet.lastTransactionAt = new Date();
                 if (level === "C") wallet.selfEarnings = Number((wallet.selfEarnings + amount).toFixed(2));
                 else if (level === "A" || level === "B") wallet.referralEarnings = Number((wallet.referralEarnings + amount).toFixed(2));

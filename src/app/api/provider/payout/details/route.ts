@@ -486,6 +486,7 @@ export async function GET(req: NextRequest) {
               balance: wallet.balance,
               totalCredits: wallet.totalCredits,
               totalDebits: wallet.totalDebits,
+              pendingWithdraw: wallet.pendingWithdraw,
               selfEarnings: wallet.selfEarnings,
               referralEarnings: wallet.referralEarnings,
             } : null,

@@ -185,6 +185,7 @@ export async function POST(req: Request) {
                     balance: roundedAmount,
                     totalCredits: roundedAmount,
                     totalDebits: 0,
+                    pendingWithdraw: roundedAmount,
                     selfEarnings: level === "C" ? roundedAmount : 0,
                     referralEarnings: level === "A" || level === "B" ? roundedAmount : 0,
                     transactions: [transaction],
@@ -193,6 +194,7 @@ export async function POST(req: Request) {
             } else {
                 wallet.balance = toFixed2(wallet.balance + roundedAmount);
                 wallet.totalCredits = toFixed2(wallet.totalCredits + roundedAmount);
+                wallet.pendingWithdraw = toFixed2(wallet.pendingWithdraw + roundedAmount);
                 wallet.lastTransactionAt = new Date();
                 if (level === "C") wallet.selfEarnings = toFixed2(wallet.selfEarnings + roundedAmount);
                 else if (level === "A" || level === "B") wallet.referralEarnings = toFixed2(wallet.referralEarnings + roundedAmount);

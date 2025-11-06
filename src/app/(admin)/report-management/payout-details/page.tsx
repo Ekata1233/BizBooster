@@ -290,15 +290,167 @@
 // export default Page;
 
 
+// "use client";
+
+// import React, { useEffect, useState } from "react";
+// import ComponentCard from "@/components/common/ComponentCard";
+// import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+// import BasicTableOne from "@/components/tables/BasicTableOne";
+// import Pagination from "@/components/tables/Pagination";
+// import { FaFileDownload } from "react-icons/fa";
+// import * as XLSX from "xlsx";
+
+// interface PayoutRecord {
+//   type: "provider" | "user";
+//   providerId?: string;
+//   userId?: string;
+//   storeName?: string;
+//   fullName?: string;
+//   email: string;
+//   phoneNo?: string;
+//   mobileNumber?: string;
+//   wallet: {
+//     balance: number;
+//     totalEarning?: number;
+//     totalCredits?: number;
+//     totalDebits?: number;
+//     selfEarnings?: number;
+//     referralEarnings?: number;
+//   };
+//   bankDetails?: {
+//     accountNumber?: string;
+//     ifsc?: string;
+//     bankName?: string;
+//     branchName?: string;
+//   } | null;
+// }
+
+// const PayoutDetailsPage = () => {
+//   const [payoutData, setPayoutData] = useState<PayoutRecord[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const rowsPerPage = 10;
+
+//   // ✅ Fetch data from API
+//   useEffect(() => {
+//     const fetchPayouts = async () => {
+//       try {
+//         const res = await fetch(`/api/provider/payout/details?page=${currentPage}&limit=${rowsPerPage}`);
+//         const data = await res.json();
+//         if (data.success) {
+//           setPayoutData(data.data);
+//         } else {
+//           setError("Failed to load payout details");
+//         }
+//       } catch (err: any) {
+//         console.error(err);
+//         setError("Error fetching payout data");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchPayouts();
+//   }, [currentPage]);
+
+//   // ✅ Table Columns
+//   const columns = [
+//     { header: "S.No", accessor: "serial" },
+//     { header: "Type", accessor: "type" },
+//     { header: "Name", accessor: "name" },
+//     { header: "Email", accessor: "email" },
+//     { header: "Phone", accessor: "phone" },
+//     { header: "Balance (₹)", accessor: "balance" },
+//     { header: "Pending Payout (₹)", accessor: "pendingPayout" },
+//     { header: "Bank Name", accessor: "bankName" },
+//   ];
+
+//   // ✅ Table Data
+//   const tableData = payoutData.map((item, index) => ({
+//     serial: (currentPage - 1) * rowsPerPage + index + 1,
+//     type: item.type,
+//     name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
+//     email: item.email || "-",
+//     phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
+//     balance: item.wallet?.balance?.toFixed(2) || "0.00",
+//     pendingPayout: (item.wallet?.balance || 0).toFixed(2),
+//     bankName: item.bankDetails?.bankName || "-",
+//   }));
+
+//   // ✅ Excel Export
+//   const handleDownload = () => {
+//     if (!payoutData.length) return;
+//     const exportData = payoutData.map((item, index) => ({
+//       "S.No": index + 1,
+//       Type: item.type,
+//       Name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
+//       Email: item.email || "-",
+//       Phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
+//       Balance: item.wallet?.balance?.toFixed(2) || "0.00",
+//       "Pending Payout": item.wallet?.balance?.toFixed(2) || "0.00",
+//       "Bank Name": item.bankDetails?.bankName || "-",
+//       "Account Number": item.bankDetails?.accountNumber || "-",
+//       IFSC: item.bankDetails?.ifsc || "-",
+//       Branch: item.bankDetails?.branchName || "-",
+//     }));
+
+//     const worksheet = XLSX.utils.json_to_sheet(exportData);
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Payout Details");
+//     XLSX.writeFile(workbook, "payout-details.xlsx");
+//   };
+
+//   if (loading) return <p className="text-center py-10">Loading payout details...</p>;
+//   if (error) return <p className="text-center text-red-600 py-10">{error}</p>;
+
+//   return (
+//     <div>
+//       <PageBreadcrumb pageTitle="Payout Details" />
+//       <div className="my-5">
+//         <ComponentCard title="Payout Details">
+//           {/* Download Button */}
+//           <div className="flex justify-end mb-4">
+//             <button
+//               onClick={handleDownload}
+//               className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+//             >
+//               <FaFileDownload className="w-5 h-5" />
+//               <span>Export Excel</span>
+//             </button>
+//           </div>
+
+//           {/* Table */}
+//           {payoutData.length === 0 ? (
+//             <div className="text-gray-500 text-center py-10">No payout data found.</div>
+//           ) : (
+//             <>
+//               <BasicTableOne columns={columns} data={tableData} />
+//               <div className="flex justify-center mt-4">
+//                 <Pagination
+//                   currentPage={currentPage}
+//                   totalItems={80} // if you know totalRecords from API, replace this with it
+//                   totalPages={8} // or use data.totalPages if API returns it
+//                   onPageChange={setCurrentPage}
+//                 />
+//               </div>
+//             </>
+//           )}
+//         </ComponentCard>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default PayoutDetailsPage;
+
+
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ComponentCard from "@/components/common/ComponentCard";
+import React, { useEffect, useMemo, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import BasicTableOne from "@/components/tables/BasicTableOne";
-import Pagination from "@/components/tables/Pagination";
-import { FaFileDownload } from "react-icons/fa";
-import * as XLSX from "xlsx";
+import ComponentCard from "@/components/common/ComponentCard";
+import PayoutTransactions from "@/components/payout-details/PayoutTransactions";
+import PayoutSummaryCards from "@/components/payout-details/PayoutSummaryCards";
 
 interface PayoutRecord {
   type: "provider" | "user";
@@ -329,17 +481,28 @@ const PayoutDetailsPage = () => {
   const [payoutData, setPayoutData] = useState<PayoutRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<"total" | "user" | "provider">("total");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const rowsPerPage = 10;
 
-  // ✅ Fetch data from API
+  // ✅ Fetch payout data
   useEffect(() => {
     const fetchPayouts = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`/api/provider/payout/details?page=${currentPage}&limit=${rowsPerPage}`);
+        const url =
+          activeTab === "total"
+            ? `/api/provider/payout/details?page=${currentPage}&limit=${rowsPerPage}`
+            : `/api/provider/payout/details?type=${activeTab}&page=${currentPage}&limit=${rowsPerPage}`;
+
+        const res = await fetch(url);
         const data = await res.json();
         if (data.success) {
           setPayoutData(data.data);
+          setTotalPages(data.totalPages || 1);
+          setTotalRecords(data.totalRecords || data.data.length);
         } else {
           setError("Failed to load payout details");
         }
@@ -351,54 +514,26 @@ const PayoutDetailsPage = () => {
       }
     };
     fetchPayouts();
-  }, [currentPage]);
+  }, [activeTab, currentPage]);
 
-  // ✅ Table Columns
-  const columns = [
-    { header: "S.No", accessor: "serial" },
-    { header: "Type", accessor: "type" },
-    { header: "Name", accessor: "name" },
-    { header: "Email", accessor: "email" },
-    { header: "Phone", accessor: "phone" },
-    { header: "Balance (₹)", accessor: "balance" },
-    { header: "Pending Payout (₹)", accessor: "pendingPayout" },
-    { header: "Bank Name", accessor: "bankName" },
-  ];
+  // ✅ Totals
+  const userTotal = useMemo(
+    () =>
+      payoutData
+        .filter((p) => p.type === "user")
+        .reduce((sum, item) => sum + (item.wallet?.balance || 0), 0),
+    [payoutData]
+  );
 
-  // ✅ Table Data
-  const tableData = payoutData.map((item, index) => ({
-    serial: (currentPage - 1) * rowsPerPage + index + 1,
-    type: item.type,
-    name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
-    email: item.email || "-",
-    phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
-    balance: item.wallet?.balance?.toFixed(2) || "0.00",
-    pendingPayout: (item.wallet?.balance || 0).toFixed(2),
-    bankName: item.bankDetails?.bankName || "-",
-  }));
+  const providerTotal = useMemo(
+    () =>
+      payoutData
+        .filter((p) => p.type === "provider")
+        .reduce((sum, item) => sum + (item.wallet?.balance || 0), 0),
+    [payoutData]
+  );
 
-  // ✅ Excel Export
-  const handleDownload = () => {
-    if (!payoutData.length) return;
-    const exportData = payoutData.map((item, index) => ({
-      "S.No": index + 1,
-      Type: item.type,
-      Name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
-      Email: item.email || "-",
-      Phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
-      Balance: item.wallet?.balance?.toFixed(2) || "0.00",
-      "Pending Payout": item.wallet?.balance?.toFixed(2) || "0.00",
-      "Bank Name": item.bankDetails?.bankName || "-",
-      "Account Number": item.bankDetails?.accountNumber || "-",
-      IFSC: item.bankDetails?.ifsc || "-",
-      Branch: item.bankDetails?.branchName || "-",
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Payout Details");
-    XLSX.writeFile(workbook, "payout-details.xlsx");
-  };
+  const totalPayout = userTotal + providerTotal;
 
   if (loading) return <p className="text-center py-10">Loading payout details...</p>;
   if (error) return <p className="text-center text-red-600 py-10">{error}</p>;
@@ -406,35 +541,28 @@ const PayoutDetailsPage = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="Payout Details" />
-      <div className="my-5">
-        <ComponentCard title="Payout Details">
-          {/* Download Button */}
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-            >
-              <FaFileDownload className="w-5 h-5" />
-              <span>Export Excel</span>
-            </button>
-          </div>
 
-          {/* Table */}
-          {payoutData.length === 0 ? (
-            <div className="text-gray-500 text-center py-10">No payout data found.</div>
-          ) : (
-            <>
-              <BasicTableOne columns={columns} data={tableData} />
-              <div className="flex justify-center mt-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={80} // if you know totalRecords from API, replace this with it
-                  totalPages={8} // or use data.totalPages if API returns it
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            </>
-          )}
+      <div className="my-5">
+        {/* ✅ Child 1: Summary Cards */}
+        <ComponentCard title="Payout Summary">
+          <PayoutSummaryCards
+            userTotal={userTotal}
+            providerTotal={providerTotal}
+            totalPayout={totalPayout}
+          />
+        </ComponentCard>
+
+        {/* ✅ Child 2: Transactions Table */}
+        <ComponentCard title="Payout Transactions" className="mt-8">
+          <PayoutTransactions
+            payoutData={payoutData}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+          />
         </ComponentCard>
       </div>
     </div>

@@ -9,6 +9,8 @@ export interface IWallet extends Document {
   transactions: IWalletTransaction[];
   totalCredits: number;
   totalDebits: number;
+  pendingWithdraw: number;
+  alreadyWithdrawn: number;
   lastTransactionAt?: Date;
   linkedBankAccount?: string;
   isActive: boolean;
@@ -20,8 +22,8 @@ export interface IWallet extends Document {
 export interface IWalletTransaction {
   _id?: mongoose.Types.ObjectId;
   type: 'credit' | 'debit';
-  leadId : string;
-  commissionFrom : string;
+  leadId: string;
+  commissionFrom: string;
   amount: number;
   from: string;
   description?: string;
@@ -40,10 +42,10 @@ const TransactionSchema = new Schema<IWalletTransaction>(
       enum: ['credit', 'debit'],
       required: [true, 'Transaction type is required'],
     },
-    leadId:{
+    leadId: {
       type: String,
     },
-    commissionFrom:{
+    commissionFrom: {
       type: String,
     },
     amount: {
@@ -72,12 +74,12 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment', 'referral','payout'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment', 'referral', 'payout'],
       default: 'checkout',
     },
     status: {
       type: String,
-      enum: ['success', 'failed', 'pending','received'],
+      enum: ['success', 'failed', 'pending', 'received'],
       default: 'success',
     },
     balanceAfterTransaction: {
@@ -127,6 +129,16 @@ const WalletSchema = new Schema<IWallet>(
       type: Number,
       default: 0,
       min: [0, 'Total debits cannot be negative'],
+    },
+    pendingWithdraw: {
+      type: Number,
+      default: 0,
+      min: [0, 'Pending Withdraw cannot be negative'],
+    },
+    alreadyWithdrawn: {
+      type: Number,
+      default: 0,
+      min: [0, 'Already Withdrawn cannot be negative'],
     },
     lastTransactionAt: {
       type: Date,
