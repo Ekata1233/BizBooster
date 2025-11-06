@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { useProvider } from "@/context/ProviderContext";
+import { useUserWallet } from "@/context/WalletContext";
+import React, { useEffect } from "react";
 import { FaWallet, FaMoneyBillWave, FaCashRegister } from "react-icons/fa";
 
 interface PayoutSummaryCardsProps {
@@ -14,6 +16,44 @@ const PayoutSummaryCards: React.FC<PayoutSummaryCardsProps> = ({
   providerTotal,
   totalPayout,
 }) => {
+
+  const {
+    allWallets: allUserWallets,
+    fetchAllWallets,
+    loading: userLoading,
+    error: userError,
+  } = useUserWallet();
+
+  const {
+    allWallet: allProviderWallets,
+    fetchAllWallet,
+    loading: providerLoading,
+    error: providerError,
+  } = useProvider();
+
+  useEffect(() => {
+    fetchAllWallets();
+    fetchAllWallet();
+  }, []);
+
+  // Log data when fetched
+  useEffect(() => {
+    if (allUserWallets.length) {
+      console.log('👤 All User Wallets:', allUserWallets);
+    }
+  }, [allUserWallets]);
+
+  useEffect(() => {
+    if (allProviderWallets.length) {
+      console.log('🏪 All Provider Wallets:', allProviderWallets);
+    }
+  }, [allProviderWallets]);
+
+  if (userLoading || providerLoading) return <p>Loading all wallets...</p>;
+  if (userError || providerError)
+    return <p>Error: {userError || providerError}</p>;
+
+
   const summaryCards = [
     {
       title: "User Payout",

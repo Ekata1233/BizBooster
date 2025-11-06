@@ -27,6 +27,8 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
 }) => {
   const rowsPerPage = 10;
 
+  console.log("payout data : ", payoutData)
+
   // ✅ Table Columns
   const columns = [
     { header: "S.No", accessor: "serial" },
