@@ -26,6 +26,8 @@ export interface IWallet {
   transactions: IWalletTransaction[];
   totalCredits: number;
   totalDebits: number;
+  pendingWithdraw: number;
+  alreadyWithdraw: number;
   lastTransactionAt?: Date;
   linkedBankAccount?: string;
   isActive: boolean;

@@ -546,9 +546,9 @@ const PayoutDetailsPage = () => {
         {/* ✅ Child 1: Summary Cards */}
         <ComponentCard title="Payout Summary">
           <PayoutSummaryCards
-            userTotal={userTotal}
-            providerTotal={providerTotal}
-            totalPayout={totalPayout}
+            // userTotal={userTotal}
+            // providerTotal={providerTotal}
+            // totalPayout={totalPayout}
           />
         </ComponentCard>
 

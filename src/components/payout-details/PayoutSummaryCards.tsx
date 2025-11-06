@@ -2,21 +2,10 @@
 
 import { useProvider } from "@/context/ProviderContext";
 import { useUserWallet } from "@/context/WalletContext";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { FaWallet, FaMoneyBillWave, FaCashRegister } from "react-icons/fa";
 
-interface PayoutSummaryCardsProps {
-  userTotal: number;
-  providerTotal: number;
-  totalPayout: number;
-}
-
-const PayoutSummaryCards: React.FC<PayoutSummaryCardsProps> = ({
-  userTotal,
-  providerTotal,
-  totalPayout,
-}) => {
-
+const PayoutSummaryCards: React.FC = () => {
   const {
     allWallets: allUserWallets,
     fetchAllWallets,
@@ -31,28 +20,46 @@ const PayoutSummaryCards: React.FC<PayoutSummaryCardsProps> = ({
     error: providerError,
   } = useProvider();
 
+  // Fetch all wallet data
   useEffect(() => {
     fetchAllWallets();
     fetchAllWallet();
   }, []);
 
-  // Log data when fetched
-  useEffect(() => {
-    if (allUserWallets.length) {
-      console.log('👤 All User Wallets:', allUserWallets);
-    }
-  }, [allUserWallets]);
+  // Calculate totals safely using useMemo
+  const { userTotal, providerTotal, totalPayout } = useMemo(() => {
+    const ignoredUserId = "444c44d4444be444d4444444";
 
-  useEffect(() => {
-    if (allProviderWallets.length) {
-      console.log('🏪 All Provider Wallets:', allProviderWallets);
-    }
-  }, [allProviderWallets]);
+    // ✅ Convert _id to string before comparing
+    const validUserWallets = allUserWallets?.filter((wallet) => {
+      const currentId = wallet?.userId?._id?.toString?.();
+      return currentId !== ignoredUserId;
+    });
 
-  if (userLoading || providerLoading) return <p>Loading all wallets...</p>;
+    const userTotal = validUserWallets?.reduce(
+      (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
+      0
+    );
+
+    const providerTotal = allProviderWallets?.reduce(
+      (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
+      0
+    );
+
+    const totalPayout = userTotal + providerTotal;
+
+    return { userTotal, providerTotal, totalPayout };
+  }, [allUserWallets, allProviderWallets]);
+
+  // Log fetched data (for debugging)
+  useEffect(() => {
+    if (allUserWallets?.length) console.log("👤 All User Wallets:", allUserWallets);
+    if (allProviderWallets?.length) console.log("🏪 All Provider Wallets:", allProviderWallets);
+  }, [allUserWallets, allProviderWallets]);
+
+  if (userLoading || providerLoading) return <p>Loading wallets...</p>;
   if (userError || providerError)
     return <p>Error: {userError || providerError}</p>;
-
 
   const summaryCards = [
     {
