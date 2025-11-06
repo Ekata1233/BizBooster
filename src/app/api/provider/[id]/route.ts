@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
   const response = {
     ...provider.toObject(),
     totalCredits: wallet?.totalCredits || 0,
+    pendingWithdraw: wallet?.pendingWithdraw || 0,
     totalCompletedBookings: completedCheckoutsCount,
     totalSubscribedServices: provider.subscribedServices?.length || 0,
     totalServicemen: servicemenCount,

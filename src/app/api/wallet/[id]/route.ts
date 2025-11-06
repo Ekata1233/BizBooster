@@ -62,6 +62,7 @@ export async function PATCH(req: NextRequest) {
     // Update wallet: balance, totalCredits, transactions
     wallet.balance += amount;
     wallet.totalCredits += amount;
+    wallet.pendingWithdraw +=amount;
     wallet.transactions.push(transaction);
     wallet.lastTransactionAt = new Date();
 

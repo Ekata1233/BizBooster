@@ -118,6 +118,8 @@ export const POST = async (req: Request) => {
       transactions: [],
       totalCredits: 0,
       totalDebits: 0,
+      pendingWithdraw: 0,
+      alreadyWithdrawn: 0,
       lastTransactionAt: null
     });
     await wallet.save();

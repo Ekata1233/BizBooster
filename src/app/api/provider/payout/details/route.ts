@@ -447,6 +447,8 @@ export async function GET(req: NextRequest) {
               totalEarning: wallet.totalEarning,
               totalCredits: wallet.totalCredits,
               totalDebits: wallet.totalDebits,
+              pendingWithdraw: wallet.pendingWithdraw,
+              alreadyWithdrawn: wallet.alreadyWithdrawn,
             } : null,
             bankDetails: bank ? {
               accountNumber: bank.accountNumber,
@@ -486,6 +488,8 @@ export async function GET(req: NextRequest) {
               balance: wallet.balance,
               totalCredits: wallet.totalCredits,
               totalDebits: wallet.totalDebits,
+              pendingWithdraw: wallet.pendingWithdraw,
+              alreadyWithdrawn: wallet.alreadyWithdrawn,
               selfEarnings: wallet.selfEarnings,
               referralEarnings: wallet.referralEarnings,
             } : null,

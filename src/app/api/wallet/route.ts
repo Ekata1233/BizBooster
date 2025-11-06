@@ -72,6 +72,7 @@ export async function POST(req: Request) {
                 transactions: [transaction],
                 totalCredits: type === 'credit' ? amount : 0,
                 totalDebits: type === 'debit' ? amount : 0,
+                pendingWithdraw: type === 'credit' ? amount : 0,
                 lastTransactionAt: new Date(),
             });
         } else {
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
             if (type === 'credit') {
                 wallet.balance += amount;
                 wallet.totalCredits += amount;
+                wallet.pendingWithdraw +=amount;
             } else if (type === 'debit') {
                 if (wallet.balance < amount) {
                     return NextResponse.json(
