@@ -51,12 +51,6 @@ const PayoutSummaryCards: React.FC = () => {
     return { userTotal, providerTotal, totalPayout };
   }, [allUserWallets, allProviderWallets]);
 
-  // Log fetched data (for debugging)
-  useEffect(() => {
-    if (allUserWallets?.length) console.log("👤 All User Wallets:", allUserWallets);
-    if (allProviderWallets?.length) console.log("🏪 All Provider Wallets:", allProviderWallets);
-  }, [allUserWallets, allProviderWallets]);
-
   if (userLoading || providerLoading) return <p>Loading wallets...</p>;
   if (userError || providerError)
     return <p>Error: {userError || providerError}</p>;

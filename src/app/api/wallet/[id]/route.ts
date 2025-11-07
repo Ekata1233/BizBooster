@@ -3,12 +3,28 @@ import Wallet from '@/models/Wallet';
 import AdminEarnings from '@/models/AdminEarnings';
 import { connectToDatabase } from '@/utils/db';
 import "@/models/User";
+import UserPayout from '@/models/UserPayout';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+
+function getWeekRange() {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diffToMonday = (dayOfWeek + 6) % 7;
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - diffToMonday);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
+}
 
 export async function PATCH(req: NextRequest) {
   await connectToDatabase();
@@ -67,6 +83,18 @@ export async function PATCH(req: NextRequest) {
     wallet.lastTransactionAt = new Date();
 
     await wallet.save();
+
+     try {
+      const { weekStart, weekEnd } = getWeekRange();
+
+      await UserPayout.findOneAndUpdate(
+        { userId, weekStart, weekEnd },
+        { $inc: { pendingWithdraw: amount } },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.error("Error updating weekly payout pending:", err);
+    }
 
     // If userId matches admin earnings criteria
     if (userId === '444c44d4444be444d4444444') {

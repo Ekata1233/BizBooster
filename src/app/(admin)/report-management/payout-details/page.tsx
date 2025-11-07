@@ -485,6 +485,9 @@ const PayoutDetailsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [filterTrigger, setFilterTrigger] = useState(0);
   const rowsPerPage = 10;
 
   // ✅ Fetch payout data
@@ -492,10 +495,13 @@ const PayoutDetailsPage = () => {
     const fetchPayouts = async () => {
       setLoading(true);
       try {
-        const url =
+        let url =
           activeTab === "total"
             ? `/api/provider/payout/details?page=${currentPage}&limit=${rowsPerPage}`
             : `/api/provider/payout/details?type=${activeTab}&page=${currentPage}&limit=${rowsPerPage}`;
+
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
 
         const res = await fetch(url);
         const data = await res.json();
@@ -514,7 +520,9 @@ const PayoutDetailsPage = () => {
       }
     };
     fetchPayouts();
-  }, [activeTab, currentPage]);
+  }, [activeTab, currentPage, filterTrigger]);
+
+  console.log("payout data : ", payoutData)
 
   // ✅ Totals
   const userTotal = useMemo(
@@ -546,9 +554,9 @@ const PayoutDetailsPage = () => {
         {/* ✅ Child 1: Summary Cards */}
         <ComponentCard title="Payout Summary">
           <PayoutSummaryCards
-            // userTotal={userTotal}
-            // providerTotal={providerTotal}
-            // totalPayout={totalPayout}
+          // userTotal={userTotal}
+          // providerTotal={providerTotal}
+          // totalPayout={totalPayout}
           />
         </ComponentCard>
 
@@ -562,6 +570,11 @@ const PayoutDetailsPage = () => {
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}
             totalRecords={totalRecords}
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            setFilterTrigger={setFilterTrigger}
           />
         </ComponentCard>
       </div>

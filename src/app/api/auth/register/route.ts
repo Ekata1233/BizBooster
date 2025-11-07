@@ -8,6 +8,7 @@ import { generateOtp } from '@/utils/generateOtp';
 import Wallet from '@/models/Wallet';
 import jwt from 'jsonwebtoken';  // ✅ Add JWT
 import bcrypt from 'bcrypt';
+import UserPayout from '@/models/UserPayout';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +19,21 @@ const corsHeaders = {
 // ✅ Handle preflight
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
+}
+
+function getWeekRange() {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diffToMonday = (dayOfWeek + 6) % 7;
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - diffToMonday);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
 }
 
 export const POST = async (req: Request) => {
@@ -124,6 +140,18 @@ export const POST = async (req: Request) => {
     });
     await wallet.save();
 
+    try {
+      const { weekStart, weekEnd } = getWeekRange();
+
+      await UserPayout.findOneAndUpdate(
+        { userId: newUser._id, weekStart, weekEnd },
+        { $setOnInsert: { pendingWithdraw: 0 } },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.error("Error creating initial payout record:", err);
+    }
+
     const token = jwt.sign(
       { userId: newUser._id },
       process.env.JWT_SECRET!,
@@ -132,7 +160,7 @@ export const POST = async (req: Request) => {
 
     const { __v, ...userData } = newUser.toObject();
     return NextResponse.json(
-      { success: true, message: 'Register Successfull',token, user: userData },
+      { success: true, message: 'Register Successfull', token, user: userData },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: unknown) {

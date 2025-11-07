@@ -449,6 +449,8 @@ export async function GET(req: NextRequest) {
               totalDebits: wallet.totalDebits,
               pendingWithdraw: wallet.pendingWithdraw,
               alreadyWithdrawn: wallet.alreadyWithdrawn,
+              transactions: wallet.transactions
+                    .reverse() || [],
             } : null,
             bankDetails: bank ? {
               accountNumber: bank.accountNumber,
@@ -492,6 +494,8 @@ export async function GET(req: NextRequest) {
               alreadyWithdrawn: wallet.alreadyWithdrawn,
               selfEarnings: wallet.selfEarnings,
               referralEarnings: wallet.referralEarnings,
+              transactions: wallet.transactions
+                    .reverse() || [],
             } : null,
             bankDetails: bank ? {
               accountNumber: bank.accountNumber,
