@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   FaUsers,
   FaClipboardList,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import ColorStatCard from "@/components/common/ColorStatCard";
 import { AdminEarningsType } from "@/context/AdminEarningsContext";
+import { useProvider } from "@/context/ProviderContext";
 
 interface Transaction {
   transactionId: string;
@@ -24,44 +25,70 @@ interface Transaction {
   method?: string;
   source?: string;
   status?: string;
+  pendingWithdraw?: number;
 }
 
 interface Props {
   summary: AdminEarningsType;
-  transactionDetails?: Transaction[]; // ✅ optional now
+  transactionDetails?: Transaction[];
 }
 
 const SummaryCards: React.FC<Props> = ({ summary, transactionDetails = [] }) => {
   const formatAmount = (amount?: number) => {
-    const num = Number(amount) || 0; // converts undefined/null/"string" → 0
+    const num = Number(amount) || 0;
     return `₹${num.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
+  const {
+    allWallet: allProviderWallets,
+    fetchAllWallet,
+    loading: providerLoading,
+    error: providerError,
+  } = useProvider();
 
-  console.log("summary : ", summary);
-  console.log("transactions : ", transactionDetails);
+  // console.log("summary : ", summary);
 
-  // ✅ Calculate Provider & Franchise pending payouts in frontend
-  const { providerPending, franchisePending } = useMemo(() => {
+  // ✅ Always call hooks before any conditional return
+  const { providerTotal } = useMemo(() => {
+    const providerTotal = allProviderWallets?.reduce(
+      (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
+      0
+    );
+    return { providerTotal };
+  }, [allProviderWallets]);
+
+  useEffect(() => {
+    fetchAllWallet();
+  }, []);
+  // console.log("allProviderWallets : ", providerTotal);
+
+  const { providerPending, franchisePending, providerWalletTotal } = useMemo(() => {
     let providerTotal = 0;
     let franchiseTotal = 0;
+    let providerWalletTotal = 0;
 
     transactionDetails.forEach((t) => {
-      const balance = Number(t.balance);
-      if (isNaN(balance)) return; // ignore "-" or invalid balances
-
       if (t.walletType === "Provider") {
-        providerTotal += balance;
+        providerTotal += Number(t.pendingWithdraw) || 0;
       } else if (t.walletType === "User") {
-        franchiseTotal += balance;
+        franchiseTotal += Number(t.pendingWithdraw) || 0;
       }
     });
 
-    return { providerPending: providerTotal, franchisePending: franchiseTotal };
+    return { providerPending: providerTotal, franchisePending: franchiseTotal, providerWalletTotal };
   }, [transactionDetails]);
+
+  useEffect(() => {
+    if (allProviderWallets?.length)
+      console.log("🏪 All Provider Wallets:", allProviderWallets);
+  }, [allProviderWallets]);
+
+  // ✅ Now safe to conditionally return
+  if (providerLoading) return <p>Loading wallets...</p>;
+  if (providerError) return <p>Error: {providerError}</p>;
 
   const cards = [
     {
@@ -87,7 +114,7 @@ const SummaryCards: React.FC<Props> = ({ summary, transactionDetails = [] }) => 
     },
     {
       title: "Provider Earnings",
-      value: formatAmount(summary.providerEarnings),
+      value: formatAmount(providerTotal),
       icon: <FaTools size={48} />,
       gradient: "from-yellow-100 to-yellow-200",
       textColor: "text-yellow-800",

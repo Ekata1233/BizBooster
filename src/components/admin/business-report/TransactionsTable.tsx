@@ -32,7 +32,7 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
 
   const rowsPerPage = 10;
 
-  console.log("trnascation s : ", transactions)
+  // console.log("trnascation s : ", transactions)
   const tabButtons = [
     { key: 'all', label: 'All' },
     { key: 'credit', label: 'Credit' },
