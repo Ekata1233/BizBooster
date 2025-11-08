@@ -55,8 +55,21 @@ export async function POST(req: NextRequest) {
                 // --- Provider Wallet Update ---
                 const providerWallet = await ProviderWallet.findOne({ providerId: payout.providerId });
                 if (providerWallet) {
+                    providerWallet.balance = Math.max(0, (providerWallet.balance || 0) - pending);
                     providerWallet.pendingWithdraw = Math.max(0, (providerWallet.pendingWithdraw || 0) - pending);
                     providerWallet.alreadyWithdrawn = Number(((providerWallet.alreadyWithdrawn || 0) + pending).toFixed(2));
+
+                    providerWallet.transactions.push({
+                        type: "debit",
+                        amount: pending,
+                        method: "BankTransfer",
+                        source: "payout",
+                        status: "success",
+                        description: "Weekly payout processed",
+                        balanceAfterTransaction: providerWallet.balance,
+                        createdAt: new Date(),
+                    });
+
                     await providerWallet.save();
                     console.log(`✅ Provider wallet updated for ${payout.providerId}`);
                 }
@@ -64,8 +77,21 @@ export async function POST(req: NextRequest) {
                 // --- User Wallet Update ---
                 const userWallet = await Wallet.findOne({ userId: payout.userId });
                 if (userWallet) {
+                    userWallet.balance = Math.max(0, (userWallet.balance || 0) - pending);
                     userWallet.pendingWithdraw = Math.max(0, (userWallet.pendingWithdraw || 0) - pending);
                     userWallet.alreadyWithdrawn = Number(((userWallet.alreadyWithdrawn || 0) + pending).toFixed(2));
+
+                    userWallet.transactions.push({
+                        type: "debit",
+                        amount: pending,
+                        method: "BankTransfer",
+                        source: "payout",
+                        status: "success",
+                        description: "Weekly payout processed",
+                        balanceAfterTransaction: userWallet.balance,
+                        createdAt: new Date(),
+                    });
+
                     await userWallet.save();
                     console.log(`✅ User wallet updated for ${payout.userId}`);
                 }

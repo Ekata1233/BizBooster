@@ -50,7 +50,7 @@ const TransactionSchema = new Schema<IWalletTransaction>(
     },
     source: {
       type: String,
-      enum: ['checkout', 'refund', 'topup', 'adjustment', 'withdraw'],
+      enum: ['checkout', 'refund', 'topup', 'adjustment', 'withdraw','payout'],
       default: 'topup',
     },
     status: {
