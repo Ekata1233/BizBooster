@@ -290,7 +290,7 @@ export async function GET(req: NextRequest) {
     const dateObj = new Date(invoice.createdAt);
     drawText(`Request Date: ${dateObj.toLocaleDateString('en-IN')}`, 400, y - 15);
     drawText(`Request Time: ${dateObj.toLocaleTimeString('en-IN')}`, 400, y - 30);
-    drawText(`Service: ${invoice.serviceDate ? new Date(invoice.serviceDate).toLocaleString('en-IN') : 'N/A'}`, 400, y - 45);
+    // drawText(`Service: ${invoice.serviceDate ? new Date(invoice.serviceDate).toLocaleString('en-IN') : 'N/A'}`, 400, y - 45);
 
     y -= 100;
     if (y < bottomMargin + 100) addNewPage();

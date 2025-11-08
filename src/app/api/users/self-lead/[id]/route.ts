@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // Prepare lead data with commission (share_1 + extra_share_1)
+    // Prepare lead data with all commission fields
     const results = await Promise.all(
       checkouts.map(async (checkout) => {
         // Fetch commission for this checkout
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
           checkoutId: checkout._id,
         }).lean();
 
-        // Calculate combined commission
+        // Calculate combined share_1 + extra_share_1
         const totalShare =
           commissionRecord
             ? Number(
@@ -58,6 +58,16 @@ export async function GET(req: Request) {
                   (commissionRecord.extra_share_1 || 0)
               ).toFixed(2)
             : "0.00";
+
+             const leadStatus = checkout?.isCanceled
+          ? "cancelled"
+          : checkout?.isCompleted
+          ? "completed"
+          : checkout?.isAccepted
+          ? "Accepted"
+          : checkout?.orderStatus === "processing"
+          ? "processing"
+          : checkout?.orderStatus || "processing";
 
         return {
           leadId: checkout.bookingId || checkout._id,
@@ -70,10 +80,17 @@ export async function GET(req: Request) {
           price: Number(
             checkout.grandTotal || checkout.totalAmount || 0
           ).toFixed(2),
+
+          // Commission fields
           share_1: Number(commissionRecord?.share_1 || 0).toFixed(2),
           extra_share_1: Number(commissionRecord?.extra_share_1 || 0).toFixed(2),
-          totalShare, // new field = share_1 + extra_share_1
-          leadStatus: checkout.orderStatus || "processing",
+          share_2: Number(commissionRecord?.share_2 || 0).toFixed(2),
+          extra_share_2: Number(commissionRecord?.extra_share_2 || 0).toFixed(2),
+          share_3: Number(commissionRecord?.share_3 || 0).toFixed(2),
+          extra_share_3: Number(commissionRecord?.extra_share_3 || 0).toFixed(2),
+
+          totalShare, // share_1 + extra_share_1
+          leadStatus:leadStatus,
         };
       })
     );
