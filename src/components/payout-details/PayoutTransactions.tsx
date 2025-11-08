@@ -289,7 +289,6 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
     { header: "Balance (₹)", accessor: "balance" },
     { header: "Pending Payout (₹)", accessor: "pendingPayout" },
     { header: "Bank Name", accessor: "bankName" },
-    { header: "Week", accessor: "weekRange" },
   ];
 
   // Helper to safely format date string
@@ -328,8 +327,8 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
       serial: (currentPage - 1) * rowsPerPage + index + 1,
       type: item.type,
       name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
-      email: item.email || "-",
-      phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
+      email: item.type === "user" ? item.email || "-" : item.storeEmail || "-",
+      phone: item.type === "user" ? item.mobileNumber || "-" : item.storePhone || "-",
       balance: item.wallet?.balance != null ? Number(item.wallet.balance).toFixed(2) : "0.00",
       pendingPayout: (() => {
         const wpArray = Array.isArray(item.weeklyPayouts) ? item.weeklyPayouts : [];
@@ -362,33 +361,70 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
     };
   });
 
-  // Excel export (unchanged except include week)
+  // Excel export (filtered by selectedWeek)
   const handleDownload = () => {
     if (!payoutData.length) return;
 
-    const exportData = payoutData.map((item, index) => {
-      const wp = item.weeklyPayout;
+    // Filter payoutData based on selectedWeek
+    const filteredData = payoutData.filter((item) => {
+      if (!selectedWeek) return true; // All weeks selected
+      if (!Array.isArray(item.weeklyPayouts)) return false;
+      return item.weeklyPayouts.some((wp) => wp.weekStart === selectedWeek);
+    });
+
+    if (filteredData.length === 0) {
+      alert("No payout data found for the selected week.");
+      return;
+    }
+
+    // Build export data based on week filter
+    const exportData = filteredData.map((item, index) => {
+      const wpArray = Array.isArray(item.weeklyPayouts) ? item.weeklyPayouts : [];
+      const wp = selectedWeek
+        ? wpArray.find((w) => w.weekStart === selectedWeek)
+        : wpArray.sort(
+          (a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
+        )[0];
+
       return {
         "S.No": index + 1,
         Type: item.type,
         Name: item.type === "user" ? item.fullName || "-" : item.storeName || "-",
-        Email: item.email || "-",
-        Phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
-        Balance: item.wallet?.balance != null ? Number(item.wallet.balance).toFixed(2) : "0.00",
-        "Pending Payout": item.wallet?.pendingWithdraw != null ? Number(item.wallet.pendingWithdraw).toFixed(2) : "0.00",
+        Email: item.type === "user" ? item.email || "-" : item.storeEmail || "-",
+        Phone: item.type === "user" ? item.mobileNumber || "-" : item.storePhone || "-",
+        Balance:
+          item.wallet?.balance != null
+            ? Number(item.wallet.balance).toFixed(2)
+            : "0.00",
+        "Pending Payout":
+          wp?.pendingWithdraw != null
+            ? Number(wp.pendingWithdraw).toFixed(2)
+            : item.wallet?.pendingWithdraw != null
+              ? Number(item.wallet.pendingWithdraw).toFixed(2)
+              : "0.00",
         "Bank Name": item.bankDetails?.bankName || "-",
         "Account Number": item.bankDetails?.accountNumber || "-",
         IFSC: item.bankDetails?.ifsc || "-",
         Branch: item.bankDetails?.branchName || "-",
-        Week: wp ? `${formatDate(wp.weekStart)} - ${formatDate(wp.weekEnd)}` : "-",
+        Week: wp
+          ? `${formatDate(wp.weekStart)} - ${formatDate(wp.weekEnd)}`
+          : "-",
       };
     });
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, `${activeTab}-payouts`);
-    XLSX.writeFile(workbook, `${activeTab}-payouts.xlsx`);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      `${activeTab}-payouts${selectedWeek ? "-filtered" : ""}`
+    );
+    XLSX.writeFile(
+      workbook,
+      `${activeTab}-payouts${selectedWeek ? "-filtered" : ""}.xlsx`
+    );
   };
+
 
   // Submit payout update: send selected weeklyPayout IDs and selectedWeek (optional)
   const handleSubmitPayout = async () => {
@@ -398,20 +434,23 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
     if (!confirm("Are you sure you want to mark selected payouts as withdrawn?")) return;
 
     try {
-      const res = await fetch("/api/provider/payout/update", {
+      const res = await fetch("/api/payout/mannual-payout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selectedIds, weekStart: selectedWeek }),
       });
 
+      console.log("res of the mannual payout : ", res)
+
       const data = await res.json();
+      console.log("data of the mannual payout : ", data)
+
       if (data.success) {
-        alert("✅ Payouts updated successfully!");
+        alert(`✅ ${data.count} payout(s) marked as withdrawn.`);
         setSelectedIds([]);
-        // refresh parent list
         setFilterTrigger((p) => p + 1);
       } else {
-        alert("❌ Failed to update payouts");
+        alert(`❌ ${data.message || "Failed to update payouts."}`);
       }
     } catch (err) {
       console.error(err);
@@ -437,14 +476,14 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
             ))}
           </select>
 
-          <button
+          {/* <button
             onClick={() => {
               setFilterTrigger((p) => p + 1);
             }}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
           >
             <FaFilter /> Apply
-          </button>
+          </button> */}
 
         </div>
 
