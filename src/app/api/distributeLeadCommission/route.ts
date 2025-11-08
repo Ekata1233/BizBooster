@@ -30,16 +30,16 @@ function toFixed2(num: number): number {
 }
 
 function getWeekRange(date = new Date()) {
-  const day = date.getDay();
-  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
-  const weekStart = new Date(date);
-  weekStart.setDate(date.getDate() - diffToThursday);
-  weekStart.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
+    const day = date.getDay();
+    const diffToThursday = day >= 4 ? day - 4 : day + 3;
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - diffToThursday);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
 
-  return { weekStart, weekEnd };
+    return { weekStart, weekEnd };
 }
 
 
@@ -404,11 +404,14 @@ export async function POST(req: Request) {
         await providerWallet.save();
 
         const { weekStart, weekEnd } = getWeekRange();
+        const totalShare = parseFloat((providerShare + (extraProviderShare || 0)).toFixed(2));
+
         await ProviderPayout.findOneAndUpdate(
             { providerId, weekStart, weekEnd },
-            { $inc: { pendingWithdraw: providerShare + (extraProviderShare || 0) } },
+            { $inc: { pendingWithdraw: totalShare } },
             { upsert: true, new: true }
         );
+
 
 
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {

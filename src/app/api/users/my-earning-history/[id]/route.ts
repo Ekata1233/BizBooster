@@ -122,7 +122,7 @@ export async function GET(req: Request) {
 
     // 3. Filter Debit Transactions
     const debitTransactions = wallet.transactions
-      .filter((tx: IWalletTransaction) => tx.type === "debit")
+      .filter((tx: IWalletTransaction) => tx.type === "credit" && tx.description === "Weekly Auto-Withdraw")
       .map((tx: IWalletTransaction) => ({
         transactionId: tx.referenceId || tx._id?.toString() || "",
         type: tx.type,
