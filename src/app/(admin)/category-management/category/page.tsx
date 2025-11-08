@@ -19,19 +19,25 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  DragOverlay
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   rectSortingStrategy,
-  useSortable
+  useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
 
   return (
     <div
@@ -39,16 +45,16 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}
-      className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3 ${isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
-        } transition-all duration-150`}
+      className={`w-full sm:w-[48%] lg:w-[23%] p-4 rounded-lg border shadow-sm bg-white flex flex-col gap-3 ${
+        isDragging ? "ring-2 ring-blue-400 bg-blue-50 shadow-lg" : ""
+      } transition-all duration-150`}
     >
       <div className="flex items-center gap-2">
-        {/* ✅ Sort Order Badge */}
         <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
           #{item.sortOrder}
         </span>
-
       </div>
+
       <div className="flex justify-between items-center cursor-grab">
         <h3 className="font-semibold truncate">{item.name}</h3>
         <span className="text-xl select-none">⠿</span>
@@ -65,22 +71,31 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
       </div>
 
       <p className="text-sm text-gray-600">Module: {item.moduleName}</p>
-      <p className="text-sm text-gray-600">Subcategories: {item.subcategoryCount}</p>
+      <p className="text-sm text-gray-600">
+        Subcategories: {item.subcategoryCount}
+      </p>
 
       <span
-        className={`px-2 py-1 rounded text-xs font-bold ${item.status === "Active"
+        className={`px-2 py-1 rounded text-xs font-bold ${
+          item.status === "Active"
             ? "bg-green-100 text-green-700"
             : "bg-red-100 text-red-700"
-          }`}
+        }`}
       >
         {item.status}
       </span>
 
       <div className="flex gap-2 mt-2">
-        <button onClick={() => handleEdit(item.id)} className="text-yellow-600 p-2 border rounded hover:bg-yellow-50">
+        <button
+          onClick={() => handleEdit(item.id)}
+          className="text-yellow-600 p-2 border rounded hover:bg-yellow-50"
+        >
           <PencilIcon />
         </button>
-        <button onClick={() => handleDelete(item.id)} className="text-red-600 p-2 border rounded hover:bg-red-50">
+        <button
+          onClick={() => handleDelete(item.id)}
+          className="text-red-600 p-2 border rounded hover:bg-red-50"
+        >
           <TrashBinIcon />
         </button>
         <Link href={`/category-management/category/${item.id}`}>
@@ -94,50 +109,62 @@ const SortableItem = ({ item, handleEdit, handleDelete }: any) => {
 };
 
 const CategoryPage = () => {
-  const { categories, fetchCategories, deleteCategory, reorderCategories } = useCategory(); // ✅ USING CONTEXT
+  const { categories, fetchCategories, deleteCategory, reorderCategories } =
+    useCategory();
   const { modules } = useModule();
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModule, setSelectedModule] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "inactive">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "inactive">(
+    "all"
+  );
   const [localCats, setLocalCats] = useState<any[]>([]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
 
-  // ✅ load categories on mount
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // ✅ filter from context categories
+  // ✅ Proper filtering logic (fixed module filter)
   useEffect(() => {
     let list = categories.map((c) => ({
       id: c._id,
       name: c.name,
       image: c.image,
       subcategoryCount: 0,
+      moduleId: c.module?._id || "", // ✅ Added moduleId
       moduleName: c.module?.name || "N/A",
       status: c.isDeleted ? "Deleted" : "Active",
-      sortOrder: c.sortOrder ?? 0
+      sortOrder: c.sortOrder ?? 0,
     }));
 
-    if (searchQuery) list = list.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    if (selectedModule) list = list.filter((c) => c.module?._id === selectedModule);
+    if (searchQuery)
+      list = list.filter((c) =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    if (selectedModule)
+      list = list.filter((c) => c.moduleId === selectedModule); // ✅ Fixed filtering by module
+
     if (activeTab === "active") list = list.filter((c) => c.status === "Active");
-    if (activeTab === "inactive") list = list.filter((c) => c.status === "Deleted");
+    if (activeTab === "inactive")
+      list = list.filter((c) => c.status === "Deleted");
 
     list = list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
     setLocalCats(list);
   }, [categories, searchQuery, selectedModule, activeTab]);
 
-
-  const handleEdit = (id: string) => router.push(`/category-management/category/modals/${id}`);
+  const handleEdit = (id: string) =>
+    router.push(`/category-management/category/modals/${id}`);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete category?")) return;
-    await deleteCategory(id); // ✅ CONTEXT
+    await deleteCategory(id);
     fetchCategories();
   };
 
@@ -154,8 +181,9 @@ const CategoryPage = () => {
 
     setLocalCats(reordered);
 
-    // ✅ call context reorder
-    await reorderCategories(reordered.map((c) => ({ _id: c.id, sortOrder: c.sortOrder })));
+    await reorderCategories(
+      reordered.map((c) => ({ _id: c.id, sortOrder: c.sortOrder }))
+    );
 
     fetchCategories();
   };
@@ -171,19 +199,35 @@ const CategoryPage = () => {
 
       <ComponentCard title="All Categories">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <Input placeholder="Search category or module" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <Input
+            placeholder="Search category or module"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
-          <select className="border rounded px-3 py-2" value={selectedModule} onChange={(e) => setSelectedModule(e.target.value)}>
+          <select
+            className="border rounded px-3 py-2"
+            value={selectedModule}
+            onChange={(e) => setSelectedModule(e.target.value)}
+          >
             <option value="">Filter by module</option>
             {modules.map((m) => (
-              <option key={m._id} value={m._id}>{m.name}</option>
+              <option key={m._id} value={m._id}>
+                {m.name}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="border-b border-gray-200">
           {["all", "active", "inactive"].map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-4 py-2 ${activeTab === tab ? "border-b-2 border-blue-600 text-blue-600" : ""
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-4 py-2 ${
+                activeTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : ""
               }`}
             >
               {tab.toUpperCase()}
@@ -191,11 +235,23 @@ const CategoryPage = () => {
           ))}
         </div>
 
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={localCats.map((d) => d.id)} strategy={rectSortingStrategy}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={localCats.map((d) => d.id)}
+            strategy={rectSortingStrategy}
+          >
             <div className="flex flex-wrap gap-5 mt-5">
               {localCats.map((c) => (
-                <SortableItem key={c.id} item={c} handleEdit={handleEdit} handleDelete={handleDelete} />
+                <SortableItem
+                  key={c.id}
+                  item={c}
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                />
               ))}
             </div>
           </SortableContext>

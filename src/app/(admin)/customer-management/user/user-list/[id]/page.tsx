@@ -15,6 +15,7 @@ import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
 import Image from 'next/image';
 import PackageTransaction from '@/components/user-profile/PackageTransaction';
+import BankDetailsPage from '@/components/user-profile/BankDetails';
 
 const UserDetails = () => {
   const {
@@ -36,9 +37,15 @@ const UserDetails = () => {
   useEffect(() => {
     if (userId) {
       fetchSingleUser(userId);
+
     }
 
   }, [userId]);
+  useEffect(() => {
+    if (singleUser) {
+      console.log('Fetched user data:', singleUser);
+    }
+  }, [singleUser]);
 
   if (singleUserLoading)
     return <div className="text-center text-gray-500">Loading user...</div>;
@@ -54,9 +61,10 @@ const UserDetails = () => {
     { key: 'teamLead', label: 'Team Lead' },
     { key: 'wallet', label: 'Wallet' },
     { key: 'guarantee', label: '5x Guarantee' },
-    // { key: 'support', label: 'Support' },
     { key: 'deposite', label: 'Deposite' },
     { key: 'package', label: 'Package' },
+    { key: 'bankdetails', label: 'BankDetails' },
+
   ];
 
   return (
@@ -111,7 +119,7 @@ const UserDetails = () => {
             />
           )}
 
-          
+
           {activeTab === 'selfLead' && (
             <SelfLeadTable userId={userId || ' '} isAction={true} />
           )}
@@ -124,7 +132,7 @@ const UserDetails = () => {
 
           {activeTab === 'guarantee' && <FiveXGuarantee />}
           {activeTab === 'deposite' && <UserDeposite />}
-          {/* {activeTab === 'support' && <HelpSupport />} */}
+          {activeTab === 'bankdetails' && <BankDetailsPage />}
           {activeTab === 'package' && <PackageTransaction />}
 
         </div>
