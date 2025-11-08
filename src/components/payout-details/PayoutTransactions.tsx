@@ -283,9 +283,26 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
     { header: "", accessor: "select" }, // checkbox
     { header: "S.No", accessor: "serial" },
     { header: "Type", accessor: "type" },
-    { header: "Name", accessor: "name" },
-    { header: "Email", accessor: "email" },
-    { header: "Phone", accessor: "phone" },
+    // { header: "Name", accessor: "name" },
+    // { header: "Email", accessor: "email" },
+    // { header: "Phone", accessor: "phone" },
+    {
+      header: "User Info",
+      accessor: "userInfo",
+      render: (row: any) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-800 dark:text-white/90">
+            {row.name || "-"}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {row.email || "-"}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {row.phone || "-"}
+          </span>
+        </div>
+      ),
+    },
     { header: "Balance (₹)", accessor: "balance" },
     { header: "Pending Payout (₹)", accessor: "pendingPayout" },
     { header: "Bank Name", accessor: "bankName" },
