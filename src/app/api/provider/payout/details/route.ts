@@ -357,6 +357,8 @@ import ProviderBankDetails from '@/models/ProviderBankDetails';
 import User from '@/models/User';
 import Wallet from '@/models/Wallet';
 import UserBankDetails from '@/models/UserBankDetails';
+import ProviderPayout from '@/models/ProviderPayout';
+import UserPayout from '@/models/UserPayout';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -384,7 +386,7 @@ export async function GET(req: NextRequest) {
 
     const filter: Record<string, any> = {};
 
-    // 🔍 Search Filter
+    // Search filter
     if (search) {
       const regex = { $regex: search, $options: 'i' };
       filter.$or = [
@@ -396,7 +398,7 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // 🗓 Date Filter
+    // Date filter
     if (startDate || endDate) {
       const dateFilter: { $gte?: Date; $lte?: Date } = {};
       if (startDate) dateFilter.$gte = new Date(startDate);
@@ -408,61 +410,61 @@ export async function GET(req: NextRequest) {
       filter.createdAt = dateFilter;
     }
 
-    // ↕ Sorting
+    // Sorting
     let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
     switch (sort) {
       case 'latest': sortOption = { createdAt: -1 }; break;
       case 'oldest': sortOption = { createdAt: 1 }; break;
       case 'ascending': sortOption = { fullName: 1 }; break;
       case 'descending': sortOption = { fullName: -1 }; break;
-      default: sortOption = { createdAt: -1 };
     }
 
-    // ✅ Fetch functions
+    // Fetch Providers in bulk
     const fetchProviders = async () => {
       const total = await Provider.countDocuments(filter);
       const providers = await Provider.find(filter)
         .sort(sortOption)
         .skip(skip)
         .limit(limit)
-        .select('providerId storeInfo.storeName storeInfo.storePhone storeInfo.storeEmail storeInfo.logo email phoneNo')
+        .select('providerId storeInfo.storeName storeInfo.storePhone storeInfo.storeEmail ')
         .lean();
 
-      const enriched = await Promise.all(
-        providers.map(async (provider) => {
-          const wallet = await ProviderWallet.findOne({ providerId: provider._id }).lean();
-          const bank = await ProviderBankDetails.findOne({ providerId: provider._id }).lean();
 
-          return {
-            type: 'provider',
-            providerId: provider.providerId,
-            storeName: provider.storeInfo?.storeName || '',
-            storePhone: provider.storeInfo?.storePhone || '',
-            storeEmail: provider.storeInfo?.storeEmail || '',
-            logo: provider.storeInfo?.logo || '',
-            email: provider.email,
-            phoneNo: provider.phoneNo,
-            wallet: wallet ? {
-              balance: wallet.balance,
-              totalEarning: wallet.totalEarning,
-              totalCredits: wallet.totalCredits,
-              totalDebits: wallet.totalDebits,
-              pendingWithdraw: wallet.pendingWithdraw,
-              alreadyWithdrawn: wallet.alreadyWithdrawn,
-            } : null,
-            bankDetails: bank ? {
-              accountNumber: bank.accountNumber,
-              ifsc: bank.ifsc,
-              bankName: bank.bankName,
-              branchName: bank.branchName,
-            } : null,
-          };
-        })
-      );
+      const providerIds = providers.map(p => p._id);
+
+      // Bulk fetch related collections
+      const wallets = await ProviderWallet.find({ providerId: { $in: providerIds } }).select('-transactions').lean();
+      const banks = await ProviderBankDetails.find({ providerId: { $in: providerIds } }).lean();
+      const payouts = await ProviderPayout.find({ providerId: { $in: providerIds } }).lean();
+
+      // Map by providerId for quick access
+      const walletMap = new Map(wallets.map(w => [w.providerId.toString(), w]));
+      const bankMap = new Map(banks.map(b => [b.providerId.toString(), b]));
+      // const payoutMap = new Map(payouts.map(p => [p.providerId.toString(), p]));
+      const payoutMap = payouts.reduce((acc, p) => {
+        const key = p.providerId.toString();
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(p);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+
+      const enriched = providers.map(provider => ({
+        type: 'provider',
+        providerId: provider.providerId,
+        storeName: provider.storeInfo?.storeName || '',
+        storePhone: provider.storeInfo?.storePhone || '',
+        storeEmail: provider.storeInfo?.storeEmail || '',
+        phoneNo: provider.phoneNo,
+        wallet: walletMap.get(provider._id.toString()) || null,
+        bankDetails: bankMap.get(provider._id.toString()) || null,
+        weeklyPayouts: payoutMap[provider._id.toString()] || [],
+      }));
 
       return { data: enriched, total };
     };
 
+    // Fetch Users in bulk
     const fetchUsers = async () => {
       const total = await User.countDocuments(filter);
       const users = await User.find(filter)
@@ -472,44 +474,41 @@ export async function GET(req: NextRequest) {
         .select('userId fullName email mobileNumber profilePhoto createdAt')
         .lean();
 
-      const enriched = await Promise.all(
-        users.map(async (user) => {
-          const wallet = await Wallet.findOne({ userId: user._id }).lean();
-          const bank = await UserBankDetails.findOne({ userId: user._id }).lean();
+      const userIds = users.map(u => u._id);
 
-          return {
-            type: 'user',
-            userId: user.userId,
-            fullName: user.fullName,
-            email: user.email,
-            mobileNumber: user.mobileNumber,
-            profilePhoto: user.profilePhoto || '',
-            wallet: wallet ? {
-              balance: wallet.balance,
-              totalCredits: wallet.totalCredits,
-              totalDebits: wallet.totalDebits,
-              pendingWithdraw: wallet.pendingWithdraw,
-              alreadyWithdrawn: wallet.alreadyWithdrawn,
-              selfEarnings: wallet.selfEarnings,
-              referralEarnings: wallet.referralEarnings,
-            } : null,
-            bankDetails: bank ? {
-              accountNumber: bank.accountNumber,
-              ifsc: bank.ifsc,
-              bankName: bank.bankName,
-              branchName: bank.branchName,
-            } : null,
-          };
-        })
-      );
+      const wallets = await Wallet.find({ userId: { $in: userIds } }).select('-transactions').lean();
+      const banks = await UserBankDetails.find({ userId: { $in: userIds } }).lean();
+      const payouts = await UserPayout.find({ userId: { $in: userIds } }).lean();
+
+      const walletMap = new Map(wallets.map(w => [w.userId.toString(), w]));
+      const bankMap = new Map(banks.map(b => [b.userId.toString(), b]));
+      // const payoutMap = new Map(payouts.map(p => [p.userId.toString(), p]));
+      const payoutMap = payouts.reduce((acc, p) => {
+        const key = p.userId.toString();
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(p);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      const enriched = users.map(user => ({
+        type: 'user',
+        userId: user.userId,
+        fullName: user.fullName,
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        profilePhoto: user.profilePhoto || '',
+        wallet: walletMap.get(user._id.toString()) || null,
+        bankDetails: bankMap.get(user._id.toString()) || null,
+        // weeklyPayout: payoutMap.get(user._id.toString()) || null,
+        weeklyPayouts: payoutMap[user._id.toString()] || [],
+      }));
 
       return { data: enriched, total };
     };
 
-    // 🚀 Data Fetching Logic
+    // Fetch data based on type
     let combinedData: any[] = [];
     let total = 0;
-
     if (type === 'provider') {
       const { data, total: totalCount } = await fetchProviders();
       combinedData = data;
@@ -524,22 +523,18 @@ export async function GET(req: NextRequest) {
       total = providers.total + users.total;
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalRecords: total,
-        count: combinedData.length,
-        data: combinedData,
-      },
-      { status: 200, headers: corsHeaders }
-    );
+    return NextResponse.json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalRecords: total,
+      count: combinedData.length,
+      data: combinedData,
+    }, { status: 200, headers: corsHeaders });
+
   } catch (error: any) {
     console.error('❌ Error fetching details:', error);
-    return NextResponse.json(
-      { success: false, message: error.message || 'Internal Server Error' },
-      { status: 500, headers: corsHeaders }
-    );
+    return NextResponse.json({ success: false, message: error.message || 'Internal Server Error' }, { status: 500, headers: corsHeaders });
   }
 }
+

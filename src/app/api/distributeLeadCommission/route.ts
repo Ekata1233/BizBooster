@@ -10,6 +10,8 @@ import { connectToDatabase } from "@/utils/db";
 import ProviderWallet from "@/models/ProviderWallet";
 import Lead from "@/models/Lead";
 import AdminEarnings from "@/models/AdminEarnings";
+import UserPayout from "@/models/UserPayout";
+import ProviderPayout from "@/models/ProviderPayout";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -25,6 +27,19 @@ export async function OPTIONS() {
 const ADMIN_ID = new Types.ObjectId("444c44d4444be444d4444444");
 function toFixed2(num: number): number {
     return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+function getWeekRange(date = new Date()) {
+    const day = date.getDay();
+    const diffToThursday = day >= 4 ? day - 4 : day + 3;
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - diffToThursday);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    return { weekStart, weekEnd };
 }
 
 
@@ -204,6 +219,13 @@ export async function POST(req: Request) {
             }
 
             await wallet.save();
+
+            const { weekStart, weekEnd } = getWeekRange();
+            await UserPayout.findOneAndUpdate(
+                { userId, weekStart, weekEnd },
+                { $inc: { pendingWithdraw: roundedAmount } },
+                { upsert: true, new: true }
+            );
         };
 
         if (userC?.packageActive) {
@@ -380,6 +402,17 @@ export async function POST(req: Request) {
             });
         }
         await providerWallet.save();
+
+        const { weekStart, weekEnd } = getWeekRange();
+        const totalShare = parseFloat((providerShare + (extraProviderShare || 0)).toFixed(2));
+
+        await ProviderPayout.findOneAndUpdate(
+            { providerId, weekStart, weekEnd },
+            { $inc: { pendingWithdraw: totalShare } },
+            { upsert: true, new: true }
+        );
+
+
 
         if (checkout.cashInHand && checkout.cashInHandAmount > 0) {
             const cashAmount = checkout.cashInHandAmount;

@@ -4,6 +4,7 @@ import Checkout from "@/models/Checkout";
 import ProviderWallet from "@/models/ProviderWallet";
 import Lead from "@/models/Lead";
 import mongoose from "mongoose";
+import ProviderPayout from "@/models/ProviderPayout";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,20 @@ type LeadEntry = {
     description?: string;
     createdAt?: string | number | Date;
 };
+
+function getWeekRange(date = new Date()) {
+  const day = date.getDay();
+  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - diffToThursday);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
+}
+
 
 const round2 = (num: number) => Number(num.toFixed(2));
 
@@ -196,6 +211,22 @@ export async function PUT(req: NextRequest) {
 
         normalizeDecimals(providerWallet);
         await providerWallet.save();
+
+        try {
+      const { weekStart, weekEnd } = getWeekRange();
+            const providerId = checkout.provider;
+
+            await ProviderPayout.findOneAndUpdate(
+                { providerId, weekStart: weekStart, weekEnd: weekEnd },
+                {
+                    $inc: { pendingWithdraw: fetchedAmount },
+                    $setOnInsert: { status: "pending" },
+                },
+                { upsert: true, new: true }
+            );
+        } catch (err) {
+            console.error("⚠️ Failed to update ProviderPayout:", err);
+        }
 
         return NextResponse.json(
             {

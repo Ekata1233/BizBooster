@@ -5,6 +5,7 @@ import { z } from "zod";
 import { connectToDatabase } from "@/utils/db";
 import { signToken } from "@/utils/auth";
 import ProviderWallet from "@/models/ProviderWallet";
+import ProviderPayout from "@/models/ProviderPayout";
 
 // const corsHeaders = {
 //   'Access-Control-Allow-Origin': '*',
@@ -52,6 +53,20 @@ const schema = z.object({
   phoneNo: z.string().min(10),
   password: z.string().min(6),
 });
+
+function getWeekRange(date = new Date()) {
+  const day = date.getDay();
+  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - diffToThursday);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
+}
+
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
@@ -122,6 +137,20 @@ export async function POST(req: NextRequest) {
       transactions: [],
       adjustmentCash: 0,
     });
+
+    // ✅ Create weekly payout tracking document for provider
+    try {
+      const { weekStart, weekEnd } = getWeekRange();
+
+      await ProviderPayout.findOneAndUpdate(
+        { providerId: provider._id, weekStart, weekEnd },
+        { $setOnInsert: { pendingWithdraw: 0 } },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.error("Error initializing ProviderPayoutPending:", err);
+    }
+
 
     const token = signToken(provider._id.toString());
 

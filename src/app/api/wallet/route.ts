@@ -2,12 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import Wallet from '@/models/Wallet';
 import { connectToDatabase } from '@/utils/db';
 import "@/models/User";
+import UserPayout from '@/models/UserPayout';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+
+function getWeekRange(date = new Date()) {
+  const day = date.getDay();
+  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - diffToThursday);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
+}
 
 // ✅ POST: Create or update a Wallet
 export async function POST(req: Request) {
@@ -97,6 +111,20 @@ export async function POST(req: Request) {
         }
 
         await wallet.save();
+
+        if (type === "credit") {
+  try {
+    const { weekStart, weekEnd } = getWeekRange();
+
+    await UserPayout.findOneAndUpdate(
+      { userId, weekStart, weekEnd },
+      { $inc: { pendingWithdraw: amount } },
+      { upsert: true, new: true }
+    );
+  } catch (err) {
+    console.error("Error updating weekly payout pending:", err);
+  }
+}
 
         return NextResponse.json(
             { success: true, data: wallet },

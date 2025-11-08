@@ -157,7 +157,7 @@ export async function GET(req: Request) {
 
     // Fetch reviews for this service
     const reviews = await Review.find({ service: id })
-      .populate("user", "name email")
+      .populate("user", "fullName email")
       .sort({ createdAt: -1 });
 
     // Count ratings (1-5)

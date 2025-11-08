@@ -9,6 +9,7 @@ import { Package } from "@/models/Package";
 import AdminEarnings from "@/models/AdminEarnings";
 import Deposite from "@/models/Deposite";
 import { checkAndUpdateReferralStatus } from "@/utils/packageStatus";
+import UserPayout from "@/models/UserPayout";
 
 // Enable CORS
 const corsHeaders = {
@@ -23,6 +24,20 @@ const ADMIN_ID = new Types.ObjectId("444c44d4444be444d4444444");
 export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
+
+function getWeekRange(date = new Date()) {
+  const day = date.getDay();
+  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - diffToThursday);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { weekStart, weekEnd };
+}
+
 
 // Main logic
 export async function POST(req: NextRequest) {
@@ -157,6 +172,19 @@ export async function POST(req: NextRequest) {
             }
 
             await wallet.save();
+
+            try {
+                const { weekStart, weekEnd } = getWeekRange();
+                const roundedAmount = Number(amount.toFixed(2));
+
+                await UserPayout.findOneAndUpdate(
+                    { userId, weekStart, weekEnd },
+                    { $inc: { pendingWithdraw: roundedAmount } },
+                    { upsert: true, new: true }
+                );
+            } catch (err) {
+                console.error("Error updating UserPayoutPending:", err);
+            }
         };
 
         // distribute commissions
