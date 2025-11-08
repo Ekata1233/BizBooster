@@ -241,21 +241,26 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]); // will store weeklyPayout._id
   const [weeks, setWeeks] = useState<{ weekStart: string; weekEnd: string }[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>("");
-  
+
+  console.log("seelected week L : ", selectedWeek)
 
   // Build unique weeks from payoutData -> item.weeklyPayout.weekStart/weekEnd
   useEffect(() => {
     const map = new Map<string, { weekStart: string; weekEnd: string }>();
     for (const item of payoutData) {
-      const wp = item.weeklyPayout;
-      if (wp && wp.weekStart && wp.weekEnd) {
-        // use exact ISO strings as key
-        if (!map.has(wp.weekStart)) {
-          map.set(wp.weekStart, { weekStart: wp.weekStart, weekEnd: wp.weekEnd });
+      if (Array.isArray(item.weeklyPayouts)) {
+        for (const wp of item.weeklyPayouts) {
+          if (wp?.weekStart && wp?.weekEnd && !map.has(wp.weekStart)) {
+            map.set(wp.weekStart, { weekStart: wp.weekStart, weekEnd: wp.weekEnd });
+          }
         }
       }
     }
-    setWeeks(Array.from(map.values()));
+    // Sort by weekStart descending (latest first)
+    const sortedWeeks = Array.from(map.values()).sort(
+      (a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
+    );
+    setWeeks(sortedWeeks);
   }, []);
 
   // set start/end when user selects week
@@ -297,7 +302,12 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
 
   // Table data: checkbox enabled only if weeklyPayout exists and its weekStart === selectedWeek (or if no week selected allow all)
   const tableData = payoutData.map((item, index) => {
-    const wp = item.weeklyPayout;
+    const wpArray = Array.isArray(item.weeklyPayouts) ? item.weeklyPayouts : [];
+    const wp =
+      selectedWeek
+        ? wpArray.find(w => w.weekStart === selectedWeek)
+        : wpArray.sort((a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime())[0];
+
     const belongsToSelectedWeek = wp && wp.weekStart && selectedWeek ? wp.weekStart === selectedWeek : !!wp;
     const payoutId = wp?._id || ""; // weekly payout doc id
 
@@ -321,8 +331,29 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
       email: item.email || "-",
       phone: item.type === "user" ? item.mobileNumber || "-" : item.phoneNo || "-",
       balance: item.wallet?.balance != null ? Number(item.wallet.balance).toFixed(2) : "0.00",
-      pendingPayout:
-        item.wallet?.pendingWithdraw != null ? Number(item.wallet.pendingWithdraw).toFixed(2) : "0.00",
+      pendingPayout: (() => {
+        const wpArray = Array.isArray(item.weeklyPayouts) ? item.weeklyPayouts : [];
+
+        if (!selectedWeek || selectedWeek.trim() === "") {
+          return item.wallet?.pendingWithdraw != null
+            ? Number(item.wallet.pendingWithdraw).toFixed(2)
+            : "0.00";
+        }
+        // Find the payout for the selected week, or use latest if no week selected
+        const wp = selectedWeek
+          ? wpArray.find((w) => w.weekStart === selectedWeek)
+          : wpArray.sort(
+            (a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime()
+          )[0];
+
+        if (wp && wp.pendingWithdraw != null) {
+          return Number(wp.pendingWithdraw).toFixed(2);
+        } else if (!selectedWeek && item.wallet?.pendingWithdraw != null) {
+          return Number(item.wallet.pendingWithdraw).toFixed(2);
+        } else {
+          return "0.00";
+        }
+      })(),
       bankName: item.bankDetails?.bankName || "-",
       weekRange: wp ? `${formatDate(wp.weekStart)} - ${formatDate(wp.weekEnd)}` : "-",
       // for convenience if you need the raw weekStart/ID later:
@@ -446,8 +477,8 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
                 setCurrentPage(1);
               }}
               className={`cursor-pointer px-4 py-2 transition-all ${activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600 font-semibold"
-                  : "hover:text-blue-600"
+                ? "border-b-2 border-blue-600 text-blue-600 font-semibold"
+                : "hover:text-blue-600"
                 }`}
             >
               {tab === "user" ? "User Payout" : tab === "provider" ? "Provider Payout" : "Total Payout"}

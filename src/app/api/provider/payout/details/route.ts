@@ -440,7 +440,14 @@ export async function GET(req: NextRequest) {
       // Map by providerId for quick access
       const walletMap = new Map(wallets.map(w => [w.providerId.toString(), w]));
       const bankMap = new Map(banks.map(b => [b.providerId.toString(), b]));
-      const payoutMap = new Map(payouts.map(p => [p.providerId.toString(), p]));
+      // const payoutMap = new Map(payouts.map(p => [p.providerId.toString(), p]));
+      const payoutMap = payouts.reduce((acc, p) => {
+        const key = p.providerId.toString();
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(p);
+        return acc;
+      }, {} as Record<string, any[]>);
+
 
       const enriched = providers.map(provider => ({
         type: 'provider',
@@ -451,7 +458,7 @@ export async function GET(req: NextRequest) {
         phoneNo: provider.phoneNo,
         wallet: walletMap.get(provider._id.toString()) || null,
         bankDetails: bankMap.get(provider._id.toString()) || null,
-        weeklyPayout: payoutMap.get(provider._id.toString()) || null,
+        weeklyPayouts: payoutMap[provider._id.toString()] || [],
       }));
 
       return { data: enriched, total };
@@ -475,7 +482,13 @@ export async function GET(req: NextRequest) {
 
       const walletMap = new Map(wallets.map(w => [w.userId.toString(), w]));
       const bankMap = new Map(banks.map(b => [b.userId.toString(), b]));
-      const payoutMap = new Map(payouts.map(p => [p.userId.toString(), p]));
+      // const payoutMap = new Map(payouts.map(p => [p.userId.toString(), p]));
+      const payoutMap = payouts.reduce((acc, p) => {
+        const key = p.userId.toString();
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(p);
+        return acc;
+      }, {} as Record<string, any[]>);
 
       const enriched = users.map(user => ({
         type: 'user',
@@ -486,7 +499,8 @@ export async function GET(req: NextRequest) {
         profilePhoto: user.profilePhoto || '',
         wallet: walletMap.get(user._id.toString()) || null,
         bankDetails: bankMap.get(user._id.toString()) || null,
-        weeklyPayout: payoutMap.get(user._id.toString()) || null,
+        // weeklyPayout: payoutMap.get(user._id.toString()) || null,
+        weeklyPayouts: payoutMap[user._id.toString()] || [],
       }));
 
       return { data: enriched, total };
