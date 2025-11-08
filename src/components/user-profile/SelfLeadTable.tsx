@@ -95,7 +95,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:3000/api/users/self-lead/${userId}`
+          `/api/users/self-lead/${userId}`
         );
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
