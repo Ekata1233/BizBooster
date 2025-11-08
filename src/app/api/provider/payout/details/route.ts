@@ -420,6 +420,43 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch Providers in bulk
+    // const fetchProviders = async () => {
+    //   const total = await Provider.countDocuments(filter);
+    //   const providers = await Provider.find(filter)
+    //     .sort(sortOption)
+    //     .skip(skip)
+    //     .limit(limit)
+    //     .select('providerId storeInfo.storeName storeInfo.storePhone storeInfo.storeEmail ')
+    //     .lean();
+
+
+    //   const providerIds = providers.map(p => p._id);
+
+    //   // Bulk fetch related collections
+    //   const wallets = await ProviderWallet.find({ providerId: { $in: providerIds } }).select('-transactions').lean();
+    //   const banks = await ProviderBankDetails.find({ providerId: { $in: providerIds } }).lean();
+    //   const payouts = await ProviderPayout.find({ providerId: { $in: providerIds } }).lean();
+
+    //   // Map by providerId for quick access
+    //   const walletMap = new Map(wallets.map(w => [w.providerId.toString(), w]));
+    //   const bankMap = new Map(banks.map(b => [b.providerId.toString(), b]));
+    //   const payoutMap = new Map(payouts.map(p => [p.providerId.toString(), p]));
+
+    //   const enriched = providers.map(provider => ({
+    //     type: 'provider',
+    //     providerId: provider.providerId,
+    //     storeName: provider.storeInfo?.storeName || '',
+    //     storePhone: provider.storeInfo?.storePhone || '',
+    //     storeEmail: provider.storeInfo?.storeEmail || '',
+    //     phoneNo: provider.phoneNo,
+    //     wallet: walletMap.get(provider._id.toString()) || null,
+    //     bankDetails: bankMap.get(provider._id.toString()) || null,
+    //     weeklyPayout: payoutMap.get(provider._id.toString()) || null,
+    //   }));
+
+    //   return { data: enriched, total };
+    // };
+
     const fetchProviders = async () => {
       const total = await Provider.countDocuments(filter);
       const providers = await Provider.find(filter)
@@ -429,36 +466,98 @@ export async function GET(req: NextRequest) {
         .select('providerId storeInfo.storeName storeInfo.storePhone storeInfo.storeEmail ')
         .lean();
 
-        console.log("fetch providers : ", providers)
-
       const providerIds = providers.map(p => p._id);
 
-      // Bulk fetch related collections
+      // Fetch all data in bulk
       const wallets = await ProviderWallet.find({ providerId: { $in: providerIds } }).select('-transactions').lean();
       const banks = await ProviderBankDetails.find({ providerId: { $in: providerIds } }).lean();
-      const payouts = await ProviderPayout.find({ providerId: { $in: providerIds } }).lean();
 
-      // Map by providerId for quick access
+      // 🟢 Week filter support (added)
+      const weekStart = searchParams.get('weekStart');
+      const weekEnd = searchParams.get('weekEnd');
+
+      let payoutsQuery: any = { providerId: { $in: providerIds } };
+      if (weekStart && weekEnd) {
+        payoutsQuery.weekStart = new Date(weekStart);
+        payoutsQuery.weekEnd = new Date(weekEnd);
+      }
+
+      const payouts = await ProviderPayout.find(payoutsQuery).lean();
+
+      // Create lookup maps
       const walletMap = new Map(wallets.map(w => [w.providerId.toString(), w]));
       const bankMap = new Map(banks.map(b => [b.providerId.toString(), b]));
       const payoutMap = new Map(payouts.map(p => [p.providerId.toString(), p]));
 
-      const enriched = providers.map(provider => ({
-        type: 'provider',
-        providerId: provider.providerId,
-        storeName: provider.storeInfo?.storeName || '',
-        storePhone: provider.storeInfo?.storePhone || '',
-        storeEmail: provider.storeInfo?.storeEmail || '',
-        phoneNo: provider.phoneNo,
-        wallet: walletMap.get(provider._id.toString()) || null,
-        bankDetails: bankMap.get(provider._id.toString()) || null,
-        weeklyPayout: payoutMap.get(provider._id.toString()) || null,
-      }));
+      // 🟢 Merge all + apply pendingWithdraw logic
+      const enriched = providers.map(provider => {
+        const wallet = walletMap.get(provider._id.toString()) || null;
+        const weeklyPayout = payoutMap.get(provider._id.toString()) || null;
+        const bankDetails = bankMap.get(provider._id.toString()) || null;
+
+        // 👉 Logic for which pendingWithdraw to show
+        let pendingWithdraw = 0;
+        if (weekStart && weekEnd) {
+          // Specific week selected → use weekly payout
+          pendingWithdraw = weeklyPayout?.pendingWithdraw || 0;
+        } else {
+          // All weeks selected → use wallet
+          pendingWithdraw = wallet?.pendingWithdraw || 0;
+        }
+
+        return {
+          type: 'provider',
+          providerId: provider.providerId,
+          storeName: provider.storeInfo?.storeName || '',
+          storePhone: provider.storeInfo?.storePhone || '',
+          storeEmail: provider.storeInfo?.storeEmail || '',
+          phoneNo: provider.phoneNo,
+          wallet,
+          bankDetails,
+          weeklyPayout,
+          pendingWithdraw, // ✅ unified field for frontend
+        };
+      });
 
       return { data: enriched, total };
     };
 
+
     // Fetch Users in bulk
+    // const fetchUsers = async () => {
+    //   const total = await User.countDocuments(filter);
+    //   const users = await User.find(filter)
+    //     .sort(sortOption)
+    //     .skip(skip)
+    //     .limit(limit)
+    //     .select('userId fullName email mobileNumber profilePhoto createdAt')
+    //     .lean();
+
+    //   const userIds = users.map(u => u._id);
+
+    //   const wallets = await Wallet.find({ userId: { $in: userIds } }).select('-transactions').lean();
+    //   const banks = await UserBankDetails.find({ userId: { $in: userIds } }).lean();
+    //   const payouts = await UserPayout.find({ userId: { $in: userIds } }).lean();
+
+    //   const walletMap = new Map(wallets.map(w => [w.userId.toString(), w]));
+    //   const bankMap = new Map(banks.map(b => [b.userId.toString(), b]));
+    //   const payoutMap = new Map(payouts.map(p => [p.userId.toString(), p]));
+
+    //   const enriched = users.map(user => ({
+    //     type: 'user',
+    //     userId: user.userId,
+    //     fullName: user.fullName,
+    //     email: user.email,
+    //     mobileNumber: user.mobileNumber,
+    //     profilePhoto: user.profilePhoto || '',
+    //     wallet: walletMap.get(user._id.toString()) || null,
+    //     bankDetails: bankMap.get(user._id.toString()) || null,
+    //     weeklyPayout: payoutMap.get(user._id.toString()) || null,
+    //   }));
+
+    //   return { data: enriched, total };
+    // };
+
     const fetchUsers = async () => {
       const total = await User.countDocuments(filter);
       const users = await User.find(filter)
@@ -470,28 +569,60 @@ export async function GET(req: NextRequest) {
 
       const userIds = users.map(u => u._id);
 
+      // Fetch wallets, banks, and payouts in bulk
       const wallets = await Wallet.find({ userId: { $in: userIds } }).select('-transactions').lean();
       const banks = await UserBankDetails.find({ userId: { $in: userIds } }).lean();
-      const payouts = await UserPayout.find({ userId: { $in: userIds } }).lean();
 
+      // 🟢 Week filter support (added)
+      const weekStart = searchParams.get('weekStart');
+      const weekEnd = searchParams.get('weekEnd');
+
+      let payoutsQuery: any = { userId: { $in: userIds } };
+      if (weekStart && weekEnd) {
+        payoutsQuery.weekStart = new Date(weekStart);
+        payoutsQuery.weekEnd = new Date(weekEnd);
+      }
+
+      const payouts = await UserPayout.find(payoutsQuery).lean();
+
+      // Create lookup maps
       const walletMap = new Map(wallets.map(w => [w.userId.toString(), w]));
       const bankMap = new Map(banks.map(b => [b.userId.toString(), b]));
       const payoutMap = new Map(payouts.map(p => [p.userId.toString(), p]));
 
-      const enriched = users.map(user => ({
-        type: 'user',
-        userId: user.userId,
-        fullName: user.fullName,
-        email: user.email,
-        mobileNumber: user.mobileNumber,
-        profilePhoto: user.profilePhoto || '',
-        wallet: walletMap.get(user._id.toString()) || null,
-        bankDetails: bankMap.get(user._id.toString()) || null,
-        weeklyPayout: payoutMap.get(user._id.toString()) || null,
-      }));
+      // 🟢 Merge all + apply pendingWithdraw logic
+      const enriched = users.map(user => {
+        const wallet = walletMap.get(user._id.toString()) || null;
+        const weeklyPayout = payoutMap.get(user._id.toString()) || null;
+        const bankDetails = bankMap.get(user._id.toString()) || null;
+
+        // 👉 Logic for which pendingWithdraw to show
+        let pendingWithdraw = 0;
+        if (weekStart && weekEnd) {
+          // Specific week selected → use weekly payout
+          pendingWithdraw = weeklyPayout?.pendingWithdraw || 0;
+        } else {
+          // All weeks selected → use wallet
+          pendingWithdraw = wallet?.pendingWithdraw || 0;
+        }
+
+        return {
+          type: 'user',
+          userId: user.userId,
+          fullName: user.fullName,
+          email: user.email,
+          mobileNumber: user.mobileNumber,
+          profilePhoto: user.profilePhoto || '',
+          wallet,
+          bankDetails,
+          weeklyPayout,
+          pendingWithdraw, // ✅ unified field for frontend
+        };
+      });
 
       return { data: enriched, total };
     };
+
 
     // Fetch data based on type
     let combinedData: any[] = [];
