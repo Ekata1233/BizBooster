@@ -26,16 +26,16 @@ export async function OPTIONS() {
 }
 
 function getWeekRange(date = new Date()) {
-  const day = date.getDay();
-  const diffToThursday = day >= 4 ? day - 4 : day + 3; 
-  const weekStart = new Date(date);
-  weekStart.setDate(date.getDate() - diffToThursday);
-  weekStart.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
+    const day = date.getDay();
+    const diffToThursday = day >= 4 ? day - 4 : day + 3;
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - diffToThursday);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
 
-  return { weekStart, weekEnd };
+    return { weekStart, weekEnd };
 }
 
 
@@ -104,22 +104,42 @@ export async function POST(req: NextRequest) {
         const baseLevel1 = pkgCommission.level1Commission || 0;
         const baseLevel2 = pkgCommission.level2Commission || 0;
 
+        // if (userB && !userB.isDeleted) {
+        //     level1Amount = baseLevel1;
+        // } else {
+        //     adminAmount += baseLevel1; 
+        // }
+
         if (userB && !userB.isDeleted) {
-            level1Amount = baseLevel1;
+            if (userB.packageActive) {
+                level1Amount = baseLevel1; // goes to userB
+            } else {
+                adminAmount += baseLevel1; // inactive → admin
+            }
         } else {
-            adminAmount += baseLevel1; // userB missing or deleted
+            adminAmount += baseLevel1; // deleted/missing → admin
         }
 
+        // if (userA && !userA.isDeleted) {
+        //     level2Amount = baseLevel2;
+        // } else {
+        //     adminAmount += baseLevel2; 
+        // }
+
         if (userA && !userA.isDeleted) {
-            level2Amount = baseLevel2;
+            if (userA.packageActive) {
+                level2Amount = baseLevel2; // goes to userA
+            } else {
+                adminAmount += baseLevel2; // inactive → admin
+            }
         } else {
-            adminAmount += baseLevel2; // userA missing or deleted
+            adminAmount += baseLevel2; // deleted/missing → admin
         }
 
 
         // adminAmount += packagePrice - (baseLevel1 + baseLevel2); 
         //because package price is less then amount goes to negative
-        const remaining = packagePrice - (baseLevel1 + baseLevel2);
+        const remaining = packagePrice - (level1Amount + level2Amount);
         adminAmount += remaining > 0 ? remaining : 0;
 
 
@@ -188,24 +208,88 @@ export async function POST(req: NextRequest) {
         };
 
         // distribute commissions
+        // if (userB && !userB.isDeleted && level1Amount > 0) {
+        //     await creditWallet(userB._id, level1Amount, "Team Build Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
+        //     await ReferralCommission.create({ fromLead: userC._id, receiver: userB._id, amount: level1Amount });
+        // }
+
         if (userB && !userB.isDeleted && level1Amount > 0) {
-            await creditWallet(userB._id, level1Amount, "Team Build Commission - Level 1", userId, "B", "-", userC.userId || userC._id);
-            await ReferralCommission.create({ fromLead: userC._id, receiver: userB._id, amount: level1Amount });
+            if (userB.packageActive) {
+                await creditWallet(
+                    userB._id,
+                    level1Amount,
+                    "Team Build Commission - Level 1",
+                    userId,
+                    "B",
+                    "-",
+                    userC.userId || userC._id
+                );
+                await ReferralCommission.create({
+                    fromLead: userC._id,
+                    receiver: userB._id,
+                    amount: level1Amount,
+                });
+            } else {
+                await creditWallet(
+                    ADMIN_ID,
+                    level1Amount,
+                    "Team Build Commission (Level 1 user inactive)",
+                    userId,
+                    "Admin",
+                    "-",
+                    userC.userId || userC._id
+                );
+                await ReferralCommission.create({
+                    fromLead: userC._id,
+                    receiver: ADMIN_ID,
+                    amount: level1Amount,
+                });
+            }
         }
 
-        if (userA && level2Amount > 0) {
-            await creditWallet(userA._id, level2Amount, "Team Build Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
-            await ReferralCommission.create({ fromLead: userC._id, receiver: userA._id, amount: level2Amount });
+
+        // if (userA && level2Amount > 0) {
+        //     await creditWallet(userA._id, level2Amount, "Team Build Commission - Level 2", userId, "A", "-", userC.userId || userC._id);
+        //     await ReferralCommission.create({ fromLead: userC._id, receiver: userA._id, amount: level2Amount });
+        // }
+
+        if (userA && !userA.isDeleted && level2Amount > 0) {
+            if (userA.packageActive) {
+                await creditWallet(
+                    userA._id,
+                    level2Amount,
+                    "Team Build Commission - Level 2",
+                    userId,
+                    "A",
+                    "-",
+                    userC.userId || userC._id
+                );
+                await ReferralCommission.create({
+                    fromLead: userC._id,
+                    receiver: userA._id,
+                    amount: level2Amount,
+                });
+            } else {
+                await creditWallet(
+                    ADMIN_ID,
+                    level2Amount,
+                    "Team Build Commission (Level 2 user inactive)",
+                    userId,
+                    "Admin",
+                    "-",
+                    userC.userId || userC._id
+                );
+                await ReferralCommission.create({
+                    fromLead: userC._id,
+                    receiver: ADMIN_ID,
+                    amount: level2Amount,
+                });
+            }
         }
 
         const adminDeposit = pkg.deposit;
         const adminTeamBuildCommission =
             (pkg.discountedPrice || 0) - (level1Amount + level2Amount);
-
-        console.log("level1Amount : ", level1Amount)
-        console.log("level2Amount : ", level2Amount)
-        console.log("depostie : ", adminDeposit)
-        console.log("adminTeamBuildCommission : ", adminTeamBuildCommission)
 
         if (adminDeposit > 0) {
             await creditWallet(
@@ -221,7 +305,6 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // Remaining discountedPrice after userA & userB commissions
         if (adminTeamBuildCommission > 0) {
             await creditWallet(
                 ADMIN_ID,
@@ -237,10 +320,10 @@ export async function POST(req: NextRequest) {
         }
 
         let actualFranchiseEarnings = 0;
-        if (userB && !userB.isDeleted) {
+        if (userB && !userB.isDeleted && userB.packageActive) {
             actualFranchiseEarnings += level1Amount;
         }
-        if (userA && !userA.isDeleted) {
+        if (userA && !userA.isDeleted && userA.packageActive) {
             actualFranchiseEarnings += level2Amount;
         }
 
@@ -268,12 +351,6 @@ export async function POST(req: NextRequest) {
         );
         /* ---------------- ✅ New: Save package into Deposite ---------------- */
         await Deposite.create({
-            // user: userC._id,
-            // packagePrice: pkg.discountedPrice || pkg.grandtotal,
-            // deposite: pkg.deposit,
-            // monthlyEarnings: pkg.monthlyEarnings,
-            // lockInPeriod: pkg.lockInPeriod,
-            // packageActivateDate: new Date()
             user: userC._id,
             packagePrice: Number((pkg.discountedPrice || pkg.grandtotal).toFixed(2)),
             deposite: Number(pkg.deposit.toFixed(2)),
