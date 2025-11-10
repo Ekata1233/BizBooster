@@ -157,12 +157,12 @@ const SortableServiceItem: React.FC<{
         ${isDragging ? 'ring-2 ring-blue-400 bg-blue-50 shadow-lg' : ''} transition-all duration-150 cursor-grab`}
     >
       <div className="flex items-center gap-2">
-    {/* ✅ Sort Order Badge */}
-    <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
-      #{item.sortOrder}
-    </span>
+        {/* ✅ Sort Order Badge */}
+        <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded">
+          #{item.sortOrder}
+        </span>
 
-  </div>
+      </div>
       {/* Service Name - First Line */}
       <div className="flex justify-between items-start">
         <h3 className="font-semibold text-sm text-gray-800 truncate flex-1">
@@ -227,7 +227,7 @@ const ServiceList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   // Drag and Drop States
   const [dragServices, setDragServices] = useState<TableData[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -333,7 +333,7 @@ const ServiceList = () => {
         }));
 
         setAllServices(mapped);
-        
+
         // Prepare simplified data for drag and drop view
         const dragData: TableData[] = mapped.map((service: ServiceData) => ({
           id: service.id,
@@ -343,7 +343,7 @@ const ServiceList = () => {
           status: service.status,
           sortOrder: service.sortOrder || 0,
         }));
-        
+
         setDragServices(dragData);
       }
     } catch (error) {
@@ -386,29 +386,39 @@ const ServiceList = () => {
   // Drag and Drop Handlers
   const { reorderServices } = useService();
 
-const onDragEnd = async ({ active, over }) => {
-  if (!over || active.id === over.id) return;
+  const onDragEnd = async ({ active, over }) => {
+    if (!over || active.id === over.id) return;
 
-  const oldIndex = dragServices.findIndex((i) => i.id === active.id);
-  const newIndex = dragServices.findIndex((i) => i.id === over.id);
+    const oldIndex = dragServices.findIndex((i) => i.id === active.id);
+    const newIndex = dragServices.findIndex((i) => i.id === over.id);
 
-  const newList = arrayMove(dragServices, oldIndex, newIndex).map((item, i) => ({
-    ...item,
-    sortOrder: i,
-  }));
+    const newList = arrayMove(dragServices, oldIndex, newIndex).map((item, i) => ({
+      ...item,
+      sortOrder: i,
+    }));
 
-  setDragServices(newList);
+    setDragServices(newList);
 
-  try {
-    await reorderServices(
-      newList.map((s) => ({ _id: s.id, sortOrder: s.sortOrder }))
-    );
-  } catch {
-    fetchAllServicesForDrag();
-  }
-};
+    try {
+      await reorderServices(
+        newList.map((s) => ({ _id: s.id, sortOrder: s.sortOrder }))
+      );
+    } catch {
+      fetchAllServicesForDrag();
+    }
+  };
 
   const columns = [
+    {
+      header: "S.No",
+      accessor: "serial",
+      render: (_: TableData, index: number) => {
+        return (
+          <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
+        );
+      },
+    },
+
     {
       header: 'Service Name',
       accessor: 'name',
@@ -634,17 +644,17 @@ const onDragEnd = async ({ active, over }) => {
                     <div className="mb-4 text-sm text-gray-600">
                       Showing all {dragServices.length} services. Drag to reorder.
                     </div>
-                    <DndContext 
-                      sensors={sensors} 
-                      collisionDetection={closestCenter} 
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
                       onDragEnd={onDragEnd}
                     >
                       <SortableContext items={dragServices.map((d) => d.id)} strategy={rectSortingStrategy}>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                           {dragServices.map((service) => (
-                            <SortableServiceItem 
-                              key={service.id} 
-                              item={service} 
+                            <SortableServiceItem
+                              key={service.id}
+                              item={service}
                               handleEdit={handleEdit}
                               handleDelete={handleDelete}
                             />
