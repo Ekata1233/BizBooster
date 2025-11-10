@@ -105,7 +105,7 @@ const SelfLeadShare3 = ({ userId }: SelfLeadProps) => {
       if (!userId) return;
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:3000/api/users/self-lead/${userId}`);
+        const res = await fetch(`/api/users/self-lead/${userId}`);
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data)) {

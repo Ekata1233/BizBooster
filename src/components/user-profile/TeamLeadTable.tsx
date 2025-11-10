@@ -19,7 +19,7 @@ interface TeamLeadData {
   teamCount: number;
   myEarnings: string;
   leadCount: number;
-  packageEarnings: number;
+  packageEarnings: string;
 }
 
 interface TeamLeadProps {
