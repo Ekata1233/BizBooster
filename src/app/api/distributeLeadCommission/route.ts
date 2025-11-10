@@ -58,7 +58,6 @@ export async function POST(req: Request) {
         }
         const lead = await Lead.findOne({ checkout: checkoutId })
 
-        console.log("lead : ", lead);  //isAdminApproved
 
         // ✅ Prevent commission distribution if admin hasn't approved the lead
         if (lead && lead.isAdminApproved === false) {
@@ -77,10 +76,7 @@ export async function POST(req: Request) {
             select: "franchiseDetails.commission"
         });
 
-        console.log("checkout details in lead : ", checkout)
         const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
-
-        console.log("raw commission : ", rawCommission)
 
         const commission = rawCommission;
 
@@ -92,7 +88,6 @@ export async function POST(req: Request) {
         }
 
         const leadAmount = checkout.subtotal;
-        console.log("lead amount : ", leadAmount);
 
         const extraLeadAmount = Array.isArray(lead?.extraService)
             ? lead.extraService.reduce((sum: number, item: { total?: number }) => sum + (item.total || 0), 0)
@@ -103,9 +98,6 @@ export async function POST(req: Request) {
             : 0;
 
         const userC = checkout.user;
-
-        console.log("user c : ", userC)
-
 
         const userB = userC.referredBy
             ? await User.findById(userC.referredBy)
@@ -122,16 +114,12 @@ export async function POST(req: Request) {
         if (typeof commission === "string") {
             const trimmed = commission.trim();
 
-            console.log("commission after trimmed : ", trimmed);
-
             if (trimmed.endsWith("%")) {
                 const percent = parseFloat(trimmed.replace("%", ""));
                 commissionPool = (leadAmount * percent) / 100;
-                console.log("commission pool : ", commissionPool);
             } else if (/^₹?\d+(\.\d+)?$/.test(trimmed)) {
                 const numericString = trimmed.replace("₹", "").trim();
                 commissionPool = parseFloat(numericString);
-                console.log("commission pool : ", commissionPool);
             } else {
                 throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
             }
@@ -150,14 +138,6 @@ export async function POST(req: Request) {
         const B_share = toFixed2(commissionPool * 0.2);
         const A_share = toFixed2(commissionPool * 0.1);
         let adminShare = toFixed2(commissionPool * 0.2);
-
-
-        console.log("commission commission : ", commissionPool);
-        console.log("proivder commission : ", providerShare);
-        console.log("C_share commission : ", C_share);
-        console.log("B_share commission : ", B_share);
-        console.log("A_share commission : ", A_share);
-        console.log("adminShare commission : ", adminShare);
 
         if (!userB || userB.isDeleted) {
             adminShare += B_share;
@@ -334,12 +314,16 @@ export async function POST(req: Request) {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }
 
+        console.log("extraCommissionPool : ", extraCommissionPool)
+        console.log("extraLeadAmount : ", extraLeadAmount);
+
 
         if (extraLeadAmount > 0) {
             const extra_C_share = toFixed2(extraCommissionPool * 0.5);
             const extra_B_share = toFixed2(extraCommissionPool * 0.2);
             const extra_A_share = toFixed2(extraCommissionPool * 0.1);
-            let extra_adminShare = toFixed2(extraCommissionPool * 0.2);
+            extra_adminShare = toFixed2(extraCommissionPool * 0.2);
+
 
 
             if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
@@ -427,7 +411,9 @@ export async function POST(req: Request) {
 
         const todayDate = new Date().toISOString().split("T")[0];
 
-        const adminCommissionTotal = adminShare + (extra_adminShare || 0);
+        const adminCommissionTotal = toFixed2(adminShare + (extra_adminShare || 0));
+
+
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
         let actualFranchiseEarnings = 0;
         if (userC?.packageActive) actualFranchiseEarnings += C_share;
@@ -445,7 +431,7 @@ export async function POST(req: Request) {
             ((checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0)) * 100
         ) / 100;
 
-        const GST =Math.round(
+        const GST = Math.round(
             ((checkout.serviceGSTPrice || 0)) * 100
         ) / 100;
 
@@ -453,6 +439,9 @@ export async function POST(req: Request) {
             (adminCommissionTotal + providerEarningsTotal + franchiseEarningsTotal + extraFee) * 100
         ) / 100;
 
+        console.log("adminShare : ", adminShare)
+        console.log("extra_adminShare : ", extra_adminShare)
+        console.log(" adminCommissionTotal : ", adminCommissionTotal)
 
         await AdminEarnings.findOneAndUpdate(
             { date: todayDate },
