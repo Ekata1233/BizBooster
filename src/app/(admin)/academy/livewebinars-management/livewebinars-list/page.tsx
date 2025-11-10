@@ -44,7 +44,7 @@ const LiveWebinar = () => {
     const filteredData = webinars
       .filter((webinar) => {
         const matchesSearch = webinar.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const status = webinar.isDeleted ? 'Deleted' : 'Active'; // Determine status
+        const status = webinar.isDeleted ? 'Deleted' : 'Active';
         const matchesTab =
           activeTab === 'all' ||
           (activeTab === 'active' && status === 'Active') ||
@@ -60,7 +60,10 @@ const LiveWebinar = () => {
         displayVideoUrls: Array.isArray(mod.displayVideoUrls)
           ? mod.displayVideoUrls
           : typeof mod.displayVideoUrls === 'string'
-            ? (mod.displayVideoUrls as string).split(',').map(url => url.trim()).filter(Boolean) // Ensure URLs are trimmed and not empty
+            ? (mod.displayVideoUrls as string)
+                .split(',')
+                .map((url) => url.trim())
+                .filter(Boolean)
             : [],
         date: mod.date || 'N/A',
         startTime: mod.startTime || 'N/A',
@@ -69,71 +72,70 @@ const LiveWebinar = () => {
       }));
 
     setFilteredCertificates(filteredData);
-  }, [searchQuery, webinars, activeTab]); // Added activeTab to dependency array for re-filtering on tab change
+  }, [searchQuery, webinars, activeTab]);
 
+  const handleEdit = (id: string) => {
+    router.push(`/academy/livewebinars-management/modals/${id}`);
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this webinar?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteWebinar(id);
+      alert('Webinar deleted successfully');
+    } catch (error) {
+      console.error('Error deleting webinar:', error);
+    }
+  };
+
+  const getFilteredByStatus = () => {
+    if (activeTab === 'active') {
+      return filteredCertificates.filter((mod) => mod.status === 'Active');
+    } else if (activeTab === 'inactive') {
+      return filteredCertificates.filter((mod) => mod.status === 'Deleted');
+    }
+    return filteredCertificates;
+  };
+
+  // ✅ Table Columns (with Serial Number)
   const columns = [
+    {
+      header: 'Sr. No',
+      accessor: 'srNo',
+      render: (_: TableData, index: number) => (
+        <span>{index + 1}</span>
+      ),
+    },
     {
       header: 'Name',
       accessor: 'name',
     },
-    // {
-    //   header: 'Image',
-    //   accessor: 'imageUrl',
-    //   render: (row: TableData) => (
-    //     <div className="flex items-center gap-3">
-    //       <div className="w-20 h-20 overflow-hidden">
-    //         {row.imageUrl ? (
-    //           <Image
-    //             width={130}
-    //             height={130}
-    //             src={row.imageUrl}
-    //             alt={row.name || 'certification image'}
-    //             className="object-fit rounded"
-    //           />
-    //         ) : (
-    //           <span>No Image</span>
-    //         )}
-    //       </div>
-    //     </div>
-    //   ),
-    // },
     {
       header: 'Image',
       accessor: 'imageUrl',
       render: (row: TableData) => (
-        <div className="px-5 py-4"> {/* Added px-5 py-4 from your example */}
-          <div className="relative w-20 h-20"> {/* Apply relative, fixed w/h */}
+        <div className="px-5 py-4">
+          <div className="relative w-20 h-20">
             {row.imageUrl ? (
               <Image
                 src={row.imageUrl}
-                alt={row.name || 'certification image'}
-                fill // Use fill for the object-cover effect
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Recommended for responsive images
-                className="object-cover rounded-md ring-1 ring-gray-200" // Apply object-cover, rounded, ring
-                unoptimized={true} // Keep unoptimized if your images are not optimized by Next.js Image component (e.g., external URLs)
+                alt={row.name || 'webinar image'}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover rounded-md ring-1 ring-gray-200"
+                unoptimized
               />
             ) : (
-              <span className="flex items-center justify-center w-full h-full text-gray-400 bg-gray-100 rounded-md">No Image</span>
+              <span className="flex items-center justify-center w-full h-full text-gray-400 bg-gray-100 rounded-md">
+                No Image
+              </span>
             )}
           </div>
         </div>
       ),
     },
-    // {
-    //   header: 'Webinar Description',
-    //   accessor: 'description',
-    //   render: (row: TableData) => (
-    //     <div className="flex flex-col">
-    //       {row.description ? (
-    //         row.description.split(',').map((desc: string, idx: number) => (
-    //           <p key={idx}>{desc.trim()}</p>
-    //         ))
-    //       ) : (
-    //         <span>N/A</span>
-    //       )}
-    //     </div>
-    //   ),
-    // },
     {
       header: 'Link',
       accessor: 'liveWebinarLink',
@@ -160,106 +162,54 @@ const LiveWebinar = () => {
     {
       header: 'Date',
       accessor: 'date',
-      render: (row: TableData) => (
-        <div className="flex justify-center items-center">
-          {row.date || 'N/A'}
-        </div>
-      ),
+      render: (row: TableData) => <div className="text-center">{row.date || 'N/A'}</div>,
     },
     {
       header: 'Start Time',
       accessor: 'startTime',
-      render: (row: TableData) => (
-        <div className="flex justify-center items-center">
-          {row.startTime || 'N/A'}
-        </div>
-      ),
+      render: (row: TableData) => <div className="text-center">{row.startTime || 'N/A'}</div>,
     },
     {
       header: 'End Time',
       accessor: 'endTime',
-      render: (row: TableData) => (
-        <div className="flex justify-center items-center">
-          {row.endTime || 'N/A'}
-        </div>
-      ),
+      render: (row: TableData) => <div className="text-center">{row.endTime || 'N/A'}</div>,
     },
     {
       header: 'Videos Count',
       accessor: 'categoryCount',
-      render: (row: TableData) => {
-        return (
-          <div className="flex justify-center items-center">
-            {row.displayVideoUrls.length}
-          </div>
-        );
-      },
+      render: (row: TableData) => <div className="text-center">{row.displayVideoUrls.length}</div>,
     },
     {
       header: 'Users Count',
       accessor: 'userIdsCount',
-      render: (row: TableData) => {
-        return (
-          <div className="flex justify-center items-center">
-            {row.user.length}
-          </div>
-        );
-      },
+      render: (row: TableData) => <div className="text-center">{row.user.length}</div>,
     },
     {
       header: 'Action',
       accessor: 'action',
-      render: (row: TableData) => {
-        return (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleEdit(row.id)}
-              className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white hover:border-yellow-500"
-            >
-              <PencilIcon />
+      render: (row: TableData) => (
+        <div className="flex gap-2 justify-center">
+          <button
+            onClick={() => handleEdit(row.id)}
+            className="text-yellow-500 border border-yellow-500 rounded-md p-2 hover:bg-yellow-500 hover:text-white"
+          >
+            <PencilIcon />
+          </button>
+          <button
+            onClick={() => handleDelete(row.id)}
+            className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white"
+          >
+            <TrashBinIcon />
+          </button>
+          <Link href={`/academy/livewebinars-management/livewebinars-list/${row.id}`} passHref>
+            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+              <EyeIcon />
             </button>
-            <button
-              onClick={() => handleDelete(row.id)}
-              className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500"
-            >
-              <TrashBinIcon />
-            </button>
-            <Link href={`/academy/livewebinars-management/livewebinars-list/${row.id}`} passHref>
-              <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                <EyeIcon />
-              </button>
-            </Link>
-          </div>
-        );
-      },
+          </Link>
+        </div>
+      ),
     },
   ];
-
-  const handleEdit = (id: string) => {
-    // This will redirect to the edit modal page, as you've set it up
-    router.push(`/academy/livewebinars-management/modals/${id}`);
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this webinar?');
-    if (!confirmDelete) return;
-
-    try {
-      await deleteWebinar(id);
-      alert('Webinar deleted successfully');
-    } catch (error) {
-      console.error('Error deleting webinar:', error);
-    }
-  };
-
-  const getFilteredByStatus = () => {
-    if (activeTab === 'active') {
-      return filteredCertificates.filter((mod) => mod.status === 'Active');
-    } else if (activeTab === 'inactive') {
-      return filteredCertificates.filter((mod) => mod.status === 'Deleted');
-    }
-    return filteredCertificates;
-  };
 
   if (!webinars || !Array.isArray(webinars)) {
     return <RouteLoader />;
@@ -269,14 +219,10 @@ const LiveWebinar = () => {
     <div>
       <PageBreadcrumb pageTitle="Live Webinar" />
 
-      {/* Module Stat Card */}
       <div className="my-5">
         <ModuleStatCard />
       </div>
 
-      {/* Removed AddLiveWebinar component as per requirement */}
-
-      {/* Live Webinars Table */}
       <div className="my-5">
         <ComponentCard title="All Live Webinars">
           <div className="mb-4">
@@ -291,32 +237,23 @@ const LiveWebinar = () => {
           <div className="border-b border-gray-200">
             <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
               <li
-                className={`cursor-pointer px-4 py-2 ${activeTab === 'all' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                className={`cursor-pointer px-4 py-2 ${
+                  activeTab === 'all'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : ''
+                }`}
                 onClick={() => setActiveTab('all')}
               >
                 All
               </li>
-              {/* <li
-                className={`cursor-pointer px-4 py-2 ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                onClick={() => setActiveTab('active')}
-              >
-                Active
-              </li>
-              <li
-                className={`cursor-pointer px-4 py-2 ${activeTab === 'inactive' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
-                onClick={() => setActiveTab('inactive')}
-              >
-                Inactive
-              </li> */}
             </ul>
           </div>
+
           <div>
             <BasicTableOne columns={columns} data={getFilteredByStatus()} />
           </div>
         </ComponentCard>
       </div>
-
-      {/* The Modal component and its related states/functions have been removed */}
     </div>
   );
 };
