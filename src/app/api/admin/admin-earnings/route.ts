@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       franchiseEarnings = 0,
       refundsToUsers = 0,
       extraFees = 0,
+      GST = 0,
       pendingPayouts = 0,
     } = body;
 
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
           franchiseEarnings,
           refundsToUsers,
           extraFees,
+          GST,
           pendingPayouts,
         },
       },
@@ -110,6 +112,7 @@ export async function GET(req: NextRequest) {
             franchiseEarnings: { $sum: '$franchiseEarnings' },
             refundsToUsers: { $sum: '$refundsToUsers' },
             extraFees: { $sum: '$extraFees' },
+            GST : {$sum : '$GST'},
             pendingPayouts: { $sum: '$pendingPayouts' },
           },
         },
@@ -122,6 +125,7 @@ export async function GET(req: NextRequest) {
             franchiseEarnings: 1,
             refundsToUsers: 1,
             extraFees: 1,
+            GST : 1,
             pendingPayouts: 1,
           },
         },

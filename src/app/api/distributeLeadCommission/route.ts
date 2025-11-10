@@ -445,6 +445,10 @@ export async function POST(req: Request) {
             ((checkout.platformFeePrice || 0) + (checkout.assurityChargesPrice || 0)) * 100
         ) / 100;
 
+        const GST =Math.round(
+            ((checkout.serviceGSTPrice || 0)) * 100
+        ) / 100;
+
         const totalRevenue = Math.round(
             (adminCommissionTotal + providerEarningsTotal + franchiseEarningsTotal + extraFee) * 100
         ) / 100;
@@ -458,6 +462,7 @@ export async function POST(req: Request) {
                     providerEarnings: Math.round(providerEarningsTotal * 100) / 100,
                     totalRevenue: totalRevenue,
                     extraFees: extraFee,
+                    GST: GST,
                     pendingPayouts: 0,
                     franchiseEarnings: franchiseEarningsTotal,
                     refundsToUsers: 0,

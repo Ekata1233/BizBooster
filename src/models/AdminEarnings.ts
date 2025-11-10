@@ -8,6 +8,7 @@ export interface IAdminEarnings extends Document {
   franchiseEarnings: number;
   refundsToUsers: number;
   extraFees: number;
+  GST : number;
   pendingPayouts: number;
   createdAt: Date;
   updatedAt: Date;
@@ -41,6 +42,10 @@ const AdminEarningsSchema = new Schema<IAdminEarnings>(
       default: 0,
     },
     extraFees: {
+      type: Number,
+      default: 0,
+    },
+    GST : {
       type: Number,
       default: 0,
     },

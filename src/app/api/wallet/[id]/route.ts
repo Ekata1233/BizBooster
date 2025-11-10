@@ -107,6 +107,7 @@ export async function PATCH(req: NextRequest) {
         await AdminEarnings.create({
           date: today,
           extraFees: 0,
+          GST: 0,
           totalRevenue: amount,
           adminCommission: 0,
           providerEarnings: 0,

@@ -54,6 +54,13 @@ const Page = () => {
       textColor: 'text-green-800',
     },
     {
+      title: 'GST',
+      value: formatAmount(summary.GST),
+      icon: <FaMoneyBill size={48} />,
+      gradient: 'from-green-100 to-green-200',
+      textColor: 'text-green-800',
+    },
+    {
       title: 'Payable to Vendor',
       value: formatAmount(summary.providerEarnings),
       icon: <FaTools size={48} />,

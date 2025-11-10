@@ -54,7 +54,7 @@ const Page = () => {
                 ?.filter((txn) => txn.description?.trim() === "Deposit")
                 .reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
 
-                const cashAdjustment =
+        const cashAdjustment =
             wallet?.transactions
                 ?.filter((txn) => txn.commissionFrom?.trim() === "adjustment" ||
                     txn.commissionFrom?.trim() === "adjustment").reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
@@ -77,6 +77,13 @@ const Page = () => {
             {
                 title: "Extra Fee",
                 amount: `₹${summary?.extraFees?.toLocaleString() || 0}`, // ✅ from context
+                icon: <FaMoneyBillWave />,
+                gradient: "from-red-100 to-red-200",
+                textColor: "text-red-800",
+            },
+            {
+                title: "GST",
+                amount: `₹${summary?.GST?.toLocaleString() || 0}`, // ✅ from context
                 icon: <FaMoneyBillWave />,
                 gradient: "from-red-100 to-red-200",
                 textColor: "text-red-800",

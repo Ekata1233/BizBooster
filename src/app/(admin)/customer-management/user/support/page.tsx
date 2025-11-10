@@ -123,18 +123,19 @@ interface SupportEntry {
 }
 
 interface TableData {
-  id: string;     
-  userId: string;  
+  id: string;
+  userId: string;
   srNo: number;
   fullName: string;
   email: string;
   question: string;
-  answer?: string;   
-  action: string;   
+  answer?: string;
+  action: string;
 }
 
 const SupportQuestionsPage = () => {
   const [supportData, setSupportData] = useState<TableData[]>([]);
+   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const fetchSupportQuestions = async () => {
@@ -149,7 +150,7 @@ const SupportQuestionsPage = () => {
         fullName: entry.user?.fullName || 'N/A',
         email: entry.user?.email || 'N/A',
         question: entry.question,
-        answer: entry.answer || '', 
+        answer: entry.answer || '',
         action: entry._id,
       }));
 
@@ -157,6 +158,8 @@ const SupportQuestionsPage = () => {
     } catch (error) {
       console.error('Error fetching support questions:', error);
       setSupportData([]);
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -178,7 +181,7 @@ const SupportQuestionsPage = () => {
       accessor: 'action',
       render: (row: TableData) =>
         row.answer && row.answer.trim() !== '' ? (
-          <Button size="sm"  disabled>
+          <Button size="sm" disabled>
             Answered
           </Button>
         ) : (
@@ -193,8 +196,20 @@ const SupportQuestionsPage = () => {
     <div>
       <PageBreadcrumb pageTitle="Support Questions" />
       <div className="my-5">
-        <ComponentCard title="All Support Questions">
-          <BasicTableOne columns={columns} data={supportData} />
+       <ComponentCard title="All Support Questions">
+          {loading ? (
+            <p className="text-center text-gray-500 py-5">Loading support questions...</p>
+          ) : supportData.length === 0 ? (
+            <p className="text-center text-gray-500 py-5">
+              No support questions available at the moment.  
+              <br />
+              <span className="text-sm text-gray-400">
+                All customer queries will appear here once submitted.
+              </span>
+            </p>
+          ) : (
+            <BasicTableOne columns={columns} data={supportData} />
+          )}
         </ComponentCard>
       </div>
     </div>

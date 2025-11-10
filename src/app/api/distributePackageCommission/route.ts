@@ -258,6 +258,7 @@ export async function POST(req: NextRequest) {
                     providerEarnings: 0,
                     totalRevenue: totalRevenue,
                     extraFees: 0,
+                    GST: 0,
                     pendingPayouts: 0,
                     franchiseEarnings: actualFranchiseEarnings,
                     refundsToUsers: 0,

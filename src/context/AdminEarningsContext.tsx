@@ -18,6 +18,7 @@ export interface AdminEarningsType {
   franchiseBalance:number;
   providerBalance:number;
   extraFees: number;
+  GST: number;
   pendingPayouts: number;
   createdAt?: string;
   updatedAt?: string;
