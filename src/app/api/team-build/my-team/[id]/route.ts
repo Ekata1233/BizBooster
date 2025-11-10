@@ -67,6 +67,24 @@ export async function GET(req: NextRequest) {
                 const earningsFromThisUser = loggedInWallet?.transactions.filter(
                     (tx: any) => tx.commissionFrom === member.userId
                 );
+
+                // 📦 Package commissions (Team Build Commission)
+                const packageEarnings = loggedInWallet?.transactions.filter(
+                    (tx: any) =>
+                        tx.commissionFrom === member.userId &&
+                        tx.source === "referral" &&
+                        tx.description?.includes("Team Build Commission")
+                ) || [];
+
+                const formattedPackages = packageEarnings.map((pkg: any) => ({
+                    referenceId: pkg.referenceId || "-",
+                    description: pkg.description,
+                    amount: pkg.amount,
+                    date: pkg.createdAt,
+                    status: pkg.status,
+                    method: pkg.method,
+                }));
+
                 const totalEarningsFromShare_2 = earningsFromThisUser?.reduce((sum: number, tx: any) => {
                     return sum + (tx.amount || 0);
                 }, 0) || 0;
@@ -141,6 +159,7 @@ export async function GET(req: NextRequest) {
                     user: member,
                     totalEarningsFromShare_2: totalEarningsFromShare_2 + totalEarningsFromSubTeam,
                     leads: formattedLeads,
+                    packages: formattedPackages,
                     activeLeadCount,
                     completeLeadCount,
                     activeTeamCount,
