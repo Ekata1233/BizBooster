@@ -136,13 +136,14 @@ export async function POST(req: Request) {
                 throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
             }
 
-            providerShare = leadAmount - commissionPool;
+            providerShare = toFixed2(leadAmount - commissionPool);
         } else if (typeof commission === "number") {
             commissionPool = commission;
-            providerShare = leadAmount - commissionPool;
+            providerShare = toFixed2(leadAmount - commissionPool);
         } else {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }
+
 
 
         const C_share = toFixed2(commissionPool * 0.5);
@@ -325,11 +326,10 @@ export async function POST(req: Request) {
             } else {
                 throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed amount like '₹2000' or '2000'.");
             }
-
-            extraProviderShare = extraLeadAmount - extraCommissionPool;
+            extraProviderShare = toFixed2(extraLeadAmount - extraCommissionPool);
         } else if (typeof extraCommission === "number") {
             extraCommissionPool = extraCommission;
-            extraProviderShare = extraLeadAmount - extraCommissionPool;
+            extraProviderShare = toFixed2(extraLeadAmount - extraCommissionPool);
         } else {
             throw new Error("Invalid commission format. Must be a percentage (e.g. '30%') or a fixed number.");
         }

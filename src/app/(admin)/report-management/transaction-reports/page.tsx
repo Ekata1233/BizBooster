@@ -20,7 +20,7 @@ const Page = () => {
 
   return (
     <div>
-      <SummaryCards summary={summary} />
+      <SummaryCards summary={summary} transactionDetails={transactions} />
       <TransactionsTable transactions={transactions} />
     </div>
   );
