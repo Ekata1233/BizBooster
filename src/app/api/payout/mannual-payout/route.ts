@@ -42,8 +42,8 @@ export async function POST(req: NextRequest) {
         // }
 
         for (const payout of allPayouts) {
-            const pending = payout.pendingWithdraw || 0;
-            const withdrawn = payout.withdrawnAmount || 0;
+            const pending = Number((payout.pendingWithdraw || 0).toFixed(2));
+            const withdrawn = Number((payout.withdrawnAmount || 0).toFixed(2));
 
             payout.withdrawnAmount = Number((withdrawn + pending).toFixed(2));
             payout.pendingWithdraw = 0;
@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
                 // --- Provider Wallet Update ---
                 const providerWallet = await ProviderWallet.findOne({ providerId: payout.providerId });
                 if (providerWallet) {
-                    providerWallet.balance = Math.max(0, (providerWallet.balance || 0) - pending);
-                    providerWallet.pendingWithdraw = Math.max(0, (providerWallet.pendingWithdraw || 0) - pending);
+                    providerWallet.balance = Number(Math.max(0, (providerWallet.balance || 0) - pending).toFixed(2));
+                    providerWallet.pendingWithdraw = Number(Math.max(0, (providerWallet.pendingWithdraw || 0) - pending).toFixed(2));
                     providerWallet.alreadyWithdrawn = Number(((providerWallet.alreadyWithdrawn || 0) + pending).toFixed(2));
 
                     providerWallet.transactions.push({
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
                         source: "payout",
                         status: "success",
                         description: "Weekly payout processed",
-                        balanceAfterTransaction: providerWallet.balance,
+                        balanceAfterTransaction: Number(userWallet.balance.toFixed(2)),
                         referenceId,
                         createdAt: new Date(),
                     });
