@@ -319,9 +319,9 @@ export async function POST(req: Request) {
 
 
         if (extraLeadAmount > 0) {
-            const extra_C_share = toFixed2(extraCommissionPool * 0.5);
-            const extra_B_share = toFixed2(extraCommissionPool * 0.2);
-            const extra_A_share = toFixed2(extraCommissionPool * 0.1);
+            extra_C_share = toFixed2(extraCommissionPool * 0.5);
+            extra_B_share = toFixed2(extraCommissionPool * 0.2);
+            extra_A_share = toFixed2(extraCommissionPool * 0.1);
             extra_adminShare = toFixed2(extraCommissionPool * 0.2);
 
 
@@ -417,14 +417,25 @@ export async function POST(req: Request) {
         const providerEarningsTotal = providerShare + (extraProviderShare || 0);
         let actualFranchiseEarnings = 0;
         if (userC?.packageActive) actualFranchiseEarnings += C_share;
-        if (userB && !userB.isDeleted) actualFranchiseEarnings += B_share;
-        if (userA && !userA.isDeleted) actualFranchiseEarnings += A_share;
+        if (userB && !userB.isDeleted && userB.packageActive) actualFranchiseEarnings += B_share;
+        if (userA && !userA.isDeleted && userA.packageActive) actualFranchiseEarnings += A_share;
+
+        console.log("Share C : ", C_share)
+        console.log("Share B : ", B_share)
+        console.log("Share A : ", A_share)
+        console.log("Actual Franschise earngins : ", actualFranchiseEarnings)
+
 
         if (extraLeadAmount > 0) {
             if (userC?.packageActive) actualFranchiseEarnings += extra_C_share;
-            if (userB && !userB.isDeleted) actualFranchiseEarnings += extra_B_share;
-            if (userA && !userA.isDeleted) actualFranchiseEarnings += extra_A_share;
+            if (userB && !userB.isDeleted && userB.packageActive) actualFranchiseEarnings += extra_B_share;
+            if (userA && !userA.isDeleted && userA.packageActive) actualFranchiseEarnings += extra_A_share;
         }
+
+        console.log("Share Extra C : ", extra_C_share)
+        console.log("Share Extra B : ", extra_B_share)
+        console.log("Share Extra A : ", extra_A_share)
+        console.log("Actual Franschise earngins Extra : ", actualFranchiseEarnings)
         const franchiseEarningsTotal = Math.round(actualFranchiseEarnings * 100) / 100;
 
         const extraFee = Math.round(
