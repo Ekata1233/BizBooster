@@ -194,7 +194,7 @@ export async function PUT(req: NextRequest) {
             amount: round2(fetchedAmount),
             description:
                 remainingCash > 0
-                    ? `Cash in hand received from customer (adjusted ₹${remainingCash} due to insufficient balance)`
+                    ? `Cash in hand received from customer (adjusted ₹${round2(remainingCash)} due to insufficient balance)`
                     : "Cash in hand received from customer",
             referenceId: checkout._id.toString(),
             method: "Cash",
