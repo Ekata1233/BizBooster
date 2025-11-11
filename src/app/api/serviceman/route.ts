@@ -56,8 +56,12 @@ export async function POST(req: NextRequest) {
 
     const bufferFromFile = async (file: File) => Buffer.from(await file.arrayBuffer());
 
+
+
     let generalImageUrl = "";
     const generalImageFile = formData.get("generalImage") as File;
+        console.log("General image file:", generalImageFile);
+
     if (generalImageFile && generalImageFile.size > 0) {
       const res = await imagekit.upload({
         file: await bufferFromFile(generalImageFile),

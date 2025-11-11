@@ -3,6 +3,7 @@ import User from "@/models/User";
 import Wallet from "@/models/Wallet";
 import Deposite from "@/models/Deposite";
 import { connectToDatabase } from "@/utils/db";
+import { randomBytes } from "crypto";
 
 export async function GET(req: Request) {
     try {
@@ -11,6 +12,8 @@ export async function GET(req: Request) {
         if (searchParams.get("health") === "true") {
             return NextResponse.json({ status: "ok", message: "Cron endpoint reachable" });
         }
+
+        const referenceId = `SYS-${Date.now()}-${randomBytes(3).toString("hex")}`;
         await connectToDatabase();
         const today = new Date();
 
@@ -48,7 +51,21 @@ export async function GET(req: Request) {
             const payoutDate = new Date(firstCreditDate);
             payoutDate.setMonth(firstCreditDate.getMonth() + depositsCount);
 
+            console.log("Checking payout for", user.fullName, {
+                activationDate,
+                depositsCount,
+                payoutDate,
+                today,
+            });
+
+
             // Only credit if today is the payout date
+            if (payoutDate < new Date(today.getFullYear(), today.getMonth(), 11)) {
+                payoutDate.setMonth(today.getMonth());
+                payoutDate.setFullYear(today.getFullYear());
+            }
+
+            // ✅ Only credit if today is the 11th of this (possibly updated) month
             if (
                 payoutDate.getDate() === today.getDate() &&
                 payoutDate.getMonth() === today.getMonth() &&
@@ -89,6 +106,7 @@ export async function GET(req: Request) {
                         createdAt: new Date(),
                         leadId: "Monthly Earning",
                         commissionFrom: "Monthly Earning",
+                        referenceId
                     });
                     wallet.lastTransactionAt = new Date();
                     await wallet.save();

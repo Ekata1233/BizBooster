@@ -4,12 +4,13 @@ import ProviderPayout from "@/models/ProviderPayout";
 import UserPayout from "@/models/UserPayout";
 import ProviderWallet from "@/models/ProviderWallet";
 import Wallet from "@/models/Wallet";
+import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest) {
     try {
         await connectToDatabase();
         const { selectedIds, weekStart } = await req.json();
-
+        const referenceId = `PAYOUT-${Date.now()}-${randomBytes(3).toString("hex")}`;
         console.log("selected Ids : ", selectedIds)
         console.log("selected weekStart : ", weekStart)
 
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
                         status: "success",
                         description: "Weekly payout processed",
                         balanceAfterTransaction: providerWallet.balance,
+                        referenceId,
                         createdAt: new Date(),
                     });
 
@@ -89,6 +91,7 @@ export async function POST(req: NextRequest) {
                         status: "success",
                         description: "Weekly payout processed",
                         balanceAfterTransaction: userWallet.balance,
+                        referenceId,
                         createdAt: new Date(),
                     });
 
