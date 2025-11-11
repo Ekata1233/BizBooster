@@ -99,6 +99,7 @@ const UserList = () => {
                             height={40}
                             src={(row.user as any).image}
                             alt={(row.user as any).fullName || "User image"}
+                            className="w-full h-full object-cover"
                         />
                     </div>
                     <div>
