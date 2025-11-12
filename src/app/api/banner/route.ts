@@ -105,10 +105,13 @@ export async function GET(req: NextRequest) {
     const banners = await Banner.find(filter)
       .populate('module')
       .populate('category')
-      .populate('subcategory')
-      .sort(sortOption)
-      .exec();
-    // Removed .populate('service')
+      .populate({
+        path: 'subcategory',
+        populate: {
+          path: 'category',
+          select: 'name' 
+        }
+      }).sort(sortOption).lean();
 
     return NextResponse.json(banners, { status: 200, headers: corsHeaders });
   } catch (err: unknown) {
