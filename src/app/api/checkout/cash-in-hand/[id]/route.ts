@@ -40,18 +40,27 @@ const round2 = (num: number) => Number(num.toFixed(2));
 
 // ✅ helper: normalize all numeric fields to 2 decimals recursively
 const normalizeDecimals = (obj: any) => {
-    if (!obj || typeof obj !== "object") return;
-    for (const key in obj) {
-        const val = obj[key];
-        if (typeof val === "number" && !isNaN(val)) {
-            obj[key] = round2(val);
-        } else if (Array.isArray(val)) {
-            val.forEach((item) => normalizeDecimals(item));
-        } else if (typeof val === "object") {
-            normalizeDecimals(val);
-        }
+  if (!obj || typeof obj !== "object") return;
+  if (obj instanceof mongoose.Document || obj instanceof mongoose.Types.ObjectId) return;
+
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith("_") || key === "id" || key === "$__" || key === "schema") continue;
+
+    const val = obj[key];
+    try {
+      if (typeof val === "number" && !isNaN(val)) {
+        obj[key] = round2(val);
+      } else if (Array.isArray(val)) {
+        val.forEach((item) => normalizeDecimals(item));
+      } else if (typeof val === "object") {
+        normalizeDecimals(val);
+      }
+    } catch {
+      continue;
     }
+  }
 };
+
 
 export async function PUT(req: NextRequest) {
     await connectToDatabase();
