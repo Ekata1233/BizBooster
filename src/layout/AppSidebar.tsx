@@ -29,7 +29,7 @@ import {
 import SidebarWidget from "./SidebarWidget";
 import { useCheckout } from "@/context/CheckoutContext";
 import { useLead } from "@/context/LeadContext";
-import { CalendarIcon, DollarSignIcon, HelpCircleIcon, MapIcon, Megaphone } from "lucide-react";
+import { CalendarIcon, DollarSignIcon, Gift, HelpCircleIcon, MapIcon, Megaphone, TrendingUp } from "lucide-react";
 import axios from "axios";
 
 // Define the new type for nested sub-items
@@ -166,12 +166,22 @@ const promotionItems: NavItem[] = [
     ],
   },
   {
-    icon: <Megaphone />,
+    icon: <TrendingUp />,
     name: "Trendings",
     subItems: [
       { name: "Add Trend ", path: "/adds-management/trending-services", pro: false },
     ],
   },
+  {
+  icon: <Gift />, // you can also use any icon like Award, Star, or Trophy
+  name: "Reward Management",
+  subItems: [
+    { name: "Rewards", path: "/reward-management/reward", pro: false },
+    { name: "Claim", path: "/reward-management/claim", pro: false },
+
+  ],
+},
+
 ];
 
 const bookingItems: NavItem[] = [
