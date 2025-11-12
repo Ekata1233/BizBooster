@@ -24,6 +24,7 @@ export interface StoreInfo {
   state?: string;
   country?: string;
   postalCode?: string;
+  aboutUs?: string;
 }
 
 export interface KYC {
@@ -108,6 +109,7 @@ const storeInfoSchema = new Schema<StoreInfo>(
     city: String,
     state: String,
     country: String,
+    aboutUs: String,
   },
   { _id: false }
 );
@@ -158,7 +160,7 @@ const providerSchema = new Schema<ProviderDocument>(
     isApproved: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
-    isStoreOpen: { type: Boolean, default: null },
+    isStoreOpen: { type: Boolean, default: true },
 
     /* ––– Registration progress flags ––– */
     step1Completed: { type: Boolean, default: false },

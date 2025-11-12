@@ -215,6 +215,16 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                         )}
                     </ComponentCard>
                 </div>
+
+                 <div className="">
+                    <ComponentCard title="About Provider">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-500 whitespace-nowrap">{provider.storeInfo?.aboutUs || '-'}</p>
+                        </div>
+                        </div>
+                    </ComponentCard>
+                </div>
             </div>
         </>
     );

@@ -5,7 +5,6 @@ import User from "@/models/User";
 import { Package } from "@/models/Package";
 import axios from 'axios';
 
-
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
