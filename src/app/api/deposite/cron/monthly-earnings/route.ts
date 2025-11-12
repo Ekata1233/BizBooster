@@ -4,6 +4,19 @@ import Wallet from "@/models/Wallet";
 import Deposite from "@/models/Deposite";
 import { connectToDatabase } from "@/utils/db";
 import { randomBytes } from "crypto";
+import UserPayout from "@/models/UserPayout";
+
+function getWeekRange(date = new Date()) {
+    const day = date.getDay();
+    const diffToThursday = day >= 4 ? day - 4 : day + 3;
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - diffToThursday);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    return { weekStart, weekEnd };
+}
 
 export async function GET(req: Request) {
     try {
@@ -110,6 +123,19 @@ export async function GET(req: Request) {
                     });
                     wallet.lastTransactionAt = new Date();
                     await wallet.save();
+                }
+
+                 try {
+                    const { weekStart, weekEnd } = getWeekRange(today);
+                    const roundedAmount = Number(amount.toFixed(2));
+
+                    await UserPayout.findOneAndUpdate(
+                        { userId: user._id, weekStart, weekEnd },
+                        { $inc: { pendingWithdraw: roundedAmount } },
+                        { upsert: true, new: true }
+                    );
+                } catch (err) {
+                    console.error("Error updating UserPayout in cron:", err);
                 }
             }
         }
