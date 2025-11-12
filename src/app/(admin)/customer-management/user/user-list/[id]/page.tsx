@@ -82,7 +82,7 @@ const UserDetails = () => {
           }
           userId={singleUser._id}
           isCommissionDistribute={singleUser.isCommissionDistribute}
-          isToggleButton={true}
+          isToggleButton={false}
           franchiseId={singleUser.userId}
         />
 

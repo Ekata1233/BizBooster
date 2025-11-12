@@ -204,7 +204,7 @@ const ProviderDetailsPage = () => {
             role={provider.email}
             location={provider.storeInfo?.address || "No address provided"}
             isCommissionDistribute={false}
-            isToggleButton={false}
+            isToggleButton={true}
             franchiseId={provider.providerId}
 
           />
