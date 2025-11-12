@@ -4,12 +4,13 @@ import ProviderPayout from "@/models/ProviderPayout";
 import UserPayout from "@/models/UserPayout";
 import ProviderWallet from "@/models/ProviderWallet";
 import Wallet from "@/models/Wallet";
+import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest) {
     try {
         await connectToDatabase();
         const { selectedIds, weekStart } = await req.json();
-
+        const referenceId = `PAYOUT-${Date.now()}-${randomBytes(3).toString("hex")}`;
         console.log("selected Ids : ", selectedIds)
         console.log("selected weekStart : ", weekStart)
 
@@ -41,8 +42,8 @@ export async function POST(req: NextRequest) {
         // }
 
         for (const payout of allPayouts) {
-            const pending = payout.pendingWithdraw || 0;
-            const withdrawn = payout.withdrawnAmount || 0;
+            const pending = Number((payout.pendingWithdraw || 0).toFixed(2));
+            const withdrawn = Number((payout.withdrawnAmount || 0).toFixed(2));
 
             payout.withdrawnAmount = Number((withdrawn + pending).toFixed(2));
             payout.pendingWithdraw = 0;
@@ -55,8 +56,8 @@ export async function POST(req: NextRequest) {
                 // --- Provider Wallet Update ---
                 const providerWallet = await ProviderWallet.findOne({ providerId: payout.providerId });
                 if (providerWallet) {
-                    providerWallet.balance = Math.max(0, (providerWallet.balance || 0) - pending);
-                    providerWallet.pendingWithdraw = Math.max(0, (providerWallet.pendingWithdraw || 0) - pending);
+                    providerWallet.balance = Number(Math.max(0, (providerWallet.balance || 0) - pending).toFixed(2));
+                    providerWallet.pendingWithdraw = Number(Math.max(0, (providerWallet.pendingWithdraw || 0) - pending).toFixed(2));
                     providerWallet.alreadyWithdrawn = Number(((providerWallet.alreadyWithdrawn || 0) + pending).toFixed(2));
 
                     providerWallet.transactions.push({
@@ -66,7 +67,8 @@ export async function POST(req: NextRequest) {
                         source: "payout",
                         status: "success",
                         description: "Weekly payout processed",
-                        balanceAfterTransaction: providerWallet.balance,
+                        balanceAfterTransaction:  Number(providerWallet.balance.toFixed(2)),
+                        referenceId,
                         createdAt: new Date(),
                     });
 
@@ -77,18 +79,19 @@ export async function POST(req: NextRequest) {
                 // --- User Wallet Update ---
                 const userWallet = await Wallet.findOne({ userId: payout.userId });
                 if (userWallet) {
-                    userWallet.balance = Math.max(0, (userWallet.balance || 0) - pending);
-                    userWallet.pendingWithdraw = Math.max(0, (userWallet.pendingWithdraw || 0) - pending);
+                    userWallet.balance = Number(Math.max(0, (userWallet.balance || 0) - pending).toFixed(2));
+                    userWallet.pendingWithdraw = Number(Math.max(0, (userWallet.pendingWithdraw || 0) - pending).toFixed(2));
                     userWallet.alreadyWithdrawn = Number(((userWallet.alreadyWithdrawn || 0) + pending).toFixed(2));
 
                     userWallet.transactions.push({
                         type: "debit",
-                        amount: pending,
+                        amount: Number(pending.toFixed(2)),
                         method: "BankTransfer",
                         source: "payout",
                         status: "success",
                         description: "Weekly payout processed",
-                        balanceAfterTransaction: userWallet.balance,
+                        balanceAfterTransaction: Number(userWallet.balance.toFixed(2)),
+                        referenceId,
                         createdAt: new Date(),
                     });
 

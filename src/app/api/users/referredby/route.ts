@@ -107,11 +107,12 @@ export async function PATCH(req: Request) {
     }
 
     // Find the referrer by referralCode
-    const referrer = await User.findOne({ referralCode });
+    const referrer = await User.findOne({ referralCode,isDeleted: { $ne: true }, });
+
     if (!referrer) {
       return NextResponse.json(
         { success: false, message: "Invalid referral code." },
-        { status: 404, headers: corsHeaders }
+        { status: 400, headers: corsHeaders }
       );
     }
 

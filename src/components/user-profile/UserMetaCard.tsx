@@ -26,13 +26,8 @@ export default function UserMetaCard({
 }: UserMetaCardProps) {
   const [isActive, setIsActive] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
-  // set your secure password here
-  const SECURE_PASSWORD = "activate@2025";
+  console.log("proivder Id : " , userId)
 
   useEffect(() => {
     if (isCommissionDistribute) {
@@ -40,51 +35,50 @@ export default function UserMetaCard({
     }
   }, [isCommissionDistribute]);
 
-  const handleToggle = () => {
+  useEffect(() => {
+    const fetchStoreStatus = async () => {
+      try {
+        const res = await fetch(`/api/provider/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.isStoreOpen !== undefined) {
+            setIsActive(data.isStoreOpen);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching store status:", err);
+      }
+    };
+
+    fetchStoreStatus();
+  }, [userId]);
+
+ const handleToggle = async () => {
     if (isCommissionDistribute || loading) return;
 
-    const newStatus = !isActive;
-    if (newStatus) {
-      // open modal for password instead of immediate confirm
-      setShowPasswordModal(true);
-    }
-  };
-
-  const handleConfirmPassword = async () => {
-    if (password !== SECURE_PASSWORD) {
-      setError("Password is incorrect");
-      return;
-    }
-
-    setError("");
-    setShowPasswordModal(false);
     setLoading(true);
 
     try {
-      const res = await fetch("https://api.fetchtrue.com/api/distributePackageCommission", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
+      const res = await fetch(`/api/provider/store-status/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();
 
-      if (res.ok && data.success) {
-        setIsActive(true);
-        alert("Package activated successfully!");
+      if (res.ok && data?.success) {
+        setIsActive(data.isStoreOpen);
       } else {
-        alert("Failed to activate package: " + (data.message || "Unknown error"));
+        console.error("Toggle failed:", data?.message || "Unknown error");
       }
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Please try again.");
+      console.error("Error toggling store:", err);
     } finally {
       setLoading(false);
-      setPassword("");
     }
   };
+
+
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -92,7 +86,7 @@ export default function UserMetaCard({
         {/* Left: User Info */}
         <div className="flex flex-col items-center w-full gap-6 xl:flex-row xl:w-auto">
           <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-            <Image width={80} height={80} src={imageSrc} alt={name} />
+            <Image width={80} height={80} src={imageSrc} alt={name} className="w-full h-full object-cover" />
           </div>
           <div className="order-3 xl:order-2">
             <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
@@ -106,6 +100,83 @@ export default function UserMetaCard({
           </div>
         </div>
 
+
+
+        {isToggleButton && (
+          <div className="flex flex-col items-end gap-1 relative">
+            <label className="text-sm font-semibold text-blue-600 dark:text-blue-600 tracking-wide uppercase">
+              STORE STATUS
+            </label>
+            <div className="relative flex items-center gap-2">
+              <button
+                disabled={ loading}
+                onClick={handleToggle}
+                className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-300 border-2 ${isActive
+                    ? "bg-gradient-to-r from-green-400 to-green-600 border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"
+                    : "bg-gray-300 border-gray-400"
+                  } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <span
+                  className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${isActive ? "translate-x-8" : ""
+                    }`}
+                ></span>
+              </button>
+              {loading && (
+                <span className="text-sm text-gray-600 dark:text-gray-400 animate-pulse">
+                  Updating...
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+
+//TOGGLE BUTTON FOR THE MANNUALLY PACKAGE ACTIVE
+
+  // const handleConfirmPassword = async () => {
+  //   if (password !== SECURE_PASSWORD) {
+  //     setError("Password is incorrect");
+  //     return;
+  //   }
+
+  //   setError("");
+  //   setShowPasswordModal(false);
+  //   setLoading(true);
+
+  //   try {
+  //     const res = await fetch("https://api.fetchtrue.com/api/distributePackageCommission", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ userId }),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (res.ok && data.success) {
+  //       setIsActive(true);
+  //       alert("Package activated successfully!");
+  //     } else {
+  //       alert("Failed to activate package: " + (data.message || "Unknown error"));
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Something went wrong. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //     setPassword("");
+  //   }
+  // };
         {/* Right: Package Toggle */}
         {/* {isToggleButton && (
           <div className="flex flex-col items-end gap-1 relative">
@@ -203,8 +274,3 @@ export default function UserMetaCard({
 
           </div>
         )} */}
-
-      </div>
-    </div>
-  );
-}

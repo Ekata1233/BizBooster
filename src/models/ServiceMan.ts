@@ -33,8 +33,10 @@ const BusinessInformationSchema = new mongoose.Schema(
             }
             return true;
           },
-          message: (props) =>
-            `Invalid ${props.instance.identityType} number format.`,
+          message: function (props) {
+            return `Invalid ${this.identityType} number format.`;
+          },
+
         },
       ],
     },

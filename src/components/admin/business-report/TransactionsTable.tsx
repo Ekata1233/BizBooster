@@ -252,8 +252,16 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
         </div>
 
         {/* Table */}
-        <div className="mt-4">
-          <BasicTableOne columns={columns} data={currentRows} />
+        <div className="mt-4 min-h-[200px] flex items-center justify-center">
+          {filteredTransactions.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-gray-500 text-lg font-medium">
+                No {activeTab === 'all' ? '' : activeTab} transactions found
+              </p>
+            </div>
+          ) : (
+            <BasicTableOne columns={columns} data={currentRows} />
+          )}
         </div>
 
         {/* Pagination */}

@@ -42,12 +42,25 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const existingCheckout = await Checkout.findById(id);
+
+    if (!existingCheckout) {
+      return NextResponse.json(
+        { success: false, message: "Checkout not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    const paidAmount = existingCheckout.paidAmount || 0;
+    const remainingAmount = grandTotal - paidAmount;
+
     const updatedCheckout = await Checkout.findByIdAndUpdate(
       id,
       {
         extraServicePrice,
         grandTotal,
-         paymentStatus: "pending",
+        paymentStatus: "pending",
+        remainingAmount,
         updatedAt: new Date()
       },
       { new: true }

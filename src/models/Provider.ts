@@ -36,7 +36,7 @@ export interface KYC {
 
 export interface ProviderDocument extends Document {
   /* step-1 */
-  _id : string;
+  _id: string;
   providerId: string;
   fullName: string;
   phoneNo: string;
@@ -62,7 +62,7 @@ export interface ProviderDocument extends Document {
   isApproved: boolean;
   isVerified: boolean;
   isDeleted: boolean;
-
+  isStoreOpen?: boolean | null;
   /* progress flags */
   step1Completed: boolean;
   storeInfoCompleted: boolean;
@@ -158,6 +158,7 @@ const providerSchema = new Schema<ProviderDocument>(
     isApproved: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
+    isStoreOpen: { type: Boolean, default: null },
 
     /* ––– Registration progress flags ––– */
     step1Completed: { type: Boolean, default: false },
@@ -168,8 +169,8 @@ const providerSchema = new Schema<ProviderDocument>(
       enum: ["basic", "store", "kyc", "done"],
       default: "basic",
     },
-    resetPasswordToken:{type: String },
-    resetPasswordExpires:{type: String },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: String },
   },
   { timestamps: true }
 );
@@ -197,23 +198,23 @@ providerSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password as string, 10);
   }
 
-   if (!this.providerId) {
-      const lastUser = await mongoose
-        .model('Provider')
-        .findOne({ providerId: { $regex: /^FTP\d+$/ } })
-        .sort({ providerId: -1 })
-        .select('providerId');
-  
-      let nextId = 1;
-      if (lastUser?.providerId) {
-        const numericPart = parseInt(lastUser.providerId.replace('FTP', ''), 10);
-        if (!isNaN(numericPart)) {
-          nextId = numericPart + 1;
-        }
+  if (!this.providerId) {
+    const lastUser = await mongoose
+      .model('Provider')
+      .findOne({ providerId: { $regex: /^FTP\d+$/ } })
+      .sort({ providerId: -1 })
+      .select('providerId');
+
+    let nextId = 1;
+    if (lastUser?.providerId) {
+      const numericPart = parseInt(lastUser.providerId.replace('FTP', ''), 10);
+      if (!isNaN(numericPart)) {
+        nextId = numericPart + 1;
       }
-  
-      this.providerId = `FTP${String(nextId).padStart(6, '0')}`;
     }
+
+    this.providerId = `FTP${String(nextId).padStart(6, '0')}`;
+  }
 
   next();
 });

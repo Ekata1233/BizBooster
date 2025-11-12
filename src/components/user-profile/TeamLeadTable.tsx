@@ -19,6 +19,7 @@ interface TeamLeadData {
   teamCount: number;
   myEarnings: string;
   leadCount: number;
+  packageEarnings: string;
 }
 
 interface TeamLeadProps {
@@ -114,6 +115,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
               status = "PGP";
             }
 
+
             const base: TeamLeadData = {
               id: user._id,
               userPhoto: member.profilePhoto || '/images/logo/user1.png',
@@ -124,6 +126,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
               status,
               teamCount: Number(member?.team?.length || 0),
               myEarnings: `₹${Number(member?.totalEarningsFromShare_2 || 0).toLocaleString()}`,
+              packageEarnings: `₹${Number(member?.packages[0].amount || 0).toLocaleString()}`,
               leadCount: Number(member?.leads?.length || 0),
             };
 
@@ -234,9 +237,12 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
       render: (row: TeamLeadData) => (
         <div className="flex flex-col text-sm">
           <span>{row.myEarnings}</span>
-          {/* Add status note below earnings */}
           {row.status === "GP" && (
             <span className="text-xs text-green-600">(completed)</span>
+          )}
+          <span>{row.packageEarnings}</span>
+          {row.status === "GP" && (
+            <span className="text-xs text-green-600">(Package Earnings)</span>
           )}
         </div>
       ),
