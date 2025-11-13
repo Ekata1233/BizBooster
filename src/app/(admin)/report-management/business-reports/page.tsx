@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useAdminEarnings } from '@/context/AdminEarningsContext';
 import ColorStatCard from '@/components/common/ColorStatCard';
 import {
@@ -11,6 +11,7 @@ import {
   FaStore,
   FaTools,
 } from 'react-icons/fa';
+import { useProvider } from '@/context/ProviderContext';
 
 const Page = () => {
   const { summary, loading, fetchSummary } = useAdminEarnings();
@@ -18,6 +19,37 @@ const Page = () => {
   useEffect(() => {
     fetchSummary();
   }, []);
+  const {
+    allWallet: allProviderWallets,
+    fetchAllWallet,
+    loading: providerLoading,
+    error: providerError,
+  } = useProvider();
+
+  // console.log("summary : ", summary);
+
+  // ✅ Always call hooks before any conditional return
+  const { providerTotal } = useMemo(() => {
+    const providerTotal = allProviderWallets?.reduce(
+      (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
+      0
+    );
+    return { providerTotal };
+  }, [allProviderWallets]);
+
+  useEffect(() => {
+    fetchAllWallet();
+  }, []);
+  // console.log("allProviderWallets : ", providerTotal)
+
+  useEffect(() => {
+    if (allProviderWallets?.length)
+      console.log("🏪 All Provider Wallets:", allProviderWallets);
+  }, [allProviderWallets]);
+
+  // ✅ Now safe to conditionally return
+  if (providerLoading) return <p>Loading wallets...</p>;
+  if (providerError) return <p>Error: {providerError}</p>;
 
   if (loading) return <p className="p-6 text-lg">Loading earnings summary...</p>;
   if (!summary) return <p className="p-6 text-red-600">No summary data available.</p>;
@@ -61,22 +93,29 @@ const Page = () => {
       textColor: 'text-green-800',
     },
     {
-      title: 'Payable to Vendor',
-      value: formatAmount(summary.providerEarnings),
+      title: "Provider Earnings",
+      value: formatAmount(providerTotal),
       icon: <FaTools size={48} />,
-      gradient: 'from-yellow-100 to-yellow-200',
-      textColor: 'text-yellow-800',
+      gradient: "from-yellow-100 to-yellow-200",
+      textColor: "text-yellow-800",
     },
     {
-      title: 'Payable to Franchise',
+      title: "Franchise Earnings",
       value: formatAmount(summary.franchiseEarnings),
+      icon: <FaStore size={48} />,
+      gradient: "from-purple-100 to-purple-200",
+      textColor: "text-purple-800",
+    },
+    {
+      title: 'Franchise Pending Payout',
+      value: formatAmount(summary.franchiseBalance),
       icon: <FaStore size={48} />,
       gradient: 'from-purple-100 to-purple-200',
       textColor: 'text-purple-800',
     },
     {
-      title: 'Pending Payout',
-      value: formatAmount(summary.pendingPayouts),
+      title: 'Provider Pending Payout',
+      value: formatAmount(summary.providerBalance),
       icon: <FaChartLine size={48} />,
       gradient: 'from-teal-100 to-teal-200',
       textColor: 'text-teal-800',
