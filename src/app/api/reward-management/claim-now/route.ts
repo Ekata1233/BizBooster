@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import ClaimNow from "@/models/ClaimNow";
 import "@/models/Reward";
-
+import "@/models/User";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -20,7 +20,7 @@ export async function GET() {
 
   try {
     const claims = await ClaimNow.find()
-      .populate("user", "fullName email packageType packageActive packageActivateDate packageStatus")
+      .populate("user", "userId fullName email packageType packageActive packageActivateDate packageStatus")
       .populate("reward", "name photo description")
       .sort({ createdAt: -1 });
 

@@ -27,7 +27,7 @@ interface ClaimNowContextProps {
   fetchClaims: () => Promise<void>;
   getClaimById: (id: string) => Promise<ClaimNow | null>;
   addClaim: (data: { user: string; reward: string; isClaimRequest: boolean }) => Promise<ClaimNow | null>;
-  updateClaim: (id: string, data: Partial<ClaimNow>) => Promise<ClaimNow | null>;
+  updateClaim: (id: string, data: Partial<ClaimNow> | FormData) => Promise<ClaimNow | null>; // 🔧 accepts FormData
   deleteClaim: (id: string) => Promise<boolean>;
 }
 
@@ -71,7 +71,7 @@ export const ClaimNowProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ✅ Add new claim (JSON body only)
+  // ✅ Add new claim
   const addClaim = async (data: { user: string; reward: string; isClaimRequest: boolean }) => {
     setLoading(true);
     try {
@@ -89,12 +89,15 @@ export const ClaimNowProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ✅ Update claim (PUT)
-  const updateClaim = async (id: string, data: Partial<ClaimNow>) => {
+  // ✅ Update claim (supports JSON or FormData)
+  const updateClaim = async (id: string, data: Partial<ClaimNow> | FormData) => {
     setLoading(true);
     try {
+      const isFormData = data instanceof FormData;
       const res = await axios.put(`${API_URL}/${id}`, data, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+        },
       });
       setClaims((prev) => prev.map((c) => (c._id === id ? res.data.data : c)));
       setError(null);
@@ -123,9 +126,23 @@ export const ClaimNowProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // ✅ Auto-fetch on mount (optional)
+  useEffect(() => {
+    fetchClaims();
+  }, []);
+
   return (
     <ClaimNowContext.Provider
-      value={{ claims, loading, error, fetchClaims, getClaimById, addClaim, updateClaim, deleteClaim }}
+      value={{
+        claims,
+        loading,
+        error,
+        fetchClaims,
+        getClaimById,
+        addClaim,
+        updateClaim,
+        deleteClaim,
+      }}
     >
       {children}
     </ClaimNowContext.Provider>
