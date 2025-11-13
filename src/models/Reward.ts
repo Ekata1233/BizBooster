@@ -8,6 +8,8 @@ export interface IReward extends Document {
   photo?: string;
   description?: string;
   packageType?: PackageType;
+  extraMonthlyEarn?: string;                // 🆕 Added
+  extraMonthlyEarnDescription?: string;     // 🆕 Added
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -22,6 +24,8 @@ const RewardSchema = new Schema<IReward>(
       enum: ["SGP", "PGP"],
       default: null,
     },
+    extraMonthlyEarn: { type: String, default: "" },                // 🆕 Added
+    extraMonthlyEarnDescription: { type: String, default: "" },     // 🆕 Added
   },
   { timestamps: true }
 );

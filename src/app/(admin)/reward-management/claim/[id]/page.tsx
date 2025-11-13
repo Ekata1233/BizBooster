@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -10,12 +10,12 @@ import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import TextArea from "@/components/form/input/TextArea";
 
-
 const ClaimNowDetailsPage = () => {
     const { id } = useParams();
     const { getClaimById } = useClaimNow();
     const [claim, setClaim] = useState<ClaimNow | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const router = useRouter();
 
     // Modal state
     const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +23,13 @@ const ClaimNowDetailsPage = () => {
     const [disclaimer, setDisclaimer] = useState("");
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState("");
+
+    // ✅ New States for Settlement
+    const [isSettleOpen, setIsSettleOpen] = useState(false);
+    const [rewardPhotoFile, setRewardPhotoFile] = useState<File | null>(null);
+    const [rewardDescription, setRewardDescription] = useState("");
+    const [settleMessage, setSettleMessage] = useState("");
+    const [settling, setSettling] = useState(false);
 
     useEffect(() => {
         const fetchClaim = async () => {
@@ -62,7 +69,9 @@ const ClaimNowDetailsPage = () => {
             if (data.success) {
                 setClaim(data.data);
                 setMessage("✅ Claim approved successfully!");
-                setTimeout(() => closeModal(), 1000);
+                setTimeout(() => {
+                    router.push("/reward-management/claim");
+                }, 1500);
             } else {
                 setMessage("❌ " + (data.message || "Something went wrong!"));
             }
@@ -71,6 +80,43 @@ const ClaimNowDetailsPage = () => {
             setMessage("❌ Error approving claim");
         } finally {
             setSaving(false);
+        }
+    };
+
+    // ✅ Handle Settlement Submission
+    const handleSettle = async () => {
+        if (!claim) return;
+        setSettling(true);
+        setSettleMessage("");
+
+        const formData = new FormData();
+        if (rewardPhotoFile) formData.append("rewardPhoto", rewardPhotoFile);
+        formData.append("rewardDescription", rewardDescription);
+        formData.append("isClaimSettled", "true");
+
+        try {
+            const res = await fetch(
+                `http://localhost:3000/api/reward-management/claim-now/admin-settled/${claim._id}`,
+                {
+                    method: "PUT",
+                    body: formData,
+                }
+            );
+
+            const data = await res.json();
+
+            if (data.success) {
+                setClaim(data.data);
+                setSettleMessage("✅ Claim settled successfully!");
+                setTimeout(() => setIsSettleOpen(false), 1000);
+            } else {
+                setSettleMessage("❌ " + (data.message || "Something went wrong!"));
+            }
+        } catch (err) {
+            console.error(err);
+            setSettleMessage("❌ Error settling claim");
+        } finally {
+            setSettling(false);
         }
     };
 
@@ -129,104 +175,160 @@ const ClaimNowDetailsPage = () => {
             </ComponentCard>
 
             {/* Claim Details */}
-            <ComponentCard title="Claim Details">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <h2 className="font-semibold">Reward Title:</h2>
-                        <p>{claim.rewardTitle || claim.reward?.name || "N/A"}</p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Reward Photo:</h2>
-                        {claim.rewardPhoto ? (
-                            <Image src={claim.rewardPhoto} alt="Reward Photo" width={100} height={100} className="rounded border" />
-                        ) : (
-                            <span className="text-gray-500">No photo</span>
-                        )}
-                    </div>
-                    <div className="md:col-span-2">
-                        <h2 className="font-semibold">Reward Description:</h2>
-                        <p>{claim.rewardDescription || claim.reward?.description || "N/A"}</p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Admin Approved:</h2>
-                        <p>{claim.isAdminApproved ? "Yes" : "No"}</p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Claim Request:</h2>
-                        <p>{claim.isClaimRequest ? "Yes" : "No"}</p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Claim Accepted:</h2>
-                        <p>
-                            {claim.isClaimAccepted === null
-                                ? "Pending"
-                                : claim.isClaimAccepted
-                                    ? "Accepted"
-                                    : "Rejected"}
-                        </p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Claim Settled:</h2>
-                        <p>{claim.isClaimSettled ? "Yes" : "No"}</p>
-                    </div>
-                    {claim.disclaimer && (
-                        <div className="md:col-span-2">
-                            <h2 className="font-semibold">Disclaimer:</h2>
-                            <p className="whitespace-pre-wrap">{claim.disclaimer}</p>
-                        </div>
-                    )}
-                    <div>
-                        <h2 className="font-semibold">Created At:</h2>
-                        <p>{new Date(claim.createdAt || "").toLocaleString()}</p>
-                    </div>
-                    <div>
-                        <h2 className="font-semibold">Updated At:</h2>
-                        <p>{new Date(claim.updatedAt || "").toLocaleString()}</p>
-                    </div>
-                </div>
-            </ComponentCard>
+           <ComponentCard title="Claim Details">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <h2 className="font-semibold">Reward Title:</h2>
+            <p>{claim.rewardTitle || claim.reward?.name || "N/A"}</p>
+        </div>
+        <div>
+            <h2 className="font-semibold">Reward Photo:</h2>
+            {claim.rewardPhoto ? (
+                <Image
+                    src={claim.rewardPhoto}
+                    alt="Reward Photo"
+                    width={100}
+                    height={100}
+                    className="rounded border"
+                />
+            ) : (
+                <span className="text-gray-500">No photo</span>
+            )}
+        </div>
 
-            {/* Approve Button */}
-            {!claim.isAdminApproved && (
-                <div className="flex justify-end">
+        <div className="md:col-span-2">
+            <h2 className="font-semibold">Reward Description:</h2>
+            <p>{claim.rewardDescription || claim.reward?.description || "N/A"}</p>
+        </div>
+
+        {/* ✅ Extra Monthly Earn Info */}
+        {claim.reward?.extraMonthlyEarn && (
+            <div>
+                <h2 className="font-semibold">Extra Monthly Earn:</h2>
+                <p>{claim.reward.extraMonthlyEarn}</p>
+            </div>
+        )}
+
+        {claim.reward?.extraMonthlyEarnDescription && (
+            <div className="md:col-span-2">
+                <h2 className="font-semibold">Extra Monthly Earn Description:</h2>
+                <p>{claim.reward.extraMonthlyEarnDescription}</p>
+            </div>
+        )}
+
+        <div>
+            <h2 className="font-semibold">Admin Approved:</h2>
+            <p>{claim.isAdminApproved ? "Yes" : "No"}</p>
+        </div>
+        <div>
+            <h2 className="font-semibold">Claim Request:</h2>
+            <p>{claim.isClaimRequest ? "Yes" : "No"}</p>
+        </div>
+        <div>
+            <h2 className="font-semibold">Extra Monthly Earn Request:</h2>
+            <p>{claim.isExtraMonthlyEarnRequest ? "Yes" : "No"}</p>
+        </div>
+        
+        <div>
+            <h2 className="font-semibold">Claim Settled:</h2>
+            <p>{claim.isClaimSettled ? "Yes" : "No"}</p>
+        </div>
+
+        {claim.disclaimer && (
+            <div className="md:col-span-2">
+                <h2 className="font-semibold">Disclaimer:</h2>
+                <p className="whitespace-pre-wrap">{claim.disclaimer}</p>
+            </div>
+        )}
+
+        <div>
+            <h2 className="font-semibold">Created At:</h2>
+            <p>{new Date(claim.createdAt || "").toLocaleString()}</p>
+        </div>
+        <div>
+            <h2 className="font-semibold">Updated At:</h2>
+            <p>{new Date(claim.updatedAt || "").toLocaleString()}</p>
+        </div>
+    </div>
+</ComponentCard>
+
+
+            {/* Approve or Settle Button */}
+            <div className="flex justify-end gap-3">
+                {!claim.isAdminApproved && (
                     <Button onClick={openModal} variant="primary">
                         Approve
                     </Button>
-                </div>
-            )}
+                )}
+                {claim.isAdminApproved && !claim.isClaimSettled && (
+                    <Button onClick={() => setIsSettleOpen(true)} variant="success">
+                        Settle
+                    </Button>
+                )}
+            </div>
 
-            {/* Modal */}
+            {/* Approve Modal */}
             <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[600px] m-4">
-                <div className="flex flex-col  w-full max-w-[600px] gap-6 p-6 ">
+                <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
                     <h4 className="font-semibold text-gray-800 text-lg">Admin Approval</h4>
-
                     <input
                         type="text"
                         value={rewardTitle}
                         onChange={(e) => setRewardTitle(e.target.value)}
-                        placeholder="Reward Title"
+                        placeholder="Title"
                         className="w-full border rounded px-3 py-2"
                     />
-
                     <TextArea
                         value={disclaimer}
                         onChange={(value: string) => setDisclaimer(value)}
                         rows={3}
                         placeholder="Disclaimer"
                     />
-
                     {message && (
-                        <p className={`text-sm ${message.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
-                            {message}
-                        </p>
+                        <p className={`text-sm ${message.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{message}</p>
                     )}
-
                     <div className="flex items-center justify-end gap-3">
                         <Button variant="outline" onClick={closeModal}>
                             Close
                         </Button>
                         <Button onClick={handleApprove} disabled={saving}>
                             {saving ? "Saving..." : "Confirm Approve"}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* ✅ Settlement Modal */}
+            <Modal isOpen={isSettleOpen} onClose={() => setIsSettleOpen(false)} className="max-w-[600px] m-4">
+                <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
+                    <h4 className="font-semibold text-gray-800 text-lg">Settle Claim</h4>
+
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setRewardPhotoFile(e.target.files?.[0] || null)}
+                        className="w-full border rounded px-3 py-2"
+                    />
+
+                    <TextArea
+                        value={rewardDescription}
+                        onChange={(val: string) => setRewardDescription(val)}
+                        rows={3}
+                        placeholder="Reward Description"
+                    />
+
+                    {settleMessage && (
+                        <p className={`text-sm ${settleMessage.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
+                            {settleMessage}
+                        </p>
+                    )}
+
+                    <div className="flex items-center justify-end gap-3">
+                        <Button variant="outline" onClick={() => setIsSettleOpen(false)}>
+                            Close
+                        </Button>
+                        <Button onClick={handleSettle} disabled={settling}>
+                            {settling ? "Saving..." : "Confirm Settle"}
                         </Button>
                     </div>
                 </div>

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import ClaimNow from "@/models/ClaimNow";
+import Deposite from "@/models/Deposite"; // ✅ Import Deposite model
 import "@/models/Reward";
 import "@/models/User";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "PUT, OPTIONS",
@@ -32,7 +34,6 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const { isAdminApproved, rewardTitle, disclaimer } = body;
 
-    // Validate required fields
     if (typeof isAdminApproved !== "boolean") {
       return NextResponse.json(
         { success: false, message: "isAdminApproved must be true or false" },
@@ -40,29 +41,51 @@ export async function PUT(req: Request) {
       );
     }
 
-    const updatedClaim = await ClaimNow.findByIdAndUpdate(
-      id,
-      { isAdminApproved, rewardTitle, disclaimer },
-      { new: true }
-    )
+    // ✅ Find the claim first (to check if it has extraMonthlyEarnRequest)
+    const claim = await ClaimNow.findById(id)
       .populate(
         "user",
         "userId fullName email packageType packageActive packageActivateDate packageStatus"
       )
-      .populate("reward", "name photo description");
+      .populate("reward", "name photo description extraMonthlyEarn");
 
-    if (!updatedClaim) {
+    if (!claim) {
       return NextResponse.json(
         { success: false, message: "Claim not found" },
         { status: 404, headers: corsHeaders }
       );
     }
 
+    // ✅ Update admin approval info
+    claim.isAdminApproved = isAdminApproved;
+    claim.rewardTitle = rewardTitle ?? claim.rewardTitle;
+    claim.disclaimer = disclaimer ?? claim.disclaimer;
+    await claim.save();
+
+    // ✅ If this claim is for extra monthly earn → update Deposite
+    if (claim.isExtraMonthlyEarnRequest && claim.reward?.extraMonthlyEarn) {
+      const extraAmount = Number(claim.reward.extraMonthlyEarn) || 0;
+
+      if (extraAmount > 0) {
+        const deposite = await Deposite.findOne({ user: claim.user._id });
+
+        if (deposite) {
+          deposite.monthlyEarnings += extraAmount;
+          await deposite.save();
+          console.log(
+            `✅ Added ₹${extraAmount} to ${claim.user.fullName}'s monthly earnings`
+          );
+        } else {
+          console.warn(`⚠️ No Deposite record found for user ${claim.user._id}`);
+        }
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
         message: `Claim ${isAdminApproved ? "approved" : "disapproved"} successfully`,
-        data: updatedClaim,
+        data: claim,
       },
       { status: 200, headers: corsHeaders }
     );
