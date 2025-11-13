@@ -36,7 +36,7 @@ export default function BankDetailsPage() {
       try {
         setLoading(true);
         const res = await axios.get(
-          `https://api.fetchtrue.com/api/users/bank-details/${id}`
+          `/api/users/bank-details/${id}`
         );
         if (res.data.success) {
           setBankDetails(res.data.data);

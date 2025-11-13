@@ -36,6 +36,7 @@ import { AdvisorProvider } from '@/context/Advisor';
 import { ProviderBankDetailsProvider } from '@/context/ProviderBankDetailsContext';
 import { PackageTransactionProvider } from '@/context/PackageTransactionContext';
 import { RewardProvider } from '@/context/RewardContext';
+import { ClaimNowProvider } from '@/context/ClaimContext';
 
 
 
@@ -88,7 +89,9 @@ export default function RootLayout({
                                                                       <ProviderBankDetailsProvider>
                                                                         <PackageTransactionProvider>
                                                                           <RewardProvider>
+                                                                            <ClaimNowProvider>
                                                                             {children}
+                                                                            </ClaimNowProvider>
                                                                           </RewardProvider>
                                                                         </PackageTransactionProvider>
                                                                       </ProviderBankDetailsProvider>
