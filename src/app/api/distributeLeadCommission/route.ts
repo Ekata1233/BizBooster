@@ -139,7 +139,7 @@ export async function POST(req: Request) {
         const A_share = toFixed2(commissionPool * 0.1);
         let adminShare = toFixed2(commissionPool * 0.2);
 
-        if (!userB || userB.isDeleted || !userB.packageActive ) {
+        if (!userB || userB.isDeleted || !userB.packageActive) {
             adminShare += B_share;
         }
         if (!userA || userA.isDeleted || !userA.packageActive) {
@@ -161,21 +161,35 @@ export async function POST(req: Request) {
 
             let wallet = await Wallet.findOne({ userId });
 
-            const transaction = {
-                type: "credit",
-                amount: roundedAmount,
-                description,
-                referenceId,
-                method: "Wallet",
-                source: "referral",
-                status: "success",
-                createdAt: new Date(),
-                balanceAfterTransaction: 0,
-                leadId,
-                commissionFrom
-            };
+            // const transaction = {
+            //     type: "credit",
+            //     amount: roundedAmount,
+            //     description,
+            //     referenceId,
+            //     method: "Wallet",
+            //     source: "referral",
+            //     status: "success",
+            //     createdAt: new Date(),
+            //     balanceAfterTransaction: 0,
+            //     leadId,
+            //     commissionFrom
+            // };
 
             if (!wallet) {
+                const transaction = {
+                    type: "credit",
+                    amount: roundedAmount,
+                    description,
+                    referenceId,
+                    method: "Wallet",
+                    source: "referral",
+                    status: "success",
+                    createdAt: new Date(),
+                    balanceAfterTransaction: roundedAmount,
+                    leadId,
+                    commissionFrom
+                };
+
                 wallet = new Wallet({
                     userId,
                     balance: roundedAmount,
@@ -187,6 +201,9 @@ export async function POST(req: Request) {
                     transactions: [transaction],
                     lastTransactionAt: new Date(),
                 });
+
+                // transaction.balanceAfterTransaction = roundedAmount;
+                // wallet.transactions.push(transaction);
             } else {
                 wallet.balance = toFixed2(wallet.balance + roundedAmount);
                 wallet.totalCredits = toFixed2(wallet.totalCredits + roundedAmount);
@@ -194,7 +211,20 @@ export async function POST(req: Request) {
                 wallet.lastTransactionAt = new Date();
                 if (level === "C") wallet.selfEarnings = toFixed2(wallet.selfEarnings + roundedAmount);
                 else if (level === "A" || level === "B") wallet.referralEarnings = toFixed2(wallet.referralEarnings + roundedAmount);
-                transaction.balanceAfterTransaction = wallet.balance;
+                // transaction.balanceAfterTransaction = wallet.balance;
+                const transaction = {
+                    type: "credit",
+                    amount: roundedAmount,
+                    description,
+                    referenceId,
+                    method: "Wallet",
+                    source: "referral",
+                    status: "success",
+                    createdAt: new Date(),
+                    balanceAfterTransaction: wallet.balance,
+                    leadId,
+                    commissionFrom
+                };
                 wallet.transactions.push(transaction);
             }
 
