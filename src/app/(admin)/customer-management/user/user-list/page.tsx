@@ -20,6 +20,7 @@ import * as XLSX from "xlsx";   // ✅ for Excel download
 import { FaFileDownload } from "react-icons/fa";
 import Pagination from "@/components/tables/Pagination";
 import user1 from "@/public/images/logo/user1.png";
+import { UsersIcon } from "lucide-react";
 
 
 export interface User {
@@ -436,7 +437,18 @@ const UserList = () => {
                         </button>
                     </div>
                     {message ? (
-                        <p className="text-red-500 text-center my-4">{message}</p>
+                        <div className="flex flex-col items-center justify-center py-16 text-center border border-gray-300">
+                            <div className="bg-gray-100 p-6 rounded-full mb-4">
+                                <UsersIcon  />
+                            </div>
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                                No Users Found
+                            </h2>
+                            <p className="text-gray-500 max-w-md text-sm">
+                                We couldn’t find any users.
+                            </p>
+                            
+                        </div>
                     ) : (
                         <div>
                             <BasicTableOne columns={columns} data={currentRows} />
