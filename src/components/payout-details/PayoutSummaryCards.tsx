@@ -28,18 +28,22 @@ const PayoutSummaryCards: React.FC = () => {
 
   // Calculate totals safely using useMemo
   const { userTotal, providerTotal, totalPayout } = useMemo(() => {
-    const ignoredUserId = "444c44d4444be444d4444444";
+    const ignoredUserId = "null";
 
     // ✅ Convert _id to string before comparing
-    const validUserWallets = allUserWallets?.filter((wallet) => {
-      const currentId = wallet?.userId?._id?.toString?.();
-      return currentId !== ignoredUserId;
-    });
+    const validUserWallets = allUserWallets?.filter(
+      (wallet) => wallet?.userId?._id != null
+    );
+
+    console.log("✅ Valid user wallets:", validUserWallets);
 
     const userTotal = validUserWallets?.reduce(
       (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
       0
     );
+
+    console.log("userTotal : ", userTotal)
+
 
     const providerTotal = allProviderWallets?.reduce(
       (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),

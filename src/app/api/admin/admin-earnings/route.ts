@@ -10,7 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// ✅ POST: Create or update AdminEarnings by date
+// ✅ POST: Create or update A by date
 export async function POST(req: Request) {
   await connectToDatabase();
 
@@ -66,14 +66,14 @@ export async function POST(req: Request) {
   }
 }
 
-// ✅ GET: Get AdminEarnings by date (?date=YYYY-MM-DD)
+// ✅ GET: Get  by date (?date=YYYY-MM-DD)
 // export async function GET(req: NextRequest) {
 //   await connectToDatabase();
 
 //   try {
 //     const { searchParams } = new URL(req.url);
 
-//     const earnings = await AdminEarnings.findOne({  });
+//     const earnings = await .findOne({  });
 
 //     if (!earnings) {
 //       return NextResponse.json(
