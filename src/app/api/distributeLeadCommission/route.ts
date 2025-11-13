@@ -139,10 +139,10 @@ export async function POST(req: Request) {
         const A_share = toFixed2(commissionPool * 0.1);
         let adminShare = toFixed2(commissionPool * 0.2);
 
-        if (!userB || userB.isDeleted) {
+        if (!userB || userB.isDeleted || !userB.packageActive ) {
             adminShare += B_share;
         }
-        if (!userA || userA.isDeleted) {
+        if (!userA || userA.isDeleted || !userA.packageActive) {
             adminShare += A_share;
         }
 
@@ -326,8 +326,8 @@ export async function POST(req: Request) {
 
 
 
-            if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
-            if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
+            if (!userB || userB.isDeleted || !userB.packageActive) extra_adminShare += extra_B_share;
+            if (!userA || userA.isDeleted || !userB.packageActive) extra_adminShare += extra_A_share;
 
             if (userC && !userC.isDeleted && userC.packageActive) {
                 await creditWallet(userC._id, extra_C_share, "Self Earning Share 1 (Add On Service)", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
