@@ -208,7 +208,7 @@ export async function POST(req: Request) {
             );
         };
 
-        if (userC?.packageActive) {
+        if (userC && !userC.isDeleted && userC.packageActive) {
             await creditWallet(userC._id, C_share, "Self Earning Share 1", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
             adminShare += C_share;
         }
 
-        if (userB && !userB.isDeleted) {
+        if (userB && !userB.isDeleted && userB.packageActive) {
             await creditWallet(userB._id, B_share, "Team Revenue Share 2", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
             });
         }
 
-        if (userA && !userA.isDeleted) {
+        if (userA && !userA.isDeleted && userA.packageActive) {
             await creditWallet(userA._id, A_share, "Team Revenue Share 3", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
             await ReferralCommission.create({
                 fromLead: checkout._id,
@@ -329,7 +329,7 @@ export async function POST(req: Request) {
             if (!userB || userB.isDeleted) extra_adminShare += extra_B_share;
             if (!userA || userA.isDeleted) extra_adminShare += extra_A_share;
 
-            if (userC?.packageActive) {
+            if (userC && !userC.isDeleted && userC.packageActive) {
                 await creditWallet(userC._id, extra_C_share, "Self Earning Share 1 (Add On Service)", checkout._id.toString(), "C", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
@@ -340,7 +340,7 @@ export async function POST(req: Request) {
                 extra_adminShare += extra_C_share;
             }
 
-            if (userB && !userB.isDeleted) {
+            if (userB && !userB.isDeleted && userB.packageActive) {
                 await creditWallet(userB._id, extra_B_share, "Team Revenue Share 2 (Add On Service)", checkout._id.toString(), "B", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
@@ -349,7 +349,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            if (userA && !userA.isDeleted) {
+            if (userA && !userA.isDeleted && userA.packageActive) {
                 await creditWallet(userA._id, extra_A_share, "Team Revenue Share 3 (Add On Service)", checkout._id.toString(), "A", checkout.bookingId, userC.userId || userC._id);
                 await ReferralCommission.create({
                     fromLead: checkout._id,
