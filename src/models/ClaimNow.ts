@@ -11,7 +11,8 @@ export interface IClaimNow extends Document {
   disclaimer: string;
   isClaimSettled: boolean;
   isClaimRequest: boolean;
-  isClaimAccepted: boolean | null;
+ isClaimAccepted: boolean; 
+  isExtraMonthlyEarnRequest: boolean;  
 }
 
 const claimNowSchema = new Schema<IClaimNow>(
@@ -33,7 +34,8 @@ const claimNowSchema = new Schema<IClaimNow>(
     disclaimer: { type: String, default: "" },
     isClaimSettled: { type: Boolean, default: false },
     isClaimRequest: { type: Boolean, default: false },
-    isClaimAccepted: { type: Boolean, default: null },
+    isClaimAccepted: { type: Boolean, default: false }, 
+    isExtraMonthlyEarnRequest: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

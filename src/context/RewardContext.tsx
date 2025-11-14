@@ -10,6 +10,8 @@ export interface Reward {
   photo?: string;
   description?: string;
   packageType?: "SGP" | "PGP" | null;
+  extraMonthlyEarn?: string;             
+  extraMonthlyEarnDescription?: string;
 }
 
 // Context Interface

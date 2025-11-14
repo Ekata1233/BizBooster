@@ -112,19 +112,23 @@ const PackageForm = () => {
     };
 
     if (selectedTab !== 'gp') {
-      // Only update selected tab description
-      updatePayload.description = {
-        ...packages[0]?.description,
-        [selectedTab]: form.description[selectedTab],
-      };
-    } else {
-      updatePayload.price = form.price;
-      updatePayload.discount = form.discount;
-      updatePayload.discountedPrice = form.discountedPrice;
-      updatePayload.deposit = form.deposit;
-      updatePayload.monthlyEarnings = form.monthlyEarnings; // ✅ Add this
-updatePayload.lockInPeriod = form.lockInPeriod; 
-    }
+  updatePayload.description = {
+    ...packages[0]?.description,
+    [selectedTab]: form.description[selectedTab],
+  };
+} else {
+  const discountedPrice = form.price - (form.price * form.discount) / 100;
+  const grandtotal = discountedPrice + form.deposit; // ✅ compute here
+
+  updatePayload.price = form.price;
+  updatePayload.discount = form.discount;
+  updatePayload.discountedPrice = discountedPrice; // use recomputed
+  updatePayload.deposit = form.deposit;
+  updatePayload.grandtotal = grandtotal; // ✅ add this
+  updatePayload.monthlyEarnings = form.monthlyEarnings;
+  updatePayload.lockInPeriod = form.lockInPeriod;
+}
+
 
     if (form._id) {
       await updatePackage(form._id, updatePayload);

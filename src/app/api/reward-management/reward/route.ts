@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
     const description = (formData.get("description") as string | null) || "";
     const packageTypeRaw = (formData.get("packageType") as string | null) || null;
 
+    // 🆕 New fields
+    const extraMonthlyEarn = (formData.get("extraMonthlyEarn") as string | null) || "";
+    const extraMonthlyEarnDescription =
+      (formData.get("extraMonthlyEarnDescription") as string | null) || "";
+
     // Validate packageType
     if (!packageTypeRaw || !["SGP", "PGP"].includes(packageTypeRaw)) {
       return NextResponse.json(
@@ -78,6 +83,8 @@ export async function POST(req: NextRequest) {
       // 🔁 Update existing reward
       existingReward.name = name;
       existingReward.description = description;
+      existingReward.extraMonthlyEarn = extraMonthlyEarn;                        // 🆕 Added
+      existingReward.extraMonthlyEarnDescription = extraMonthlyEarnDescription;  // 🆕 Added
       if (photo) existingReward.photo = photo; // only update if new image
       await existingReward.save();
       reward = existingReward;
@@ -88,11 +95,17 @@ export async function POST(req: NextRequest) {
         description,
         photo,
         packageType: packageTypeRaw,
+        extraMonthlyEarn,                        // 🆕 Added
+        extraMonthlyEarnDescription,             // 🆕 Added
       });
     }
 
     return NextResponse.json(
-      { success: true, data: reward, message: existingReward ? "Reward updated" : "Reward created" },
+      {
+        success: true,
+        data: reward,
+        message: existingReward ? "Reward updated" : "Reward created",
+      },
       { status: 200, headers: corsHeaders }
     );
   } catch (err: any) {
@@ -102,3 +115,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

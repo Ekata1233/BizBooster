@@ -15,7 +15,7 @@ const ClaimNowPage = () => {
   const { claims, fetchClaims, loading, deleteClaim } = useClaimNow();
 
   const [activeTab, setActiveTab] = useState<
-    'all' | 'requested' | 'approved' | 'accepted' | 'settled'
+    'all' | 'requested' | 'approved' | 'reward' | 'monthlyearn' | 'settled'
   >('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,14 +30,21 @@ const ClaimNowPage = () => {
     if (claim.isClaimSettled) return 'Settled';
     if (claim.isClaimAccepted) return 'Accepted';
     if (claim.isAdminApproved) return 'Approved';
-    if (claim.isClaimRequest) return 'Requested';
+    if (claim.isClaimRequest || claim.isExtraMonthlyEarnRequest) return 'Requested';
     return 'Pending';
   };
 
-  /* ─── Filter & search ─────────────────────────────────────────── */
+  /* ─── Tab filter logic ────────────────────────────────────────── */
   const filteredClaims = claims.filter((claim) => {
     const status = getStatus(claim).toLowerCase();
-    if (activeTab !== 'all' && status !== activeTab) return false;
+
+    if (activeTab === 'requested' && !claim.isClaimRequest && !claim.isExtraMonthlyEarnRequest)
+      return false;
+    if (activeTab === 'approved' && !claim.isAdminApproved) return false;
+    if (activeTab === 'settled' && !claim.isClaimSettled) return false;
+    if (activeTab === 'reward' && !claim.isClaimAccepted) return false;
+    if (activeTab === 'monthlyearn' && !claim.isExtraMonthlyEarnRequest) return false;
+
     if (
       searchQuery &&
       !claim?.user?.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -51,6 +58,18 @@ const ClaimNowPage = () => {
   const currentRows = filteredClaims.slice(startIndex, startIndex + rowsPerPage);
 
   if (loading) return <RouteLoader />;
+
+  /* ─── Tab counts ──────────────────────────────────────────────── */
+  const counts = {
+    all: claims.length,
+    requested: claims.filter(
+      (c) => c.isClaimRequest || c.isExtraMonthlyEarnRequest
+    ).length,
+    approved: claims.filter((c) => c.isAdminApproved).length,
+    reward: claims.filter((c) => c.isClaimAccepted).length,
+    monthlyearn: claims.filter((c) => c.isExtraMonthlyEarnRequest).length,
+    settled: claims.filter((c) => c.isClaimSettled).length,
+  };
 
   /* ─── Table Columns ───────────────────────────────────────────── */
   const columns = [
@@ -76,7 +95,7 @@ const ClaimNowPage = () => {
       header: 'Package Status',
       accessor: 'packageStatus',
       render: (row: any) => (
-        <span className="text-sm font-medium">
+        <span className="text-sm font-semibold">
           {row?.user?.packageStatus || 'N/A'}
         </span>
       ),
@@ -107,6 +126,15 @@ const ClaimNowPage = () => {
       ),
     },
     {
+      header: 'Type',
+      accessor: 'type',
+      render: (row: any) => {
+        if (row.isExtraMonthlyEarnRequest) return 'Monthly Earn';
+        if (row.isClaimRequest) return 'Reward';
+        return '-';
+      },
+    },
+    {
       header: 'Status',
       accessor: 'status',
       render: (row: any) => {
@@ -135,20 +163,15 @@ const ClaimNowPage = () => {
       accessor: 'action',
       render: (row: any) => (
         <div className="flex gap-2">
-          {/* ✏️ Edit */}
           <button className="text-yellow-600 p-2 border rounded hover:bg-yellow-50">
             <PencilIcon />
           </button>
-
-          {/* 🗑️ Delete */}
           <button
             onClick={() => deleteClaim(row._id!)}
             className="text-red-600 p-2 border rounded hover:bg-red-50"
           >
             <TrashBinIcon />
           </button>
-
-          {/* 👁️ View */}
           <Link href={`/reward-management/claim/${row._id}`} passHref>
             <button className="text-blue-600 p-2 border rounded hover:bg-blue-50">
               <EyeIcon />
@@ -160,40 +183,43 @@ const ClaimNowPage = () => {
   ];
 
   /* ─── UI ─────────────────────────────────────────────────────── */
+  const tabs: { key: any; label: string }[] = [
+    { key: 'all', label: `All (${counts.all})` },
+    { key: 'requested', label: `Requested (${counts.requested})` },
+    { key: 'approved', label: `Approved (${counts.approved})` },
+    { key: 'reward', label: `Reward (${counts.reward})` },
+    { key: 'monthlyearn', label: `Monthly Earn (${counts.monthlyearn})` },
+    { key: 'settled', label: `Settled (${counts.settled})` },
+  ];
+
   return (
     <div>
       <PageBreadcrumb pageTitle="Claim Requests" />
-
       <ComponentCard title="All Reward Claims">
-        {/* 🔍 Search */}
         <Input
           placeholder="Search by user name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        {/* 📊 Tabs */}
         <div className="border-b border-gray-200 mt-3 mb-3">
-          <ul className="flex space-x-6 text-sm font-medium text-gray-500">
-            {['all', 'requested', 'approved', 'accepted', 'settled'].map(
-              (tab) => (
-                <li
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
-                  className={`cursor-pointer px-4 py-2 ${
-                    activeTab === tab
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : ''
-                  }`}
-                >
-                  {tab.toUpperCase()}
-                </li>
-              )
-            )}
+          <ul className="flex flex-wrap space-x-6 text-sm font-medium text-gray-500">
+            {tabs.map((tab) => (
+              <li
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`cursor-pointer px-4 py-2 ${
+                  activeTab === tab.key
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : ''
+                }`}
+              >
+                {tab.label}
+              </li>
+            ))}
           </ul>
         </div>
 
-        {/* 🧾 Table */}
         <BasicTableOne columns={columns} data={currentRows} />
       </ComponentCard>
     </div>

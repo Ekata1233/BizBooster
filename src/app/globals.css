@@ -781,5 +781,14 @@ span.flatpickr-weekday,
 
 
 
+/* Hide main page scrollbar */
+.no-page-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;   /* prevents vertical page scroll */
+}
+
+html, body {
+  overflow-y: hidden;   /* remove page scroll */
+}
 
 

@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/utils/db";
 import ClaimNow from "@/models/ClaimNow";
 import "@/models/Reward";
 import "@/models/User";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -20,8 +21,14 @@ export async function GET() {
 
   try {
     const claims = await ClaimNow.find()
-      .populate("user", "userId fullName email packageType packageActive packageActivateDate packageStatus")
-      .populate("reward", "name photo description")
+      .populate(
+        "user",
+        "userId fullName email packageType packageActive packageActivateDate packageStatus"
+      )
+      .populate(
+        "reward",
+        "name photo description extraMonthlyEarn extraMonthlyEarnDescription"
+      )
       .sort({ createdAt: -1 });
 
     return NextResponse.json(
@@ -36,12 +43,18 @@ export async function GET() {
   }
 }
 
-// ✅ POST - Create a claim with only user, reward, isClaimRequest
+// ✅ POST - Create a claim (can be Claim or Extra Monthly Earn)
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const { user, reward, isClaimRequest } = await req.json();
+    const {
+      user,
+      reward,
+      isClaimRequest,
+      isClaimAccepted,
+      isExtraMonthlyEarnRequest,
+    } = await req.json();
 
     if (!user || !reward) {
       return NextResponse.json(
@@ -50,7 +63,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Create claim with all other fields as null/default
+    // ✅ Create claim with support for either Claim or Extra Monthly Earn
     const newClaim = await ClaimNow.create({
       user,
       reward,
@@ -61,7 +74,8 @@ export async function POST(req: NextRequest) {
       isAdminApproved: false,
       isClaimSettled: false,
       isClaimRequest: !!isClaimRequest,
-      isClaimAccepted: null,
+      isClaimAccepted: !!isClaimAccepted, // ✅ can be true if sent
+      isExtraMonthlyEarnRequest: !!isExtraMonthlyEarnRequest, // ✅ can be true if sent
     });
 
     return NextResponse.json(

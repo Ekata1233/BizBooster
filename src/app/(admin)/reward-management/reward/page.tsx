@@ -12,19 +12,27 @@ const RewardPage = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [description, setDescription] = useState("");
 
+  // 🆕 New states
+  const [extraMonthlyEarn, setExtraMonthlyEarn] = useState("");
+  const [extraMonthlyEarnDescription, setExtraMonthlyEarnDescription] = useState("");
+
   // 🟢 Load reward data for selected packageType
   useEffect(() => {
-    const existingReward = rewards.find(
-      (r) => r.packageType === selectedTab
-    );
+    const existingReward = rewards.find((r) => r.packageType === selectedTab);
     if (existingReward) {
       setName(existingReward.name || "");
       setDescription(existingReward.description || "");
       setPreview(existingReward.photo || null);
+      setExtraMonthlyEarn(existingReward.extraMonthlyEarn || ""); // 🆕
+      setExtraMonthlyEarnDescription(
+        existingReward.extraMonthlyEarnDescription || ""
+      ); // 🆕
     } else {
       setName("");
       setDescription("");
       setPreview(null);
+      setExtraMonthlyEarn(""); // 🆕
+      setExtraMonthlyEarnDescription(""); // 🆕
     }
     setPhoto(null);
   }, [selectedTab, rewards]);
@@ -41,6 +49,8 @@ const RewardPage = () => {
     formData.append("name", name);
     formData.append("description", description);
     formData.append("packageType", selectedTab);
+    formData.append("extraMonthlyEarn", extraMonthlyEarn); // 🆕
+    formData.append("extraMonthlyEarnDescription", extraMonthlyEarnDescription); // 🆕
     if (photo) formData.append("photo", photo);
 
     await saveReward(formData);
@@ -141,6 +151,34 @@ const RewardPage = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={`Enter ${selectedTab} reward description`}
+            rows={3}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* 🆕 Extra Monthly Earn */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Extra Monthly Earn
+          </label>
+          <input
+            type="text"
+            value={extraMonthlyEarn}
+            onChange={(e) => setExtraMonthlyEarn(e.target.value)}
+            placeholder="Enter extra monthly earn amount"
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* 🆕 Extra Monthly Earn Description */}
+        <div>
+          <label className="block font-semibold mb-2 text-gray-700">
+            Extra Monthly Earn Description
+          </label>
+          <textarea
+            value={extraMonthlyEarnDescription}
+            onChange={(e) => setExtraMonthlyEarnDescription(e.target.value)}
+            placeholder="Enter extra monthly earn details"
             rows={3}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           />
