@@ -34,7 +34,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         {/* HORIZONTAL SCROLL */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-hidden">
                             <table className="min-w-[1800px] table-fixed divide-y divide-gray-300">
                                 <thead className="bg-gray-100 sticky top-0 z-10">
                                     <tr>

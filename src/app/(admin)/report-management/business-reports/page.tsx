@@ -225,24 +225,22 @@ const Page = () => {
     },
   ];
 
+return (
+  <div className="mb-16">
 
-  return (
-    <div className="p-6">
-      {/* SUMMARY */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-        {/* your summary cards unchanged */}
-      </div>
+    <div className="w-full max-w-4xl mx-auto">   {/* ⭐ FIXED WIDTH WRAPPER */}
 
       <ComponentCard title="Earnings Reports">
-        <div className="flex space-x-6 border-b pb-2 mb-4 text-sm font-medium text-gray-500">
+        <div className="flex w-full border-b pb-2 mb-4 text-sm font-medium text-gray-500">
           {["leadEarning", "packageEarning", "other"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 capitalize ${activeTab === tab
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "hover:text-blue-500"
-                }`}
+              className={`px-4 py-2 capitalize ${
+                activeTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "hover:text-blue-500"
+              }`}
             >
               {tab.replace(/([A-Z])/g, " $1")}
             </button>
@@ -254,16 +252,17 @@ const Page = () => {
             {leadLoading ? (
               <p>Loading...</p>
             ) : (
-              <div className="w-full overflow-x-auto no-page-scroll">
-
-                <ResponsiveTable
-                  columns={leadColumns}
-                  data={leadEarnings}
-                  page={page}
-                  limit={limit}
-                  total={total}
-                  onPageChange={(p) => setPage(p)}
-                />
+              <div className="overflow-x-auto">
+                <div className="min-w-[900px]">
+                  <ResponsiveTable
+                    columns={leadColumns}
+                    data={leadEarnings}
+                    page={page}
+                    limit={limit}
+                    total={total}
+                    onPageChange={(p) => setPage(p)}
+                  />
+                </div>
               </div>
             )}
           </>
@@ -274,15 +273,17 @@ const Page = () => {
             {packageLoading ? (
               <p>Loading...</p>
             ) : (
-              <div className="w-full overflow-x-auto no-page-scroll">
-                <ResponsiveTable
-                  columns={packageColumns}
-                  data={packageEarnings}
-                  page={packagePage}
-                  limit={limit}
-                  total={packageTotal}
-                  onPageChange={(p) => setPackagePage(p)}
-                />
+              <div className="overflow-x-auto">
+                <div className="min-w-[900px]">
+                  <ResponsiveTable
+                    columns={packageColumns}
+                    data={packageEarnings}
+                    page={packagePage}
+                    limit={limit}
+                    total={packageTotal}
+                    onPageChange={(p) => setPackagePage(p)}
+                  />
+                </div>
               </div>
             )}
           </>
@@ -290,7 +291,10 @@ const Page = () => {
 
       </ComponentCard>
     </div>
-  );
+
+  </div>
+);
+
 };
 
 export default Page;
