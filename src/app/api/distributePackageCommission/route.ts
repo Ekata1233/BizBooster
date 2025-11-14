@@ -10,6 +10,7 @@ import AdminEarnings from "@/models/AdminEarnings";
 import Deposite from "@/models/Deposite";
 import { checkAndUpdateReferralStatus } from "@/utils/packageStatus";
 import UserPayout from "@/models/UserPayout";
+import UpcomingPackgeCommission from "@/models/UpcomingPackgeCommission";
 
 // Enable CORS
 const corsHeaders = {
@@ -142,6 +143,13 @@ export async function POST(req: NextRequest) {
         const remaining = packagePrice - (level1Amount + level2Amount);
         adminAmount += remaining > 0 ? remaining : 0;
 
+        await UpcomingPackgeCommission.create({
+            commissionFrom: userC._id,
+            share_1: level1Amount,
+            share_2: level2Amount,
+            admin_commission: adminAmount,
+            status: "distributed",
+        });
 
         const creditWallet = async (
             userId: Types.ObjectId,
