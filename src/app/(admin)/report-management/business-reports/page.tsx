@@ -2,16 +2,7 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import ColorStatCard from "@/components/common/ColorStatCard";
 import ComponentCard from "@/components/common/ComponentCard";
-import {
-  FaUsers,
-  FaChartLine,
-  FaMoneyBill,
-  FaClipboardList,
-  FaStore,
-  FaTools,
-} from "react-icons/fa";
 import { useAdminEarnings } from "@/context/AdminEarningsContext";
 import { useProvider } from "@/context/ProviderContext";
 import ResponsiveTable from "@/components/tables/ResponsiveTable";
@@ -24,15 +15,17 @@ const Page = () => {
   } = useProvider();
 
   const [activeTab, setActiveTab] = useState("leadEarning");
-
-  // Pagination states
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
-
   const [leadEarnings, setLeadEarnings] = useState<any[]>([]);
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadError, setLeadError] = useState("");
+  const [packageEarnings, setPackageEarnings] = useState<any[]>([]);
+  const [packageLoading, setPackageLoading] = useState(false);
+  const [packageError, setPackageError] = useState("");
+  const [packageTotal, setPackageTotal] = useState(0);
+  const [packagePage, setPackagePage] = useState(1);
 
   // Fetch summary
   useEffect(() => {
@@ -80,9 +73,31 @@ const Page = () => {
     }
   };
 
+  const fetchPackageEarnings = async () => {
+    try {
+      setPackageLoading(true);
+      const res = await axios.get(
+        `/api/business-report/package?page=${packagePage}&limit=${limit}`
+      );
+
+      if (res.data.success) {
+        setPackageEarnings(res.data.data);
+        setPackageTotal(res.data.total || 0);
+      } else {
+        setPackageEarnings([]);
+        setPackageTotal(0);
+      }
+    } catch (err) {
+      setPackageError("Error fetching package data");
+    } finally {
+      setPackageLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "leadEarning") fetchLeadEarnings();
-  }, [activeTab, page]);
+    if (activeTab === "packageEarning") fetchPackageEarnings();
+  }, [activeTab, page, packagePage]);
 
   // Table Columns
   const leadColumns = [
@@ -173,6 +188,44 @@ const Page = () => {
     },
   ];
 
+  const packageColumns = [
+    {
+      header: "Commission From",
+      accessor: "commissionFrom",
+      render: (r: any) => (
+        <div className="flex flex-col">
+          <span className="font-medium">{r?.commissionFrom?.fullName || "-"}</span>
+          <span className="text-xs text-gray-500">{r?.commissionFrom?.userId || "-"}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Share 1",
+      accessor: "share_1",
+      render: (r: any) => `₹${r.share_1}`,
+    },
+    {
+      header: "Share 2",
+      accessor: "share_2",
+      render: (r: any) => `₹${r.share_2}`,
+    },
+    {
+      header: "Admin Commission",
+      accessor: "admin_commission",
+      render: (r: any) => `₹${r.admin_commission}`,
+    },
+    {
+      header: "Status",
+      accessor: "status",
+    },
+    {
+      header: "Created At",
+      accessor: "createdAt",
+      render: (r: any) => new Date(r.createdAt).toLocaleString(),
+    },
+  ];
+
+
   return (
     <div className="p-6">
       {/* SUMMARY */}
@@ -186,11 +239,10 @@ const Page = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 capitalize ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "hover:text-blue-500"
-              }`}
+              className={`px-4 py-2 capitalize ${activeTab === tab
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "hover:text-blue-500"
+                }`}
             >
               {tab.replace(/([A-Z])/g, " $1")}
             </button>
@@ -204,18 +256,38 @@ const Page = () => {
             ) : (
               <div className="w-full overflow-x-auto no-page-scroll">
 
-              <ResponsiveTable
-                columns={leadColumns}
-                data={leadEarnings}
-                page={page}
-                limit={limit}
-                total={total}
-                onPageChange={(p) => setPage(p)}
-              />
+                <ResponsiveTable
+                  columns={leadColumns}
+                  data={leadEarnings}
+                  page={page}
+                  limit={limit}
+                  total={total}
+                  onPageChange={(p) => setPage(p)}
+                />
               </div>
             )}
           </>
         )}
+
+        {activeTab === "packageEarning" && (
+          <>
+            {packageLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <div className="w-full overflow-x-auto no-page-scroll">
+                <ResponsiveTable
+                  columns={packageColumns}
+                  data={packageEarnings}
+                  page={packagePage}
+                  limit={limit}
+                  total={packageTotal}
+                  onPageChange={(p) => setPackagePage(p)}
+                />
+              </div>
+            )}
+          </>
+        )}
+
       </ComponentCard>
     </div>
   );
