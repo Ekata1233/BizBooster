@@ -56,7 +56,7 @@ const ClaimNowDetailsPage = () => {
 
         try {
             const res = await fetch(
-                `http://localhost:3000/api/reward-management/claim-now/admin-approve/${claim._id}`,
+                `/api/reward-management/claim-now/admin-approve/${claim._id}`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
@@ -96,7 +96,7 @@ const ClaimNowDetailsPage = () => {
 
         try {
             const res = await fetch(
-                `http://localhost:3000/api/reward-management/claim-now/admin-settled/${claim._id}`,
+                `/api/reward-management/claim-now/admin-settled/${claim._id}`,
                 {
                     method: "PUT",
                     body: formData,
