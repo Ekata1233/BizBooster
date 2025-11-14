@@ -202,6 +202,7 @@ const Page = () => {
             {leadLoading ? (
               <p>Loading...</p>
             ) : (
+              <div className="w-full overflow-x-hidden">
               <ResponsiveTable
                 columns={leadColumns}
                 data={leadEarnings}
@@ -210,6 +211,7 @@ const Page = () => {
                 total={total}
                 onPageChange={(p) => setPage(p)}
               />
+              </div>
             )}
           </>
         )}
