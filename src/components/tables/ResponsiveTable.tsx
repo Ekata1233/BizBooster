@@ -29,52 +29,59 @@ const ResponsiveTable = <T extends Record<string, any>>({
   return (
     <div className="w-full">
       {/* Table container: gives both vertical and horizontal scrolling */}
-      <div className="w-full border border-gray-200 rounded-lg">
-        {/* This div provides the scrolling area. Adjust max-h as needed */}
-        <div className="max-h-[520px] overflow-auto">
-          {/* Use a wide-min table so horizontal overflow works when cells are many/wide */}
-          <table className="min-w-full table-auto divide-y divide-gray-300">
-            <thead className="bg-gray-100">
-              <tr className="sticky top-0 z-20">
-                {columns.map((col, i) => (
-                  <th
-                    key={i}
-                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap"
-                  >
-                    {col.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+     <div className="w-full border border-gray-200 rounded-lg">
+  {/* SCROLL WRAPPER */}
+  <div className="overflow-x-auto">
+    <div className="inline-block min-w-full align-middle">
+      {/* HORIZONTAL SCROLL */}
+      <div className="overflow-x-auto">
+        <table className="min-w-[1800px] table-fixed divide-y divide-gray-300">
+          <thead className="bg-gray-100 sticky top-0 z-10">
+            <tr>
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap"
+                >
+                  {col.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="py-6 text-center text-gray-500"
-                  >
-                    No data found
-                  </td>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="py-6 text-center text-gray-500"
+                >
+                  No data found
+                </td>
+              </tr>
+            ) : (
+              data.map((row, rowIndex) => (
+                <tr key={rowIndex} className="hover:bg-gray-50">
+                  {columns.map((col, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap"
+                    >
+                      {col.render
+                        ? col.render(row, rowIndex)
+                        : row[col.accessor as keyof T]}
+                    </td>
+                  ))}
                 </tr>
-              ) : (
-                data.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-gray-50">
-                    {columns.map((col, colIndex) => (
-                      <td
-                        key={colIndex}
-                        className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap"
-                      >
-                        {col.render ? col.render(row, rowIndex) : row[col.accessor as keyof T]}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+    </div>
+  </div>
+</div>
+
 
       {/* PAGINATION */}
       <div className="flex justify-between items-center mt-4">

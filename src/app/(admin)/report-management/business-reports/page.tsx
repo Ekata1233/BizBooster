@@ -202,7 +202,8 @@ const Page = () => {
             {leadLoading ? (
               <p>Loading...</p>
             ) : (
-              <div className="w-full overflow-x-hidden">
+              <div className="w-full overflow-x-auto no-page-scroll">
+
               <ResponsiveTable
                 columns={leadColumns}
                 data={leadEarnings}
