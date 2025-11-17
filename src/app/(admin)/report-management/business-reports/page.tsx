@@ -228,9 +228,7 @@ const Page = () => {
 
   return (
     <div className="p-6">
-      {/* SUMMARY */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-        {/* your summary cards unchanged */}
       </div>
 
       <ComponentCard title="Earnings Reports">
