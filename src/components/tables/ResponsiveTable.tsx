@@ -35,13 +35,15 @@ const ResponsiveTable = <T extends Record<string, any>>({
                     <div className="inline-block min-w-full align-middle">
                         {/* HORIZONTAL SCROLL */}
                         <div className="overflow-x-hidden">
-                            <table className="min-w-[1800px] table-fixed divide-y divide-gray-300">
+                           <table className="min-w-[900px] table-fixed divide-y divide-gray-300">
+
                                 <thead className="bg-gray-100 sticky top-0 z-10">
                                     <tr>
                                         {columns.map((col, i) => (
                                             <th
                                                 key={i}
-                                                className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap"
+                                                className="px-2 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap w-[120px]"
+
                                             >
                                                 {col.header}
                                             </th>

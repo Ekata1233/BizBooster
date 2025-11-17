@@ -76,7 +76,7 @@ export async function PATCH(req: Request) {
     if (error instanceof Error) {
       // ✅ Cleaner error handling for invalid date or cast errors
       if (error.message.includes("Cast to date failed")) {
-        message = "Invalid date format for dateOfBirth";
+        message = "Invalid date format for DOB";
       } else {
         message = error.message;
       }
