@@ -62,7 +62,11 @@ const Page = () => {
         return [
             {
                 title: "Total Balance",
-                amount: `₹${((wallet?.totalCredits || 0) + (summary?.extraFees || 0)).toLocaleString()}`,
+                amount: `₹${(
+                    (wallet?.totalCredits || 0) +
+                    (summary?.extraFees || 0) +
+                    (summary?.GST || 0)
+                ).toLocaleString()}`,
                 icon: <FaWallet />,
                 gradient: "from-green-100 to-green-200",
                 textColor: "text-green-800",
