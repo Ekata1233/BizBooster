@@ -35,6 +35,7 @@ type FormDataType = {
     subcategory: string;
     price: number;
     discount?: number;
+    discountedPrice?: number;
     gst?: number;
     includeGst?: boolean;
     thumbnail: File | null;
@@ -391,7 +392,8 @@ const EditService: React.FC = () => {
               <FranchiseDetailsForm
                 data={formData.franchise}
                 setData={(newData) => setFormData(prev => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
-                price={formData.basic?.price}
+                price={formData.basic?.discountedPrice}
+                // discountedPrice={formData.basic?.discountedPrice}
               />
             )}
 
