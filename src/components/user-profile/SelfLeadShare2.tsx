@@ -99,7 +99,7 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
         if (json.success && Array.isArray(json.data)) {
           setCheckouts(json.data);
         } else {
-          setError("Invalid response structure");
+          setError("No Data Found");
         }
       } catch (err) {
         setError("Failed to fetch self-lead data");

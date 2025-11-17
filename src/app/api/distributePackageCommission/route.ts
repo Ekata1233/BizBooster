@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
         // adminAmount += packagePrice - (baseLevel1 + baseLevel2); 
         //because package price is less then amount goes to negative
         const remaining = packagePrice - (level1Amount + level2Amount);
-        adminAmount += remaining > 0 ? remaining : 0;
+        adminAmount = remaining > 0 ? remaining : 0;
 
         await UpcomingPackgeCommission.create({
             commissionFrom: userC._id,
