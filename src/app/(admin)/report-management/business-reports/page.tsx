@@ -561,8 +561,8 @@ const [packageEarnings, setPackageEarnings] = useState<any[]>([]);
             {leadLoading ? (
               <p>Loading...</p>
             ) : (
-              <div className="overflow-x-auto">
-                <div className="min-w-[900px]">
+              <div className="">
+                <div className="">
                   <ResponsiveTable
                     columns={leadColumns}
                     data={leadEarnings}
@@ -582,8 +582,8 @@ const [packageEarnings, setPackageEarnings] = useState<any[]>([]);
             {packageLoading ? (
               <p>Loading...</p>
             ) : (
-              <div className="overflow-x-auto">
-                <div className="min-w-[900px]">
+              <div className="">
+                <div className="">
                   <ResponsiveTable
                     columns={packageColumns}
                     data={packageEarnings}
