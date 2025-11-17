@@ -5,6 +5,7 @@ import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
 import { useAdminEarnings } from "@/context/AdminEarningsContext";
 import { useCheckout } from "@/context/CheckoutContext";
+import { useProvider } from "@/context/ProviderContext";
 import { useUserWallet } from "@/context/WalletContext";
 import React, { useEffect, useMemo, useState } from "react";
 import { FaMoneyBillWave, FaWallet, FaFileDownload } from "react-icons/fa";
@@ -15,7 +16,7 @@ const Page = () => {
     const { wallet, fetchWalletByUser } = useUserWallet();
     const { checkouts } = useCheckout();
     const { summary, fetchSummary } = useAdminEarnings(); // ✅ get summary from context
-
+    const { fetchAllWallet, allWallet, loading } = useProvider();
     const [activeTab, setActiveTab] = useState<
         "all" | "credit" | "debit" | "package" | "lead" | "deposit"
     >("all");
@@ -31,6 +32,17 @@ const Page = () => {
     useEffect(() => {
         fetchSummary();
     }, []);
+
+
+    useEffect(() => {
+        fetchAllWallet(); // 🔥 this triggers API call + prints console data
+    }, []);
+    useEffect(() => {
+        if (allWallet?.length > 0) {
+            console.log("WALLET FROM CONTEXT:", allWallet);
+        }
+    }, [allWallet]);
+
 
     const isWalletAvailable =
         !!wallet && Array.isArray(wallet.transactions) && wallet.transactions.length > 0;
@@ -58,6 +70,9 @@ const Page = () => {
             wallet?.transactions
                 ?.filter((txn) => txn.commissionFrom?.trim() === "adjustment" ||
                     txn.commissionFrom?.trim() === "adjustment").reduce((acc, txn) => acc + (txn.amount || 0), 0) || 0;
+        
+        const totalAdjustmentCash =
+    allWallet?.reduce((sum, wallet) => sum + (wallet.adjustmentCash || 0), 0) || 0;
 
         return [
             {
@@ -89,8 +104,8 @@ const Page = () => {
                 title: "GST",
                 amount: `₹${summary?.GST?.toLocaleString() || 0}`, // ✅ from context
                 icon: <FaMoneyBillWave />,
-                gradient: "from-red-100 to-red-200",
-                textColor: "text-red-800",
+                gradient: "from-yellow-100 to-yellow-200",
+                textColor: "text-yellow-800",
             },
             {
                 title: "Cash Adjustment",
@@ -103,8 +118,8 @@ const Page = () => {
                 title: "Lead Earnings",
                 amount: `₹${leadEarningsTotal.toLocaleString()}`,
                 icon: <FaWallet />,
-                gradient: "from-yellow-100 to-yellow-200",
-                textColor: "text-yellow-800",
+                gradient: "from-pink-100 to-pink-200",
+                textColor: "text-pink-800",
             },
             {
                 title: "Package Earnings",
@@ -120,6 +135,13 @@ const Page = () => {
                 gradient: "from-teal-100 to-teal-200",
                 textColor: "text-teal-800",
             },
+             {
+            title: "Pending Adjustment Cash",
+            amount: `₹${totalAdjustmentCash.toLocaleString()}`,
+            icon: <FaMoneyBillWave />,
+            gradient: "from-orange-100 to-orange-200",
+            textColor: "text-orange-800",
+        },
         ];
     }, [wallet, summary]);
 
