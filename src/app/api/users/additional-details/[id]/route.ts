@@ -40,7 +40,7 @@ export async function PATCH(req: Request) {
     // ✅ Validate dateOfBirth before updating
     if (dateOfBirth && isNaN(new Date(dateOfBirth).getTime())) {
       return NextResponse.json(
-        { success: false, message: "Invalid date format for dateOfBirth" },
+        { success: false, message: "Invalid date format for DOB" },
         { status: 400, headers: corsHeaders }
       );
     }
