@@ -45,7 +45,7 @@ export default function BankDetailsPage() {
         }
       } catch (err) {
         console.error(err);
-        setError("Something went wrong while fetching bank details");
+        setError("No Bank Details Found.");
       } finally {
         setLoading(false);
       }
@@ -64,7 +64,7 @@ export default function BankDetailsPage() {
 
   if (error || !bankDetails) {
     return (
-      <div className="flex flex-col justify-center items-center h-[70vh] text-gray-600">
+      <div className="flex flex-col justify-center items-center h-[45vh] text-gray-600 border border-gray-400 rounded bg-white">
         <FaUniversity className="text-4xl text-gray-400 mb-3" />
         <p className="font-semibold">
           {error || "No bank details found for this user."}
