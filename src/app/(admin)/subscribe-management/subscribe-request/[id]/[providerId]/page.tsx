@@ -58,7 +58,7 @@ const Page = () => {
 
     const handleApprove = async () => {
         if (!singleService || !providerId || !newCommissionValue) {
-            alert('Missing data. Cannot approve.');
+            alert('Please enter a commission value before approving.');
             return;
         }
 
