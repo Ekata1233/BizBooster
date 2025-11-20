@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
-import "@/models/Category";      // registers the Category model
+import "@/models/Category";   
 import "@/models/Subcategory";
 import "@/models/WhyChoose";
 import "@/models/Provider";

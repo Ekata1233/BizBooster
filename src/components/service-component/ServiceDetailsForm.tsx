@@ -1,18 +1,15 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import React, { useEffect, useRef, useState } from 'react';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
 import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
-import { Editor } from '@ckeditor/ckeditor5-core';
 import dynamic from 'next/dynamic';
 
 const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
   ssr: false,
-  loading: () => <p>Loading editor...</p>, // 👈 built-in loading indicator
+  loading: () => <p>Loading editor...</p>, 
 });
 
 interface RowData {
@@ -61,10 +58,15 @@ const ServiceDetailsForm = ({ data, setData }: {
   const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
     _id: ''
   }]);
-
   const [showAll, setShowAll] = useState(false);
+  const [editorReady, setEditorReady] = useState(false);
+
+useEffect(() => {
+  setEditorReady(true);
+}, []);
 
   const whyChooseContext = useWhyChoose();
+  console.log(highlightPreviews)
 
 
 
@@ -99,44 +101,28 @@ const ServiceDetailsForm = ({ data, setData }: {
   }, []);
 
 
-  // useEffect(() => {
+const mounted = useRef(false);
 
-  //   const newData = {
-  //     benefits,
-  //     overview,
-  //     highlight,
-  //     document,
-  //     whyChoose,
-  //     howItWorks,
-  //     terms,
-  //     faqs,
-  //     rows,
-  //   };
+useEffect(() => {
+  if (!mounted.current) {
+    mounted.current = true;
+    return;
+  }
 
-  //   if (JSON.stringify(newData) !== JSON.stringify(data)) {
-  //     setData(newData);
-  //   }
-  // }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows, setData, data]);
+  setData({
+    benefits,
+    overview,
+    highlight,
+    document,
+    whyChoose,
+    howItWorks,
+    terms,
+    faqs,
+    rows,
+  });
 
+}, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
 
-  useEffect(() => {
-    const newData: ServiceDetails = {
-      benefits,
-      overview,
-      highlight,
-      document,
-      whyChoose,
-      howItWorks,
-      terms,
-      faqs,
-      rows,
-    };
-
-    // Optional: Only setData if there's a change
-    if (JSON.stringify(data) !== JSON.stringify(newData)) {
-      setData(newData); // ✅ pass object, not function
-    }
-  }, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
 
   const handleCheckboxChange = (itemId: string) => {
     setWhyChoose(prev => {
@@ -204,16 +190,22 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Benefits</Label>
         <div className="my-editor">
-          
+           {editorReady ? (
           <ClientSideCustomEditor value={benefits} onChange={setBenefits} />
+          ) : (
+    <p>Loading editor...</p>
+  )}
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Overview</Label>
         <div className="my-editor">
-         
+         {editorReady ? (
           <ClientSideCustomEditor value={overview} onChange={setOverview} />
+           ) : (
+    <p>Loading editor...</p>
+  )}
         </div>
       </div>
       <div className='my-3'>
@@ -241,8 +233,11 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>Document</Label>
         <div className="my-editor">
-         
+         {editorReady ? (
           <ClientSideCustomEditor value={document} onChange={setDocument} />
+           ) : (
+    <p>Loading editor...</p>
+  )}
         </div>
       </div>
 
@@ -323,16 +318,22 @@ const ServiceDetailsForm = ({ data, setData }: {
       <div className='my-3'>
         <Label>How It&apos;s Work</Label>
         <div className="my-editor">
-         
+         {editorReady ? (
           <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
+           ) : (
+    <p>Loading editor...</p>
+  )}
         </div>
       </div>
 
       <div className='my-3'>
         <Label>Terms & Conditions</Label>
         <div className="my-editor">
-         
+         {editorReady ? (
           <ClientSideCustomEditor value={terms} onChange={setTerms} />
+           ) : (
+    <p>Loading editor...</p>
+  )}
         </div>
       </div>
 

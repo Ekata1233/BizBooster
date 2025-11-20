@@ -58,7 +58,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 onChange(data);
             }}
             config={{
-                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjI5OTE5OTksImp0aSI6ImU0NTM5ZGNkLTk4MWQtNGQ2Ny04YWRjLTI5NWMzNjVhM2YzZSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjAwMGJmMzA5In0.inoDcAqnul2qiBd0oR02Uzd_TWpbi9FSQPJFMEcpGQqZmk51x2GJJPMWiia05HPXAPAy1LhLZWX-zWkfoT14dA',
+                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjQ4OTI3OTksImp0aSI6Ijg5OWFiZTMwLTVjYjMtNDJmOC04MDQwLTNiMzA4ZmQ3ZDJkNSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImY2MWRmOWFjIn0.EWmCO9zQSlQSEoNGQOdLlAnC_u_yV-DQtjoE50CkPEZFtBOVgynC37UsrA8DhOwRsix35H3JHMp5p3ZSeHnAYA',
                 plugins: [
                     Essentials,
                     Paragraph,
@@ -95,10 +95,16 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 ],
                 image: {
                     toolbar: [
-                        'imageStyle:full',
-                        'imageStyle:side',
-                        '|',
-                        'imageTextAlternative'
+                        'toggleImageCaption',
+						'imageTextAlternative',
+						'|',
+						'imageStyle:inline',
+						'imageStyle:wrapText',
+						'imageStyle:breakText',
+						'|',
+						'resizeImage',
+						'|',
+						'ckboxImageEdit'
                     ]
                 },
                 table: {

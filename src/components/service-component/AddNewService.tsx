@@ -36,7 +36,7 @@ type BasicDetailsData = {
   discountedPrice?: number;
   gst?: number;
   includeGst?: boolean;
-  gstInRupees?: number;        // ✅ newly added
+  gstInRupees?: number;
   totalWithGst?: number;
   thumbnail?: File | null;
   covers?: FileList | File[] | null;
@@ -52,7 +52,6 @@ type FormDataType = {
 };
 
 const AddNewService = () => {
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
       name: '',
@@ -90,13 +89,8 @@ const AddNewService = () => {
     },
   });
 
-  // console.log("form data of service : ", formData);
-
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createService } = useService();
-
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
   const isStepComplete = (stepNumber: number) => {
     switch (stepNumber) {
@@ -133,28 +127,6 @@ const AddNewService = () => {
     }
   };
 
-
-
-  const nextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent page refresh on click
-
-    if (!isStepComplete(step)) {
-      alert(`Please complete all required fields in step ${step}`);
-      return;
-    }
-
-    if (!completedSteps.includes(step)) {
-      setCompletedSteps([...completedSteps, step]);
-    }
-
-    if (step < 3) setStep(step + 1);
-  };
-
-  const prevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent page refresh on click
-    if (step > 1) setStep(step - 1);
-  };
-
   const buildFormData = (
     data: unknown,
     formDataInstance = new FormData(),
@@ -172,18 +144,14 @@ const AddNewService = () => {
         buildFormData(value, formDataInstance, fullKey);
       });
     } else if (typeof data === 'boolean') {
-      // FormData only accepts string or Blob, convert boolean to string
       formDataInstance.append(parentKey, data ? 'true' : 'false');
     } else if (typeof data === 'number') {
-      // convert number to string
       formDataInstance.append(parentKey, data.toString());
     } else if (data === null || data === undefined) {
-      // Append empty string for null or undefined to avoid errors
       formDataInstance.append(parentKey, '');
     } else if (typeof data === 'string' || data instanceof Blob) {
       formDataInstance.append(parentKey, data);
     } else {
-      // fallback if any other type (symbol, function, etc.) - just convert to string
       formDataInstance.append(parentKey, String(data));
     }
 
@@ -202,12 +170,9 @@ const AddNewService = () => {
     setIsSubmitting(true);
 
     try {
-      // ✅ Step 1: Calculate GST-related fields
       const { price = 0, gst = 0 } = formData.basic;
       const gstInRupees = (price * gst) / 100;
-      const totalWithGst = price + gstInRupees;
-
-      // ✅ Step 2: Inject values into basic form before building FormData
+      const totalWithGst = price + gstInRupees
       const formDataWithGst = {
         ...formData,
         basic: {
@@ -218,17 +183,12 @@ const AddNewService = () => {
       };
 
       const fd = buildFormData(formDataWithGst);
-      // await createService(fd);
       const result = await createService(fd);
       if (!result) {
         alert("Service creation failed");
         return;
       }
-
-
       alert("Service added successfully!");
-
-      // Reset
       setFormData({
         basic: {
           name: '',
@@ -263,8 +223,6 @@ const AddNewService = () => {
           rows: [{ title: '', description: '' }],
         },
       });
-      setStep(1);
-      setCompletedSteps([]);
 
     } catch (err) {
       console.error("Failed to add service:", err);
@@ -279,77 +237,25 @@ const AddNewService = () => {
     <div>
       <ComponentCard title="Add New Service">
         <div>
-          <div className="flex items-center justify-between mb-10 relative">
-            {['Basic', 'Service', 'Franchise'].map((label, index) => {
-              const stepNumber = index + 1;
-              const isCompleted = completedSteps.includes(stepNumber) || step > stepNumber;
-              const isActive = step === stepNumber;
-
-              return (
-                <div key={label} className="flex-1 flex flex-col items-center relative">
-                  {index !== 0 && (
-                    <div className="absolute top-5 left-[-50%] w-full h-1">
-                      <div
-                        className={`h-1 w-full ${isCompleted ? 'bg-blue-600' : 'bg-gray-300'}`}
-                      ></div>
-                    </div>
-                  )}
-
-                  <div
-                    className={`z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300
-                      ${isCompleted
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : isActive
-                          ? 'bg-white text-blue-600 border-blue-600'
-                          : 'bg-white text-gray-400 border-gray-300'
-                      }`}
-                  >
-                    {isCompleted ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      stepNumber
-                    )}
-                  </div>
-
-                  <span
-                    className={`mt-2 text-sm text-center ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'
-                      }`}
-                  >
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
+         
           <form onSubmit={handleSubmit} className="space-y-5">
-            {step === 1 && (
+            
               <BasicDetailsForm
                 data={formData.basic}
                 setData={(newData) =>
                   setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))
                 }
               />
-            )}
-
-            {step === 2 && (
+               <hr className="border-gray-300" />
+            
               <ServiceDetailsForm
                 data={formData.service}
                 setData={(newData) =>
                   setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))
                 }
               />
-            )}
-
-            {step === 3 && (
+               <hr className="border-gray-300" />
+           
               <FranchiseDetailsForm
                 data={formData.franchise}
                 setData={(newData) =>
@@ -357,34 +263,8 @@ const AddNewService = () => {
                 }
                 price={formData.basic.price}
               />
-            )}
 
             <div className="flex justify-between pt-4">
-              {step > 1 ? (
-                <button
-                  type="button" // important: prevent form submit on click
-                  onClick={prevStep}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                >
-                  Previous
-                </button>
-              ) : (
-                <div></div>
-              )}
-
-              {step < 3 ? (
-                <button
-                  type="button" // important: prevent form submit on click
-                  onClick={nextStep}
-                  disabled={!isStepComplete(step)}
-                  className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(step)
-                    ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                  Next
-                </button>
-              ) : (
                 <button
                   type="submit"
                   disabled={!isStepComplete(3) || isSubmitting}
@@ -395,7 +275,6 @@ const AddNewService = () => {
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit'}
                 </button>
-              )}
             </div>
           </form>
         </div>
