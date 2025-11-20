@@ -261,7 +261,7 @@ const AddNewService = () => {
                 setData={(newData) =>
                   setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))
                 }
-                price={formData.basic.price}
+                price={formData.basic.discountedPrice}
               />
 
             <div className="flex justify-between pt-4">

@@ -46,7 +46,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     const [rows, setRows] = useState<KeyValue[]>([]);
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
-    const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
+    // const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
     // console.log("data of basic details form : ", data)
 
     useEffect(() => {
@@ -190,12 +190,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
     const handleSwitchChange = (checked: boolean) => {
         setData({ recommendedServices: checked });
-    };
-
-    const handleKeyValueChange = (index: number, field: 'key' | 'value', value: string) => {
-        const updatedKeyValues = [...(data.keyValues ?? [])];
-        updatedKeyValues[index][field] = value;
-        setData({ keyValues: updatedKeyValues });
     };
 
 
@@ -440,64 +434,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         </div>
                     </div>
 
-
-
-
-                    {/* <div className="my-3">
-                        <Label>Enter Key Value</Label>
-                        {rows.map((row, index) => (
-                            <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg space-y-3">
-                                
-                                <div className="flex justify-between items-center mb-2">
-                                    <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>
-                                    <button
-                                        type="button"
-                                        className="text-red-500 hover:text-red-700"
-                                        onClick={() => handleRemoveRow(index)}
-                                        aria-label="Remove Key-Value"
-                                    >
-                                        <TrashBinIcon className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-
-                                {(data.keyValues || []).map((item, index) => (
-                                    <div key={index} className="flex gap-4 mt-4">
-                                       
-                                        <div className="w-1/2">
-                                            <Input
-                                                type="text"
-                                                value={item.key}
-                                                onChange={(e) => handleKeyValueChange(index, 'key', e.target.value)}
-                                                placeholder="Key"
-                                            />
-                                        </div>
-
-                                        <div className="w-1/2">
-                                            <Input
-                                                type="text"
-                                                value={item.value}
-                                                onChange={(e) => handleKeyValueChange(index, 'value', e.target.value)}
-                                                placeholder="Value"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-
-
-
-                            </div>
-                        ))}
-
-                        <button
-                            type="button"
-                            onClick={handleAddRow}
-                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-                        >
-                            + Add New Key-Value
-                        </button>
-
-                    </div> */}
                     <div className="my-3">
                         <Label>Enter Key Value</Label>
                         {rows.map((row, index) => (
