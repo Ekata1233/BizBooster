@@ -6,6 +6,7 @@ import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
 import { useWhyChoose } from '@/context/WhyChooseContext';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
   ssr: false,
@@ -219,10 +220,12 @@ useEffect(() => {
             <p className="text-gray-500">No highlight images available.</p>
           )}
           {data.highlightPreviews?.map((src, index) => (
-            <img
+            <Image
               key={index}
               src={src}
               alt={`highlight-${index}`}
+               width={400}
+  height={250}
               className="w-24 h-24 object-cover rounded"
             />
           ))}
@@ -286,9 +289,11 @@ useEffect(() => {
                   <div className="flex-1 flex justify-center items-center">
                     {item.image && (
                       <div className="w-full h-28 md:h-44 relative rounded-md overflow-hidden">
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.title}
+                           width={400}
+  height={250}
                           className="w-full h-full object-cover"
                         />
                       </div>
