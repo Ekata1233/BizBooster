@@ -53,79 +53,89 @@ type FormDataType = {
 
 const AddNewService = () => {
   const [formData, setFormData] = useState<FormDataType>({
-    basic: {
-      name: '',
-      category: '',
-      subcategory: '',
-      price: 0,
-      discount: 0,
-      discountedPrice: 0,
-      gst: 0,
-      includeGst: false,
-      thumbnail: null,
-      covers: [],
-      tags: [],
-      keyValues: [{ key: '', value: '' }],
-      recommendedServices: false,
-    },
-    service: {
-      benefits: '',
-      overview: '',
-      highlight: null,
-      document: '',
-      howItWorks: '',
-      terms: '',
-      faqs: [{ question: '', answer: '' }],
-      rows: [{ title: '', description: '' }],
-      whyChoose: [],
+  basic: {
+    name: '',
+    category: '',
+    subcategory: '',
+    price: 0,
+    discount: 0,
+    discountedPrice: 0,
+    gst: 0,
+    includeGst: false,
+    thumbnail: null,
+    covers: [],
+    tags: [],
+    keyValues: [{ key: '', value: '' }],
+    recommendedServices: false,
+  },
+  service: {
+    benefits: [''],
+    aboutUs: [''],
+    highlight: [''],
+    document: [''],
+    assuredByFetchTrue: [''],
+    howItWorks: [''],
+    termsAndConditions: [''],
+    faq: [{ question: '', answer: '' }],
+    extraSections: [{ title: '', subtitle: [''], description: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
+    whyChooseUs: [''],
+    packages: [''],
+    weRequired: [''],
+    weDeliver: [''],
+    moreInfo: [''],
+    connectWith: [''],
+    timeRequired: [''],
+    extraImages: [''],
+  },
+  franchise: {
+    commission: '',
+    termsAndConditions: '',
+    investmentRange: [],
+    monthlyEarnPotential: [],
+    franchiseModel: [],
+    extraSections: [],
+    extraImages: [],
+  },
+});
 
-    },
-    franchise: {
-      commission: '',
-      overview: '',
-      howItWorks: '',
-      terms: '',
-      rows: [{ title: '', description: '' }],
-    },
-  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createService } = useService();
 
-  const isStepComplete = (stepNumber: number) => {
-    switch (stepNumber) {
-      case 1:
-        return (
-          !!formData?.basic?.name?.trim()
-          &&
-          !!formData?.basic?.category &&
-          !!formData?.basic?.price &&
-          !!formData?.basic?.discount &&
-          !!formData?.basic?.thumbnail &&
-          !!formData?.basic?.covers &&
-          !!formData?.basic?.tags
-        );
-      case 2:
-        return (
-          !!formData?.service?.benefits?.trim()
-          &&
-          !!formData?.service?.overview?.trim() &&
-          !!formData?.service?.howItWorks?.trim() &&
-          !!formData?.service?.document?.trim() &&
-          !!formData?.service?.terms?.trim() &&
-          !!formData?.service?.faqs &&
-          !!formData?.service?.whyChoose
-        );
-      case 3:
-        return (
-          !!formData?.franchise?.commission &&
-          !!formData?.franchise?.overview?.trim() &&
-          !!formData?.franchise?.howItWorks?.trim()
-        );
-      default:
-        return false;
-    }
-  };
+ const isStepComplete = (stepNumber: number) => {
+  switch (stepNumber) {
+    case 1:
+      return (
+        !!formData.basic.name?.trim() &&
+        !!formData.basic.category?.trim() &&
+        !!formData.basic.subcategory?.trim() &&
+        !!formData.basic.price &&
+        !!formData.basic.thumbnail &&
+        !!formData.basic.covers &&
+        formData.basic.covers.length > 0 &&
+        !!formData.basic.tags &&
+        formData.basic.tags.length > 0
+      );
+
+    case 2:
+      return (
+        formData.service.benefits.length > 0 &&
+        formData.service.aboutUs.length > 0 &&
+        formData.service.highlight.length > 0 &&
+        formData.service.document.length > 0 &&
+        formData.service.termsAndConditions.length > 0 &&
+        formData.service.faq.length > 0 &&
+        formData.service.whyChooseUs.length > 0
+      );
+
+    case 3:
+      return !!formData.franchise.commission?.trim();
+
+    default:
+      return false;
+  }
+};
+
 
   const buildFormData = (
     data: unknown,
@@ -190,39 +200,53 @@ const AddNewService = () => {
       }
       alert("Service added successfully!");
       setFormData({
-        basic: {
-          name: '',
-          category: '',
-          subcategory: '',
-          price: 0,
-          discount: 0,
-          gst: 0,
-          includeGst: false,
-          thumbnail: null,
-          covers: [],
-          tags: [],
-          keyValues: [{ key: '', value: '' }],
-          recommendedServices: false,
-        },
-        service: {
-          benefits: '',
-          overview: '',
-          highlight: null,
-          document: '',
-          howItWorks: '',
-          terms: '',
-          faqs: [{ question: '', answer: '' }],
-          rows: [{ title: '', description: '' }],
-          whyChoose: [],
-        },
-        franchise: {
-          commission: '',
-          overview: '',
-          howItWorks: '',
-          terms: '',
-          rows: [{ title: '', description: '' }],
-        },
-      });
+  basic: {
+    name: '',
+    category: '',
+    subcategory: '',
+    price: 0,
+    discount: 0,
+    discountedPrice: 0,
+    gst: 0,
+    includeGst: false,
+    thumbnail: null,
+    covers: [],
+    tags: [],
+    keyValues: [{ key: '', value: '' }],
+    recommendedServices: false,
+  },
+  service: {
+    benefits: [''],
+    aboutUs: [''],
+    highlight: [''],
+    document: [''],
+    assuredByFetchTrue: [''],
+    howItWorks: [''],
+    termsAndConditions: [''],
+    faq: [{ question: '', answer: '' }],
+    extraSections: [
+      { title: '', subtitle: [''], description: [''], subDescription: [''], lists: [''], tags: [''], image: [] },
+    ],
+    whyChooseUs: [''],
+    packages: [''],
+    weRequired: [''],
+    weDeliver: [''],
+    moreInfo: [''],
+    connectWith: [''],
+    timeRequired: [''],
+    extraImages: [''],
+  },
+  franchise: {
+    commission: '',
+    termsAndConditions: '',
+    investmentRange: [],
+    monthlyEarnPotential: [],
+    franchiseModel: [],
+    extraSections: [],
+    extraImages: [],
+  },
+});
+
 
     } catch (err) {
       console.error("Failed to add service:", err);

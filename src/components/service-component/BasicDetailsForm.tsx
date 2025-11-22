@@ -452,27 +452,27 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                                 </div>
 
                                 {/* Fields Row: Title + Description */}
-                                {(data.keyValues || []).map((item, index) => (
-                                <div key={index} className="flex gap-4 mt-4">
-                                    <div className="w-1/2">
-                                        <Input
-                                            type="text"
-                                            value={item.key}
-                                            onChange={(e) => handleRowChange(index, 'key', e.target.value)}
-                                            placeholder="Key"
-                                        />
-                                    </div>
+                               {rows.map((item, index) => (
+    <div key={index} className="flex gap-4 mt-4">
+        <div className="w-1/2">
+            <Input
+                type="text"
+                value={item.key}
+                onChange={(e) => handleRowChange(index, 'key', e.target.value)}
+                placeholder="Key"
+            />
+        </div>
+        <div className="w-1/2">
+            <Input
+                type="text"
+                value={item.value}
+                onChange={(e) => handleRowChange(index, 'value', e.target.value)}
+                placeholder="Value"
+            />
+        </div>
+    </div>
+))}
 
-                                    <div className="w-1/2">
-                                        <Input
-                                            type="text"
-                                            value={item.value}
-                                            onChange={(e) => handleRowChange(index, 'value', e.target.value)}
-                                            placeholder="Value"
-                                        />
-                                    </div>
-                                </div>
-                                ))}
                             </div>
                         ))}
 

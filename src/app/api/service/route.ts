@@ -3,226 +3,286 @@ import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
-import "@/models/Category";   
-import "@/models/Subcategory";
-import "@/models/WhyChoose";
-import "@/models/Provider";
-import Zone from "@/models/Zone";
-import Provider from "@/models/Provider";
-
+import "@/models/Category"
+import "@/models/Subcategory"
+import "@/models/Provider"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-function isPointInPolygon(
-  point: { lat: number; lng: number },
-  polygon: { lat: number; lng: number }[]
-) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].lng,
-      yi = polygon[i].lat;
-    const xj = polygon[j].lng,
-      yj = polygon[j].lat;
-
-    const intersect =
-      yi > point.lat !== yj > point.lat &&
-      point.lng < ((xj - xi) * (point.lat - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const formData = await req.formData();
-    // console.log("Service in backend", formData)
 
-    // Required fields from formData (adjust based on your schema)
-    const serviceName = formData.get("basic[name]") as string;
-    const category = formData.get("basic[category]") as string;
-    let subcategory: string | undefined = formData.get("basic[subcategory]") as string;
-    subcategory = subcategory?.trim() === "" ? undefined : subcategory;
-    const priceStr = formData.get("basic[price]");
-    const discount = formData.get("basic[discount]");
-    const gstStr = formData.get("basic[gst]");
-    const gst = gstStr ? parseFloat(gstStr as string) : 0;
-    const includeGstStr = formData.get("basic[includeGst]") as string;
-    const includeGst = includeGstStr === "true";
+    // -------------------------------
+    // BASIC DETAILS
+    // -------------------------------
+    const serviceName = formData.get("serviceName") as string;
+    const category = formData.get("category") as string;
+    const subcategory = formData.get("subcategory") as string;
 
+    const price = Number(formData.get("price"));
+    const discount = Number(formData.get("discount") || 0);
+    const gst = Number(formData.get("gst") || 0);
+    const includeGst = formData.get("includeGst") === "true";
 
-    console.log("Parsed GST from form:", gstStr, "Parsed:", gst);
+    const recommendedServices = formData.get("recommendedServices") === "true";
 
-
+    // -----------------------------------
+    // TAGS
+    // -----------------------------------
     const tags: string[] = [];
-    const recommendedServicesStr = formData.get("basic[recommendedServices]") as string;
-    const recommendedServices = recommendedServicesStr === "true";
-
-    console.log("sibcategory in servce : ", subcategory);
-
-    // Iterate all entries in formData to find all tags
     for (const key of formData.keys()) {
-      if (key.startsWith("basic[tags]")) {
-        const tagValue = formData.get(key);
-        if (typeof tagValue === "string") {
-          tags.push(tagValue);
-        }
+      if (key.startsWith("tags[")) {
+        const val = formData.get(key) as string;
+        if (val) tags.push(val);
       }
     }
 
-    if (!serviceName || !category || !priceStr) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields." },
-        { status: 400, headers: corsHeaders }
-      );
+    // -----------------------------------
+    // KEY VALUES
+    // -----------------------------------
+    const keyValues: any[] = [];
+    for (let i = 0; ; i++) {
+      const key = formData.get(`keyValues[${i}][key]`);
+      const value = formData.get(`keyValues[${i}][value]`);
+
+      if (!key || !value) break;
+      keyValues.push({ key, value });
     }
 
-    const price = parseFloat(priceStr as string);
-    if (isNaN(price)) {
-      return NextResponse.json(
-        { success: false, message: "Price must be a valid number." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // -----------------------------------
+    // THUMBNAIL IMAGE UPLOAD
+    // -----------------------------------
+    let thumbnailImage = "";
+    const thumbnailFile = formData.get("thumbnailImage") as File;
 
-    // Handle images
-    let thumbnailImageUrl = "";
-    const thumbnailFile = formData.get("basic[thumbnail]") as File;
     if (thumbnailFile) {
-      const arrayBuffer = await thumbnailFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const uploadResponse = await imagekit.upload({
+      const buffer = Buffer.from(await thumbnailFile.arrayBuffer());
+      const upload = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${thumbnailFile.name}`,
         folder: "/services/thumbnail",
       });
-      thumbnailImageUrl = uploadResponse.url;
-    } else {
-      return NextResponse.json(
-        { success: false, message: "Thumbnail image is required." },
-        { status: 400, headers: corsHeaders }
+      thumbnailImage = upload.url;
+    }
+
+    // -----------------------------------
+    // BANNER IMAGES
+    // -----------------------------------
+    const bannerImages: string[] = [];
+
+    for (const [key, val] of formData.entries()) {
+      if (key.startsWith("bannerImages") && val instanceof File) {
+        const buffer = Buffer.from(await val.arrayBuffer());
+
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${val.name}`,
+          folder: "/services/banners",
+        });
+
+        bannerImages.push(upload.url);
+      }
+    }
+
+    // -----------------------------------
+    // PROVIDER PRICES
+    // -----------------------------------
+    const providerPrices: any[] = [];
+    for (let i = 0; ; i++) {
+      const provider = formData.get(`providerPrices[${i}][provider]`);
+      const providerMRP = formData.get(`providerPrices[${i}][providerMRP]`);
+      const providerDiscount = formData.get(
+        `providerPrices[${i}][providerDiscount]`
       );
-    }
+      const providerPrice = formData.get(`providerPrices[${i}][providerPrice]`);
+      const providerCommission = formData.get(
+        `providerPrices[${i}][providerCommission]`
+      );
+      const status = formData.get(`providerPrices[${i}][status]`);
 
-    // Handle bannerImages (array of files)
-    const bannerImagesUrls: string[] = [];
-    const bannerFiles: File[] = [];
+      if (!provider) break;
 
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("basic[covers]") && value instanceof File) {
-        bannerFiles.push(value);
-      }
-    }
-
-    for (const file of bannerFiles) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/services/banners",
+      providerPrices.push({
+        provider,
+        providerMRP,
+        providerDiscount,
+        providerPrice,
+        providerCommission,
+        status,
       });
-      bannerImagesUrls.push(uploadResponse.url);
     }
 
-    // Handle Highlight (array of files)
-    const highlightImagesUrls: string[] = [];
-    const highlightFiles: File[] = [];
-
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("service[highlight]") && value instanceof File) {
-        highlightFiles.push(value);
-      }
-    }
-
-    for (const file of highlightFiles) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/services/highlight",
-      });
-      highlightImagesUrls.push(uploadResponse.url);
-    }
-
-    const extractArray = (
-      prefix: string,
-      fields: string[],
-      formData: FormData
-    ) => {
-      const result = [];
-      let index = 0;
-      while (true) {
-        const item: Record<string, string> = {};
-        let hasData = false;
-
-        for (const field of fields) {
-          const key = `${prefix}[${index}][${field}]`;
-          const value = formData.get(key) as string | null;
-          if (value !== null && value !== "") {
-            item[field] = value;
-            hasData = true;
-          }
-        }
-
-        if (!hasData) break;
-        result.push(item);
-        index++;
-      }
-      return result;
-    };
-
-    const whyChooseIds: string[] = [];
-    let index = 0;
-    while (true) {
-      const id = formData.get(`service[whyChoose][${index}][_id]`) as string | null;
-
-      if (!id) break; // if no id, assume no more items
-
-      whyChooseIds.push(id);
-      index++;
-    }
-
-
-    const keyValues = extractArray("basic[keyValues]", ["key", "value"], formData);
-
-
+    // -----------------------------------
+    // SERVICE DETAILS
+    // -----------------------------------
     const serviceDetails = {
-      benefits: formData.get("service[benefits]") as string,
-      overview: formData.get("service[overview]") as string,
-      highlight: highlightImagesUrls,
-      document: formData.get("service[document]") as string,
-      howItWorks: formData.get("service[howItWorks]") as string,
-      termsAndConditions: formData.get("service[terms]") as string,
-      faq: extractArray("service[faqs]", ["question", "answer"], formData),
-      extraSections: extractArray("service[rows]", ["title", "description"], formData),
-      whyChoose: whyChooseIds,
+      benefits: [],
+      aboutUs: [],
+      highlight: [],
+      document: [],
+      assuredByFetchTrue: [],
+      howItWorks: [],
+      termsAndConditions: [],
+      faq: [],
+      extraSections: [],
+      whyChooseUs: [],
+      packages: [],
+      weRequired: [],
+      weDeliver: [],
+      moreInfo: [],
+      connectWith: [],
+      timeRequired: [],
+      extraImages: [],
     };
 
-    // 🛠 Manually construct franchiseDetails
+    const arrayOfStringFields = [
+      "benefits",
+      "aboutUs",
+      "document",
+      "termsAndConditions",
+      "extraImages",
+      "highlight",
+    ];
+
+    arrayOfStringFields.forEach((field) => {
+      const arr: string[] = [];
+      for (const key of formData.keys()) {
+        if (key.startsWith(`serviceDetails[${field}]`)) {
+          const val = formData.get(key) as string;
+          if (val) arr.push(val);
+        }
+      }
+      serviceDetails[field] = arr;
+    });
+
+    // Upload highlight images
+    const highlightImages: string[] = [];
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("serviceDetails[highlightImages]") && value instanceof File) {
+        const buffer = Buffer.from(await value.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${value.name}`,
+          folder: "/services/highlight",
+        });
+        highlightImages.push(upload.url);
+      }
+    }
+    serviceDetails.highlight = highlightImages;
+
+    // Faq
+    for (let i = 0; ; i++) {
+      const question = formData.get(`serviceDetails[faq][${i}][question]`);
+      const answer = formData.get(`serviceDetails[faq][${i}][answer]`);
+      if (!question || !answer) break;
+      serviceDetails.faq.push({ question, answer });
+    }
+
+    // Extra Sections
+    for (let i = 0; ; i++) {
+      const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
+      if (!title) break;
+
+      const section: any = { title, subtitle: [], image: [], description: [], subDescription: [], lists: [], tags: [] };
+
+      ["subtitle", "description", "subDescription", "lists", "tags"].forEach(
+        (field) => {
+          const arr: string[] = [];
+          for (const key of formData.keys()) {
+            if (
+              key.startsWith(
+                `serviceDetails[extraSections][${i}][${field}]`
+              )
+            ) {
+              const val = formData.get(key) as string;
+              if (val) arr.push(val);
+            }
+          }
+          section[field] = arr;
+        }
+      );
+
+      // extraSections images upload
+      for (const [key, value] of formData.entries()) {
+        if (
+          key.startsWith(
+            `serviceDetails[extraSections][${i}][image]`
+          ) &&
+          value instanceof File
+        ) {
+          const buffer = Buffer.from(await value.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${value.name}`,
+            folder: "/services/extras",
+          });
+          section.image.push(upload.url);
+        }
+      }
+
+      serviceDetails.extraSections.push(section);
+    }
+
+    // -----------------------------------
+    // FRANCHISE DETAILS
+    // -----------------------------------
     const franchiseDetails = {
-      commission: formData.get("franchise[commission]") as string,
-      overview: formData.get("franchise[overview]") as string,
-      howItWorks: formData.get("franchise[howItWorks]") as string,
-      termsAndConditions: formData.get("franchise[termsAndConditions]") as string,
-      extraSections: extractArray("franchise[rows]", ["title", "description"], formData),
+      commission: formData.get("franchiseDetails[commission]"),
+      termsAndConditions: formData.get("franchiseDetails[termsAndConditions]"),
+      investmentRange: [],
+      monthlyEarnPotential: [],
+      franchiseModel: [],
+      extraSections: [],
+      extraImages: [],
     };
 
-    // Convert price and discount to numbers
-    const discountPercentage = discount ? parseFloat(discount as string) : 0;
-    const discountedPrice = discountPercentage
-      ? Math.floor(price - (price * discountPercentage / 100))
+    for (let i = 0; ; i++) {
+      const minRange = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`);
+      const maxRange = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`);
+      if (!minRange || !maxRange) break;
+      franchiseDetails.investmentRange.push({ minRange, maxRange });
+    }
+
+    for (let i = 0; ; i++) {
+      const minEarn = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`);
+      const maxEarn = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`);
+      if (!minEarn || !maxEarn) break;
+      franchiseDetails.monthlyEarnPotential.push({ minEarn, maxEarn });
+    }
+
+    for (let i = 0; ; i++) {
+      const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`);
+      if (!title) break;
+
+      franchiseDetails.franchiseModel.push({
+        title,
+        agreement: formData.get(`franchiseDetails[franchiseModel][${i}][agreement]`),
+        price: formData.get(`franchiseDetails[franchiseModel][${i}][price]`),
+        discount: formData.get(`franchiseDetails[franchiseModel][${i}][discount]`),
+        gst: formData.get(`franchiseDetails[franchiseModel][${i}][gst]`),
+        fees: formData.get(`franchiseDetails[franchiseModel][${i}][fees]`),
+      });
+    }
+
+    // -----------------------------------
+    // FINAL CALCULATIONS
+    // -----------------------------------
+    const discountedPrice = discount
+      ? Math.floor(price - price * (discount / 100))
       : price;
 
     const gstInRupees = (discountedPrice * gst) / 100;
     const totalWithGst = discountedPrice + gstInRupees;
 
-
+    // -----------------------------------
+    // SAVE SERVICE
+    // -----------------------------------
     const newService = await Service.create({
       serviceName,
       category,
@@ -231,11 +291,12 @@ export async function POST(req: NextRequest) {
       discount,
       gst,
       includeGst,
-      gstInRupees,
       discountedPrice,
+      gstInRupees,
       totalWithGst,
-      thumbnailImage: thumbnailImageUrl,
-      bannerImages: bannerImagesUrls,
+      thumbnailImage,
+      bannerImages,
+      providerPrices,
       tags,
       keyValues,
       serviceDetails,
@@ -248,110 +309,18 @@ export async function POST(req: NextRequest) {
       { success: true, data: newService },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
-      { status: 400, headers: corsHeaders }
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
 
-// PAGINATION
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const search = searchParams.get('search');
-//     const category = searchParams.get('category');
-//     const subcategory = searchParams.get('subcategory');
-//     const sort = searchParams.get('sort');
-//     const page = parseInt(searchParams.get("page") || "1", 10); 
-//     const limit = parseInt(searchParams.get("limit") || "20", 10); 
-//     const skip = (page - 1) * limit;
-
-//     // Build filter
-//     const filter: Record<string, unknown> = { isDeleted: false };
-
-//     if (search) {
-//       // filter.serviceName = { $regex: search, $options: 'i' };
-//       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
-//     }
-
-//     if (category) {
-//       filter.category = category; // should be ObjectId string
-//     }
-
-//     if (subcategory) {
-//       filter.subcategory = subcategory;
-//     }
-
-//     // Build query
-//     let sortOption: Record<string, 1 | -1> = {};
-
-//     switch (sort) {
-//       case 'latest':
-//         sortOption = { createdAt: -1 };
-//         break;
-//       case 'oldest':
-//         sortOption = { createdAt: 1 };
-//         break;
-//       case 'ascending':
-//         sortOption = { serviceName: 1 };
-//         break;
-//       case 'descending':
-//         sortOption = { serviceName: -1 };
-//         break;
-//       case 'asc':
-//         sortOption = { price: 1 };
-//         break;
-//       case 'desc':
-//         sortOption = { price: -1 };
-//         break;
-//       default:
-//         sortOption = { createdAt: -1 };
-//     }
-
-//      const total = await Service.countDocuments(filter);
-
-//     // Build query with filter and sort
-//     const services = await Service.find(filter)
-//       .populate('category')
-//       .populate('subcategory')
-//       .populate('serviceDetails.whyChoose')
-//       .populate({
-//         path: 'providerPrices.provider',
-//         model: 'Provider',
-//         select: 'fullName storeInfo.storeName storeInfo.logo',
-//       })
-//       .sort(sortOption)
-//        .skip(skip)
-//       .limit(limit)
-//       .exec();
-
-//     return NextResponse.json(
-//       { 
-//          success: true,
-//         page,
-//         limit,
-//         total,
-//         totalPages: Math.ceil(total / limit),
-//         data: services,
-//        },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     const message = error instanceof Error ? error.message : 'Unknown error';
-//     return NextResponse.json(
-//       { success: false, message },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
 
 
-//NEW PAGINATION
+// NEW PAGINATION
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
@@ -366,54 +335,32 @@ export async function GET(req: NextRequest) {
     const limit = limitParam ? parseInt(limitParam, 10) : null;
     const skip = limit ? (page - 1) * limit : 0;
 
-    // Build filter
     const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
     }
 
-    if (category) {
-      filter.category = category;
-    }
+    if (category) filter.category = category;
+    if (subcategory) filter.subcategory = subcategory;
 
-    if (subcategory) {
-      filter.subcategory = subcategory;
-    }
-
-    // Build query
     let sortOption: Record<string, 1 | -1> = {};
 
     switch (sort) {
-      case 'latest':
-        sortOption = { createdAt: -1 };
-        break;
-      case 'oldest':
-        sortOption = { createdAt: 1 };
-        break;
-      case 'ascending':
-        sortOption = { serviceName: 1 };
-        break;
-      case 'descending':
-        sortOption = { serviceName: -1 };
-        break;
-      case 'asc':
-        sortOption = { price: 1 };
-        break;
-      case 'desc':
-        sortOption = { price: -1 };
-        break;
-      default:
-        sortOption = { createdAt: -1 };
+      case 'latest': sortOption = { createdAt: -1 }; break;
+      case 'oldest': sortOption = { createdAt: 1 }; break;
+      case 'ascending': sortOption = { serviceName: 1 }; break;
+      case 'descending': sortOption = { serviceName: -1 }; break;
+      case 'asc': sortOption = { price: 1 }; break;
+      case 'desc': sortOption = { price: -1 }; break;
+      default: sortOption = { createdAt: -1 };
     }
 
     const total = await Service.countDocuments(filter);
 
-    // Build query with filter and sort
     let query = Service.find(filter)
       .populate('category')
       .populate('subcategory')
-      .populate('serviceDetails.whyChoose')
       .populate({
         path: 'providerPrices.provider',
         model: 'Provider',
@@ -421,9 +368,7 @@ export async function GET(req: NextRequest) {
       })
       .sort({ sortOrder: 1, ...sortOption });
 
-    if (limit) {
-      query = query.skip(skip).limit(limit);
-    }
+    if (limit) query = query.skip(skip).limit(limit);
 
     const services = await query.exec();
 
@@ -431,17 +376,16 @@ export async function GET(req: NextRequest) {
       {
         success: true,
         page: limit ? page : 1,
-        limit: limit ?? total, // if no limit, return total count
+        limit: limit ?? total,
         total,
         totalPages: limit ? Math.ceil(total / limit) : 1,
         data: services,
       },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: error.message || "Unknown error" },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -449,209 +393,3 @@ export async function GET(req: NextRequest) {
 
 
 
-// NO CHANGE (PRODUCTION LEVEL)
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const search = searchParams.get('search');
-//     const category = searchParams.get('category');
-//     const subcategory = searchParams.get('subcategory');
-//     const sort = searchParams.get('sort');
-
-//     // Build filter
-//     const filter: Record<string, unknown> = { isDeleted: false };
-
-//     if (search) {
-//       // filter.serviceName = { $regex: search, $options: 'i' };
-//       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
-//     }
-
-//     if (category) {
-//       filter.category = category; // should be ObjectId string
-//     }
-
-//     if (subcategory) {
-//       filter.subcategory = subcategory;
-//     }
-
-//     // Build query
-//     let sortOption: Record<string, 1 | -1> = {};
-
-//     switch (sort) {
-//       case 'latest':
-//         sortOption = { createdAt: -1 };
-//         break;
-//       case 'oldest':
-//         sortOption = { createdAt: 1 };
-//         break;
-//       case 'ascending':
-//         sortOption = { serviceName: 1 };
-//         break;
-//       case 'descending':
-//         sortOption = { serviceName: -1 };
-//         break;
-//       case 'asc':
-//         sortOption = { price: 1 };
-//         break;
-//       case 'desc':
-//         sortOption = { price: -1 };
-//         break;
-//       default:
-//         sortOption = { createdAt: -1 };
-//     }
-
-//     // Build query with filter and sort
-//     const services = await Service.find(filter)
-//       .populate('category')
-//       .populate('subcategory')
-//       .populate('serviceDetails.whyChoose')
-//       .populate({
-//         path: 'providerPrices.provider',
-//         model: 'Provider',
-//         select: 'fullName storeInfo.storeName storeInfo.logo',
-//       })
-//       .sort(sortOption)
-//       .exec();
-
-//     return NextResponse.json(
-//       { success: true, data: services },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     const message = error instanceof Error ? error.message : 'Unknown error';
-//     return NextResponse.json(
-//       { success: false, message },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
-
-
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const search = searchParams.get("search");
-//     const category = searchParams.get("category");
-//     const subcategory = searchParams.get("subcategory");
-//     const sort = searchParams.get("sort");
-//     const lat = searchParams.get("lat");
-//     const lng = searchParams.get("lng");
-
-//     // Build filter (for fallback all-services query)
-//     const filter: Record<string, unknown> = { isDeleted: false };
-
-//     if (search) {
-//       filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: "i" };
-//     }
-//     if (category) filter.category = category;
-//     if (subcategory) filter.subcategory = subcategory;
-
-//     // Sorting options
-//     let sortOption: Record<string, 1 | -1> = {};
-//     switch (sort) {
-//       case "latest":
-//         sortOption = { createdAt: -1 };
-//         break;
-//       case "oldest":
-//         sortOption = { createdAt: 1 };
-//         break;
-//       case "ascending":
-//         sortOption = { serviceName: 1 };
-//         break;
-//       case "descending":
-//         sortOption = { serviceName: -1 };
-//         break;
-//       case "asc":
-//         sortOption = { price: 1 };
-//         break;
-//       case "desc":
-//         sortOption = { price: -1 };
-//         break;
-//       default:
-//         sortOption = { createdAt: -1 };
-//     }
-
-//     let services: any[] = [];
-
-//     // ─────────────── Zone-based logic if lat/lng present ───────────────
-//     if (lat && lng) {
-//       const allZones = await Zone.find({ isDeleted: false });
-//       let matchedZone: any = null;
-
-//       for (const zone of allZones) {
-//         if (
-//           !zone.isPanIndia &&
-//           isPointInPolygon({ lat: +lat, lng: +lng }, zone.coordinates)
-//         ) {
-//           matchedZone = zone;
-//           break;
-//         }
-//       }
-
-//       // Providers in matched zone
-//       let zoneProviders: any[] = [];
-//       if (matchedZone) {
-//         zoneProviders = await Provider.find({
-//           "storeInfo.zone": matchedZone._id,
-//           isApproved: true,
-//           isDeleted: false,
-//         }).populate("subscribedServices");
-//       }
-
-//       // Providers in PAN INDIA
-//       const panIndiaZone = allZones.find((z) => z.isPanIndia);
-//       let panIndiaProviders: any[] = [];
-//       if (panIndiaZone) {
-//         panIndiaProviders = await Provider.find({
-//           "storeInfo.zone": panIndiaZone._id,
-//           isApproved: true,
-//           isDeleted: false,
-//         }).populate("subscribedServices");
-//       }
-
-//       // Merge all services
-//       const combinedServices: any[] = [];
-//       const allProviders = [...zoneProviders, ...panIndiaProviders];
-//       allProviders.forEach((provider) => {
-//         provider.subscribedServices.forEach((service: any) => {
-//           combinedServices.push(
-//             service.toObject ? service.toObject() : service
-//           );
-//         });
-//       });
-
-//       // Remove duplicates
-//       services = Array.from(
-//         new Map(combinedServices.map((s) => [s._id.toString(), s])).values()
-//       );
-//     } else {
-//       // ─────────────── Fallback: get all services ───────────────
-//       services = await Service.find(filter)
-//         .populate("category")
-//         .populate("subcategory")
-//         .populate("serviceDetails.whyChoose")
-//         .populate({
-//           path: "providerPrices.provider",
-//           model: "Provider",
-//           select: "fullName storeInfo.storeName storeInfo.logo",
-//         })
-//         .sort(sortOption)
-//         .exec();
-//     }
-
-//     return NextResponse.json(
-//       { success: true, data: services },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: unknown) {
-//     const message = error instanceof Error ? error.message : "Unknown error";
-//     return NextResponse.json(
-//       { success: false, message },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }

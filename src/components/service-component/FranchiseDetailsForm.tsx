@@ -1,27 +1,61 @@
 'use client';
-import React, { useEffect, useState } from 'react'
-import Label from '../form/Label'
-import Input from '../form/input/InputField'
+
+import React, { useEffect, useState } from 'react';
+import Label from '../form/Label';
+import Input from '../form/input/InputField';
 import { TrashBinIcon } from '@/icons';
 import dynamic from 'next/dynamic';
 
-const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
+const ClientSideCustomEditor = dynamic(
+  () => import('../../components/custom-editor/CustomEditor'),
+  { ssr: false, loading: () => <p>Loading editor...</p> }
+);
 
 interface RowData {
   title: string;
   description: string;
 }
 
+interface InvestmentRange {
+  minRange: number | null;
+  maxRange: number | null;
+}
+
+interface MonthlyEarnPotential {
+  minEarn: number | null;
+  maxEarn: number | null;
+}
+
+interface FranchiseModel {
+  title: string;
+  agreement?: string;
+  price?: number;
+  discount?: number;
+  gst?: number;
+  fees?: number;
+}
+
+interface ExtraSection {
+  title: string;
+  subtitle: string[];
+  image: string[];
+  description: string[];
+  subDescription: string[];
+  lists: string[];
+  tags: string[];
+}
+
 interface FranchiseData {
   commission?: string;
-  commissionType?: string;
+  commissionType?: 'percentage' | 'amount';
   overview?: string;
   howItWorks?: string;
   termsAndConditions?: string;
   rows?: RowData[];
+  investmentRange?: InvestmentRange[];
+  monthlyEarnPotential?: MonthlyEarnPotential[];
+  franchiseModel?: FranchiseModel[];
+  extraSections?: ExtraSection[];
 }
 
 interface FranchiseDetailsFormProps {
@@ -36,43 +70,50 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [rows, setRows] = useState<RowData[]>([]);
   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>('percentage');
-  const [commissionValue, setCommissionValue] = useState("");
+  const [commissionValue, setCommissionValue] = useState('');
 
+  // -------------------------------
+  // Initialize form from data
+  // -------------------------------
   useEffect(() => {
-  if (data) {
-    setOverview(data.overview || '');
-    setHowItWorks(data.howItWorks || '');
-    setTermsAndConditions(data.termsAndConditions || '');
-    setRows(data.rows?.length ? data.rows : []);
+    if (data) {
+      setOverview(data.overview || '');
+      setHowItWorks(data.howItWorks || '');
+      setTermsAndConditions(data.termsAndConditions || '');
+      setRows(data.rows?.length ? data.rows : []);
 
-    if (data.commission) {
-      const isPercentage = data.commission.includes('%');
-      const isAmount = data.commission.includes('₹');
-      const numericValue = data.commission.replace(/[^\d]/g, '');
-
-      setCommissionType(isPercentage ? 'percentage' : 'amount');
-      setCommissionValue(numericValue);
+      if (data.commission) {
+        const isPercentage = data.commission.includes('%');
+        const numericValue = data.commission.replace(/[^\d]/g, '');
+        setCommissionType(isPercentage ? 'percentage' : 'amount');
+        setCommissionValue(numericValue);
+      }
     }
-  }
-}, []);
+  }, [data]);
 
-
+  // -------------------------------
+  // Update parent on change
+  // -------------------------------
   useEffect(() => {
     const newData: FranchiseData = {
       overview,
       howItWorks,
       termsAndConditions,
-      rows
+      rows,
     };
-    if (JSON.stringify(data) !== JSON.stringify(newData)) {
-      setData(newData);
+    if (commissionValue) {
+      newData.commission = commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
+      newData.commissionType = commissionType;
     }
-  }, [overview, howItWorks, termsAndConditions, rows]);
+    setData(newData);
+  }, [overview, howItWorks, termsAndConditions, rows, commissionValue, commissionType]);
 
+  // -------------------------------
+  // Handlers
+  // -------------------------------
   const handleTypeChange = (newType: 'percentage' | 'amount') => {
     setCommissionType(newType);
-    const formatted =
-      newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
+    const formatted = newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
     setData({ commissionType: newType, commission: formatted });
   };
 
@@ -80,8 +121,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
       setCommissionValue(value);
-      const formatted =
-        commissionType === "percentage" ? `${value}%` : `₹${value}`;
+      const formatted = commissionType === 'percentage' ? `${value}%` : `₹${value}`;
       setData({ commission: formatted });
     }
   };
@@ -99,11 +139,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
     setData({ rows: updatedRows });
   };
 
-  const handleRowChange = (
-    index: number,
-    field: keyof RowData,
-    value: string
-  ) => {
+  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
     const updatedRows = [...rows];
     updatedRows[index][field] = value;
     setRows(updatedRows);
@@ -117,23 +153,19 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
         <div className="flex flex-wrap gap-6">
           {/* Basic Price */}
           <div className="w-2/6">
-            <Label className="block text-sm font-medium text-gray-700 mb-1">
-              Basic Price
-            </Label>
+            <Label>Basic Price</Label>
             <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
               ₹{price || 0}
             </div>
           </div>
 
-          {/* Commission Section */}
+          {/* Commission */}
           <div className="w-3/6">
-            <Label className="block text-sm font-medium text-gray-700 mb-1">
-              {commissionType === "percentage" ? "Commission (%)" : "Commission (₹)"}
-            </Label>
+            <Label>{commissionType === 'percentage' ? 'Commission (%)' : 'Commission (₹)'}</Label>
             <div className="flex items-center gap-4">
               <div className="relative w-32">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
-                  {commissionType === "percentage" ? "%" : "₹"}
+                  {commissionType === 'percentage' ? '%' : '₹'}
                 </span>
                 <Input
                   type="text"
@@ -146,21 +178,19 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => handleTypeChange("percentage")}
-                  className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "percentage"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                    }`}
+                  onClick={() => handleTypeChange('percentage')}
+                  className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === 'percentage'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
                 >
                   %
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleTypeChange("amount")}
-                  className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === "amount"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                    }`}
+                  onClick={() => handleTypeChange('amount')}
+                  className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === 'amount'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
                 >
                   ₹
                 </button>
@@ -171,7 +201,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
           {/* Commission Distribution */}
           {(() => {
             const totalCommission =
-              commissionType === "percentage"
+              commissionType === 'percentage'
                 ? (Number(price || 0) * Number(commissionValue || 0)) / 100
                 : Number(commissionValue || 0);
 
@@ -184,9 +214,7 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
               <>
                 {distributedValues.map((val, idx) => (
                   <div key={idx} className="w-1/5">
-                    <Label className="block text-sm font-medium text-gray-700 mb-1">
-                      Share {idx + 1} ({distributionPercents[idx] * 100}%)
-                    </Label>
+                    <Label>Share {idx + 1} ({distributionPercents[idx] * 100}%)</Label>
                     <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
                       ₹{val.toFixed(2)}
                     </div>
@@ -198,22 +226,18 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
         </div>
 
         {/* Editors */}
-        <div className='my-3'>
+        <div className="my-3">
           <Label>Overview</Label>
-          <div className="my-editor">
-            <ClientSideCustomEditor value={overview} onChange={setOverview} />
-          </div>
+          <ClientSideCustomEditor value={overview} onChange={setOverview} />
         </div>
 
-        <div className='my-3'>
-          <Label>How It&apos;s Works</Label>
-          <div className="my-editor">
-            <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
-          </div>
+        <div className="my-3">
+          <Label>How It Works</Label>
+          <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
         </div>
 
-        <div className='my-3'>
-          <Label>Terms &amp; Conditions</Label>
+        <div className="my-3">
+          <Label>Terms & Conditions</Label>
           <ClientSideCustomEditor value={termsAndConditions} onChange={setTermsAndConditions} />
         </div>
 
@@ -227,7 +251,6 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
                   type="button"
                   className="text-red-500 hover:text-red-700"
                   onClick={() => handleRemoveRow(index)}
-                  aria-label="Remove Row"
                 >
                   <TrashBinIcon className="w-5 h-5" />
                 </button>
@@ -237,20 +260,16 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
                   <Label>Title</Label>
                   <Input
                     type="text"
-                    placeholder="Enter Document Name"
                     value={row.title}
                     onChange={(e) => handleRowChange(index, 'title', e.target.value)}
-                    className="w-full"
                   />
                 </div>
                 <div className="w-1/2">
                   <Label>Description</Label>
                   <Input
                     type="text"
-                    placeholder="Enter Description"
                     value={row.description}
                     onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-                    className="w-full"
                   />
                 </div>
               </div>

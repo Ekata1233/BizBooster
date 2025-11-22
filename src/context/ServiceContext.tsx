@@ -1,94 +1,180 @@
-'use client';
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import axios from "axios";
-import { ServiceDetails } from "@/components/service-component/ServiceDetailsForm";
+
+// ----------------------------------------------
+// PROVIDER PRICES (Matched to your backend route)
+// ----------------------------------------------
 type ProviderPrice = {
-  provider: string; // or ObjectId if using mongoose
-  price: number;
-  providerPrice: number;
-  providerDiscount: number;
+  provider: string;
   providerMRP: number;
+  providerDiscount: number;
+  providerPrice: number;
+  providerCommission: number;
+  status?: string;
 };
-interface ExtraSection {
+
+// ----------------------------------------------
+// SERVICE DETAILS FULL STRUCTURE (Matches schema)
+// ----------------------------------------------
+export interface FAQ {
+  question: string;
+  answer: string;
+}
+
+export interface ExtraSection {
   title: string;
+  subtitle: string[];
+  description: string[];
+  subDescription: string[];
+  lists: string[];
+  tags: string[];
+  image: string[];
+}
+
+export interface AssuredByFetchTrueItem {
+  title: string;
+  icon: string;
   description: string;
 }
 
-
-interface FranchiseDetails {
-  overview: string;
-  commission: string;
-  howItWorks: string;
-  termsAndConditions: string;
-  extraSections?: ExtraSection[];
+export interface HowItWorksItem {
+  title: string;
+  icon: string;
+  description: string;
 }
 
+export interface PackageItem {
+  name: string;
+  price: number | null;
+  discount: number | null;
+  discountedPrice: number | null;
+  whatYouGet: string[];
+}
+
+export interface ServiceDetails {
+  benefits: string[];
+  aboutUs: string[];
+  highlight: string[];
+  document: string[];
+  assuredByFetchTrue: AssuredByFetchTrueItem[];
+  howItWorks: HowItWorksItem[];
+  termsAndConditions: string[];
+  faq: FAQ[];
+  extraSections: ExtraSection[];
+  whyChooseUs: AssuredByFetchTrueItem[];
+  packages: PackageItem[];
+  weRequired: { title: string; description: string }[];
+  weDeliver: { title: string; description: string }[];
+  moreInfo: { title: string; image: string; description: string }[];
+  connectWith: { name: string; mobileNo: string; email: string }[];
+  timeRequired: { minDays: number | null; maxDays: number | null }[];
+  extraImages: string[];
+}
+
+export interface FranchiseDetails {
+  commission: string | null;
+  termsAndConditions: string | null;
+  investmentRange: { minRange: number | null; maxRange: number | null }[];
+  monthlyEarnPotential: { minEarn: number | null; maxEarn: number | null }[];
+  franchiseModel: {
+    title: string;
+    agreement: string;
+    price: number | null;
+    discount: number | null;
+    gst: number | null;
+    fees: number | null;
+  }[];
+  extraSections: ExtraSection[];
+  extraImages: string[];
+}
+
+
+// ----------------------------------------------
+// MAIN SERVICE TYPE (Full schema)
+// ----------------------------------------------
 export interface Service {
   _id: string;
   serviceName: string;
-  thumbnailImage: string;
-  bannerImages: string[];
-  category: { _id: string, name: string };
-  subcategory: { _id: string, name: string };
+
+  category: { _id: string; name: string };
+  subcategory: { _id: string; name: string };
+
   price: number;
   discount: number;
   discountedPrice: number;
-  gst?: number;
-  includeGst?: boolean;
-  gstInRupees?: number;       // ✅ newly added
-  totalWithGst?: number;
-  keyValues: string;
-  tags?: string[];
+  gst: number;
+  includeGst: boolean;
+  gstInRupees: number;
+  totalWithGst: number;
+
+  thumbnailImage: string;
+  bannerImages: string[];
+
+  tags: string[];
+  keyValues: { key: string; value: string }[];
+
+  providerPrices: ProviderPrice[];
+
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
-  averageRating?: number;
-  totalReviews?: number;
-  isDeleted?: boolean;
-  recommendedServices?: boolean;
-  providerPrices?: ProviderPrice[];
+
+  isDeleted: boolean;
+  recommendedServices: boolean;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// ----------------------------------------------
+// UPDATE RESPONSE TYPE
+// ----------------------------------------------
 type UpdateServiceResponse = {
   success: boolean;
-  message?: string;
   data: Service;
+  message?: string;
 };
 
-
+// ----------------------------------------------
+// CONTEXT TYPE
+// ----------------------------------------------
 type ServiceContextType = {
   services: Service[];
-  fetchServices: () => Promise<void>; 
+  fetchServices: () => Promise<void>;
   createService: (formData: FormData) => Promise<Service | undefined>;
-  updateService: (id: string, data: Partial<Service> | FormData) => Promise<UpdateServiceResponse | undefined>;
+  updateService: (
+    id: string,
+    data: Partial<Service> | FormData
+  ) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
   fetchSingleService: (id: string) => Promise<void>;
-    reorderServices: (items: { _id: string; sortOrder: number }[]) => Promise<void>;
+  reorderServices: (items: { _id: string; sortOrder: number }[]) => Promise<void>;
   singleService: Service | null;
   singleServiceLoading: boolean;
   singleServiceError: string | null;
 };
 
+// ----------------------------------------------
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
+// ----------------------------------------------
 export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [singleService, setSingleService] = useState<Service | null>(null);
-  const [singleServiceLoading, setSingleServiceLoading] = useState<boolean>(false);
+  const [singleServiceLoading, setSingleServiceLoading] = useState(false);
   const [singleServiceError, setSingleServiceError] = useState<string | null>(null);
 
-  const fetchSingleService = async (id: string) => {
-    setSingleServiceLoading(true);
-    try {
-      const res = await axios.get(`/api/service/${id}`);
-      setSingleService(res.data?.data || null);
-      setSingleServiceError(null);
-    } catch (err: unknown) {
-      console.log(err);
-    } finally {
-      setSingleServiceLoading(false);
-    }
-  };
-
+  // ----------------------------------------------
+  // FETCH ALL SERVICES
+  // ----------------------------------------------
   const fetchServices = useCallback(async () => {
     try {
       const res = await axios.get<{ data: Service[] }>("/api/service");
@@ -102,20 +188,34 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     fetchServices();
   }, [fetchServices]);
 
-  // console.log("services",services);
-
+  // ----------------------------------------------
+  // CREATE SERVICE
+  // ----------------------------------------------
   const createService = async (formData: FormData) => {
     try {
-      const res = await axios.post<Service>("/api/service", formData);
+      const res = await axios.post<{ data: Service }>("/api/service", formData);
       await fetchServices();
-      return res.data;
+      return res.data.data;
     } catch (error: any) {
       const message = error?.response?.data?.message || "Unknown error";
       console.error("Failed to create service:", message);
-      throw new Error(message); // ⬅️ THROW here so caller can catch
+      throw new Error(message);
     }
   };
 
+
+  const fetchSingleService = async (id: string) => {
+    setSingleServiceLoading(true);
+    try {
+      const res = await axios.get(`/api/service/${id}`);
+      setSingleService(res.data?.data || null);
+      setSingleServiceError(null);
+    } catch (err: unknown) {
+      console.log(err);
+    } finally {
+      setSingleServiceLoading(false);
+    }
+  };
   // const updateService = async (id: string, data: Partial<Service> | FormData) => {
   //   try {
   //     const res = await axios.put<Service>(
