@@ -1,12 +1,17 @@
-import React, { useEffect, useState, KeyboardEvent } from 'react'
-import Label from '../form/Label'
-import Input from '../form/input/InputField'
-import Select from '../form/Select'
-import { ChevronDownIcon, TrashBinIcon } from '@/icons'
-import { useCategory } from '@/context/CategoryContext'
-import { useSubcategory } from '@/context/SubcategoryContext'
-import FileInput from '../form/input/FileInput'
-import Switch from '../form/switch/Switch'
+import React, { useEffect, useState, KeyboardEvent } from "react";
+import Label from "../form/Label";
+import Input from "../form/input/InputField";
+import Select from "../form/Select";
+import { ChevronDownIcon, TrashBinIcon } from "@/icons";
+import { useCategory } from "@/context/CategoryContext";
+import { useSubcategory } from "@/context/SubcategoryContext";
+import FileInput from "../form/input/FileInput";
+import Switch from "../form/switch/Switch";
+
+interface KeyValue {
+    key: string;
+    value: string;
+}
 
 interface BasicDetailsData {
     name?: string;
@@ -28,57 +33,34 @@ interface BasicDetailsData {
     bannerPreviews?: string[];
 }
 
-interface KeyValue {
-    key: string;
-    value: string;
-}
-
 interface BasicDetailsFormProps {
     data: BasicDetailsData;
     setData: (newData: Partial<BasicDetailsData>) => void;
 }
 
 const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedMultiFiles, setSelectedMultiFiles] = useState<FileList | File[] | null>(null);
     const [rows, setRows] = useState<KeyValue[]>([]);
+    const [tagInput, setTagInput] = useState("");
+
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();
-    // const [gstdata, setGstData] = useState({ gst: 0, includeGst: false });
-    // console.log("data of basic details form : ", data)
 
     useEffect(() => {
-        if (data) {
-            if (data.category) setSelectedCategory(data.category);
-            if (data.subcategory) setSelectedSubcategory(data.subcategory);
-            if (data.thumbnail instanceof File) setSelectedFile(data.thumbnail);
-            if (data.covers instanceof FileList || (Array.isArray(data.covers) && data.covers.length)) {
-                setSelectedMultiFiles(data.covers);
-            }
-            if (Array.isArray(data.keyValues) && rows.length === 0) {
-                const keyValueWithId = data.keyValues.map(item => ({
-                    key: item.key || '',
-                    value: item.value || '',
-                }));
-                setRows(keyValueWithId);
-            }
+        if (Array.isArray(data.keyValues) && rows.length === 0) {
+            setRows(data.keyValues);
         }
-    }, [data]);
-    // 🧮 Auto calculate GST values
+    }, [data.keyValues]);
+
     useEffect(() => {
         const discountedPrice = data.discountedPrice || 0;
-
-        // console.log("discounted price for the gst : ", discountedPrice);
         const gst = data.gst || 0;
 
-        // console.log("gst for th gst : ", gst)
-
         const gstInRupees = (discountedPrice * gst) / 100;
-        // console.log("gst for th gst : ", gst)
         const totalWithGst = discountedPrice + gstInRupees;
-        // console.log("gst for th gst : ", gst)
 
         setData({
             gstInRupees,
@@ -86,134 +68,76 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         });
     }, [data.discountedPrice, data.gst]);
 
-    const categoryOptions = categories.map((cat) => ({
-        value: cat._id as string,
-        label: cat.name,
-        image: cat.image || '',
-    }));
-
-    const filteredSubcategories = data.category
-        ? subcategories.filter((subcat) => subcat.category?._id === data.category)
-        : [];
-
-    const subcategoryOptions = filteredSubcategories.map((subcat) => ({
-        value: subcat._id as string,
-        label: subcat.name,
-        image: subcat.image || '',
-    }));
-
-    useEffect(() => {
-        setSelectedCategory(data.category || '');
-    }, [data.category]);
-
-    useEffect(() => {
-        setSelectedSubcategory(data.subcategory || '');
-    }, [data.subcategory]);
-
-    useEffect(() => {
-        if (data.category !== selectedCategory) {
-            // setData({ subcategory: '' });
-            setSelectedCategory(data.category || '');
-        }
-    }, [data.category]);
-
-
-    useEffect(() => {
-        setData({ thumbnail: selectedFile });
-    }, [selectedFile]);
-
-    useEffect(() => {
-        setData({ covers: selectedMultiFiles });
-    }, [selectedMultiFiles]);
-
     useEffect(() => {
         setData({ keyValues: rows });
     }, [rows]);
 
+    const categoryOptions = categories.map((cat) => ({
+        value: cat._id,
+        label: cat.name,
+        image: cat.image || "",
+    }));
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-        }
+    const filteredSubcategories = data.category
+        ? subcategories.filter((s) => s.category?._id === data.category)
+        : [];
+
+    const subcategoryOptions = filteredSubcategories.map((subcat) => ({
+        value: subcat._id,
+        label: subcat.name,
+        image: subcat.image || "",
+    }));
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) setSelectedFile(file);
+        setData({ thumbnail: file || null });
     };
 
-    const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (files && files.length > 0) {
-            setSelectedMultiFiles(files);
-        }
+    const handleMultipleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files?.length) setSelectedMultiFiles(files);
+        setData({ covers: files || null });
     };
 
     const handleAddRow = () => {
-        setRows([...rows, { key: '', value: '' }]);
+        setRows([...rows, { key: "", value: "" }]);
     };
 
     const handleRemoveRow = (index: number) => {
-        const updatedRows = [...rows];
-        updatedRows.splice(index, 1);
-        setRows(updatedRows);
+        const newRows = rows.filter((_, i) => i !== index);
+        setRows(newRows);
     };
 
-    const handleRowChange = (
-        index: number,
-        field: keyof KeyValue,
-        value: string
-    ) => {
-        const updatedRows = [...rows];
-        updatedRows[index][field] = value;
-        setRows(updatedRows);
+    const handleRowChange = (index: number, field: keyof KeyValue, value: string) => {
+        const updated = [...rows];
+        updated[index][field] = value;
+        setRows(updated);
     };
 
-    const [tagInput, setTagInput] = useState("");
-
-    // Use empty array if undefined
     const tags = data.tags || [];
 
     const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && tagInput.trim() !== "") {
+        if (e.key === "Enter" && tagInput.trim()) {
             e.preventDefault();
-            const newTag = tagInput.trim();
-
-            if (!tags.includes(newTag)) {
-                setData({ tags: [...tags, newTag] }); // Update the tags array correctly
+            if (!tags.includes(tagInput.trim())) {
+                setData({ tags: [...tags, tagInput.trim()] });
             }
-
-            setTagInput(""); // Clear input
+            setTagInput("");
         }
     };
 
-    const handleRemoveTag = (indexToRemove: number) => {
-        const newTags = tags.filter((_, i) => i !== indexToRemove);
-        setData({ tags: newTags }); // Update tags array after removal
+    const handleRemoveTag = (index: number) => {
+        setData({ tags: tags.filter((_, i) => i !== index) });
     };
-
-    const handleSwitchChange = (checked: boolean) => {
-        setData({ recommendedServices: checked });
-    };
-
-
-    useEffect(() => {
-        const price = data.price ?? 0;
-        const discount = data.discount ?? 0;
-
-        // Only calculate if both are present
-        if (price && discount >= 0) {
-            const discountedPrice = Math.floor(price - (price * discount) / 100);
-            setData({
-                ...data,
-                discountedPrice,
-            });
-        }
-    }, [data.price, data.discount]);
-
 
     return (
         <div>
-            <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
+            <h4 className="text-base font-medium text-gray-800 text-center my-4">Basic Details</h4>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Left Side */}
+                {/* LEFT SIDE */}
                 <div className="space-y-4">
                     <div>
                         <Label>Service Name</Label>
@@ -225,15 +149,13 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         />
                     </div>
 
-
-
                     <div>
                         <Label>Price</Label>
                         <Input
                             type="number"
                             placeholder="Price"
                             value={data.price}
-                            onChange={(e) => setData({ ...data, price: Number(e.target.value) })}
+                            onChange={(e) => setData({ price: Number(e.target.value) })}
                         />
                     </div>
 
@@ -241,263 +163,161 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         <Label>Discount (%)</Label>
                         <Input
                             type="number"
-                            placeholder="Discount (%)"
                             value={data.discount || ""}
-                            onChange={(e) => setData({ ...data, discount: Number(e.target.value) })}
+                            onChange={(e) => setData({ discount: Number(e.target.value) })}
                         />
                     </div>
-
 
                     <div>
                         <Label>After Discount Price</Label>
                         <Input
                             type="number"
-                            placeholder="After Discount Price"
+                            readOnly
                             value={
                                 data.price && data.discount
                                     ? Math.floor(data.price - (data.price * data.discount) / 100)
                                     : ""
                             }
-                            {...{ readOnly: true }}
                         />
                     </div>
-                    {/* GST Section */}
+
+                    {/* GST BLOCK */}
                     <div className="border p-3 rounded-md">
                         <div className="flex items-center justify-between mb-2">
                             <Label>Include GST</Label>
                             <Switch
-                                label="Enable GST"
                                 checked={!!data.includeGst}
-                                onChange={(val: boolean) => setData({ includeGst: val })}
+                                onChange={(val) => setData({ includeGst: val })}
                             />
                         </div>
-
-                        <p className={`font-medium mb-2 ${data.includeGst ? "text-green-600" : "text-red-600"}`}>
-                            {data.includeGst
-                                ? "GST Included in Price (Provider Pays GST)"
-                                : "GST Not Included (Customer Pays GST)"}
-                        </p>
 
                         <div>
                             <Label>GST (%)</Label>
                             <Input
                                 type="number"
-                                placeholder="Enter GST %"
-                                value={data.gst ?? ""}
+                                value={data.gst || ""}
                                 onChange={(e) => setData({ gst: Number(e.target.value) })}
                             />
                         </div>
+
                         <div className="mt-3">
                             <Label>GST in Rupees</Label>
-                            <Input
-                                type="number"
-                                value={data.gstInRupees || 0}
-                                disabled
-                            />
+                            <Input disabled value={data.gstInRupees || 0} />
                         </div>
 
-                        {/* <div className="mt-3">
+                        <div className="mt-3">
                             <Label>Total with GST</Label>
-                            <Input
-                                type="number"
-                                value={data.totalWithGst || 0}
-                                disabled
-                            />
-                        </div> */}
-
-                    </div>
-
-                    <div className="mt-4">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value="Total with GST"
-                                disabled
-                                className="w-full pl-4 pr-28 py-2 bg-green-50 text-green-800 border border-green-300 rounded-xl shadow-sm font-semibold disabled:cursor-not-allowed"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-800 font-bold">
-                                ₹ {data.totalWithGst || 0}
-                            </span>
+                            <Input disabled value={data.totalWithGst || 0} />
                         </div>
                     </div>
-
 
                 </div>
 
-                {/* Right Side */}
-                <div className="space-y-3">
+                {/* RIGHT SIDE */}
+                <div className="space-y-4">
                     <div>
                         <Label>Select Category</Label>
-                        <div className="relative">
-                            <Select
-                                options={categoryOptions}
-                                placeholder="Categories"
-                                value={selectedCategory}
-                                onChange={(value: string) => setData({ category: value })}
-                                className="dark:bg-dark-900"
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <ChevronDownIcon />
-                            </span>
-                        </div>
+                        <Select
+                            options={categoryOptions}
+                            value={data.category}
+                            onChange={(val) => setData({ category: val })}
+                        />
                     </div>
 
                     <div>
                         <Label>Select Subcategory</Label>
-                        <div className="relative">
-                            <Select
-                                options={subcategoryOptions}
-                                placeholder="Subcategories"
-                                value={selectedSubcategory}
-                                onChange={(value: string) => setData({ subcategory: value })}
-                                className="dark:bg-dark-900"
-                            />
-                            <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                                <ChevronDownIcon />
-                            </span>
-                        </div>
+                        <Select
+                            options={subcategoryOptions}
+                            value={data.subcategory}
+                            onChange={(val) => setData({ subcategory: val })}
+                        />
                     </div>
+
                     <div>
-                        <Label>Thumbnail Image</Label>
-                        <FileInput onChange={handleFileChange} className="custom-class" />
-                        {selectedFile ? (
-                            <img
-                                src={URL.createObjectURL(selectedFile)}
-                                alt="Thumbnail Preview"
-                                className="mt-2 w-20 h-20 object-cover rounded border"
-                            />
-                        ) : data.thumbnailPreview ? (
-                            <img
-                                src={data.thumbnailPreview}
-                                alt="Thumbnail Preview"
-                                className="mt-2 w-20 h-20 object-cover rounded border"
-                            />
-                        ) : null}
-
-
+                        <Label>Thumbnail</Label>
+                        <FileInput onChange={handleFileChange} />
                     </div>
 
                     <div>
                         <Label>Cover Images</Label>
-                        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
-                        <div className="mt-2 flex gap-2 flex-wrap">
-                            {selectedMultiFiles &&
-                                Array.from(selectedMultiFiles).map((file, index) => (
-                                    <img
-                                        key={index}
-                                        src={URL.createObjectURL(file)}
-                                        alt={`Cover Preview ${index}`}
-                                        className="w-42 h-24 object-cover rounded border"
-                                    />
-                                ))}
-
-                            {!selectedMultiFiles && (data.bannerPreviews ?? []).map((url: string, index: number) => (
-                                <img
-                                    key={`existing-${index}`}
-                                    src={url}
-                                    alt={`Existing Cover ${index}`}
-                                    className="w-42 h-24 object-cover rounded border"
-                                />
-                            ))}
-
-                        </div>
+                        <FileInput multiple onChange={handleMultipleFileChange} />
                     </div>
 
-                    {/* Tags Input Section */}
+                    {/* TAGS */}
                     <div>
                         <Label>Tags</Label>
-                        <div className="border rounded rounded-lg px-3 py-1 flex flex-wrap items-center gap-2">
-                            {tags.map((tag, index) => (
-                                <div
-                                    key={index}
-                                    className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center text-sm"
-                                >
+                        <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
+                            {tags.map((tag, i) => (
+                                <div key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
                                     {tag}
                                     <button
-                                        type="button"
-                                        onClick={() => handleRemoveTag(index)}
-                                        className="ml-1 text-red-500 hover:text-red-700"
-                                        aria-label={`Remove tag ${tag}`}
+                                        className="ml-1 text-red-500"
+                                        onClick={() => handleRemoveTag(i)}
                                     >
-                                        &times;
+                                        ×
                                     </button>
                                 </div>
                             ))}
+
                             <input
-                                type="text"
-                                className="flex-grow outline-none py-1"
-                                placeholder="Type a tag and press Enter"
+                                className="flex-grow outline-none"
+                                placeholder="Press Enter to add"
                                 value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)} // update tagInput string here
+                                onChange={(e) => setTagInput(e.target.value)}
                                 onKeyDown={handleTagKeyDown}
                             />
                         </div>
                     </div>
 
-                    <div className="my-3">
-                        <Label>Enter Key Value</Label>
+                    {/* KEY VALUE */}
+                    <div>
+                        <Label>Key - Value</Label>
+
                         {rows.map((row, index) => (
-                            <div key={index} className="mb-3 border pt-3 pb-4 px-4 rounded-lg space-y-3">
-                                {/* Header Row */}
-                                <div className="flex justify-between items-center mb-2">
-                                    <h2 className="text-md font-medium text-gray-700">Key-Value #{index + 1}</h2>
-                                    <button
-                                        type="button"
-                                        className="text-red-500 hover:text-red-700"
-                                        onClick={() => handleRemoveRow(index)}
-                                        aria-label="Remove Key-Value"
-                                    >
-                                        <TrashBinIcon className="w-5 h-5" />
+                            <div key={index} className="border rounded p-3 mb-3">
+                                <div className="flex justify-between">
+                                    <h3 className="font-medium">Row {index + 1}</h3>
+                                    <button onClick={() => handleRemoveRow(index)}>
+                                        <TrashBinIcon />
                                     </button>
                                 </div>
 
-                                {/* Fields Row: Title + Description */}
-                               {rows.map((item, index) => (
-    <div key={index} className="flex gap-4 mt-4">
-        <div className="w-1/2">
-            <Input
-                type="text"
-                value={item.key}
-                onChange={(e) => handleRowChange(index, 'key', e.target.value)}
-                placeholder="Key"
-            />
-        </div>
-        <div className="w-1/2">
-            <Input
-                type="text"
-                value={item.value}
-                onChange={(e) => handleRowChange(index, 'value', e.target.value)}
-                placeholder="Value"
-            />
-        </div>
-    </div>
-))}
-
+                                <div className="flex gap-4 mt-3">
+                                    <Input
+                                        placeholder="Key"
+                                        value={row.key}
+                                        onChange={(e) =>
+                                            handleRowChange(index, "key", e.target.value)
+                                        }
+                                    />
+                                    <Input
+                                        placeholder="Value"
+                                        value={row.value}
+                                        onChange={(e) =>
+                                            handleRowChange(index, "value", e.target.value)
+                                        }
+                                    />
+                                </div>
                             </div>
                         ))}
 
                         <button
                             type="button"
                             onClick={handleAddRow}
-                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
                         >
-                            + Add New Key-Value
+                            + Add New Row
                         </button>
                     </div>
 
-
-                    <div className='py-3'>
+                    <div>
                         <Label>Recommended Service</Label>
-                        <div className="px-3 py-1 flex flex-wrap items-center gap-2">
-                            <Switch
-                                label="Recommended"
-                                checked={!!data.recommendedServices}
-                                onChange={handleSwitchChange}
-                            />
-
-
-                        </div>
+                        <Switch
+                            checked={!!data.recommendedServices}
+                            onChange={(val) => setData({ recommendedServices: val })}
+                        />
                     </div>
+
                 </div>
             </div>
         </div>

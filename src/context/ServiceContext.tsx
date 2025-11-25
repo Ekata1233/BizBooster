@@ -10,10 +10,12 @@ import {
 } from "react";
 import axios from "axios";
 
-// ----------------------------------------------
-// PROVIDER PRICES (Matched to your backend route)
-// ----------------------------------------------
-type ProviderPrice = {
+// ==============================================================
+// TYPES
+// ==============================================================
+
+// -------- PROVIDER PRICE ----------
+export type ProviderPrice = {
   provider: string;
   providerMRP: number;
   providerDiscount: number;
@@ -22,9 +24,7 @@ type ProviderPrice = {
   status?: string;
 };
 
-// ----------------------------------------------
-// SERVICE DETAILS FULL STRUCTURE (Matches schema)
-// ----------------------------------------------
+// -------- SERVICE DETAILS ----------
 export interface FAQ {
   question: string;
   answer: string;
@@ -80,6 +80,7 @@ export interface ServiceDetails {
   extraImages: string[];
 }
 
+// -------- FRANCHISE DETAILS ----------
 export interface FranchiseDetails {
   commission: string | null;
   termsAndConditions: string | null;
@@ -97,16 +98,13 @@ export interface FranchiseDetails {
   extraImages: string[];
 }
 
-
-// ----------------------------------------------
-// MAIN SERVICE TYPE (Full schema)
-// ----------------------------------------------
+// -------- MAIN SERVICE MODEL ----------
 export interface Service {
   _id: string;
-  serviceName: string;
+  serviceName: string | null;
 
-  category: { _id: string; name: string };
-  subcategory: { _id: string; name: string };
+  category: { _id: string; name: string } | null;
+  subcategory: { _id: string; name: string } | null;
 
   price: number;
   discount: number;
@@ -127,6 +125,10 @@ export interface Service {
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
 
+  averageRating: number;
+  totalReviews: number;
+  sortOrder: number;
+
   isDeleted: boolean;
   recommendedServices: boolean;
 
@@ -134,145 +136,185 @@ export interface Service {
   updatedAt?: string;
 }
 
-// ----------------------------------------------
-// UPDATE RESPONSE TYPE
-// ----------------------------------------------
-type UpdateServiceResponse = {
+// -------- UPDATE RESPONSE ----------
+export type UpdateServiceResponse = {
   success: boolean;
   data: Service;
   message?: string;
 };
 
-// ----------------------------------------------
+// ==============================================================
 // CONTEXT TYPE
-// ----------------------------------------------
+// ==============================================================
+
 type ServiceContextType = {
   services: Service[];
   fetchServices: () => Promise<void>;
+
   createService: (formData: FormData) => Promise<Service | undefined>;
   updateService: (
     id: string,
     data: Partial<Service> | FormData
   ) => Promise<UpdateServiceResponse | undefined>;
   deleteService: (id: string) => Promise<void>;
-  fetchSingleService: (id: string) => Promise<void>;
   reorderServices: (items: { _id: string; sortOrder: number }[]) => Promise<void>;
+
+  fetchSingleService: (id: string) => Promise<void>;
   singleService: Service | null;
   singleServiceLoading: boolean;
   singleServiceError: string | null;
 };
 
-// ----------------------------------------------
+// ==============================================================
+// CONTEXT INITIALIZATION
+// ==============================================================
+
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
-// ----------------------------------------------
+export const useService = () => {
+  const context = useContext(ServiceContext);
+  if (!context) {
+    throw new Error("useService must be used inside ServiceProvider");
+  }
+  return context;
+};
+
+// ==============================================================
+// PROVIDER
+// ==============================================================
+
 export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const [services, setServices] = useState<Service[]>([]);
+
   const [singleService, setSingleService] = useState<Service | null>(null);
   const [singleServiceLoading, setSingleServiceLoading] = useState(false);
   const [singleServiceError, setSingleServiceError] = useState<string | null>(null);
 
-  // ----------------------------------------------
+  const BASE_URL = "/api/service";
+
+  // ---------------------------------------------
   // FETCH ALL SERVICES
-  // ----------------------------------------------
+  // ---------------------------------------------
   const fetchServices = useCallback(async () => {
     try {
-      const res = await axios.get<{ data: Service[] }>("/api/service");
-      setServices(res.data.data);
-    } catch (error) {
-      console.error("Failed to fetch services:", error);
+      const res = await axios.get(`${BASE_URL}`);
+      if (res.data.success) {
+        setServices(res.data.data);
+      }
+    } catch (err) {
+      console.error("Fetch services error:", err);
     }
   }, []);
 
+  // Auto load
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
 
-  // ----------------------------------------------
-  // CREATE SERVICE
-  // ----------------------------------------------
-  const createService = async (formData: FormData) => {
-    try {
-      const res = await axios.post<{ data: Service }>("/api/service", formData);
-      await fetchServices();
-      return res.data.data;
-    } catch (error: any) {
-      const message = error?.response?.data?.message || "Unknown error";
-      console.error("Failed to create service:", message);
-      throw new Error(message);
-    }
-  };
-
-
+  // ---------------------------------------------
+  // FETCH SINGLE SERVICE
+  // ---------------------------------------------
   const fetchSingleService = async (id: string) => {
-    setSingleServiceLoading(true);
     try {
-      const res = await axios.get(`/api/service/${id}`);
-      setSingleService(res.data?.data || null);
-      setSingleServiceError(null);
-    } catch (err: unknown) {
-      console.log(err);
+      setSingleServiceLoading(true);
+      const res = await axios.get(`${BASE_URL}/${id}`);
+
+      if (res.data.success) {
+        setSingleService(res.data.data);
+      } else {
+        setSingleServiceError("Failed to load service");
+      }
+    } catch (err) {
+      setSingleServiceError("Error fetching service");
     } finally {
       setSingleServiceLoading(false);
     }
   };
-  // const updateService = async (id: string, data: Partial<Service> | FormData) => {
-  //   try {
-  //     const res = await axios.put<Service>(
-  //       `/api/service/${id}`,
-  //       data instanceof FormData ? data : data,
-  //       {
-  //         headers: data instanceof FormData
-  //           ? undefined
-  //           : { "Content-Type": "application/json" },
-  //       }
-  //     );
-  //     fetchServices();
-  //     return res.data;
-  //   } catch (error) {
-  //     console.error("Failed to update service:", error);
-  //   }
-  // };
 
-  const updateService = async (
-    id: string,
-    data: Partial<Service> | FormData
-  ): Promise<UpdateServiceResponse | undefined> => {
+  // ---------------------------------------------
+  // CREATE SERVICE
+  // ---------------------------------------------
+  const createService = async (formData: FormData) => {
     try {
-      const res = await axios.put<UpdateServiceResponse>(
-        `/api/service/${id}`,
-        data instanceof FormData ? data : data,
-        {
-          headers: data instanceof FormData
-            ? undefined
-            : { "Content-Type": "application/json" },
-        }
-      );
-      fetchServices();
-      return res.data;
-    } catch (error) {
-      console.error("Failed to update service:", error);
+      const res = await axios.post(`${BASE_URL}`, formData);
+
+      if (res.data.success) {
+        const newService = res.data.data;
+        setServices((prev) => [...prev, newService]);
+        return newService;
+      }
+    } catch (err) {
+      console.error("Create service error:", err);
     }
   };
 
-
-const reorderServices = async (items: { _id: string; sortOrder: number }[]) => {
+  // ---------------------------------------------
+  // UPDATE SERVICE
+  // ---------------------------------------------
+ const updateService = async (
+  id: string,
+  data: Partial<Service> | FormData
+): Promise<UpdateServiceResponse | undefined> => {
   try {
-    await axios.post("/api/service/reorder", { services: items });
-    await fetchServices(); // refresh list
+    const res = await axios.put(`${BASE_URL}/${id}`, data);
+
+    if (res.data.success) {
+      const updated = res.data.data;
+
+      setServices((prev) =>
+        prev.map((item) => (item._id === id ? updated : item))
+      );
+
+      return {
+        success: res.data.success,
+        data: updated,
+        message: res.data.message,
+      };
+    }
+
+    return {
+      success: false,
+      data: res.data.data,
+      message: res.data.message || "Update failed",
+    };
   } catch (err) {
-    console.error("Service reorder failed:", err);
+    console.error("Update service error:", err);
+    return undefined; // ← ensures type safety
   }
 };
 
+
+  // ---------------------------------------------
+  // DELETE SERVICE (SOFT DELETE)
+  // ---------------------------------------------
   const deleteService = async (id: string) => {
     try {
-      await axios.delete(`/api/service/${id}`);
-      await fetchServices();
-    } catch (error) {
-      console.error("Failed to delete service:", error);
+      const res = await axios.delete(`${BASE_URL}/${id}`);
+
+      if (res.data.success) {
+        setServices((prev) => prev.filter((item) => item._id !== id));
+      }
+    } catch (err) {
+      console.error("Delete service error:", err);
     }
   };
+
+  // ---------------------------------------------
+  // REORDER SERVICES
+  // ---------------------------------------------
+  const reorderServices = async (items: { _id: string; sortOrder: number }[]) => {
+    try {
+      const res = await axios.put(`${BASE_URL}/reorder`, { items });
+
+      if (res.data.success) {
+        fetchServices();
+      }
+    } catch (err) {
+      console.error("Reorder error:", err);
+    }
+  };
+
+  // ==============================================================
 
   return (
     <ServiceContext.Provider
@@ -282,22 +324,15 @@ const reorderServices = async (items: { _id: string; sortOrder: number }[]) => {
         createService,
         updateService,
         deleteService,
+        reorderServices,
+
         fetchSingleService,
         singleService,
         singleServiceLoading,
         singleServiceError,
-        reorderServices,
       }}
     >
       {children}
     </ServiceContext.Provider>
   );
-};
-
-export const useService = (): ServiceContextType => {
-  const context = useContext(ServiceContext);
-  if (!context) {
-    throw new Error("useService must be used within a ServiceProvider");
-  }
-  return context;
 };
