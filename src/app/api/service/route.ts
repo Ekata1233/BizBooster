@@ -17,7 +17,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+   
 
+     console.log("=== FormData Entries ===");
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(key, "=>", value.name, value.size, value.type);
+      } else {
+        console.log(key, "=>", value);
+      }
+    }
+    console.log("=======================");
     // -------------------------------
     // BASIC DETAILS
     // -------------------------------
@@ -31,7 +41,6 @@ export async function POST(req: NextRequest) {
     const includeGst = formData.get("includeGst") === "true";
 
     const recommendedServices = formData.get("recommendedServices") === "true";
-
     // -----------------------------------
     // TAGS
     // -----------------------------------

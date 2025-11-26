@@ -13,6 +13,7 @@ const ClientSideCustomEditor = dynamic(
   { ssr: false, loading: () => <p>Loading editor...</p> }
 );
 
+// ------------------- TYPES -------------------
 type FAQ = { question: string; answer: string };
 type TitleDescription = { title: string; description: string; icon?: string };
 type ExtraSection = {
@@ -29,10 +30,12 @@ type MoreInfo = { title: string; image: string; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 
+// ------------------- SERVICE DETAILS -------------------
 export type ServiceDetails = {
   benefits: string[];
   aboutUs: string[];
-  highlight: File[] | FileList | null;
+  highlight: string[];
+
   highlightPreviews?: string[];
   document: string[];
   assuredByFetchTrue: TitleDescription[];
@@ -52,16 +55,19 @@ export type ServiceDetails = {
 
 interface Props {
   data: ServiceDetails;
-  setData: (newData: Partial<ServiceDetails>) => void;
+  setData: (newData: { serviceDetails: ServiceDetails }) => void;
 }
 
+
+// ------------------- COMPONENT -------------------
 const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
+  // ------------------- STATES -------------------
   const [benefits, setBenefits] = useState<string[]>(data?.benefits || []);
   const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
-  const [highlight, setHighlight] = useState<File[] | FileList | null>(data?.highlight || null);
+  const [highlight, setHighlight] = useState<string[]>(data?.highlight || ['']);
   const [highlightPreviews, setHighlightPreviews] = useState<string[]>(data?.highlightPreviews || []);
   const [document, setDocument] = useState<string[]>(data?.document || []);
   const [assuredByFetchTrue, setAssuredByFetchTrue] = useState<TitleDescription[]>(data?.assuredByFetchTrue?.length ? data.assuredByFetchTrue : [{ title: '', description: '', icon: '' }]);
@@ -80,32 +86,15 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
 
   useEffect(() => setEditorReady(true), []);
 
+  // ------------------- SYNC TO PARENT -------------------
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-    setData({
-      benefits,
-      aboutUs,
-      highlight,
-      highlightPreviews,
-      document,
-      assuredByFetchTrue,
-      howItWorks,
-      termsAndConditions,
-      faq,
-      extraSections,
-      whyChooseUs,
-      packages,
-      weRequired,
-      weDeliver,
-      moreInfo,
-      connectWith,
-      timeRequired,
-      extraImages,
-    });
-  }, [
+  if (!mounted.current) {
+    mounted.current = true;
+    return;
+  }
+
+  // Combine all local states into a single serviceDetails object
+  const serviceDetailsState: ServiceDetails = {
     benefits,
     aboutUs,
     highlight,
@@ -124,9 +113,34 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
     connectWith,
     timeRequired,
     extraImages,
-    setData,
-  ]);
+  };
 
+  // Sync to parent as { serviceDetails: { ... } }
+  setData({ serviceDetails: { ...serviceDetailsState } });
+}, [
+  benefits,
+  aboutUs,
+  highlight,
+  highlightPreviews,
+  document,
+  assuredByFetchTrue,
+  howItWorks,
+  termsAndConditions,
+  faq,
+  extraSections,
+  whyChooseUs,
+  packages,
+  weRequired,
+  weDeliver,
+  moreInfo,
+  connectWith,
+  timeRequired,
+  extraImages,
+  setData,
+]);
+
+
+  // ------------------- FILE HANDLERS -------------------
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -136,81 +150,102 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
     }
   };
 
-  // CORRECTED renderArrayField to always show at least one item
-  const renderArrayField = <T extends object>(
-    items: T[] | undefined,
-    setItems: React.Dispatch<React.SetStateAction<T[]>>,
-    renderItem: (item: T, index: number, updateItem: (newItem: T) => void) => React.ReactNode,
-    defaultItem: T
-  ) => {
-    const safeItems = items && items.length > 0 ? items : [defaultItem];
+  // ------------------- ARRAY FIELD RENDERER -------------------
+function renderArrayField<T extends object>(
+  items: T[] | null | undefined,
+  setItems: React.Dispatch<React.SetStateAction<T[]>>,
+  renderItem: (
+    item: T,
+    idx: number,
+    updateItem: (updated: T) => void
+  ) => React.ReactNode,
+  defaultItem: T
+) {
+  // Only for rendering, DO NOT modify state here
+  const safeItems: T[] = Array.isArray(items) && items.length > 0 ? items : [defaultItem];
 
-    return (
-      <div className="my-3">
-        {safeItems.map((item, idx) => (
-          <div key={idx} className="border p-4 rounded mb-3 relative">
-            {renderItem(item, idx, (newItem: T) =>
-              setItems(prev => {
-                const arr = prev && prev.length > 0 ? prev : [defaultItem];
-                return arr.map((it, i) => (i === idx ? newItem : it));
-              })
-            )}
+  const handleAdd = () => {
+    setItems(prev => {
+      const arr = Array.isArray(prev) ? [...prev] : [];
+      arr.push(defaultItem);
+      return arr;
+    });
+  };
+
+  const handleUpdate = (idx: number, updatedItem: T) => {
+    setItems(prev => {
+      const arr = Array.isArray(prev) ? [...prev] : [];
+      arr[idx] = updatedItem;
+      return arr;
+    });
+  };
+
+  const handleRemove = (idx: number) => {
+    setItems(prev => {
+      const arr = Array.isArray(prev) ? prev.filter((_, i) => i !== idx) : [];
+      return arr.length > 0 ? arr : [defaultItem]; // Ensure at least one item
+    });
+  };
+
+  return (
+    <div className="my-3">
+      {safeItems.map((item, idx) => (
+        <div key={idx} className="border p-4 rounded mb-3 relative">
+          {renderItem(item, idx, updated => handleUpdate(idx, updated))}
+
+          {/* DELETE BUTTON */}
+          {safeItems.length > 1 && (
             <button
               type="button"
+              onClick={() => handleRemove(idx)}
               className="absolute top-2 right-2 text-red-500"
-              onClick={() =>
-                setItems(prev => {
-                  const arr = prev && prev.length > 0 ? prev : [defaultItem];
-                  return arr.filter((_, i) => i !== idx);
-                })
-              }
             >
               <TrashBinIcon className="w-5 h-5" />
             </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => setItems(prev => (prev && prev.length > 0 ? [...prev, defaultItem] : [defaultItem]))}
-        >
-          + Add More
-        </button>
-      </div>
-    );
-  };
+          )}
+        </div>
+      ))}
 
+      {/* ADD BUTTON */}
+      <button
+        type="button"
+        className="bg-blue-500 text-white px-3 py-1 rounded"
+        onClick={handleAdd}
+      >
+        + Add More
+      </button>
+    </div>
+  );
+}
+
+
+
+
+
+  // ------------------- RENDER -------------------
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
         ✨ Service Details
       </h4>
 
-      {/* CKEditors */}
+      {/* CKEditor fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <Label>Benefits</Label>
-          {editorReady && (
-            <ClientSideCustomEditor value={benefits.join('\n')} onChange={val => setBenefits(val.split('\n'))} />
-          )}
+          {editorReady && <ClientSideCustomEditor value={benefits.join('\n')} onChange={val => setBenefits(val.split('\n'))} />}
         </div>
         <div>
           <Label>About Us</Label>
-          {editorReady && (
-            <ClientSideCustomEditor value={aboutUs.join('\n')} onChange={val => setAboutUs(val.split('\n'))} />
-          )}
+          {editorReady && <ClientSideCustomEditor value={aboutUs.join('\n')} onChange={val => setAboutUs(val.split('\n'))} />}
         </div>
         <div>
           <Label>Document</Label>
-          {editorReady && (
-            <ClientSideCustomEditor value={document.join('\n')} onChange={val => setDocument(val.split('\n'))} />
-          )}
+          {editorReady && <ClientSideCustomEditor value={document.join('\n')} onChange={val => setDocument(val.split('\n'))} />}
         </div>
         <div>
           <Label>Terms & Conditions</Label>
-          {editorReady && (
-            <ClientSideCustomEditor value={termsAndConditions.join('\n')} onChange={val => setTermsAndConditions(val.split('\n'))} />
-          )}
+          {editorReady && <ClientSideCustomEditor value={termsAndConditions.join('\n')} onChange={val => setTermsAndConditions(val.split('\n'))} />}
         </div>
       </div>
 
@@ -223,228 +258,167 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
         ))}
       </div>
 
-      {/* Assured By FetchTrue & How It Works */}
+      {/* Arrays and Nested Arrays */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Assured By FetchTrue */}
         <div>
           <Label>Assured By FetchTrue</Label>
-          {renderArrayField<TitleDescription>(
-            assuredByFetchTrue,
-            setAssuredByFetchTrue,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', icon: '', description: '' }
-          )}
+          {renderArrayField<TitleDescription>(assuredByFetchTrue, setAssuredByFetchTrue, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', description: '', icon: '' })}
         </div>
+
+        {/* How It Works */}
         <div>
           <Label>How It Works</Label>
-          {renderArrayField<TitleDescription>(
-            howItWorks,
-            setHowItWorks,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', icon: '', description: '' }
-          )}
+          {renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', description: '', icon: '' })}
         </div>
-      </div>
 
-      {/* Why Choose Us & Connect With */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Why Choose Us */}
         <div>
           <Label>Why Choose Us</Label>
-          {renderArrayField<TitleDescription>(
-            whyChooseUs,
-            setWhyChooseUs,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', icon: '', description: '' }
-          )}
+          {renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', description: '', icon: '' })}
         </div>
+
+        {/* Connect With */}
         <div>
           <Label>Connect With</Label>
-          {renderArrayField<ConnectWith>(
-            connectWith,
-            setConnectWith,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
-                <Input value={item.mobileNo} placeholder="Mobile No" onChange={e => updateItem({ ...item, mobileNo: e.target.value })} />
-                <Input value={item.email} placeholder="Email" onChange={e => updateItem({ ...item, email: e.target.value })} />
-              </div>
-            ),
-            { name: '', mobileNo: '', email: '' }
-          )}
+          {renderArrayField<ConnectWith>(connectWith, setConnectWith, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
+              <Input value={item.mobileNo} placeholder="Mobile No" onChange={e => updateItem({ ...item, mobileNo: e.target.value })} />
+              <Input value={item.email} placeholder="Email" onChange={e => updateItem({ ...item, email: e.target.value })} />
+            </div>
+          ), { name: '', mobileNo: '', email: '' })}
         </div>
-      </div>
 
-      {/* We Required & We Deliver */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* We Required */}
         <div>
           <Label>We Required</Label>
-          {renderArrayField<TitleDescription>(
-            weRequired,
-            setWeRequired,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', description: '' }
-          )}
+          {renderArrayField<TitleDescription>(weRequired, setWeRequired, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', description: '' })}
         </div>
+
+        {/* We Deliver */}
         <div>
           <Label>We Deliver</Label>
-          {renderArrayField<TitleDescription>(
-            weDeliver,
-            setWeDeliver,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', description: '' }
-          )}
+          {renderArrayField<TitleDescription>(weDeliver, setWeDeliver, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', description: '' })}
         </div>
-      </div>
 
-      {/* More Info & FAQs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* More Info */}
         <div>
           <Label>More Info</Label>
-          {renderArrayField<MoreInfo>(
-            moreInfo,
-            setMoreInfo,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-                <Input value={item.image || ''} placeholder="Image URL" onChange={e => updateItem({ ...item, image: e.target.value })} />
-                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-              </div>
-            ),
-            { title: '', image: '', description: '' }
-          )}
+          {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+              <Input value={item.image || ''} placeholder="Image URL" onChange={e => updateItem({ ...item, image: e.target.value })} />
+              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+            </div>
+          ), { title: '', image: '', description: '' })}
         </div>
+
+        {/* FAQ */}
         <div>
           <Label>FAQs</Label>
-          {renderArrayField<FAQ>(
-            faq,
-            setFaq,
-            (item, idx, updateItem) => (
-              <div className="grid gap-2">
-                <Input value={item.question} placeholder="Question" onChange={e => updateItem({ ...item, question: e.target.value })} />
-                <textarea
-                  value={item.answer}
-                  placeholder="Answer"
-                  onChange={e => updateItem({ ...item, answer: e.target.value })}
-                  className="w-full border rounded p-2 resize-none"
-                  rows={3}
-                />
-              </div>
-            ),
-            { question: '', answer: '' }
-          )}
+          {renderArrayField<FAQ>(faq, setFaq, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.question} placeholder="Question" onChange={e => updateItem({ ...item, question: e.target.value })} />
+              <textarea
+                value={item.answer}
+                placeholder="Answer"
+                onChange={e => updateItem({ ...item, answer: e.target.value })}
+                className="w-full border rounded p-2 resize-none"
+                rows={3}
+              />
+            </div>
+          ), { question: '', answer: '' })}
         </div>
       </div>
 
       {/* Packages */}
       <Label>Packages</Label>
-      {renderArrayField<Package>(
-        packages,
-        setPackages,
-        (pkg, pkgIdx, updatePackage) => (
-          <div className="border p-4 rounded mb-4 relative">
-            <div className="grid gap-2">
-              <Input value={pkg.name} placeholder="Package Name" onChange={e => updatePackage({ ...pkg, name: e.target.value })} />
-              <Input type="number" value={pkg.price || ''} placeholder="Price" onChange={e => updatePackage({ ...pkg, price: Number(e.target.value) })} />
-              <Input type="number" value={pkg.discount || ''} placeholder="Discount" onChange={e => updatePackage({ ...pkg, discount: Number(e.target.value) })} />
-              <Input type="number" value={pkg.discountedPrice || ''} placeholder="Discounted Price" onChange={e => updatePackage({ ...pkg, discountedPrice: Number(e.target.value) })} />
-            </div>
-
-            {/* What You Get */}
-            {renderArrayField<string>(
-              Array.isArray(pkg.whatYouGet) && pkg.whatYouGet.length > 0 ? pkg.whatYouGet : [''],
-              arr => updatePackage({ ...pkg, whatYouGet: arr }),
-              (item, idx, updateItem) => (
-                <div className="">
-                  <Input value={item} placeholder="What You Get" onChange={e => updateItem(e.target.value)} />
-                </div>
-              ),
-              ''
-            )}
+      {renderArrayField<Package>(packages, setPackages, (pkg, pkgIdx, updatePackage) => (
+        <div className="border p-4 rounded mb-4 relative">
+          <div className="grid gap-2">
+            <Input value={pkg.name} placeholder="Package Name" onChange={e => updatePackage({ ...pkg, name: e.target.value })} />
+            <Input type="number" value={pkg.price || ''} placeholder="Price" onChange={e => updatePackage({ ...pkg, price: Number(e.target.value) })} />
+            <Input type="number" value={pkg.discount || ''} placeholder="Discount" onChange={e => updatePackage({ ...pkg, discount: Number(e.target.value) })} />
+            <Input type="number" value={pkg.discountedPrice || ''} placeholder="Discounted Price" onChange={e => updatePackage({ ...pkg, discountedPrice: Number(e.target.value) })} />
           </div>
-        ),
-        { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }
-      )}
+
+          {/* What You Get */}
+         {renderArrayField<string>(
+  pkg.whatYouGet ?? [''],
+  arr => updatePackage({ ...pkg, whatYouGet: arr }),
+  (item, idx, updateItem) => (
+    <div className="">
+      <Input value={item} placeholder="What You Get" onChange={e => updateItem(e.target.value)} />
+    </div>
+  ),
+  '' // ✔ correct default item for string array
+)}
+
+        </div>
+      ), { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] })}
 
       {/* Time Required */}
       <Label>Time Required</Label>
-      {renderArrayField<TimeRequired>(
-        timeRequired,
-        setTimeRequired,
-        (item, idx, updateItem) => (
-          <div className="grid gap-2">
-            <Input type="number" value={item.minDays || ''} placeholder="Min Days" onChange={e => updateItem({ ...item, minDays: Number(e.target.value) })} />
-            <Input type="number" value={item.maxDays || ''} placeholder="Max Days" onChange={e => updateItem({ ...item, maxDays: Number(e.target.value) })} />
-          </div>
-        ),
-        { minDays: null, maxDays: null }
-      )}
+      {renderArrayField<TimeRequired>(timeRequired, setTimeRequired, (item, idx, updateItem) => (
+        <div className="grid gap-2">
+          <Input type="number" value={item.minDays || ''} placeholder="Min Days" onChange={e => updateItem({ ...item, minDays: Number(e.target.value) })} />
+          <Input type="number" value={item.maxDays || ''} placeholder="Max Days" onChange={e => updateItem({ ...item, maxDays: Number(e.target.value) })} />
+        </div>
+      ), { minDays: null, maxDays: null })}
 
       {/* Extra Images */}
       <Label>Extra Images URLs</Label>
-      {renderArrayField<string>(
-        extraImages,
-        setExtraImages,
-        (img, idx, updateItem) => (
-          <div className="">
-            <Input value={img} placeholder="Image URL" onChange={e => updateItem(e.target.value)} />
-          </div>
-        ),
-        ''
-      )}
+      {renderArrayField<string>(extraImages, setExtraImages, (img, idx, updateImg) => (
+        <Input value={img} placeholder="Image URL" onChange={e => updateImg(e.target.value)} />
+      ), '')}
 
       {/* Extra Sections */}
       <Label>Extra Sections</Label>
-      {renderArrayField<ExtraSection>(
-        extraSections,
-        setExtraSections,
-        (section, idx, updateSection) => (
-          <div className="grid gap-2">
-            <Input value={section.title} placeholder="Title" onChange={e => updateSection({ ...section, title: e.target.value })} />
-            {/* Render subarrays */}
-            {['subtitle', 'image', 'description', 'subDescription', 'lists', 'tags'].map(key => (
-              <div key={key}>
-                <Label>{key}</Label>
-                {renderArrayField<string>(
-                  section[key as keyof ExtraSection] as string[],
-                  arr => updateSection({ ...section, [key]: arr }),
-                  (val, subIdx, updateItem) => (
-                    <Input value={val} placeholder={key} onChange={e => updateItem(e.target.value)} />
-                  ),
-                  ''
-                )}
-              </div>
-            ))}
-          </div>
-        ),
-        { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }
-      )}
+      {renderArrayField<ExtraSection>(extraSections, setExtraSections, (section, idx, updateSection) => (
+        <div className="grid gap-2 border p-4 rounded mb-4">
+          <Input value={section.title} placeholder="Title" onChange={e => updateSection({ ...section, title: e.target.value })} />
+          {['subtitle', 'description', 'subDescription', 'lists', 'tags', 'image'].map((key: any) => (
+            <div key={key}>
+              <Label>{key}</Label>
+              {renderArrayField<string>(
+                (section as any)[key],
+                arr => updateSection({ ...section, [key]: arr }),
+                (val, idx2, updateVal) => <Input value={val} placeholder={key} onChange={e => updateVal(e.target.value)} />,
+                ''
+              )}
+            </div>
+          ))}
+        </div>
+      ), { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] })}
     </div>
   );
 };

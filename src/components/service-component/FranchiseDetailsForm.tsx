@@ -36,19 +36,31 @@ type ExtraSection = {
   tags: string[];
 };
 
-interface FranchiseData {
+interface FranchiseDetails {
   commission?: string;
-  commissionType?: 'percentage' | 'amount';
-  overview?: string;
-  howItWorks?: string;
   termsAndConditions?: string;
-  rows?: RowData[];
-  investmentRange?: InvestmentRange[];
-  monthlyEarnPotential?: MonthlyEarnPotential[];
-  franchiseModel?: FranchiseModel[];
-  extraSections?: ExtraSection[];
-  extraImages?: string[];
+  investmentRange: { minRange: number | string; maxRange: number | string }[];
+  monthlyEarnPotential: { minEarn: number | string; maxEarn: number | string }[];
+  franchiseModel: {
+    title: string;
+    agreement?: string;
+    price?: number | string;
+    discount?: number | string;
+    gst?: number | string;
+    fees?: number | string;
+  }[];
+  extraSections: {
+    title: string;
+    subtitle: string[];
+    image: string[];
+    description: string[];
+    subDescription: string[];
+    lists: string[];
+    tags: string[];
+  }[];
+  extraImages: string[];
 }
+
 
 interface FranchiseDetailsFormProps {
   data: FranchiseData;
@@ -100,43 +112,32 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     }
   }, []);
 
-  // Sync up with parent whenever any local piece changes
-  useEffect(() => {
-    const newData: FranchiseData = {
-      overview,
-      howItWorks,
-      termsAndConditions,
-      rows,
-      investmentRange,
-      monthlyEarnPotential,
-      franchiseModel,
-      extraSections,
-      extraImages,
-    };
-
-    if (commissionValue) {
-      newData.commission = commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
-      newData.commissionType = commissionType;
-    } else {
-      // if empty, still send commissionType maybe
-      newData.commissionType = commissionType;
-    }
-
-    setData(newData);
-  }, [
-    overview,
-    howItWorks,
-    termsAndConditions,
-    rows,
-    commissionValue,
+useEffect(() => {
+  const newData = {
+    commission: commissionValue ? (commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`) : '',
     commissionType,
+    termsAndConditions,
     investmentRange,
     monthlyEarnPotential,
     franchiseModel,
     extraSections,
-    extraImages,
-    setData,
-  ]);
+    extraImages
+  };
+
+  setData({ franchiseDetails: newData });
+}, [
+  commissionValue,
+  commissionType,
+  termsAndConditions,
+  investmentRange,
+  monthlyEarnPotential,
+  franchiseModel,
+  extraSections,
+  extraImages,
+  setData
+]);
+
+
 
   // -----------------------
   // Commission handlers (kept unchanged)

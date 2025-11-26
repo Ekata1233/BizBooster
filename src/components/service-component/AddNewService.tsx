@@ -2,16 +2,30 @@
 
 import React, { useState } from 'react';
 import ComponentCard from '../common/ComponentCard';
-import ServiceDetailsForm, { ServiceDetails } from './ServiceDetailsForm';
-import { useService } from '@/context/ServiceContext';
 import BasicDetailsForm from './BasicDetailsForm';
+import ServiceDetailsForm from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
+import { useService } from '@/context/ServiceContext';
 
-// -------------------------------
-// TYPES (ALL OPTIONAL NOW)
-// -------------------------------
-type KeyValue = { key?: string; value?: string };
+// ---------------- TYPES ----------------
+type KeyValue = { key: string; value: string };
+type RowData = { title: string; description: string[] };
+type ExtraSection = {
+  title: string;
+  subtitle: string[];
+  image: string[];
+  description: string[];
+  subDescription: string[];
+  lists: string[];
+  tags: string[];
+};
+type FAQ = { question: string; answer: string };
+type TitleDescription = { title: string; description: string; icon?: string };
 
+type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
+type MoreInfo = { title: string; image: string; description: string };
+type ConnectWith = { name: string; mobileNo: string; email: string };
+type TimeRequired = { minDays: number | null; maxDays: number | null };
 type BasicDetailsData = {
   name?: string;
   category?: string;
@@ -24,20 +38,46 @@ type BasicDetailsData = {
   gstInRupees?: number;
   totalWithGst?: number;
   thumbnail?: File | null;
-  covers?: File[] | FileList | null;
+  covers?: FileList | File[] | null;
   tags?: string[];
   keyValues?: KeyValue[];
   recommendedServices?: boolean;
 };
 
+export type ServiceDetails = {
+  benefits: string[];
+  aboutUs: string[];
+  highlight: string[];
+
+  highlightPreviews?: string[];
+  document: string[];
+  assuredByFetchTrue: TitleDescription[];
+  howItWorks: TitleDescription[];
+  termsAndConditions: string[];
+  faq: FAQ[];
+  extraSections: ExtraSection[];
+  whyChooseUs: TitleDescription[];
+  packages: Package[];
+  weRequired: TitleDescription[];
+  weDeliver: TitleDescription[];
+  moreInfo: MoreInfo[];
+  connectWith: ConnectWith[];
+  timeRequired: TimeRequired[];
+  extraImages: string[];
+};
+
 type FranchiseDetails = {
   commission?: string;
+  commissionType?: 'percentage' | 'amount';
+  overview?: string;
+  howItWorks?: string;
   termsAndConditions?: string;
-  investmentRange?: any[];
-  monthlyEarnPotential?: any[];
-  franchiseModel?: any[];
-  extraSections?: any[];
-  extraImages?: any[];
+  rows?: RowData[];
+  investmentRange?: string[];
+  monthlyEarnPotential?: string[];
+  franchiseModel?: string[];
+  extraSections?: ExtraSection[];
+  extraImages?: (File | string)[];
 };
 
 type FormDataType = {
@@ -46,185 +86,239 @@ type FormDataType = {
   franchise: FranchiseDetails;
 };
 
+// ---------------- COMPONENT ----------------
 const AddNewService = () => {
+  const { createService } = useService();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ------------------------------------------------
-  // INITIAL STATE (ALL FIELDS OPTIONAL)
-  // ------------------------------------------------
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
       name: '',
       category: '',
       subcategory: '',
-      price: undefined,
-      discount: undefined,
-      discountedPrice: undefined,
-      gst: undefined,
+      price: 0,
+      discount: 0,
+      discountedPrice: 0,
+      gst: 0,
       includeGst: false,
-      gstInRupees: undefined,
-      totalWithGst: undefined,
       thumbnail: null,
       covers: [],
       tags: [],
       keyValues: [{ key: '', value: '' }],
       recommendedServices: false,
     },
-
     service: {
-      benefits: [],
-      aboutUs: [],
-      highlight: [],
-      document: [],
-      assuredByFetchTrue: [],
-      howItWorks: [],
-      termsAndConditions: [],
-      faq: [],
-      extraSections: [],
-      whyChooseUs: [],
-      packages: [],
-      weRequired: [],
-      weDeliver: [],
-      moreInfo: [],
-      connectWith: [],
-      timeRequired: [],
+      benefits: [''],
+      aboutUs: [''],
+      highlight: [''],
+      document: [''],
+      assuredByFetchTrue: [''],
+      howItWorks: [''],
+      termsAndConditions: [''],
+      faq: [{ question: '', answer: '' }],
+      extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
+      whyChooseUs: [''],
+      packages: [''],
+      weRequired: [''],
+      weDeliver: [''],
+      moreInfo: [''],
+      connectWith: [''],
+      timeRequired: [''],
       extraImages: [],
     },
-
     franchise: {
       commission: '',
+      commissionType: 'percentage',
       termsAndConditions: '',
       investmentRange: [],
       monthlyEarnPotential: [],
       franchiseModel: [],
-      extraSections: [],
+      rows: [],
+      extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
       extraImages: [],
-    }
+    },
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createService } = useService();
-
-  // ------------------------------------------------
-  // UNIVERSAL FORMDATA BUILDER (SAFE FOR OPTIONAL)
-  // ------------------------------------------------
-  const buildFormData = (
-    data: any,
-    fd = new FormData(),
-    parentKey = ''
-  ) => {
-    if (data === null || data === undefined) {
-      // store empty string for null/undefined
-      fd.append(parentKey, '');
-      return fd;
-    }
-
-    if (data instanceof File || data instanceof Blob) {
-      fd.append(parentKey, data);
-      return fd;
-    }
-
-    if (Array.isArray(data)) {
-      data.forEach((value, index) => {
-        buildFormData(value, fd, `${parentKey}[${index}]`);
-      });
-      return fd;
-    }
-
-    if (typeof data === 'object') {
+  // ---------------- Build FormData ----------------
+  const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
+    if (data && typeof data === 'object' && !(data instanceof File) && !(data instanceof Blob)) {
       Object.keys(data).forEach((key) => {
         const value = data[key];
         const fullKey = parentKey ? `${parentKey}[${key}]` : key;
-        buildFormData(value, fd, fullKey);
+        if (value !== undefined && value !== null) {
+          buildFormData(value, fd, fullKey);
+        }
       });
-      return fd;
+    } else if (data instanceof File || data instanceof Blob) {
+      fd.append(parentKey, data);
+    } else if (Array.isArray(data)) {
+      data.forEach((item, index) => buildFormData(item, fd, `${parentKey}[${index}]`));
+    } else if (typeof data === 'boolean') {
+      fd.append(parentKey, data ? 'true' : 'false');
+    } else if (typeof data === 'number' || typeof data === 'string') {
+      fd.append(parentKey, data.toString());
     }
-
-    fd.append(parentKey, String(data));
     return fd;
   };
 
-  // ------------------------------------------------
-  // SUBMIT HANDLER (NO REQUIRED FIELDS)
-  // ------------------------------------------------
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // ---------------- Handle Submit ----------------
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    try {
-      const fd = buildFormData(formData);
-      const result = await createService(fd);
+  try {
+    const fd = new FormData();
 
-      if (!result) {
-        alert("Service creation failed!");
-        setIsSubmitting(false);
-        return;
-      }
+    // ---------------- BASIC DETAILS ----------------
+    fd.append("serviceName", formData.basic.name || "");
+    fd.append("category", formData.basic.category || "");
+    fd.append("subcategory", formData.basic.subcategory || "");
+    fd.append("price", formData.basic.price?.toString() || "0");
+    fd.append("discount", formData.basic.discount?.toString() || "0");
+    fd.append("gst", formData.basic.gst?.toString() || "0");
+    fd.append("includeGst", formData.basic.includeGst ? "true" : "false");
+    fd.append("recommendedServices", formData.basic.recommendedServices ? "true" : "false");
 
-      alert("Service added successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add service");
+    if (formData.basic.thumbnail) {
+      fd.append("thumbnailImage", formData.basic.thumbnail);
     }
 
-    setIsSubmitting(false);
-  };
+    // KeyValues
+    formData.basic.keyValues?.forEach((kv, i) => {
+      fd.append(`keyValues[${i}][key]`, kv.key || "");
+      fd.append(`keyValues[${i}][value]`, kv.value || "");
+    });
 
+    // Banner Images
+    (formData.basic.covers || []).forEach((file, i) => {
+      fd.append(`bannerImages[${i}]`, file);
+    });
+
+    // ---------------- SERVICE DETAILS ----------------
+    Object.keys(formData.service).forEach((key) => {
+      const value = (formData.service as any)[key];
+      if (Array.isArray(value)) {
+        value.forEach((v, i) => {
+          if (v instanceof File) {
+            fd.append(`serviceDetails[${key}][${i}]`, v);
+          } else {
+            fd.append(`serviceDetails[${key}][${i}]`, v || "");
+          }
+        });
+      }
+    });
+
+    // Extra Sections inside Service
+    formData.service.extraSections?.forEach((section, i) => {
+      fd.append(`serviceDetails[extraSections][${i}][title]`, section.title || "");
+      section.subtitle?.forEach((v, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][subtitle][${j}]`, v || "")
+      );
+      section.description?.forEach((v, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][description][${j}]`, v || "")
+      );
+      section.subDescription?.forEach((v, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][subDescription][${j}]`, v || "")
+      );
+      section.lists?.forEach((v, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][lists][${j}]`, v || "")
+      );
+      section.tags?.forEach((v, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][tags][${j}]`, v || "")
+      );
+      section.image?.forEach((file, j) =>
+        fd.append(`serviceDetails[extraSections][${i}][image][${j}]`, file)
+      );
+    });
+
+    // ---------------- FRANCHISE DETAILS ----------------
+    fd.append("franchiseDetails[commission]", formData.franchise.commission || "");
+    fd.append("franchiseDetails[termsAndConditions]", formData.franchise.termsAndConditions || "");
+
+    formData.franchise.investmentRange?.forEach((item, i) => {
+      fd.append(`franchiseDetails[investmentRange][${i}][minRange]`, item.minRange?.toString() || "");
+      fd.append(`franchiseDetails[investmentRange][${i}][maxRange]`, item.maxRange?.toString() || "");
+    });
+
+    formData.franchise.monthlyEarnPotential?.forEach((item, i) => {
+      fd.append(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`, item.minEarn?.toString() || "");
+      fd.append(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`, item.maxEarn?.toString() || "");
+    });
+
+    formData.franchise.franchiseModel?.forEach((model, i) => {
+      fd.append(`franchiseDetails[franchiseModel][${i}][title]`, model.title || "");
+      fd.append(`franchiseDetails[franchiseModel][${i}][agreement]`, model.agreement || "");
+      fd.append(`franchiseDetails[franchiseModel][${i}][price]`, model.price?.toString() || "");
+      fd.append(`franchiseDetails[franchiseModel][${i}][discount]`, model.discount?.toString() || "");
+      fd.append(`franchiseDetails[franchiseModel][${i}][gst]`, model.gst?.toString() || "");
+      fd.append(`franchiseDetails[franchiseModel][${i}][fees]`, model.fees?.toString() || "");
+    });
+
+    formData.franchise.extraSections?.forEach((section, i) => {
+      fd.append(`franchiseDetails[extraSections][${i}][title]`, section.title || "");
+      section.subtitle?.forEach((v, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][subtitle][${j}]`, v || "")
+      );
+      section.description?.forEach((v, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][description][${j}]`, v || "")
+      );
+      section.subDescription?.forEach((v, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][subDescription][${j}]`, v || "")
+      );
+      section.lists?.forEach((v, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][lists][${j}]`, v || "")
+      );
+      section.tags?.forEach((v, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][tags][${j}]`, v || "")
+      );
+      section.image?.forEach((file, j) =>
+        fd.append(`franchiseDetails[extraSections][${i}][image][${j}]`, file)
+      );
+    });
+
+    formData.franchise.extraImages?.forEach((file, i) => {
+      fd.append(`franchiseDetails[extraImages][${i}]`, file);
+    });
+
+    // ---------------- CREATE SERVICE ----------------
+    const result = await createService(fd);
+    console.log("Created service:", result);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  // ---------------- RENDER ----------------
   return (
     <div>
       <ComponentCard title="Add New Service">
         <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* BASIC DETAILS */}
           <BasicDetailsForm
             data={formData.basic}
-            setData={(newData) =>
-              setFormData((prev) => ({
-                ...prev,
-                basic: { ...prev.basic, ...newData }
-              }))
-            }
+            setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
           />
-
           <hr className="border-gray-300" />
-
-          {/* SERVICE DETAILS */}
           <ServiceDetailsForm
             data={formData.service}
-            setData={(newData) =>
-              setFormData((prev) => ({
-                ...prev,
-                service: { ...prev.service, ...newData }
-              }))
-            }
+            setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
           />
-
           <hr className="border-gray-300" />
-
-          {/* FRANCHISE DETAILS */}
           <FranchiseDetailsForm
             data={formData.franchise}
-            setData={(newData) =>
-              setFormData((prev) => ({
-                ...prev,
-                franchise: { ...prev.franchise, ...newData }
-              }))
-            }
+            setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
             price={formData.basic.discountedPrice}
           />
-
-          {/* SUBMIT BUTTON */}
           <div className="flex justify-end pt-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-4 py-2 text-white rounded 
-                ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}
-              `}
+              className="ml-auto px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded"
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
           </div>
-
         </form>
       </ComponentCard>
     </div>
