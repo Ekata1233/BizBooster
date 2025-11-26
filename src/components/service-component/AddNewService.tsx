@@ -69,7 +69,7 @@ export type ServiceDetails = {
 type FranchiseDetails = {
   commission?: string;
   commissionType?: 'percentage' | 'amount';
-  overview?: string;
+ 
   howItWorks?: string;
   termsAndConditions?: string;
   rows?: RowData[];
@@ -112,18 +112,18 @@ const AddNewService = () => {
       aboutUs: [''],
       highlight: [''],
       document: [''],
-      assuredByFetchTrue: [''],
-      howItWorks: [''],
+      assuredByFetchTrue: [{ title: '', description: '' }],
+      howItWorks:[{ title: '', description: '' }],
       termsAndConditions: [''],
       faq: [{ question: '', answer: '' }],
       extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
-      whyChooseUs: [''],
-      packages: [''],
-      weRequired: [''],
-      weDeliver: [''],
-      moreInfo: [''],
-      connectWith: [''],
-      timeRequired: [''],
+      whyChooseUs: [{ title: '', description: '' }],
+      packages: [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }],
+      weRequired:[{ title: '', description: '' }],
+      weDeliver: [{ title: '', description: '' }],
+      moreInfo:[{ title: '', image: '', description: '' }],
+      connectWith: [{ name: '', mobileNo: '', email: '' }],
+      timeRequired: [{ minDays: null, maxDays: null }],
       extraImages: [],
     },
     franchise: {
@@ -138,6 +138,8 @@ const AddNewService = () => {
       extraImages: [],
     },
   });
+
+  console.log("formdata at the timing of typing : ", formData);
 
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
@@ -168,6 +170,9 @@ const AddNewService = () => {
 
   try {
     const fd = new FormData();
+
+    console.log("======= Raw Form Data =======");
+console.log(JSON.stringify(formData, null, 2));
 
     // ---------------- BASIC DETAILS ----------------
     fd.append("serviceName", formData.basic.serviceName   || "");
@@ -207,6 +212,82 @@ const AddNewService = () => {
         });
       }
     });
+
+    // AssuredByFetchTrue
+formData.service.assuredByFetchTrue?.forEach((item, i) => {
+  fd.append(`serviceDetails[assuredByFetchTrue][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[assuredByFetchTrue][${i}][description]`, item.description || "");
+  if (item.icon instanceof File) {
+    fd.append(`serviceDetails[assuredByFetchTrue][${i}][icon]`, item.icon);
+  }
+});
+
+// HowItWorks
+formData.service.howItWorks?.forEach((item, i) => {
+  fd.append(`serviceDetails[howItWorks][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[howItWorks][${i}][description]`, item.description || "");
+  if (item.icon instanceof File) {
+    fd.append(`serviceDetails[howItWorks][${i}][icon]`, item.icon);
+  }
+});
+
+// FAQ
+formData.service.faq?.forEach((item, i) => {
+  fd.append(`serviceDetails[faq][${i}][question]`, item.question || "");
+  fd.append(`serviceDetails[faq][${i}][answer]`, item.answer || "");
+});
+
+// WhyChooseUs
+formData.service.whyChooseUs?.forEach((item, i) => {
+  fd.append(`serviceDetails[whyChooseUs][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[whyChooseUs][${i}][description]`, item.description || "");
+});
+
+// Packages
+formData.service.packages?.forEach((item, i) => {
+  fd.append(`serviceDetails[packages][${i}][name]`, item.name || "");
+  fd.append(`serviceDetails[packages][${i}][price]`, item.price?.toString() || "");
+  fd.append(`serviceDetails[packages][${i}][discount]`, item.discount?.toString() || "");
+  fd.append(`serviceDetails[packages][${i}][discountedPrice]`, item.discountedPrice?.toString() || "");
+  item.whatYouGet?.forEach((v, j) => {
+    fd.append(`serviceDetails[packages][${i}][whatYouGet][${j}]`, v || "");
+  });
+});
+
+// WeRequired
+formData.service.weRequired?.forEach((item, i) => {
+  fd.append(`serviceDetails[weRequired][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[weRequired][${i}][description]`, item.description || "");
+});
+
+// WeDeliver
+formData.service.weDeliver?.forEach((item, i) => {
+  fd.append(`serviceDetails[weDeliver][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[weDeliver][${i}][description]`, item.description || "");
+});
+
+// MoreInfo
+formData.service.moreInfo?.forEach((item, i) => {
+  fd.append(`serviceDetails[moreInfo][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[moreInfo][${i}][description]`, item.description || "");
+  if (item.image instanceof File) {
+    fd.append(`serviceDetails[moreInfo][${i}][image]`, item.image);
+  }
+});
+
+// ConnectWith
+formData.service.connectWith?.forEach((item, i) => {
+  fd.append(`serviceDetails[connectWith][${i}][name]`, item.name || "");
+  fd.append(`serviceDetails[connectWith][${i}][mobileNo]`, item.mobileNo || "");
+  fd.append(`serviceDetails[connectWith][${i}][email]`, item.email || "");
+});
+
+// TimeRequired
+formData.service.timeRequired?.forEach((item, i) => {
+  fd.append(`serviceDetails[timeRequired][${i}][minDays]`, item.minDays?.toString() || "");
+  fd.append(`serviceDetails[timeRequired][${i}][maxDays]`, item.maxDays?.toString() || "");
+});
+
 
     // Extra Sections inside Service
     formData.service.extraSections?.forEach((section, i) => {

@@ -6,6 +6,7 @@ import Input from '../form/input/InputField';
 import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import dynamic from 'next/dynamic';
+import { FranchiseDetails } from '@/context/ServiceContext';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -37,8 +38,8 @@ type ExtraSection = {
 };
 
 interface FranchiseDetailsFormProps {
-  data: FranchiseData;
-  setData: (newData: Partial<FranchiseData>) => void;
+  data: FranchiseDetails;
+  setData: (newData: Partial<FranchiseDetails>) => void;
   price?: number;
 }
 
@@ -54,8 +55,6 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   });
 
   // Editors and simple fields
-  const [overview, setOverview] = useState<string>(data?.overview || '');
-  const [howItWorks, setHowItWorks] = useState<string>(data?.howItWorks || '');
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
   const [showExtraSections, setShowExtraSections] = useState(false);
@@ -88,21 +87,49 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     }
   }, []);
 
-useEffect(() => {
-  const newData = {
-    commission: commissionValue ? (commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`) : '',
-    commissionType,
-    termsAndConditions,
-    investmentRange,
-    monthlyEarnPotential,
-    franchiseModel,
-    extraSections,
-    extraImages
-  };
+// const mounted = useRef(false);
 
-  setData({ franchiseDetails: newData });
-}, [
-  commissionValue,
+// useEffect(() => {
+//   if (!mounted.current) {
+//     mounted.current = true;
+//     return;
+//   }
+
+//   const newData = {
+//     commission: commissionValue ? (commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`) : '',
+//     commissionType,
+//     termsAndConditions,
+//     investmentRange,
+//     monthlyEarnPotential,
+//     franchiseModel,
+//     extraSections,
+//     extraImages,
+//     overview,
+//   };
+
+//   setData((prev) => {
+//     // optional: only update if data actually changed
+//     return JSON.stringify(prev.franchiseDetails) !== JSON.stringify(newData)
+//       ? { ...prev, franchiseDetails: newData }
+//       : prev;
+//   });
+// }, [
+//   commissionValue,
+//   commissionType,
+//   termsAndConditions,
+//   investmentRange,
+//   monthlyEarnPotential,
+//   franchiseModel,
+//   extraSections,
+//   extraImages,
+//   overview
+// ]);
+
+
+  useEffect(() => {
+
+    const newData = {
+     commissionValue,
   commissionType,
   termsAndConditions,
   investmentRange,
@@ -110,9 +137,20 @@ useEffect(() => {
   franchiseModel,
   extraSections,
   extraImages,
-  setData
-]);
+    };
 
+    if (JSON.stringify(newData) !== JSON.stringify(data)) {
+      setData(newData);
+    }
+  }, [ commissionValue,
+  commissionType,
+  termsAndConditions,
+  investmentRange,
+  monthlyEarnPotential,
+  franchiseModel,
+  extraSections,
+  extraImages,
+  ]);
 
 
   // -----------------------
@@ -365,8 +403,8 @@ useEffect(() => {
 
         {/* Editors */}
         <div className="my-3">
-          <Label>Overview</Label>
-          <ClientSideCustomEditor value={overview || ''} onChange={setOverview} />
+          <Label>Terms % Conditions</Label>
+          <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
 
       

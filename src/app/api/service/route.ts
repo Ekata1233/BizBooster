@@ -19,15 +19,15 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
    
 
-     console.log("=== FormData Entries ===");
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(key, "=>", value.name, value.size, value.type);
-      } else {
-        console.log(key, "=>", value);
-      }
-    }
-    console.log("=======================");
+     console.log("=== FormData Entries ===" , formData);
+    // for (const [key, value] of formData.entries()) {
+    //   if (value instanceof File) {
+    //     console.log(key, "=>", value.name, value.size, value.type);
+    //   } else {
+    //     console.log(key, "=>", value);
+    //   }
+    // }
+    // console.log("=======================");
     // -------------------------------
     // BASIC DETAILS
     // -------------------------------

@@ -85,19 +85,10 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : ['']);
   const [showExtraSections, setShowExtraSections] = useState(false);
 
-
-  useEffect(() => setEditorReady(true), []);
-
-  // ------------------- SYNC TO PARENT -------------------
   useEffect(() => {
-  if (!mounted.current) {
-    mounted.current = true;
-    return;
-  }
 
-  // Combine all local states into a single serviceDetails object
-  const serviceDetailsState: ServiceDetails = {
-    benefits,
+    const newData = {
+      benefits,
     aboutUs,
     highlight,
     highlightPreviews,
@@ -115,31 +106,94 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
     connectWith,
     timeRequired,
     extraImages,
-  };
+    };
 
-  // Sync to parent as { serviceDetails: { ... } }
-  setData({ serviceDetails: { ...serviceDetailsState } });
-}, [
-  benefits,
-  aboutUs,
-  highlight,
-  highlightPreviews,
-  document,
-  assuredByFetchTrue,
-  howItWorks,
-  termsAndConditions,
-  faq,
-  extraSections,
-  whyChooseUs,
-  packages,
-  weRequired,
-  weDeliver,
-  moreInfo,
-  connectWith,
-  timeRequired,
-  extraImages,
-  setData,
-]);
+    if (JSON.stringify(newData) !== JSON.stringify(data)) {
+      setData(newData);
+    }
+  }, [ benefits,
+    aboutUs,
+    highlight,
+    highlightPreviews,
+    document,
+    assuredByFetchTrue,
+    howItWorks,
+    termsAndConditions,
+    faq,
+    extraSections,
+    whyChooseUs,
+    packages,
+    weRequired,
+    weDeliver,
+    moreInfo,
+    connectWith,
+    timeRequired,
+    extraImages,]);
+
+
+
+//   console.log("data : ", data)
+  useEffect(() => setEditorReady(true), []);
+
+//  useEffect(() => {
+//   if (!mounted.current) {
+//     mounted.current = true;
+//     return;
+//   }
+
+//   const serviceDetailsState: ServiceDetails = {
+//     benefits,
+//     aboutUs,
+//     highlight,
+//     highlightPreviews,
+//     document,
+//     assuredByFetchTrue,
+//     howItWorks,
+//     termsAndConditions,
+//     faq,
+//     extraSections,
+//     whyChooseUs,
+//     packages,
+//     weRequired,
+//     weDeliver,
+//     moreInfo,
+//     connectWith,
+//     timeRequired,
+//     extraImages,
+//   };
+
+//   setData(prevData => {
+//     // Only update if different
+//     const prevJSON = JSON.stringify(prevData.serviceDetails);
+//     const nextJSON = JSON.stringify(serviceDetailsState);
+
+//     console.log("prevjson : ", prevJSON)
+//         console.log("nextJSON : ", nextJSON)
+
+//     if (prevJSON === nextJSON) return prevData;
+//     return { serviceDetails: serviceDetailsState };
+//   });
+// }, [
+//   benefits,
+//   aboutUs,
+//   highlight,
+//   highlightPreviews,
+//   document,
+//   assuredByFetchTrue,
+//   howItWorks,
+//   termsAndConditions,
+//   faq,
+//   extraSections,
+//   whyChooseUs,
+//   packages,
+//   weRequired,
+//   weDeliver,
+//   moreInfo,
+//   connectWith,
+//   timeRequired,
+//   extraImages,
+// ]);
+
 
 
   // ------------------- FILE HANDLERS -------------------
@@ -479,7 +533,7 @@ function renderArrayField<T extends object>(
         }
       }}
     />
-    <button type="button" onClick={() => setExtraImages(prev => prev.filter((_, i) => i !== idx))} className="text-red-500">Remove</button>
+    {/* <button type="button" onClick={() => setExtraImages(prev => prev.filter((_, i) => i !== idx))} className="text-red-500">Remove</button> */}
   </div>
 ), '')}
 
