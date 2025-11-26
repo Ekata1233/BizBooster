@@ -49,6 +49,8 @@ const FranchiseDetailsForm = ({ data, setData, price }: FranchiseDetailsFormProp
       const isPercentage = data.commission.includes('%');
       const isAmount = data.commission.includes('₹');
       const numericValue = data.commission.replace(/[^\d]/g, '');
+      console.log(isAmount);
+
 
       setCommissionType(isPercentage ? 'percentage' : 'amount');
       setCommissionValue(numericValue);

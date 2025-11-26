@@ -7,6 +7,7 @@ import { useCategory } from '@/context/CategoryContext'
 import { useSubcategory } from '@/context/SubcategoryContext'
 import FileInput from '../form/input/FileInput'
 import Switch from '../form/switch/Switch'
+import Image from 'next/image'
 
 interface BasicDetailsData {
     name?: string;
@@ -66,19 +67,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
             }
         }
     }, [data]);
-    // 🧮 Auto calculate GST values
     useEffect(() => {
         const discountedPrice = data.discountedPrice || 0;
-
-        // console.log("discounted price for the gst : ", discountedPrice);
         const gst = data.gst || 0;
-
-        // console.log("gst for th gst : ", gst)
-
         const gstInRupees = (discountedPrice * gst) / 100;
-        // console.log("gst for th gst : ", gst)
         const totalWithGst = discountedPrice + gstInRupees;
-        // console.log("gst for th gst : ", gst)
 
         setData({
             gstInRupees,
@@ -112,7 +105,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
     useEffect(() => {
         if (data.category !== selectedCategory) {
-            // setData({ subcategory: '' });
             setSelectedCategory(data.category || '');
         }
     }, [data.category]);
@@ -185,7 +177,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
     const handleRemoveTag = (indexToRemove: number) => {
         const newTags = tags.filter((_, i) => i !== indexToRemove);
-        setData({ tags: newTags }); // Update tags array after removal
+        setData({ tags: newTags });
     };
 
     const handleSwitchChange = (checked: boolean) => {
@@ -196,8 +188,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
     useEffect(() => {
         const price = data.price ?? 0;
         const discount = data.discount ?? 0;
-
-        // Only calculate if both are present
         if (price && discount >= 0) {
             const discountedPrice = Math.floor(price - (price * discount) / 100);
             setData({
@@ -296,15 +286,6 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                             />
                         </div>
 
-                        {/* <div className="mt-3">
-                            <Label>Total with GST</Label>
-                            <Input
-                                type="number"
-                                value={data.totalWithGst || 0}
-                                disabled
-                            />
-                        </div> */}
-
                     </div>
 
                     <div className="mt-4">
@@ -361,15 +342,19 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
                         <Label>Thumbnail Image</Label>
                         <FileInput onChange={handleFileChange} className="custom-class" />
                         {selectedFile ? (
-                            <img
+                            <Image
                                 src={URL.createObjectURL(selectedFile)}
                                 alt="Thumbnail Preview"
+                                width={400}
+                                height={250}
                                 className="mt-2 w-20 h-20 object-cover rounded border"
                             />
                         ) : data.thumbnailPreview ? (
-                            <img
+                            <Image
                                 src={data.thumbnailPreview}
                                 alt="Thumbnail Preview"
+                                width={400}
+                                height={250}
                                 className="mt-2 w-20 h-20 object-cover rounded border"
                             />
                         ) : null}
