@@ -27,7 +27,7 @@ type MoreInfo = { title: string; image: string; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type BasicDetailsData = {
-  name?: string;
+  serviceName ?: string;
   category?: string;
   subcategory?: string;
   price?: number;
@@ -93,7 +93,7 @@ const AddNewService = () => {
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
-      name: '',
+      serviceName : '',
       category: '',
       subcategory: '',
       price: 0,
@@ -170,7 +170,7 @@ const AddNewService = () => {
     const fd = new FormData();
 
     // ---------------- BASIC DETAILS ----------------
-    fd.append("serviceName", formData.basic.name || "");
+    fd.append("serviceName", formData.basic.serviceName   || "");
     fd.append("category", formData.basic.category || "");
     fd.append("subcategory", formData.basic.subcategory || "");
     fd.append("price", formData.basic.price?.toString() || "0");
