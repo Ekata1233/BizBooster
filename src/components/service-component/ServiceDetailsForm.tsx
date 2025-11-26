@@ -83,6 +83,8 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [connectWith, setConnectWith] = useState<ConnectWith[]>(data?.connectWith?.length ? data.connectWith : [{ name: '', mobileNo: '', email: '' }]);
   const [timeRequired, setTimeRequired] = useState<TimeRequired[]>(data?.timeRequired?.length ? data.timeRequired : [{ minDays: null, maxDays: null }]);
   const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : ['']);
+  const [showExtraSections, setShowExtraSections] = useState(false);
+
 
   useEffect(() => setEditorReady(true), []);
 
@@ -483,37 +485,90 @@ function renderArrayField<T extends object>(
 
 
       {/* Extra Sections */}
-      <Label>Extra Sections</Label>
- {renderArrayField<ExtraSection>(extraSections, setExtraSections, (section, idx, updateSection) => (
-        <div className="grid gap-2 border p-4 rounded mb-4">
-          <Input value={section.title} placeholder="Title" onChange={e => updateSection({ ...section, title: e.target.value })} />
-          {['subtitle', 'description', 'subDescription', 'lists', 'tags', 'image'].map((key: any) => (
-            <div key={key}>
-              <Label>{key}</Label>
-              {renderArrayField<string>(
-  section[key] || [''],
-  (arrUpdater) =>
-    updateSection({
-      ...section,
-      [key]:
-        typeof arrUpdater === 'function'
-          ? arrUpdater(section[key] || [''])
-          : arrUpdater,
-    }),
-  (val, idx2, updateVal) => (
-    <Input
-      value={val}
-      placeholder={key}
-      onChange={(e) => updateVal(e.target.value)}
-    />
-  ),
-  ''
-)}
+{/* Extra Sections */}
+<div className="my-4">
+  <Label>Extra Sections</Label>
 
-            </div>
-          ))}
-        </div>
-      ), { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] })}
+  {!showExtraSections ? (
+    // ONLY SHOW BUTTON INITIALLY
+    <button
+      type="button"
+      onClick={() => setShowExtraSections(true)}
+      className="bg-blue-500 text-white px-4 py-2 rounded"
+    >
+      + Add Extra Section
+    </button>
+  ) : (
+    <>
+      {/* Render existing UI */}
+      {renderArrayField<ExtraSection>(
+        extraSections,
+        setExtraSections,
+        (section, idx, updateSection) => (
+          <div className="grid gap-2 p-4 rounded mb-4">
+            <Input
+              value={section.title}
+              placeholder="Title"
+              onChange={(e) =>
+                updateSection({ ...section, title: e.target.value })
+              }
+            />
+
+            {['subtitle', 'description', 'subDescription', 'lists', 'tags', 'image'].map((key: any) => (
+              <div key={key}>
+                <Label className="capitalize">{key}</Label>
+
+                {renderArrayField<string>(
+                  section[key] || [''],
+                  (arrUpdater) =>
+                    updateSection({
+                      ...section,
+                      [key]:
+                        typeof arrUpdater === 'function'
+                          ? arrUpdater(section[key] || [''])
+                          : arrUpdater,
+                    }),
+                  (val, idx2, updateVal) => (
+                    <Input
+                      value={val}
+                      placeholder={key}
+                      onChange={(e) => updateVal(e.target.value)}
+                    />
+                  ),
+                  ''
+                )}
+              </div>
+            ))}
+          </div>
+        ),
+        { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }
+      )}
+
+      <button
+        type="button"
+        className="bg-blue-500 text-white px-4 py-2 rounded mt-3"
+        onClick={() =>
+          setExtraSections(prev => [
+            ...prev,
+            { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }
+          ])
+        }
+      >
+        + Add Extra Section
+      </button>
+
+      {/* Collapse Button */}
+      <button
+        type="button"
+        onClick={() => setShowExtraSections(false)}
+        className="m-3 bg-yellow-500 text-white px-4 py-2 rounded"
+      >
+        Hide Sections
+      </button>
+    </>
+  )}
+</div>
+
 
     </div>
   );

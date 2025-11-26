@@ -58,6 +58,8 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   const [howItWorks, setHowItWorks] = useState<string>(data?.howItWorks || '');
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
+  const [showExtraSections, setShowExtraSections] = useState(false);
+
 
   // Newly added schema-aligned fields
   const [investmentRange, setInvestmentRange] = useState<InvestmentRange[]>(
@@ -538,61 +540,91 @@ useEffect(() => {
         </div>
 
         {/* Extra Sections */}
-        <div className="my-4">
-          <Label>Extra Sections</Label>
-          {extraSections.map((sec, sIdx) => (
-            <div key={sIdx} className="border p-4 rounded mb-3 relative">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium">Section #{sIdx + 1}</h3>
-                <button className="text-red-500" type="button" onClick={() => removeExtraSection(sIdx)}>
-                  <TrashBinIcon className="w-5 h-5" />
-                </button>
-              </div>
+{/* Extra Sections */}
+<div className="my-4">
+  <Label>Extra Sections</Label>
 
-              <Input
-                placeholder="Section Title"
-                value={sec.title}
-                onChange={(e) => updateExtraSection(sIdx, { ...sec, title: e.target.value })}
-              />
+  {!showExtraSections ? (
+    <button
+      type="button"
+      onClick={() => setShowExtraSections(true)}
+      className="bg-blue-500 text-white px-4 py-2 rounded"
+    >
+      + Add Extra Section
+    </button>
+  ) : (
+    <>
+      {extraSections.map((sec, sIdx) => (
+        <div key={sIdx} className="border p-4 rounded mb-3 relative">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">Section #{sIdx + 1}</h3>
+            <button
+              className="text-red-500"
+              type="button"
+              onClick={() => removeExtraSection(sIdx)}
+            >
+              <TrashBinIcon className="w-5 h-5" />
+            </button>
+          </div>
 
-              {/* For each nested string-array field show add/remove items UI */}
-              {(['subtitle', 'image', 'description', 'subDescription', 'lists', 'tags'] as (keyof ExtraSection)[]).map(
-                (field) => (
-                  <div key={field as string} className="mt-3">
-                    <Label className="capitalize">{field}</Label>
-                    {(Array.isArray(sec[field]) ? sec[field] : ['']).map((val: string, idx: number) => (
-                      <div key={idx} className="flex gap-2 items-center mt-2">
-                        <Input
-                          placeholder={`${field} #${idx + 1}`}
-                          value={val}
-                          onChange={(e) => updateExtraSectionArrayField(sIdx, field, idx, e.target.value)}
-                        />
-                        <button
-                          type="button"
-                          className="text-red-500"
-                          onClick={() => removeExtraSectionArrayItem(sIdx, field, idx)}
-                        >
-                          <TrashBinIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
+          <Input
+            placeholder="Section Title"
+            value={sec.title}
+            onChange={(e) => updateExtraSection(sIdx, { ...sec, title: e.target.value })}
+          />
+
+          {(['subtitle', 'image', 'description', 'subDescription', 'lists', 'tags'] as (keyof ExtraSection)[])
+            .map((field) => (
+              <div key={field} className="mt-3">
+                <Label className="capitalize">{field}</Label>
+                {sec[field].map((val, idx) => (
+                  <div key={idx} className="flex gap-2 items-center mt-2">
+                    <Input
+                      placeholder={`${field} #${idx + 1}`}
+                      value={val}
+                      onChange={(e) => updateExtraSectionArrayField(sIdx, field, idx, e.target.value)}
+                    />
                     <button
                       type="button"
-                      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-                      onClick={() => addExtraSectionArrayItem(sIdx, field)}
+                      className="text-red-500"
+                      onClick={() => removeExtraSectionArrayItem(sIdx, field, idx)}
                     >
-                      + Add {field}
+                      <TrashBinIcon className="w-5 h-5" />
                     </button>
                   </div>
-                )
-              )}
-            </div>
-          ))}
+                ))}
 
-          <button type="button" onClick={addExtraSection} className="mt-3 bg-blue-500 text-white px-4 py-2 rounded">
-            + Add Extra Section
-          </button>
+                <button
+                  type="button"
+                  className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+                  onClick={() => addExtraSectionArrayItem(sIdx, field)}
+                >
+                  + Add {field}
+                </button>
+              </div>
+            ))}
         </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addExtraSection}
+        className="mt-3 bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        + Add Extra Section
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setShowExtraSections(false)}
+        className="m-3 bg-yellow-500 text-white px-4 py-2 rounded"
+      >
+        Hide Sections
+      </button>
+    </>
+  )}
+</div>
+
       </div>
     </div>
   );
