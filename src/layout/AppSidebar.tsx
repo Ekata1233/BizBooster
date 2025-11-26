@@ -23,7 +23,6 @@ import {
   DocsIcon,
   TableIcon,
   ArrowDownIcon,
-  BellIcon,
   PlugInIcon
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
@@ -373,17 +372,35 @@ const AppSidebar: React.FC = () => {
   }, []);
 
   // Function to calculate and set height for a specific submenu key
+  // const updateSubmenuHeight = useCallback((key: string) => {
+  //   const element = subMenuRefs.current[key];
+  //   if (element) {
+  //     requestAnimationFrame(() => {
+  //       setSubMenuHeight((prevHeights) => ({
+  //         ...prevHeights,
+  //         [key]: element.scrollHeight,
+  //       }));
+  //     });
+  //   }
+  // }, []);
+
   const updateSubmenuHeight = useCallback((key: string) => {
-    const element = subMenuRefs.current[key];
-    if (element) {
-      requestAnimationFrame(() => {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: element.scrollHeight,
-        }));
-      });
-    }
-  }, []);
+  const element = subMenuRefs.current[key];
+  if (!element) return;
+
+  requestAnimationFrame(() => {
+    const newHeight = element.scrollHeight;
+
+    setSubMenuHeight((prev) => {
+      if (prev[key] === newHeight) return prev; // prevent infinite loop
+      return {
+        ...prev,
+        [key]: newHeight,
+      };
+    });
+  });
+}, []);
+
 
   // Recursive function to find active path and determine all necessary open submenu keys
   const findActiveAndSetOpenSubmenus = useCallback((

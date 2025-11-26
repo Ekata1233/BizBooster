@@ -36,32 +36,6 @@ type ExtraSection = {
   tags: string[];
 };
 
-interface FranchiseDetails {
-  commission?: string;
-  termsAndConditions?: string;
-  investmentRange: { minRange: number | string; maxRange: number | string }[];
-  monthlyEarnPotential: { minEarn: number | string; maxEarn: number | string }[];
-  franchiseModel: {
-    title: string;
-    agreement?: string;
-    price?: number | string;
-    discount?: number | string;
-    gst?: number | string;
-    fees?: number | string;
-  }[];
-  extraSections: {
-    title: string;
-    subtitle: string[];
-    image: string[];
-    description: string[];
-    subDescription: string[];
-    lists: string[];
-    tags: string[];
-  }[];
-  extraImages: string[];
-}
-
-
 interface FranchiseDetailsFormProps {
   data: FranchiseData;
   setData: (newData: Partial<FranchiseData>) => void;
@@ -393,59 +367,7 @@ useEffect(() => {
           <ClientSideCustomEditor value={overview || ''} onChange={setOverview} />
         </div>
 
-        {/* <div className="my-3">
-          <Label>How It Works</Label>
-          <ClientSideCustomEditor value={howItWorks || ''} onChange={setHowItWorks} />
-        </div>
-
-        <div className="my-3">
-          <Label>Terms & Conditions</Label>
-          <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
-        </div> */}
-
-        {/* Rows */}
-        {/* <div className="my-3">
-          {rows.map((row, index) => (
-            <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-md font-medium text-gray-700">Row #{index + 1}</h2>
-                <button
-                  type="button"
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => handleRemoveRow(index)}
-                >
-                  <TrashBinIcon className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-1/2">
-                  <Label>Title</Label>
-                  <Input
-                    type="text"
-                    value={row.title}
-                    onChange={(e) => handleRowChange(index, 'title', e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2">
-                  <Label>Description</Label>
-                  <Input
-                    type="text"
-                    value={row.description}
-                    onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-
-          <button
-            type="button"
-            onClick={handleAddRow}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-          >
-            + Add New Row
-          </button>
-        </div> */}
+      
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
@@ -638,7 +560,7 @@ useEffect(() => {
                 (field) => (
                   <div key={field as string} className="mt-3">
                     <Label className="capitalize">{field}</Label>
-                    {(sec[field] || []).map((val: string, idx: number) => (
+                    {(Array.isArray(sec[field]) ? sec[field] : ['']).map((val: string, idx: number) => (
                       <div key={idx} className="flex gap-2 items-center mt-2">
                         <Input
                           placeholder={`${field} #${idx + 1}`}
