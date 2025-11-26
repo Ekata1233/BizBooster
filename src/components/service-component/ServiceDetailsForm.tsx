@@ -263,37 +263,78 @@ function renderArrayField<T extends object>(
         {/* Assured By FetchTrue */}
         <div>
           <Label>Assured By FetchTrue</Label>
-          {renderArrayField<TitleDescription>(assuredByFetchTrue, setAssuredByFetchTrue, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-            </div>
-          ), { title: '', description: '', icon: '' })}
+{renderArrayField<TitleDescription>(
+  assuredByFetchTrue,
+  setAssuredByFetchTrue,
+  (item, idx, updateItem) => (
+    <div className="grid gap-2">
+      <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+
+      {/* FILE UPLOAD FOR ICON */}
+      <FileInput
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const url = URL.createObjectURL(file);
+            updateItem({ ...item, icon: url });
+          }
+        }}
+      />
+
+      <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+    </div>
+  ),
+  { title: '', description: '', icon: '' }
+)}
+
         </div>
 
         {/* How It Works */}
         <div>
           <Label>How It Works</Label>
-          {renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-            </div>
-          ), { title: '', description: '', icon: '' })}
+{renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
+  <div className="grid gap-2">
+    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+
+    {/* FILE UPLOAD FOR ICON */}
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateItem({ ...item, icon: url });
+        }
+      }}
+    />
+
+    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+  </div>
+), { title: '', description: '', icon: '' })}
+
         </div>
 
         {/* Why Choose Us */}
-        <div>
+         <div>
           <Label>Why Choose Us</Label>
-          {renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-              <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
-              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-            </div>
-          ), { title: '', description: '', icon: '' })}
+{renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
+  <div className="grid gap-2">
+    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+
+    {/* FILE UPLOAD FOR ICON */}
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateItem({ ...item, icon: url });
+        }
+      }}
+    />
+
+    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+  </div>
+), { title: '', description: '', icon: '' })}
+
         </div>
 
         {/* Connect With */}
@@ -332,14 +373,26 @@ function renderArrayField<T extends object>(
 
         {/* More Info */}
         <div>
-          <Label>More Info</Label>
-          {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
-              <Input value={item.image || ''} placeholder="Image URL" onChange={e => updateItem({ ...item, image: e.target.value })} />
-              <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-            </div>
-          ), { title: '', image: '', description: '' })}
+         <Label>More Info</Label>
+{renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
+  <div className="grid gap-2">
+    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+
+    {/* FILE UPLOAD FOR IMAGE */}
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateItem({ ...item, image: url });
+        }
+      }}
+    />
+
+    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+  </div>
+), { title: '', image: '', description: '' })}
+
         </div>
 
         {/* FAQ */}
@@ -412,14 +465,26 @@ function renderArrayField<T extends object>(
       ), { minDays: null, maxDays: null })}
 
       {/* Extra Images */}
-      <Label>Extra Images URLs</Label>
-      {renderArrayField<string>(extraImages, setExtraImages, (img, idx, updateImg) => (
-        <Input value={img} placeholder="Image URL" onChange={e => updateImg(e.target.value)} />
-      ), '')}
+    <Label>Extra Images</Label>
+{renderArrayField<string>(extraImages, setExtraImages, (img, idx, updateImg) => (
+  <div className="flex items-center gap-2">
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateImg(url);
+        }
+      }}
+    />
+    <button type="button" onClick={() => setExtraImages(prev => prev.filter((_, i) => i !== idx))} className="text-red-500">Remove</button>
+  </div>
+), '')}
+
 
       {/* Extra Sections */}
       <Label>Extra Sections</Label>
-      {renderArrayField<ExtraSection>(extraSections, setExtraSections, (section, idx, updateSection) => (
+ {renderArrayField<ExtraSection>(extraSections, setExtraSections, (section, idx, updateSection) => (
         <div className="grid gap-2 border p-4 rounded mb-4">
           <Input value={section.title} placeholder="Title" onChange={e => updateSection({ ...section, title: e.target.value })} />
           {['subtitle', 'description', 'subDescription', 'lists', 'tags', 'image'].map((key: any) => (
@@ -449,6 +514,7 @@ function renderArrayField<T extends object>(
           ))}
         </div>
       ), { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] })}
+
     </div>
   );
 };
