@@ -1,446 +1,465 @@
 'use client';
+
 import React, { useEffect, useRef, useState } from 'react';
 import Label from '../form/Label';
 import Input from '../form/input/InputField';
-import { TrashBinIcon } from "../../icons/index";
 import FileInput from '../form/input/FileInput';
-import { useWhyChoose } from '@/context/WhyChooseContext';
-import dynamic from 'next/dynamic';
+import { TrashBinIcon } from '../../icons';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 
-const ClientSideCustomEditor = dynamic(() => import('../../components/custom-editor/CustomEditor'), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>, 
-});
+const ClientSideCustomEditor = dynamic(
+  () => import('../../components/custom-editor/CustomEditor'),
+  { ssr: false, loading: () => <p>Loading editor...</p> }
+);
 
-interface RowData {
+type FAQ = { question: string; answer: string };
+type TitleDescription = { title: string; description: string; icon?: string };
+type ExtraSection = {
   title: string;
-  description: string;
-}
-
-type FAQ = {
-  question: string;
-  answer: string;
+  subtitle: string[];
+  image: string[];
+  description: string[];
+  subDescription: string[];
+  lists: string[];
+  tags: string[];
 };
-
-type WhyChoose = {
-  _id?: string;
-};
-
+type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
+type MoreInfo = { title: string; image: string; description: string };
+type ConnectWith = { name: string; mobileNo: string; email: string };
+type TimeRequired = { minDays: number | null; maxDays: number | null };
 
 export type ServiceDetails = {
-  benefits: string;
-  overview: string;
+  benefits: string[];
+  aboutUs: string[];
   highlight: File[] | FileList | null;
   highlightPreviews?: string[];
-  document: string;
-  howItWorks: string;
-  terms: string;
-  faqs: FAQ[];
-
-  rows: RowData[];
-  whyChoose: WhyChoose[];
-  termsAndConditions?: string;
+  document: string[];
+  assuredByFetchTrue: TitleDescription[];
+  howItWorks: TitleDescription[];
+  termsAndConditions: string[];
+  faq: FAQ[];
+  extraSections: ExtraSection[];
+  whyChooseUs: TitleDescription[];
+  packages: Package[];
+  weRequired: TitleDescription[];
+  weDeliver: TitleDescription[];
+  moreInfo: MoreInfo[];
+  connectWith: ConnectWith[];
+  timeRequired: TimeRequired[];
+  extraImages: string[];
 };
 
-const ServiceDetailsForm = ({ data, setData }: {
+interface Props {
   data: ServiceDetails;
   setData: (newData: Partial<ServiceDetails>) => void;
-}) => {
-  const [benefits, setBenefits] = useState('');
-  const [overview, setOverview] = useState('');
-  const [highlight, setHighlight] = useState<FileList | File[] | null>(null);
-  const [highlightPreviews, setHighlightPreviews] = useState<string[]>([]);
-  const [document, setDocument] = useState('');
-  const [howItWorks, setHowItWorks] = useState('');
-  const [terms, setTerms] = useState('');
-  const [faqs, setfaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
-  const [rows, setRows] = useState<RowData[]>([]);
-  const [whyChoose, setWhyChoose] = useState<WhyChoose[]>([{
-    _id: ''
-  }]);
-  const [showAll, setShowAll] = useState(false);
+}
+
+const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [editorReady, setEditorReady] = useState(false);
+  const mounted = useRef(false);
 
-useEffect(() => {
-  setEditorReady(true);
-}, []);
+  const [benefits, setBenefits] = useState<string[]>(data?.benefits || []);
+  const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
+  const [highlight, setHighlight] = useState<File[] | FileList | null>(data?.highlight || null);
+  const [highlightPreviews, setHighlightPreviews] = useState<string[]>(data?.highlightPreviews || []);
+  const [document, setDocument] = useState<string[]>(data?.document || []);
+  const [assuredByFetchTrue, setAssuredByFetchTrue] = useState<TitleDescription[]>(data?.assuredByFetchTrue?.length ? data.assuredByFetchTrue : [{ title: '', description: '', icon: '' }]);
+  const [howItWorks, setHowItWorks] = useState<TitleDescription[]>(data?.howItWorks?.length ? data.howItWorks : [{ title: '', description: '', icon: '' }]);
+  const [termsAndConditions, setTermsAndConditions] = useState<string[]>(data?.termsAndConditions || []);
+  const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
+  const [extraSections, setExtraSections] = useState<ExtraSection[]>(data?.extraSections?.length ? data.extraSections : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]);
+  const [whyChooseUs, setWhyChooseUs] = useState<TitleDescription[]>(data?.whyChooseUs?.length ? data.whyChooseUs : [{ title: '', description: '', icon: '' }]);
+  const [packages, setPackages] = useState<Package[]>(data?.packages?.length ? data.packages : [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }]);
+  const [weRequired, setWeRequired] = useState<TitleDescription[]>(data?.weRequired?.length ? data.weRequired : [{ title: '', description: '' }]);
+  const [weDeliver, setWeDeliver] = useState<TitleDescription[]>(data?.weDeliver?.length ? data.weDeliver : [{ title: '', description: '' }]);
+  const [moreInfo, setMoreInfo] = useState<MoreInfo[]>(data?.moreInfo?.length ? data.moreInfo : [{ title: '', image: '', description: '' }]);
+  const [connectWith, setConnectWith] = useState<ConnectWith[]>(data?.connectWith?.length ? data.connectWith : [{ name: '', mobileNo: '', email: '' }]);
+  const [timeRequired, setTimeRequired] = useState<TimeRequired[]>(data?.timeRequired?.length ? data.timeRequired : [{ minDays: null, maxDays: null }]);
+  const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : ['']);
 
-  const whyChooseContext = useWhyChoose();
-  console.log(highlightPreviews)
-
-
+  useEffect(() => setEditorReady(true), []);
 
   useEffect(() => {
-    if (data) {
-      setBenefits(data.benefits || '');
-      setOverview(data.overview || '');
-      setDocument(data.document || '');
-      setHowItWorks(data.howItWorks || '');
-      setTerms(data.terms || '');
-      setRows(data.rows?.length ? data.rows : []);
-      setWhyChoose(data.whyChoose?.length ? data.whyChoose : []);
-
-      // Fix here 👇
-      if (Array.isArray(data.faqs) && data.faqs.length > 0) {
-        setfaqs(data.faqs);
-
-      } else {
-        setfaqs([{ question: '', answer: '' }]);
-      }
-
-      if (data.highlight?.length) {
-        if (data.highlight[0] instanceof File) {
-          setHighlight(data.highlight);
-        } else if (typeof data.highlight[0] === 'string') {
-          setHighlight(data.highlight);
-        }
-      } else {
-        setHighlight([]);
-      }
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
     }
-  }, []);
-
-
-const mounted = useRef(false);
-
-useEffect(() => {
-  if (!mounted.current) {
-    mounted.current = true;
-    return;
-  }
-
-  setData({
-    benefits,
-    overview,
-    highlight,
-    document,
-    whyChoose,
-    howItWorks,
-    terms,
-    faqs,
-    rows,
-  });
-
-}, [benefits, overview, highlight, document, whyChoose, howItWorks, terms, faqs, rows]);
-
-
-  const handleCheckboxChange = (itemId: string) => {
-    setWhyChoose(prev => {
-      if (prev.find(item => item._id === itemId)) {
-        return prev.filter(item => item._id !== itemId);
-      } else {
-        return [...prev, { _id: itemId }];
-      }
+    setData({
+      benefits,
+      aboutUs,
+      highlight,
+      highlightPreviews,
+      document,
+      assuredByFetchTrue,
+      howItWorks,
+      termsAndConditions,
+      faq,
+      extraSections,
+      whyChooseUs,
+      packages,
+      weRequired,
+      weDeliver,
+      moreInfo,
+      connectWith,
+      timeRequired,
+      extraImages,
     });
-  };
-
-  const handleAddRow = () => {
-    setRows([...rows, { title: '', description: '' }]);
-  };
-
-  const handleRemoveRow = (index: number) => {
-    const updatedRows = [...rows];
-    updatedRows.splice(index, 1);
-    setRows(updatedRows);
-  };
-
-  const handleRowChange = (
-    index: number,
-    field: keyof RowData,
-    value: string
-  ) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
-    setRows(updatedRows);
-  };
-
-  const handleFaqChange = (index: number, field: keyof FAQ, value: string) => {
-    const updatedfaqs = [...faqs];
-    updatedfaqs[index][field] = value;
-    setfaqs(updatedfaqs);
-  };
-
-  const handleAddFaq = () => {
-    setfaqs([...faqs, { question: '', answer: '' }]);
-  };
-
-  const handleRemoveFaq = (index: number) => {
-    const updatedfaqs = faqs.filter((_, i) => i !== index);
-    setfaqs(updatedfaqs);
-  };
+  }, [
+    benefits,
+    aboutUs,
+    highlight,
+    highlightPreviews,
+    document,
+    assuredByFetchTrue,
+    howItWorks,
+    termsAndConditions,
+    faq,
+    extraSections,
+    whyChooseUs,
+    packages,
+    weRequired,
+    weDeliver,
+    moreInfo,
+    connectWith,
+    timeRequired,
+    extraImages,
+    setData,
+  ]);
 
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const fileArray = Array.from(files);
       setHighlight(fileArray);
-
-      const previews = fileArray.map((file) => URL.createObjectURL(file));
-      setHighlightPreviews(previews);
+      setHighlightPreviews(fileArray.map(f => URL.createObjectURL(f)));
     }
-
-
   };
 
+  // CORRECTED renderArrayField to always show at least one item
+  const renderArrayField = <T extends object>(
+    items: T[] | undefined,
+    setItems: React.Dispatch<React.SetStateAction<T[]>>,
+    renderItem: (item: T, index: number, updateItem: (newItem: T) => void) => React.ReactNode,
+    defaultItem: T
+  ) => {
+    const safeItems = items && items.length > 0 ? items : [defaultItem];
+
+    return (
+      <div className="my-3">
+        {safeItems.map((item, idx) => (
+          <div key={idx} className="border p-4 rounded mb-3 relative">
+            {renderItem(item, idx, (newItem: T) =>
+              setItems(prev => {
+                const arr = prev && prev.length > 0 ? prev : [defaultItem];
+                return arr.map((it, i) => (i === idx ? newItem : it));
+              })
+            )}
+            <button
+              type="button"
+              className="absolute top-2 right-2 text-red-500"
+              onClick={() =>
+                setItems(prev => {
+                  const arr = prev && prev.length > 0 ? prev : [defaultItem];
+                  return arr.filter((_, i) => i !== idx);
+                })
+              }
+            >
+              <TrashBinIcon className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={() => setItems(prev => (prev && prev.length > 0 ? [...prev, defaultItem] : [defaultItem]))}
+        >
+          + Add More
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div>
-      <h4 className="text-base font-medium text-gray-800 dark:text-white/90 text-center my-4">Service Details</h4>
+      <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
+        ✨ Service Details
+      </h4>
 
-      <div className='my-3'>
-        <Label>Benefits</Label>
-        <div className="my-editor">
-           {editorReady ? (
-          <ClientSideCustomEditor value={benefits} onChange={setBenefits} />
-          ) : (
-    <p>Loading editor...</p>
-  )}
-        </div>
-      </div>
-
-      <div className='my-3'>
-        <Label>Overview</Label>
-        <div className="my-editor">
-         {editorReady ? (
-          <ClientSideCustomEditor value={overview} onChange={setOverview} />
-           ) : (
-    <p>Loading editor...</p>
-  )}
-        </div>
-      </div>
-      <div className='my-3'>
-        <Label>Highlight Images (Select Multiple Images)</Label>
-        <FileInput onChange={handleMultipleFileChange} multiple className="custom-class" />
-        <div className="mt-2 flex gap-2 flex-wrap">
-        </div>
-
-        <div className="flex flex-wrap gap-4 mt-2">
-          {data.highlightPreviews?.length === 0 && (
-            <p className="text-gray-500">No highlight images available.</p>
+      {/* CKEditors */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label>Benefits</Label>
+          {editorReady && (
+            <ClientSideCustomEditor value={benefits.join('\n')} onChange={val => setBenefits(val.split('\n'))} />
           )}
-          {data.highlightPreviews?.map((src, index) => (
-            <Image
-              key={index}
-              src={src}
-              alt={`highlight-${index}`}
-               width={400}
-  height={250}
-              className="w-24 h-24 object-cover rounded"
-            />
-          ))}
+        </div>
+        <div>
+          <Label>About Us</Label>
+          {editorReady && (
+            <ClientSideCustomEditor value={aboutUs.join('\n')} onChange={val => setAboutUs(val.split('\n'))} />
+          )}
+        </div>
+        <div>
+          <Label>Document</Label>
+          {editorReady && (
+            <ClientSideCustomEditor value={document.join('\n')} onChange={val => setDocument(val.split('\n'))} />
+          )}
+        </div>
+        <div>
+          <Label>Terms & Conditions</Label>
+          {editorReady && (
+            <ClientSideCustomEditor value={termsAndConditions.join('\n')} onChange={val => setTermsAndConditions(val.split('\n'))} />
+          )}
         </div>
       </div>
 
+      {/* Highlight Images */}
+      <Label>Highlight Images</Label>
+      <FileInput onChange={handleMultipleFileChange} multiple />
+      <div className="flex flex-wrap gap-4 mt-2">
+        {highlightPreviews.map((src, idx) => (
+          <Image key={idx} src={src} alt={`highlight-${idx}`} width={100} height={100} className="rounded" />
+        ))}
+      </div>
 
-      <div className='my-3'>
-        <Label>Document</Label>
-        <div className="my-editor">
-         {editorReady ? (
-          <ClientSideCustomEditor value={document} onChange={setDocument} />
-           ) : (
-    <p>Loading editor...</p>
-  )}
+      {/* Assured By FetchTrue & How It Works */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label>Assured By FetchTrue</Label>
+          {renderArrayField<TitleDescription>(
+            assuredByFetchTrue,
+            setAssuredByFetchTrue,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', icon: '', description: '' }
+          )}
+        </div>
+        <div>
+          <Label>How It Works</Label>
+          {renderArrayField<TitleDescription>(
+            howItWorks,
+            setHowItWorks,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', icon: '', description: '' }
+          )}
         </div>
       </div>
 
-      <div className="my-3">
-        <Label>Why Choose FetchTrue</Label>
+      {/* Why Choose Us & Connect With */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label>Why Choose Us</Label>
+          {renderArrayField<TitleDescription>(
+            whyChooseUs,
+            setWhyChooseUs,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.icon || ''} placeholder="Icon URL" onChange={e => updateItem({ ...item, icon: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', icon: '', description: '' }
+          )}
+        </div>
+        <div>
+          <Label>Connect With</Label>
+          {renderArrayField<ConnectWith>(
+            connectWith,
+            setConnectWith,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
+                <Input value={item.mobileNo} placeholder="Mobile No" onChange={e => updateItem({ ...item, mobileNo: e.target.value })} />
+                <Input value={item.email} placeholder="Email" onChange={e => updateItem({ ...item, email: e.target.value })} />
+              </div>
+            ),
+            { name: '', mobileNo: '', email: '' }
+          )}
+        </div>
+      </div>
 
-        {whyChooseContext.items && whyChooseContext.items.length > 0 && (
-          <div className="space-y-4 mb-6">
-            {(showAll ? whyChooseContext.items : whyChooseContext.items.slice(0, 2)).map(item => (
-              <div key={item._id} className="border p-4 rounded shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4">
-                  {/* Left column */}
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <input
-                        type="checkbox"
-                        id={`select-${item._id}`}
-                        checked={whyChoose.some(chosen => chosen._id === item._id)}
-                        onChange={() => item._id && handleCheckboxChange(item._id)}
-                      />
-                    </div>
+      {/* We Required & We Deliver */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label>We Required</Label>
+          {renderArrayField<TitleDescription>(
+            weRequired,
+            setWeRequired,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', description: '' }
+          )}
+        </div>
+        <div>
+          <Label>We Deliver</Label>
+          {renderArrayField<TitleDescription>(
+            weDeliver,
+            setWeDeliver,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', description: '' }
+          )}
+        </div>
+      </div>
 
-                    <div className="flex gap-2">
-                      <Label className="font-bold">Title :</Label>
-                      <p className="text-sm text-gray-600">{item.title}</p>
-                    </div>
+      {/* More Info & FAQs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Label>More Info</Label>
+          {renderArrayField<MoreInfo>(
+            moreInfo,
+            setMoreInfo,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+                <Input value={item.image || ''} placeholder="Image URL" onChange={e => updateItem({ ...item, image: e.target.value })} />
+                <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+              </div>
+            ),
+            { title: '', image: '', description: '' }
+          )}
+        </div>
+        <div>
+          <Label>FAQs</Label>
+          {renderArrayField<FAQ>(
+            faq,
+            setFaq,
+            (item, idx, updateItem) => (
+              <div className="grid gap-2">
+                <Input value={item.question} placeholder="Question" onChange={e => updateItem({ ...item, question: e.target.value })} />
+                <textarea
+                  value={item.answer}
+                  placeholder="Answer"
+                  onChange={e => updateItem({ ...item, answer: e.target.value })}
+                  className="w-full border rounded p-2 resize-none"
+                  rows={3}
+                />
+              </div>
+            ),
+            { question: '', answer: '' }
+          )}
+        </div>
+      </div>
 
-                    <div className="flex gap-2">
-                      <Label className="font-bold">Description:</Label>
-                      <p className="text-sm text-gray-600">{item.description}</p>
-                    </div>
+      {/* Packages */}
+      <Label>Packages</Label>
+      {renderArrayField<Package>(
+        packages,
+        setPackages,
+        (pkg, pkgIdx, updatePackage) => (
+          <div className="border p-4 rounded mb-4 relative">
+            <div className="grid gap-2">
+              <Input value={pkg.name} placeholder="Package Name" onChange={e => updatePackage({ ...pkg, name: e.target.value })} />
+              <Input type="number" value={pkg.price || ''} placeholder="Price" onChange={e => updatePackage({ ...pkg, price: Number(e.target.value) })} />
+              <Input type="number" value={pkg.discount || ''} placeholder="Discount" onChange={e => updatePackage({ ...pkg, discount: Number(e.target.value) })} />
+              <Input type="number" value={pkg.discountedPrice || ''} placeholder="Discounted Price" onChange={e => updatePackage({ ...pkg, discountedPrice: Number(e.target.value) })} />
+            </div>
 
-                    {item.extraSections && item.extraSections.length > 0 && (
-                      <div className="flex gap-2">
-                        <Label className="font-bold">Extra Sections</Label>
-                        <div className="space-y-2">
-                          {item.extraSections.map((section, idx) => (
-                            <p key={idx} className="text-sm text-gray-600">{section.description}</p>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+            {/* What You Get */}
+{renderArrayField<string>(
+  pkg.whatYouGet && pkg.whatYouGet.length > 0 ? pkg.whatYouGet : [''],
+  (arrUpdater) =>
+    setPackages(prev => {
+      const updated = [...prev];
+      const current = updated[pkgIdx];
 
-                  {/* Right column - Image */}
-                  <div className="flex-1 flex justify-center items-center">
-                    {item.image && (
-                      <div className="w-full h-28 md:h-44 relative rounded-md overflow-hidden">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                           width={400}
-  height={250}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
+      const newWhatYouGet =
+        typeof arrUpdater === "function"
+          ? arrUpdater(current.whatYouGet || [''])
+          : arrUpdater;
+
+      updated[pkgIdx] = { ...current, whatYouGet: newWhatYouGet };
+      return updated;
+    }),
+  (item, idx, updateItem) => (
+    <Input
+      value={item}
+      placeholder="What You Get"
+      onChange={(e) => updateItem(e.target.value)}
+    />
+  ),
+  ''
+)}
+
+          </div>
+        ),
+        { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }
+      )}
+
+      {/* Time Required */}
+      <Label>Time Required</Label>
+      {renderArrayField<TimeRequired>(
+        timeRequired,
+        setTimeRequired,
+        (item, idx, updateItem) => (
+          <div className="grid gap-2">
+            <Input type="number" value={item.minDays || ''} placeholder="Min Days" onChange={e => updateItem({ ...item, minDays: Number(e.target.value) })} />
+            <Input type="number" value={item.maxDays || ''} placeholder="Max Days" onChange={e => updateItem({ ...item, maxDays: Number(e.target.value) })} />
+          </div>
+        ),
+        { minDays: null, maxDays: null }
+      )}
+
+      {/* Extra Images */}
+      <Label>Extra Images URLs</Label>
+      {renderArrayField<string>(
+        extraImages,
+        setExtraImages,
+        (img, idx, updateItem) => (
+          <div className="">
+            <Input value={img} placeholder="Image URL" onChange={e => updateItem(e.target.value)} />
+          </div>
+        ),
+        ''
+      )}
+
+      {/* Extra Sections */}
+      <Label>Extra Sections</Label>
+      {renderArrayField<ExtraSection>(
+        extraSections,
+        setExtraSections,
+        (section, idx, updateSection) => (
+          <div className="grid gap-2">
+            <Input value={section.title} placeholder="Title" onChange={e => updateSection({ ...section, title: e.target.value })} />
+            {/* Render subarrays */}
+            {['subtitle', 'image', 'description', 'subDescription', 'lists', 'tags'].map(key => (
+              <div key={key}>
+                <Label>{key}</Label>
+                {renderArrayField<string>(
+                  section[key as keyof ExtraSection] as string[],
+                  arr => updateSection({ ...section, [key]: arr }),
+                  (val, subIdx, updateItem) => (
+                    <Input value={val} placeholder={key} onChange={e => updateItem(e.target.value)} />
+                  ),
+                  ''
+                )}
               </div>
             ))}
-
-            {whyChooseContext.items.length > 2 && (
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowAll(!showAll)}
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  {showAll ? 'View Less' : 'View All'}
-                </button>
-              </div>
-            )}
           </div>
-        )}
-      </div>
-
-
-
-      <div className='my-3'>
-        <Label>How It&apos;s Work</Label>
-        <div className="my-editor">
-         {editorReady ? (
-          <ClientSideCustomEditor value={howItWorks} onChange={setHowItWorks} />
-           ) : (
-    <p>Loading editor...</p>
-  )}
-        </div>
-      </div>
-
-      <div className='my-3'>
-        <Label>Terms & Conditions</Label>
-        <div className="my-editor">
-         {editorReady ? (
-          <ClientSideCustomEditor value={terms} onChange={setTerms} />
-           ) : (
-    <p>Loading editor...</p>
-  )}
-        </div>
-      </div>
-
-      <div className='my-3'>
-        <Label>FAQ&apos;s</Label>
-        {faqs.map((faq, index) => (
-          <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-md font-medium text-gray-700">FAQ #{index + 1}</h2>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700"
-                onClick={() => handleRemoveFaq(index)}
-                aria-label="Remove FAQ"
-              >
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div>
-              <Label>Question</Label>
-              <Input
-                type="text"
-                placeholder="Enter question"
-                value={faq.question}
-                onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label>Answer</Label>
-              <textarea
-                placeholder="Enter answer"
-                value={faq.answer}
-                onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                className="w-full border rounded p-2 resize-none"
-                rows={4}
-              />
-            </div>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={handleAddFaq}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-        >
-          + Add New FAQ
-        </button>
-      </div>
-
-      <div className="my-3">
-        {rows.map((row, index) => (
-          <div key={index} className="my-3 border p-4 rounded shadow-sm space-y-3">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-md font-medium text-gray-700">Row #{index + 1}</h2>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700"
-                onClick={() => handleRemoveRow(index)}
-                aria-label="Remove Row"
-              >
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="w-1/2">
-                <Label>Title</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Extra Title"
-                  value={row.title}
-                  onChange={(e) => handleRowChange(index, 'title', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-1/2">
-                <Label>Description</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter Extra Description"
-                  value={row.description}
-                  onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={handleAddRow}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
-        >
-          + Add New Row
-        </button>
-
-      </div>
-
+        ),
+        { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }
+      )}
     </div>
   );
 };

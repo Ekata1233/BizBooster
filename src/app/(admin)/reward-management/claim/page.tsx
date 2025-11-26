@@ -163,15 +163,6 @@ const ClaimNowPage = () => {
       accessor: 'action',
       render: (row: any) => (
         <div className="flex gap-2">
-          <button className="text-yellow-600 p-2 border rounded hover:bg-yellow-50">
-            <PencilIcon />
-          </button>
-          <button
-            onClick={() => deleteClaim(row._id!)}
-            className="text-red-600 p-2 border rounded hover:bg-red-50"
-          >
-            <TrashBinIcon />
-          </button>
           <Link href={`/reward-management/claim/${row._id}`} passHref>
             <button className="text-blue-600 p-2 border rounded hover:bg-blue-50">
               <EyeIcon />
