@@ -426,11 +426,25 @@ function renderArrayField<T extends object>(
             <div key={key}>
               <Label>{key}</Label>
               {renderArrayField<string>(
-                (section as any)[key],
-                arr => updateSection({ ...section, [key]: arr }),
-                (val, idx2, updateVal) => <Input value={val} placeholder={key} onChange={e => updateVal(e.target.value)} />,
-                ''
-              )}
+  section[key] || [''],
+  (arrUpdater) =>
+    updateSection({
+      ...section,
+      [key]:
+        typeof arrUpdater === 'function'
+          ? arrUpdater(section[key] || [''])
+          : arrUpdater,
+    }),
+  (val, idx2, updateVal) => (
+    <Input
+      value={val}
+      placeholder={key}
+      onChange={(e) => updateVal(e.target.value)}
+    />
+  ),
+  ''
+)}
+
             </div>
           ))}
         </div>
