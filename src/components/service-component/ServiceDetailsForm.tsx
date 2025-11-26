@@ -371,20 +371,36 @@ function renderArrayField<T extends object>(
             <Input type="number" value={pkg.discountedPrice || ''} placeholder="Discounted Price" onChange={e => updatePackage({ ...pkg, discountedPrice: Number(e.target.value) })} />
           </div>
 
-          {/* What You Get */}
-         {renderArrayField<string>(
-  pkg.whatYouGet ?? [''],
-  arr => updatePackage({ ...pkg, whatYouGet: arr }),
+            {/* What You Get */}
+{renderArrayField<string>(
+  pkg.whatYouGet && pkg.whatYouGet.length > 0 ? pkg.whatYouGet : [''],
+  (arrUpdater) =>
+    setPackages(prev => {
+      const updated = [...prev];
+      const current = updated[pkgIdx];
+
+      const newWhatYouGet =
+        typeof arrUpdater === "function"
+          ? arrUpdater(current.whatYouGet || [''])
+          : arrUpdater;
+
+      updated[pkgIdx] = { ...current, whatYouGet: newWhatYouGet };
+      return updated;
+    }),
   (item, idx, updateItem) => (
-    <div className="">
-      <Input value={item} placeholder="What You Get" onChange={e => updateItem(e.target.value)} />
-    </div>
+    <Input
+      value={item}
+      placeholder="What You Get"
+      onChange={(e) => updateItem(e.target.value)}
+    />
   ),
-  '' // ✔ correct default item for string array
+  ''
 )}
 
-        </div>
-      ), { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] })}
+          </div>
+        ),
+        { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }
+      )}
 
       {/* Time Required */}
       <Label>Time Required</Label>
