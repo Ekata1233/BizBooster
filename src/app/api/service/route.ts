@@ -149,7 +149,7 @@ async function handleFileUpload(fileOrBlob: File | string, folder: string, prefi
   return "";
 }
 
-async function processSectionWithIcon(fieldName: string, folder: string) {
+async function processSectionWithIcon(fieldName: string, folder: string , mediaKey: "icon" | "image") {
   const arr: any[] = [];
   for (let i = 0; ; i++) {
     const title = formData.get(`serviceDetails[${fieldName}][${i}][title]`);
@@ -164,18 +164,18 @@ async function processSectionWithIcon(fieldName: string, folder: string) {
       uploadedURL = await handleFileUpload(iconOrImage as File | string, folder, `${fieldName}-${i}`);
     }
 
-    arr.push({ title, description, icon: uploadedURL });
+    arr.push({ title, description,  [mediaKey]: uploadedURL, });
   }
   return arr;
 }
 
 // Then use it:
-serviceDetails.assuredByFetchTrue = await processSectionWithIcon("assuredByFetchTrue", "/services/assuredIcons");
-serviceDetails.howItWorks = await processSectionWithIcon("howItWorks", "/services/howItWorks");
-serviceDetails.whyChooseUs = await processSectionWithIcon("whyChooseUs", "/services/whyChooseUs");
-serviceDetails.weRequired = await processSectionWithIcon("weRequired", "/services/weRequired");
-serviceDetails.weDeliver = await processSectionWithIcon("weDeliver", "/services/weDeliver");
-serviceDetails.moreInfo = await processSectionWithIcon("moreInfo", "/services/moreInfo");
+serviceDetails.assuredByFetchTrue = await processSectionWithIcon("assuredByFetchTrue", "/services/assuredIcons", "icon");
+serviceDetails.howItWorks = await processSectionWithIcon("howItWorks", "/services/howItWorks", "icon");
+serviceDetails.whyChooseUs = await processSectionWithIcon("whyChooseUs", "/services/whyChooseUs", "icon");
+serviceDetails.weRequired = await processSectionWithIcon("weRequired", "/services/weRequired", "icon");
+serviceDetails.weDeliver = await processSectionWithIcon("weDeliver", "/services/weDeliver", "icon");
+serviceDetails.moreInfo = await processSectionWithIcon("moreInfo", "/services/moreInfo", "image");
 
 
 // Packages
@@ -231,7 +231,6 @@ for (let i = 0; ; i++) {
       "aboutUs",
       "document",
       "termsAndConditions",
-      "extraImages",
     ];
 
     arrayOfStringFields.forEach((field) => {
@@ -283,6 +282,26 @@ for (const [key, value] of formData.entries()) {
       if (!question || !answer) break;
       serviceDetails.faq.push({ question, answer });
     }
+
+serviceDetails.extraImages = [];
+
+for (const [key, value] of formData.entries()) {
+  if (key.startsWith("serviceDetails[extraImages]")) {
+    if (value instanceof File) {
+      const buffer = Buffer.from(await value.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${value.name}`,
+        folder: "/services/extras/images",
+      });
+      serviceDetails.extraImages.push(upload.url); // always push URL, not object
+    }
+  }
+}
+
+
+
+
 
     // Extra Sections
     for (let i = 0; ; i++) {
@@ -367,6 +386,62 @@ for (const [key, value] of formData.entries()) {
       });
     }
 
+    // Franchise Extra Sections
+for (let i = 0; ; i++) {
+  const title = formData.get(`franchiseDetails[extraSections][${i}][title]`);
+  if (!title) break;
+
+  const section: any = { title, subtitle: [], description: [], subDescription: [], lists: [], tags: [], image: [] };
+
+  ["subtitle", "description", "subDescription", "lists", "tags"].forEach(
+    (field) => {
+      const arr: string[] = [];
+      for (const key of formData.keys()) {
+        if (
+          key.startsWith(`franchiseDetails[extraSections][${i}][${field}]`)
+        ) {
+          const val = formData.get(key) as string;
+          if (val) arr.push(val);
+        }
+      }
+      section[field] = arr;
+    }
+  );
+
+  // Upload images
+  for (const [key, value] of formData.entries()) {
+    if (
+      key.startsWith(`franchiseDetails[extraSections][${i}][image]`) &&
+      value instanceof File
+    ) {
+      const buffer = Buffer.from(await value.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${value.name}`,
+        folder: "/services/franchise/extras",
+      });
+      section.image.push(upload.url);
+    }
+  }
+
+  franchiseDetails.extraSections.push(section);
+}
+
+
+// Franchise Extra Images Upload
+for (const [key, value] of formData.entries()) {
+  if (key.startsWith("franchiseDetails[extraImages]") && value instanceof File) {
+    const buffer = Buffer.from(await value.arrayBuffer());
+    const upload = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${value.name}`,
+      folder: "/services/franchise/extraImages",
+    });
+    franchiseDetails.extraImages.push(upload.url);
+  }
+}
+
+
     const discountedPrice = discount
       ? Math.floor(price - price * (discount / 100))
       : price;
@@ -402,6 +477,7 @@ for (const [key, value] of formData.entries()) {
     );
 
   } catch (error: any) {
+     console.log("🔥 API ERROR:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500, headers: corsHeaders }

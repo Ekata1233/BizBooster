@@ -82,8 +82,14 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [moreInfo, setMoreInfo] = useState<MoreInfo[]>(data?.moreInfo?.length ? data.moreInfo : [{ title: '', image: '', description: '' }]);
   const [connectWith, setConnectWith] = useState<ConnectWith[]>(data?.connectWith?.length ? data.connectWith : [{ name: '', mobileNo: '', email: '' }]);
   const [timeRequired, setTimeRequired] = useState<TimeRequired[]>(data?.timeRequired?.length ? data.timeRequired : [{ minDays: null, maxDays: null }]);
-  const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : ['']);
-  const [showExtraSections, setShowExtraSections] = useState(false);
+type ExtraImageItem = { icon: string; file?: File };
+
+// Initialize extraImages as an array of objects
+const [extraImages, setExtraImages] = useState<ExtraImageItem[]>(
+  data?.extraImages?.length
+    ? data.extraImages.map(img => ({ icon: img })) // convert existing strings to objects
+    : [{ icon: "" }] // default empty object
+);  const [showExtraSections, setShowExtraSections] = useState(false);
 
   useEffect(() => {
 
@@ -521,21 +527,21 @@ function renderArrayField<T extends object>(
       ), { minDays: null, maxDays: null })}
 
       {/* Extra Images */}
-    <Label>Extra Images</Label>
-{renderArrayField<string>(extraImages, setExtraImages, (img, idx, updateImg) => (
+<Label>Extra Images</Label>
+{renderArrayField<{ icon: string; file?: File }>(extraImages, setExtraImages, (img, idx, updateImg) => (
   <div className="flex items-center gap-2">
     <FileInput
       onChange={(e) => {
         const file = e.target.files?.[0];
         if (file) {
           const url = URL.createObjectURL(file);
-          updateImg(url);
+          // Save both the preview URL and the actual File
+          updateImg({ icon: url, file });
         }
       }}
     />
-    {/* <button type="button" onClick={() => setExtraImages(prev => prev.filter((_, i) => i !== idx))} className="text-red-500">Remove</button> */}
   </div>
-), '')}
+), { icon: "" })}
 
 
     
