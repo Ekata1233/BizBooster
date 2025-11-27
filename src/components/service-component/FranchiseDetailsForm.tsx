@@ -611,36 +611,45 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
             onChange={(e) => updateExtraSection(sIdx, { ...sec, title: e.target.value })}
           />
 
-          {(['subtitle', 'image', 'description', 'subDescription', 'lists', 'tags'] as (keyof ExtraSection)[])
-            .map((field) => (
-              <div key={field} className="mt-3">
-                <Label className="capitalize">{field}</Label>
-                {sec[field].map((val, idx) => (
-                  <div key={idx} className="flex gap-2 items-center mt-2">
-                    <Input
-                      placeholder={`${field} #${idx + 1}`}
-                      value={val}
-                      onChange={(e) => updateExtraSectionArrayField(sIdx, field, idx, e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="text-red-500"
-                      onClick={() => removeExtraSectionArrayItem(sIdx, field, idx)}
-                    >
-                      <TrashBinIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                ))}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+  {(["subtitle", "image", "description", "subDescription", "lists", "tags"] as (keyof ExtraSection)[])
+    .map((field) => (
+      <div key={field} className="border p-3 rounded">
+        <Label className="capitalize">{field}</Label>
 
-                <button
-                  type="button"
-                  className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-                  onClick={() => addExtraSectionArrayItem(sIdx, field)}
-                >
-                  + Add {field}
-                </button>
-              </div>
-            ))}
+        {sec[field].map((val, idx) => (
+          <div key={idx} className="relative mt-2">
+  <Input
+    placeholder={`${field} #${idx + 1}`}
+    value={val}
+    onChange={(e) =>
+      updateExtraSectionArrayField(sIdx, field, idx, e.target.value)
+    }
+    className="w-full pr-10" // keep some space for the icon
+  />
+
+  <button
+    type="button"
+    className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500"
+    onClick={() => removeExtraSectionArrayItem(sIdx, field, idx)}
+  >
+    <TrashBinIcon className="w-5 h-5" />
+  </button>
+</div>
+
+        ))}
+
+        <button
+          type="button"
+          className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+          onClick={() => addExtraSectionArrayItem(sIdx, field)}
+        >
+          + Add {field}
+        </button>
+      </div>
+    ))}
+</div>
+
         </div>
       ))}
 

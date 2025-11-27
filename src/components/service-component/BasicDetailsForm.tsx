@@ -47,8 +47,11 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
   // Sync key-value rows with parent data
   useEffect(() => {
-    setData({ keyValues: rows.length ? rows : [] });
-  }, [rows]);
+  if (JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
+    setData({ keyValues: rows });
+  }
+}, [rows]);
+
 
   // Calculate discountedPrice, gstInRupees, totalWithGst
   useEffect(() => {

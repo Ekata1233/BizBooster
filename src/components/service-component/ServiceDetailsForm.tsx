@@ -246,7 +246,7 @@ function renderArrayField<T extends object>(
   return (
     <div className="my-3">
       {safeItems.map((item, idx) => (
-        <div key={idx} className="border p-4 rounded mb-3 relative">
+        <div key={idx} className=" p-2 rounded  relative">
           {renderItem(item, idx, updated => handleUpdate(idx, updated))}
 
           {/* DELETE BUTTON */}
@@ -472,7 +472,7 @@ function renderArrayField<T extends object>(
       {/* Packages */}
       <Label>Packages</Label>
       {renderArrayField<Package>(packages, setPackages, (pkg, pkgIdx, updatePackage) => (
-        <div className="border p-4 rounded mb-4 relative">
+        <div className="border p-2 rounded mb-2 relative">
           <div className="grid gap-2">
             <Input value={pkg.name} placeholder="Package Name" onChange={e => updatePackage({ ...pkg, name: e.target.value })} />
             <Input type="number" value={pkg.price || ''} placeholder="Price" onChange={e => updatePackage({ ...pkg, price: Number(e.target.value) })} />
@@ -559,7 +559,7 @@ function renderArrayField<T extends object>(
         extraSections,
         setExtraSections,
         (section, idx, updateSection) => (
-          <div className="grid gap-2 p-4 rounded mb-4">
+          <div className="grid gap-2 p-2 rounded ">
             <Input
               value={section.title}
               placeholder="Title"
