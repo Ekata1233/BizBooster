@@ -538,7 +538,7 @@ function renderArrayField<T extends object>(
 ), '')}
 
 
-      {/* Extra Sections */}
+    
 {/* Extra Sections */}
 <div className="my-4">
   <Label>Extra Sections</Label>
@@ -568,31 +568,65 @@ function renderArrayField<T extends object>(
               }
             />
 
-            {['subtitle', 'description', 'subDescription', 'lists', 'tags', 'image'].map((key: any) => (
-              <div key={key}>
-                <Label className="capitalize">{key}</Label>
+          {["subtitle", "description", "subDescription", "lists", "tags", "image"].map(
+  (key: any) => (
+    <div key={key} className="my-3">
+      <Label className="capitalize">{key}</Label>
 
-                {renderArrayField<string>(
-                  section[key] || [''],
-                  (arrUpdater) =>
-                    updateSection({
-                      ...section,
-                      [key]:
-                        typeof arrUpdater === 'function'
-                          ? arrUpdater(section[key] || [''])
-                          : arrUpdater,
-                    }),
-                  (val, idx2, updateVal) => (
-                    <Input
-                      value={val}
-                      placeholder={key}
-                      onChange={(e) => updateVal(e.target.value)}
-                    />
-                  ),
-                  ''
-                )}
-              </div>
-            ))}
+      {/* If field is IMAGE → use FileInput */}
+      {key === "image" ? (
+        <>
+          <FileInput
+            onChange={(e: any) => {
+              const file = e.target.files?.[0];
+              updateSection({
+                ...section,
+                image: file || null,
+              });
+            }}
+          />
+
+          {/* Preview */}
+          {section.image && typeof section.image === "string" && (
+            <img
+              src={section.image}
+              alt="preview"
+              className="w-24 h-24 rounded mt-2 object-cover"
+            />
+          )}
+
+          {section.image && section.image instanceof File && (
+            <p className="text-sm mt-1 text-gray-500">
+              {section.image.name}
+            </p>
+          )}
+        </>
+      ) : (
+        // Normal Input for all other keys
+        renderArrayField<string>(
+          section[key] || [""],
+          (arrUpdater) =>
+            updateSection({
+              ...section,
+              [key]:
+                typeof arrUpdater === "function"
+                  ? arrUpdater(section[key] || [""])
+                  : arrUpdater,
+            }),
+          (val, idx2, updateVal) => (
+            <Input
+              value={val}
+              placeholder={key}
+              onChange={(e) => updateVal(e.target.value)}
+            />
+          ),
+          ""
+        )
+      )}
+    </div>
+  )
+)}
+
           </div>
         ),
         { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }

@@ -563,19 +563,47 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 
         {/* Extra Images (URLs) */}
         <div className="my-4">
-          <Label>Extra Images (URLs)</Label>
-          {extraImages.map((img, i) => (
-            <div key={i} className="flex gap-3 items-center mt-2">
-              <Input placeholder="Image URL" value={img} onChange={(e) => updateExtraImage(i, e.target.value)} />
-              <button type="button" className="text-red-500" onClick={() => removeExtraImage(i)}>
-                <TrashBinIcon className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={addExtraImage} className="mt-3 bg-blue-500 text-white px-3 py-2 rounded">
-            + Add Extra Image
-          </button>
-        </div>
+  <Label>Extra Images</Label>
+
+  {extraImages.map((img, i) => (
+    <div key={i} className="flex gap-3 items-center mt-2">
+
+      {/* FILE INPUT (same type you use everywhere) */}
+      <FileInput
+        onChange={(e: any) => {
+          const file = e.target.files?.[0] || null;
+          updateExtraImage(i, file);
+        }}
+      />
+
+      {/* Show selected file name */}
+      {img && (
+        <span className="text-sm text-gray-600 w-40 truncate">
+          {img.name}
+        </span>
+      )}
+
+      {/* Remove Button */}
+      <button
+        type="button"
+        className="text-red-500"
+        onClick={() => removeExtraImage(i)}
+      >
+        <TrashBinIcon className="w-5 h-5" />
+      </button>
+    </div>
+  ))}
+
+  {/* ADD NEW EXTRA IMAGE BUTTON */}
+  <button
+    type="button"
+    onClick={addExtraImage}
+    className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
+  >
+    + Add Extra Image
+  </button>
+</div>
+ 
 
         {/* Extra Sections */}
 {/* Extra Sections */}
@@ -608,48 +636,108 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
           <Input
             placeholder="Section Title"
             value={sec.title}
-            onChange={(e) => updateExtraSection(sIdx, { ...sec, title: e.target.value })}
+            onChange={(e) =>
+              updateExtraSection(sIdx, { ...sec, title: e.target.value })
+            }
           />
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
-  {(["subtitle", "image", "description", "subDescription", "lists", "tags"] as (keyof ExtraSection)[])
-    .map((field) => (
-      <div key={field} className="border p-3 rounded">
-        <Label className="capitalize">{field}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+            {([
+              "subtitle",
+              "image",
+              "description",
+              "subDescription",
+              "lists",
+              "tags",
+            ] as (keyof ExtraSection)[]).map((field) => (
+              <div key={field} className="border p-3 rounded">
+                <Label className="capitalize">{field}</Label>
 
-        {sec[field].map((val, idx) => (
-          <div key={idx} className="relative mt-2">
-  <Input
-    placeholder={`${field} #${idx + 1}`}
-    value={val}
-    onChange={(e) =>
-      updateExtraSectionArrayField(sIdx, field, idx, e.target.value)
-    }
-    className="w-full pr-10" // keep some space for the icon
-  />
+                {/* ---------- IMAGE FIELD (FILE INPUT) ---------- */}
+                {field === "image" ? (
+                  <div className="mt-2">
+                    <FileInput
+                      onChange={(e: any) => {
+                        const file = e.target.files?.[0];
+                        updateExtraSection(sIdx, {
+                          ...sec,
+                          image: file ? [file] : [],
+                        });
+                      }}
+                    />
 
-  <button
-    type="button"
-    className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500"
-    onClick={() => removeExtraSectionArrayItem(sIdx, field, idx)}
-  >
-    <TrashBinIcon className="w-5 h-5" />
-  </button>
-</div>
+                    {/* If old image URL exists → Show preview */}
+                    {sec.image &&
+                      sec.image.length > 0 &&
+                      typeof sec.image[0] === "string" && (
+                        <img
+                          src={sec.image[0]}
+                          alt="preview"
+                          className="w-24 h-24 rounded mt-2 object-cover"
+                        />
+                      )}
 
-        ))}
+                    {/* If new file uploaded → Show filename */}
+                    {sec.image &&
+                      sec.image.length > 0 &&
+                      sec.image[0] instanceof File && (
+                        <p className="text-sm mt-1 text-gray-500">
+                          {sec.image[0].name}
+                        </p>
+                      )}
 
-        <button
-          type="button"
-          className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-          onClick={() => addExtraSectionArrayItem(sIdx, field)}
-        >
-          + Add {field}
-        </button>
-      </div>
-    ))}
-</div>
+                    {/* Add button for more image items */}
+                    <button
+                      type="button"
+                      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+                      onClick={() => addExtraSectionArrayItem(sIdx, field)}
+                    >
+                      + Add image
+                    </button>
+                  </div>
+                ) : (
+                  /* ---------- NORMAL INPUT FOR OTHER FIELDS ---------- */
+                  <>
+                    {sec[field].map((val, idx) => (
+                      <div key={idx} className="relative mt-2">
+                        <Input
+                          placeholder={`${field} #${idx + 1}`}
+                          value={val}
+                          onChange={(e) =>
+                            updateExtraSectionArrayField(
+                              sIdx,
+                              field,
+                              idx,
+                              e.target.value
+                            )
+                          }
+                          className="w-full pr-10"
+                        />
 
+                        <button
+                          type="button"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500"
+                          onClick={() =>
+                            removeExtraSectionArrayItem(sIdx, field, idx)
+                          }
+                        >
+                          <TrashBinIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+                      onClick={() => addExtraSectionArrayItem(sIdx, field)}
+                    >
+                      + Add {field}
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       ))}
 
@@ -671,6 +759,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     </>
   )}
 </div>
+
 
       </div>
     </div>
