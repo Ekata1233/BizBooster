@@ -204,9 +204,22 @@ console.log(JSON.stringify(formData, null, 2));
     fd.append("includeGst", formData.basic.includeGst ? "true" : "false");
     fd.append("recommendedServices", formData.basic.recommendedServices ? "true" : "false");
 
-    if (formData.basic.thumbnail) {
-      fd.append("thumbnailImage", formData.basic.thumbnail);
+// ---------------- THUMBNAIL IMAGE ----------------
+if (formData.basic.thumbnailImage instanceof File) {
+  fd.append("thumbnail", formData.basic.thumbnailImage);
+}
+
+
+// ---------------- BANNER IMAGES ----------------
+const bannerFiles = formData.basic.bannerImages;
+
+if (bannerFiles) {
+  Array.from(bannerFiles).forEach((file, i) => {
+    if (file instanceof File) {
+      fd.append(`bannerImages[${i}]`, file); 
     }
+  });
+}
 
     // KeyValues
     formData.basic.keyValues?.forEach((kv, i) => {
@@ -214,11 +227,7 @@ console.log(JSON.stringify(formData, null, 2));
       fd.append(`keyValues[${i}][value]`, kv.value || "");
     });
 
-    // Banner Images
-    
-Array.from(formData.basic.covers || []).forEach((file, i) => {
-  fd.append(`bannerImages[${i}]`, file);
-});
+
 
     // ---------------- SERVICE DETAILS ----------------
     Object.keys(formData.service).forEach((key) => {
@@ -234,28 +243,54 @@ Array.from(formData.basic.covers || []).forEach((file, i) => {
       }
     });
 
-        fd.append("benefits", formData.service.benefits   || "");
-            fd.append("aboutUs", formData.service.aboutUs   || "");
-                fd.append("document", formData.service.document   || "");
-                    fd.append("termsAndConditions", formData.service.termsAndConditions   || "");
+        fd.append("benefits", JSON.stringify(formData.service.benefits || []));
+            fd.append("aboutUs",JSON.stringify(formData.service.aboutUs || []));
+                fd.append("document", JSON.stringify(formData.service.document || []));
+                    fd.append("termsAndConditions",JSON.stringify(formData.service.termsAndConditions || []));
+
+                    // ---------------- HIGHLIGHT ----------------
+formData.service.highlight?.forEach((item, i) => {
+  if (item instanceof File) {
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  } else if (typeof item === "string") {
+    // If it's a blob URL or string, you can send as string
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  }
+});
+
 
     // AssuredByFetchTrue
-formData.service.assuredByFetchTrue?.forEach((item, i) => {
-  fd.append(`serviceDetails[assuredByFetchTrue][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[assuredByFetchTrue][${i}][description]`, item.description || "");
-  if (item.icon instanceof File) {
-    fd.append(`serviceDetails[assuredByFetchTrue][${i}][icon]`, item.icon);
-  }
-});
+await Promise.all(
+  formData.service.assuredByFetchTrue.map(async (item, i) => {
+    fd.append(`serviceDetails[assuredByFetchTrue][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[assuredByFetchTrue][${i}][description]`, item.description || "");
 
-// HowItWorks
-formData.service.howItWorks?.forEach((item, i) => {
-  fd.append(`serviceDetails[howItWorks][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[howItWorks][${i}][description]`, item.description || "");
-  if (item.icon instanceof File) {
-    fd.append(`serviceDetails[howItWorks][${i}][icon]`, item.icon);
-  }
-});
+    if (item.icon instanceof File) {
+      fd.append(`serviceDetails[assuredByFetchTrue][${i}][icon]`, item.icon);
+    } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+      const blob = await fetch(item.icon).then(res => res.blob());
+      const file = new File([blob], `icon-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[assuredByFetchTrue][${i}][icon]`, file);
+    }
+  })
+);
+
+
+// HowItWorks whychoous werequ wedelivered
+await Promise.all(
+  formData.service.howItWorks.map(async (item, i) => {
+    fd.append(`serviceDetails[howItWorks][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[howItWorks][${i}][description]`, item.description || "");
+
+    if (item.icon instanceof File) {
+      fd.append(`serviceDetails[howItWorks][${i}][icon]`, item.icon);
+    } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+      const blob = await fetch(item.icon).then(res => res.blob());
+      const file = new File([blob], `icon-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[howItWorks][${i}][icon]`, file);
+    }
+  })
+);
 
 // FAQ
 formData.service.faq?.forEach((item, i) => {
@@ -264,10 +299,22 @@ formData.service.faq?.forEach((item, i) => {
 });
 
 // WhyChooseUs
-formData.service.whyChooseUs?.forEach((item, i) => {
-  fd.append(`serviceDetails[whyChooseUs][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[whyChooseUs][${i}][description]`, item.description || "");
-});
+await Promise.all(
+  formData.service.whyChooseUs.map(async (item, i) => {
+    fd.append(`serviceDetails[whyChooseUs][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[whyChooseUs][${i}][description]`, item.description || "");
+
+    if (item.icon instanceof File) {
+      fd.append(`serviceDetails[whyChooseUs][${i}][icon]`, item.icon);
+    } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+      const blob = await fetch(item.icon).then(res => res.blob());
+      const file = new File([blob], `icon-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[whyChooseUs][${i}][icon]`, file);
+    }
+  })
+);
+
+
 
 // Packages
 formData.service.packages?.forEach((item, i) => {
@@ -281,25 +328,53 @@ formData.service.packages?.forEach((item, i) => {
 });
 
 // WeRequired
-formData.service.weRequired?.forEach((item, i) => {
-  fd.append(`serviceDetails[weRequired][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[weRequired][${i}][description]`, item.description || "");
-});
+await Promise.all(
+  formData.service.weRequired.map(async (item, i) => {
+    fd.append(`serviceDetails[weRequired][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[weRequired][${i}][description]`, item.description || "");
+
+    if (item.icon instanceof File) {
+      fd.append(`serviceDetails[weRequired][${i}][icon]`, item.icon);
+    } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+      const blob = await fetch(item.icon).then(res => res.blob());
+      const file = new File([blob], `icon-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[weRequired][${i}][icon]`, file);
+    }
+  })
+);
+
 
 // WeDeliver
-formData.service.weDeliver?.forEach((item, i) => {
-  fd.append(`serviceDetails[weDeliver][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[weDeliver][${i}][description]`, item.description || "");
-});
+await Promise.all(
+  formData.service.weDeliver.map(async (item, i) => {
+    fd.append(`serviceDetails[weDeliver][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[weDeliver][${i}][description]`, item.description || "");
+
+    if (item.icon instanceof File) {
+      fd.append(`serviceDetails[weDeliver][${i}][icon]`, item.icon);
+    } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+      const blob = await fetch(item.icon).then(res => res.blob());
+      const file = new File([blob], `icon-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[weDeliver][${i}][icon]`, file);
+    }
+  })
+);
 
 // MoreInfo
-formData.service.moreInfo?.forEach((item, i) => {
-  fd.append(`serviceDetails[moreInfo][${i}][title]`, item.title || "");
-  fd.append(`serviceDetails[moreInfo][${i}][description]`, item.description || "");
-  if (item.image instanceof File) {
-    fd.append(`serviceDetails[moreInfo][${i}][image]`, item.image);
-  }
-});
+await Promise.all(
+  formData.service.moreInfo.map(async (item, i) => {
+    fd.append(`serviceDetails[moreInfo][${i}][title]`, item.title || "");
+    fd.append(`serviceDetails[moreInfo][${i}][description]`, item.description || "");
+
+    if (item.image instanceof File) {
+      fd.append(`serviceDetails[moreInfo][${i}][image]`, item.image);
+    } else if (typeof item.image === "string" && item.image.startsWith("blob:")) {
+      const blob = await fetch(item.image).then(res => res.blob());
+      const file = new File([blob], `image-${i}.png`, { type: blob.type });
+      fd.append(`serviceDetails[moreInfo][${i}][image]`, file);
+    }
+  })
+);
 
 // ConnectWith
 formData.service.connectWith?.forEach((item, i) => {
@@ -390,6 +465,8 @@ formData.service.timeRequired?.forEach((item, i) => {
     // ---------------- CREATE SERVICE ----------------
     const result = await createService(fd);
     console.log("Created service:", result);
+        alert("Serive Saved Successfully...");
+
   } catch (err) {
     console.error(err);
   } finally {

@@ -26,6 +26,8 @@ const AddModule = () => {
         }
 
         const formData = new FormData();
+
+        console.log("module : ", module)
         formData.append('name', moduleName);
         formData.append('image', selectedFile);
 

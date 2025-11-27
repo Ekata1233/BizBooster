@@ -48,18 +48,21 @@ export async function POST(req: NextRequest) {
       keyValues.push({ key, value });
     }
 
-    let thumbnailImage = "";
-    const thumbnailFile = formData.get("thumbnailImage") as File;
+   let thumbnailImage = "";
 
-    if (thumbnailFile) {
-      const buffer = Buffer.from(await thumbnailFile.arrayBuffer());
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${thumbnailFile.name}`,
-        folder: "/services/thumbnail",
-      });
-      thumbnailImage = upload.url;
-    }
+const thumbnailFile = formData.get("thumbnail") as File | null;
+
+if (thumbnailFile && thumbnailFile instanceof File) {
+  const buffer = Buffer.from(await thumbnailFile.arrayBuffer());
+  const upload = await imagekit.upload({
+    file: buffer,
+    fileName: `${uuidv4()}-${thumbnailFile.name}`,
+    folder: "/services/thumbnail",
+  });
+
+  thumbnailImage = upload.url;
+}
+
 
     const bannerImages: string[] = [];
 
@@ -123,27 +126,57 @@ export async function POST(req: NextRequest) {
     };
 
     // Helper function to extract list of objects (title + description)
-function extractTitleDesc(fieldName: string) {
+async function handleFileUpload(fileOrBlob: File | string, folder: string, prefix: string) {
+  if (fileOrBlob instanceof File) {
+    const buffer = Buffer.from(await fileOrBlob.arrayBuffer());
+    const upload = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${fileOrBlob.name}`,
+      folder,
+    });
+    return upload.url;
+  } else if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("blob:")) {
+    const blob = await fetch(fileOrBlob).then(res => res.blob());
+    const file = new File([blob], `${prefix}.png`, { type: blob.type });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const upload = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${file.name}`,
+      folder,
+    });
+    return upload.url;
+  }
+  return "";
+}
+
+async function processSectionWithIcon(fieldName: string, folder: string) {
   const arr: any[] = [];
   for (let i = 0; ; i++) {
     const title = formData.get(`serviceDetails[${fieldName}][${i}][title]`);
-    const description = formData.get(
-      `serviceDetails[${fieldName}][${i}][description]`
-    );
-
+    const description = formData.get(`serviceDetails[${fieldName}][${i}][description]`);
     if (!title) break;
-    arr.push({ title, description });
+
+    const iconOrImage = formData.get(`serviceDetails[${fieldName}][${i}][icon]`) 
+                     || formData.get(`serviceDetails[${fieldName}][${i}][image]`);
+
+    let uploadedURL = "";
+    if (iconOrImage) {
+      uploadedURL = await handleFileUpload(iconOrImage as File | string, folder, `${fieldName}-${i}`);
+    }
+
+    arr.push({ title, description, icon: uploadedURL });
   }
   return arr;
 }
 
-// Fields that follow same structure
-serviceDetails.assuredByFetchTrue = extractTitleDesc("assuredByFetchTrue");
-serviceDetails.howItWorks = extractTitleDesc("howItWorks");
-serviceDetails.whyChooseUs = extractTitleDesc("whyChooseUs");
-serviceDetails.weRequired = extractTitleDesc("weRequired");
-serviceDetails.weDeliver = extractTitleDesc("weDeliver");
-serviceDetails.moreInfo = extractTitleDesc("moreInfo");
+// Then use it:
+serviceDetails.assuredByFetchTrue = await processSectionWithIcon("assuredByFetchTrue", "/services/assuredIcons");
+serviceDetails.howItWorks = await processSectionWithIcon("howItWorks", "/services/howItWorks");
+serviceDetails.whyChooseUs = await processSectionWithIcon("whyChooseUs", "/services/whyChooseUs");
+serviceDetails.weRequired = await processSectionWithIcon("weRequired", "/services/weRequired");
+serviceDetails.weDeliver = await processSectionWithIcon("weDeliver", "/services/weDeliver");
+serviceDetails.moreInfo = await processSectionWithIcon("moreInfo", "/services/moreInfo");
+
 
 // Packages
 serviceDetails.packages = [];
@@ -213,19 +246,35 @@ for (let i = 0; ; i++) {
     });
 
     // Upload highlight images
-    const highlightImages: string[] = [];
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("serviceDetails[highlightImages]") && value instanceof File) {
-        const buffer = Buffer.from(await value.arrayBuffer());
-        const upload = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${value.name}`,
-          folder: "/services/highlight",
-        });
-        highlightImages.push(upload.url);
+serviceDetails.highlight = []; // reset
+
+for (const [key, value] of formData.entries()) {
+  if (key.startsWith("serviceDetails[highlight]")) {
+    // value can be a File or an array of Files
+    if (Array.isArray(value)) {
+      for (const file of value) {
+        if (file instanceof File) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${file.name}`,
+            folder: "/services/highlight",
+          });
+          serviceDetails.highlight.push(upload.url);
+        }
       }
+    } else if (value instanceof File) {
+      const buffer = Buffer.from(await value.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${value.name}`,
+        folder: "/services/highlight",
+      });
+      serviceDetails.highlight.push(upload.url);
     }
-    serviceDetails.highlight = highlightImages;
+  }
+}
+
 
     // Faq
     for (let i = 0; ; i++) {
