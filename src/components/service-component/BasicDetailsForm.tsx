@@ -41,7 +41,6 @@ interface BasicDetailsFormProps {
 const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
-
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 
