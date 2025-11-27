@@ -37,93 +37,122 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-interface Service {
-  _id: string;
-  serviceName: string;
-  thumbnailImage: string;
-  bannerImages: string[];
-  category: { _id: string; name: string };
-  subcategory: { _id: string; name: string };
-  price: number;
-  discount: number;
-  gst: number;
-  includeGst: boolean;
-  tags?: string[];
-  keyValues?: KeyValue[];
-  serviceDetails: ServiceDetails;
-  franchiseDetails: FranchiseDetails;
-  isDeleted: boolean;
-}
-
 interface KeyValue {
   key: string;
   value: string;
+  _id?: string;
 }
 
-interface ExtraSection {
+interface ConnectWithItem {
+  name: string;
+  email: string;
+  mobileNo: string;
+  _id?: string;
+}
+
+interface TitleDescItem {
   title: string;
   description: string;
-}
-
-interface WhyChooseItem {
+  image?: string | File | null;
   _id?: string;
 }
 
 interface FaqItem {
   question: string;
   answer: string;
+  _id?: string;
+}
+
+interface PackageItem {
+  name: string;
+  price: number;
+  discount: number;
+  discountedPrice: number;
+  whatYouGet: string[];
+  _id?: string;
+}
+
+interface TimeRequiredItem {
+  minDays: number;
+  maxDays: number;
+  _id?: string;
+}
+
+interface ExtraSection {
+  title: string;
+  subtitle?: string[];
+  description?: string[];
+  subDescription?: string[];
+  lists?: string[];
+  tags?: string[];
+  image?: string[]; 
+  _id?: string;
 }
 
 interface ServiceDetails {
-  overview: string;
-  highlight: File[] | FileList | null;
-  benefits: string;
-  howItWorks: string;
-  terms: string;
-  termsAndConditions: string;
-  document: string;
-  row?: ExtraSection[];
-  whyChoose?: WhyChooseItem[];
-  faqs?: FaqItem[];
-  faq?: FaqItem[];
+  aboutUs: any[];
+  assuredByFetchTrue: TitleDescItem[];
+  benefits: any[];
+  highlight: any[];
+  howItWorks: TitleDescItem[];
+  whyChooseUs: TitleDescItem[];
+  faq: FaqItem[];
+  document: any[];
+  weRequired: TitleDescItem[];
+  weDeliver: TitleDescItem[];
+  moreInfo: TitleDescItem[];
+  packages: PackageItem[];
+  extraSections: ExtraSection[];
+  extraImages: string[];
+  connectWith: ConnectWithItem[];
+  timeRequired: TimeRequiredItem[];
+  termsAndConditions: any[];
+}
+
+interface FranchiseModelItem {
+  title: string;
+  agreement: string;
+  price: number;
+  discount: number;
+  gst: number;
+  _id?: string;
 }
 
 interface FranchiseDetails {
-  overview: string;
   commission: string;
-  howItWorks: string;
-  termsAndConditions: string;
-  extraSections?: ExtraSection[];
+  franchiseModel: FranchiseModelItem[];
+  extraSections: ExtraSection[];
 }
 
 export interface ServiceData {
   _id: string;
   id: string;
+  serviceName: string;
   name: string;
+  category: { _id: string; name: string };
+  subcategory: { _id: string; name: string };
   thumbnailImage: string;
   bannerImages: string[];
-  category: { _id: string, name: string };
-  subcategory: { _id: string, name: string };
   price: number;
   discount: number;
   gst: number;
   includeGst: boolean;
-  tags?: string[];
-  keyValues?: KeyValue[];
+  gstInRupees?: number;
+  totalWithGst?: number;
+
+  keyValues: KeyValue[];
+  tags: string[];
+
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
-  status: string;
+
+  recommendedServices?: boolean;
   sortOrder?: number;
+  isDeleted: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-interface TableData {
-  id: string;
-  name: string;
-  category: string;
-  subcategory: string;
-  status: string;
-  sortOrder?: number;
-}
 
 const options = [
   { value: "latest", label: "Latest" },
@@ -250,7 +279,8 @@ const ServiceList = () => {
 
       const response = await axios.get('/api/service', { params });
       const serviceData = response.data;
-
+      console.log("services :",serviceData);
+      
       if (!serviceData.data || serviceData.data.length === 0) {
         setFilteredServices([]);
         setAllServices([]);
@@ -431,13 +461,16 @@ const ServiceList = () => {
       accessor: 'thumbnailImage',
       render: (row: ServiceData) => (
         <div className="w-20 h-20 overflow-hidden rounded">
-          <Image
-            width={80}
-            height={80}
-            src={row.thumbnailImage as string}
-            alt={row.name}
-            className="object-cover"
-          />
+         <Image
+  width={80}
+  height={80}
+  src={row.thumbnailImage && row.thumbnailImage.trim() !== "" 
+        ? row.thumbnailImage 
+        : "/no-image.png"}
+  alt="Thumbnail"
+  className="object-cover w-full h-full"
+/>
+
         </div>
       ),
     },
