@@ -10,6 +10,25 @@ import { useService } from '@/context/ServiceContext';
 // ---------------- TYPES ----------------
 type KeyValue = { key: string; value: string };
 type RowData = { title: string; description: string[] };
+type InvestmentRangeItem = {
+  minRange: number | string;
+  maxRange: number | string;
+};
+type MonthlyEarnItem = {
+  minEarn: string | number;
+  maxEarn: string | number;
+};
+
+type FranchiseModelItem = {
+  title: string;
+  agreement: string;
+  price: string | number;
+  discount: string | number;
+  gst: string | number;
+  fees: string | number;
+};
+
+
 type ExtraSection = {
   title: string;
   subtitle: string[];
@@ -24,6 +43,7 @@ type TitleDescription = { title: string; description: string; icon?: string };
 
 type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
 type MoreInfo = { title: string; image: string; description: string };
+
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type BasicDetailsData = {
@@ -73,9 +93,9 @@ type FranchiseDetails = {
   howItWorks?: string;
   termsAndConditions?: string;
   rows?: RowData[];
-  investmentRange?: string[];
-  monthlyEarnPotential?: string[];
-  franchiseModel?: string[];
+  investmentRange?: InvestmentRangeItem[];
+  monthlyEarnPotential?: MonthlyEarnItem[];
+  franchiseModel?: FranchiseModelItem[];
   extraSections?: ExtraSection[];
   extraImages?: (File | string)[];
 };
@@ -195,9 +215,10 @@ console.log(JSON.stringify(formData, null, 2));
     });
 
     // Banner Images
-    (formData.basic.covers || []).forEach((file, i) => {
-      fd.append(`bannerImages[${i}]`, file);
-    });
+    
+Array.from(formData.basic.covers || []).forEach((file, i) => {
+  fd.append(`bannerImages[${i}]`, file);
+});
 
     // ---------------- SERVICE DETAILS ----------------
     Object.keys(formData.service).forEach((key) => {
@@ -212,6 +233,11 @@ console.log(JSON.stringify(formData, null, 2));
         });
       }
     });
+
+        fd.append("benefits", formData.service.benefits   || "");
+            fd.append("aboutUs", formData.service.aboutUs   || "");
+                fd.append("document", formData.service.document   || "");
+                    fd.append("termsAndConditions", formData.service.termsAndConditions   || "");
 
     // AssuredByFetchTrue
 formData.service.assuredByFetchTrue?.forEach((item, i) => {
