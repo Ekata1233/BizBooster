@@ -20,17 +20,7 @@ export async function POST(req: NextRequest) {
    
 
      console.log("=== FormData Entries ===" , formData);
-    // for (const [key, value] of formData.entries()) {
-    //   if (value instanceof File) {
-    //     console.log(key, "=>", value.name, value.size, value.type);
-    //   } else {
-    //     console.log(key, "=>", value);
-    //   }
-    // }
-    // console.log("=======================");
-    // -------------------------------
-    // BASIC DETAILS
-    // -------------------------------
+
     const serviceName = formData.get("serviceName") as string;
     const category = formData.get("category") as string;
     const subcategory = formData.get("subcategory") as string;
@@ -41,9 +31,6 @@ export async function POST(req: NextRequest) {
     const includeGst = formData.get("includeGst") === "true";
 
     const recommendedServices = formData.get("recommendedServices") === "true";
-    // -----------------------------------
-    // TAGS
-    // -----------------------------------
     const tags: string[] = [];
     for (const key of formData.keys()) {
       if (key.startsWith("tags[")) {
@@ -52,9 +39,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // -----------------------------------
-    // KEY VALUES
-    // -----------------------------------
     const keyValues: any[] = [];
     for (let i = 0; ; i++) {
       const key = formData.get(`keyValues[${i}][key]`);
@@ -64,9 +48,6 @@ export async function POST(req: NextRequest) {
       keyValues.push({ key, value });
     }
 
-    // -----------------------------------
-    // THUMBNAIL IMAGE UPLOAD
-    // -----------------------------------
     let thumbnailImage = "";
     const thumbnailFile = formData.get("thumbnailImage") as File;
 
@@ -80,9 +61,6 @@ export async function POST(req: NextRequest) {
       thumbnailImage = upload.url;
     }
 
-    // -----------------------------------
-    // BANNER IMAGES
-    // -----------------------------------
     const bannerImages: string[] = [];
 
     for (const [key, val] of formData.entries()) {
@@ -99,9 +77,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // -----------------------------------
-    // PROVIDER PRICES
-    // -----------------------------------
     const providerPrices: any[] = [];
     for (let i = 0; ; i++) {
       const provider = formData.get(`providerPrices[${i}][provider]`);
@@ -127,9 +102,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // -----------------------------------
-    // SERVICE DETAILS
-    // -----------------------------------
     const serviceDetails = {
       benefits: [],
       aboutUs: [],
@@ -150,13 +122,83 @@ export async function POST(req: NextRequest) {
       extraImages: [],
     };
 
+    // Helper function to extract list of objects (title + description)
+function extractTitleDesc(fieldName: string) {
+  const arr: any[] = [];
+  for (let i = 0; ; i++) {
+    const title = formData.get(`serviceDetails[${fieldName}][${i}][title]`);
+    const description = formData.get(
+      `serviceDetails[${fieldName}][${i}][description]`
+    );
+
+    if (!title) break;
+    arr.push({ title, description });
+  }
+  return arr;
+}
+
+// Fields that follow same structure
+serviceDetails.assuredByFetchTrue = extractTitleDesc("assuredByFetchTrue");
+serviceDetails.howItWorks = extractTitleDesc("howItWorks");
+serviceDetails.whyChooseUs = extractTitleDesc("whyChooseUs");
+serviceDetails.weRequired = extractTitleDesc("weRequired");
+serviceDetails.weDeliver = extractTitleDesc("weDeliver");
+serviceDetails.moreInfo = extractTitleDesc("moreInfo");
+
+// Packages
+serviceDetails.packages = [];
+for (let i = 0; ; i++) {
+  const name = formData.get(`serviceDetails[packages][${i}][name]`);
+  if (!name) break;
+
+  const pkg: any = {
+    name,
+    price: formData.get(`serviceDetails[packages][${i}][price]`),
+    discount: formData.get(`serviceDetails[packages][${i}][discount]`),
+    discountedPrice: formData.get(`serviceDetails[packages][${i}][discountedPrice]`),
+    whatYouGet: []
+  };
+
+  for (let j = 0; ; j++) {
+    const item = formData.get(`serviceDetails[packages][${i}][whatYouGet][${j}]`);
+    if (!item) break;
+    pkg.whatYouGet.push(item);
+  }
+
+  serviceDetails.packages.push(pkg);
+}
+serviceDetails.termsAndConditions = formData.get("serviceDetails[termsAndConditions]") || "";
+
+// Connect With
+serviceDetails.connectWith = [];
+for (let i = 0; ; i++) {
+  const name = formData.get(`serviceDetails[connectWith][${i}][name]`);
+  if (!name) break;
+
+  serviceDetails.connectWith.push({
+    name,
+    mobileNo: formData.get(`serviceDetails[connectWith][${i}][mobileNo]`),
+    email: formData.get(`serviceDetails[connectWith][${i}][email]`)
+  });
+}
+
+// Time Required
+serviceDetails.timeRequired = [];
+for (let i = 0; ; i++) {
+  const minDays = formData.get(`serviceDetails[timeRequired][${i}][minDays]`);
+  const maxDays = formData.get(`serviceDetails[timeRequired][${i}][maxDays]`);
+  if (!minDays) break;
+
+  serviceDetails.timeRequired.push({ minDays, maxDays });
+}
+
+
     const arrayOfStringFields = [
       "benefits",
       "aboutUs",
       "document",
       "termsAndConditions",
       "extraImages",
-      "highlight",
     ];
 
     arrayOfStringFields.forEach((field) => {
@@ -238,9 +280,6 @@ export async function POST(req: NextRequest) {
       serviceDetails.extraSections.push(section);
     }
 
-    // -----------------------------------
-    // FRANCHISE DETAILS
-    // -----------------------------------
     const franchiseDetails = {
       commission: formData.get("franchiseDetails[commission]"),
       termsAndConditions: formData.get("franchiseDetails[termsAndConditions]"),
@@ -279,9 +318,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // -----------------------------------
-    // FINAL CALCULATIONS
-    // -----------------------------------
     const discountedPrice = discount
       ? Math.floor(price - price * (discount / 100))
       : price;
@@ -289,9 +325,6 @@ export async function POST(req: NextRequest) {
     const gstInRupees = (discountedPrice * gst) / 100;
     const totalWithGst = discountedPrice + gstInRupees;
 
-    // -----------------------------------
-    // SAVE SERVICE
-    // -----------------------------------
     const newService = await Service.create({
       serviceName,
       category,

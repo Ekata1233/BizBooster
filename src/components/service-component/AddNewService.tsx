@@ -13,17 +13,17 @@ type RowData = { title: string; description: string[] };
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: string[];
+  image: File[];
   description: string[];
   subDescription: string[];
   lists: string[];
   tags: string[];
 };
 type FAQ = { question: string; answer: string };
-type TitleDescription = { title: string; description: string; icon?: string };
+type TitleDescription = { title: string; description: string; icon?: File };
 
 type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
-type MoreInfo = { title: string; image: string; description: string };
+type MoreInfo = { title: string; image: File; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type BasicDetailsData = {
@@ -200,18 +200,18 @@ console.log(JSON.stringify(formData, null, 2));
     });
 
     // ---------------- SERVICE DETAILS ----------------
-    Object.keys(formData.service).forEach((key) => {
-      const value = (formData.service as any)[key];
-      if (Array.isArray(value)) {
-        value.forEach((v, i) => {
-          if (v instanceof File) {
-            fd.append(`serviceDetails[${key}][${i}]`, v);
-          } else {
-            fd.append(`serviceDetails[${key}][${i}]`, v || "");
-          }
-        });
-      }
-    });
+    // Object.keys(formData.service).forEach((key) => {
+    //   const value = (formData.service as any)[key];
+    //   if (Array.isArray(value)) {
+    //     value.forEach((v, i) => {
+    //       if (v instanceof File) {
+    //         fd.append(`serviceDetails[${key}][${i}]`, v);
+    //       } else {
+    //         fd.append(`serviceDetails[${key}][${i}]`, v || "");
+    //       }
+    //     });
+    //   }
+    // });
 
     // AssuredByFetchTrue
 formData.service.assuredByFetchTrue?.forEach((item, i) => {
