@@ -234,6 +234,11 @@ Array.from(formData.basic.covers || []).forEach((file, i) => {
       }
     });
 
+        fd.append("benefits", formData.service.benefits   || "");
+            fd.append("aboutUs", formData.service.aboutUs   || "");
+                fd.append("document", formData.service.document   || "");
+                    fd.append("termsAndConditions", formData.service.termsAndConditions   || "");
+
     // AssuredByFetchTrue
 formData.service.assuredByFetchTrue?.forEach((item, i) => {
   fd.append(`serviceDetails[assuredByFetchTrue][${i}][title]`, item.title || "");
