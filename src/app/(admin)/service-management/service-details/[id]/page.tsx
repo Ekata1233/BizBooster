@@ -161,7 +161,6 @@ const stripHtml = (html: string) => {
   return html.replace(/<[^>]+>/g, ""); // removes all tags
 };
 
-  console.log("service details : ", singleService);
   
   useEffect(() => {
     if (id) {

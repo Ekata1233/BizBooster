@@ -35,14 +35,12 @@ const PayoutSummaryCards: React.FC = () => {
       (wallet) => wallet?.userId?._id != null
     );
 
-    console.log("✅ Valid user wallets:", validUserWallets);
 
     const userTotal = validUserWallets?.reduce(
       (sum, wallet) => sum + (wallet?.pendingWithdraw || 0),
       0
     );
 
-    console.log("userTotal : ", userTotal)
 
 
     const providerTotal = allProviderWallets?.reduce(

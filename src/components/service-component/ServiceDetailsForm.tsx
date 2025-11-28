@@ -64,7 +64,6 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
-  console.log("service details : ", data)
 
   // ------------------- STATES -------------------
   const [benefits, setBenefits] = useState<string[]>(Array.isArray(data?.benefits) ? data.benefits : ['']);
@@ -163,11 +162,7 @@ useEffect(() => {
   if (data.timeRequired?.length) setTimeRequired(data.timeRequired);
 
 }, [data]);
-console.log("assuredByFetchTrue : ", assuredByFetchTrue)
 
-console.log("howItWorks : ", howItWorks)
-
-console.log("whyChooseUs : ", whyChooseUs)
 
   // ------------------- FILE HANDLERS -------------------
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

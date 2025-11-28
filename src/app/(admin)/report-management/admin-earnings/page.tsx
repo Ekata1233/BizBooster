@@ -39,7 +39,6 @@ const Page = () => {
     }, []);
     useEffect(() => {
         if (allWallet?.length > 0) {
-            console.log("WALLET FROM CONTEXT:", allWallet);
         }
     }, [allWallet]);
 

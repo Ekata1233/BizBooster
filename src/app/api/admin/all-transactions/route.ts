@@ -43,7 +43,6 @@ export async function GET() {
   const userWallets = await Wallet.find().populate('userId');
   const providerWallets = await ProviderWallet.find().populate('providerId');
   // console.log("provider wallets : ", providerWallets);
-  console.log("user wallets : ", userWallets);
 
   const userTxns: AdminTransaction[] = userWallets.flatMap(wallet =>
     wallet.transactions.map((txn: WalletTxn): AdminTransaction => ({

@@ -309,8 +309,8 @@ export default function PaymentAdjustment() {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage] = useState(10);
 
-    console.log("wallet : ", allWallet)
 
+    
     useEffect(() => {
         fetchAllWallet();
     }, [])

@@ -46,7 +46,6 @@ interface FranchiseDetailsFormProps {
 const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price }) => {
   const mounted = useRef(false);
 
-  console.log("franchise details for updating: ", data)
 
   // Commission and related states (unchanged logic / UI as requested)
   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>(data?.commissionType || 'percentage');

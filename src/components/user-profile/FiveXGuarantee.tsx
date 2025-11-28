@@ -32,7 +32,6 @@ const FiveXGuarantee = () => {
     const daysInTarget = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 0).getDate();
     return new Date(candidate.getFullYear(), candidate.getMonth(), Math.min(day, daysInTarget));
   };
-  console.log("Wallet :", wallet);
 
   // fetch user
   useEffect(() => {
@@ -40,7 +39,6 @@ const FiveXGuarantee = () => {
     if (!singleUser || singleUser._id !== id) {
       fetchSingleUser(id);
     }
-    console.log("user data", singleUser);
   }, [id, singleUser, fetchSingleUser]);
 
   // fetch checkout

@@ -366,7 +366,6 @@ export async function GET() {
             });
 
             const data = await res.json();
-            console.log("data : ", data);
 
             // ✅ Only push transaction if payout API did not return an error
             if (!data.type && data.transfer_id) {

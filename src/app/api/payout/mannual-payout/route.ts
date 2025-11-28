@@ -73,7 +73,6 @@ export async function POST(req: NextRequest) {
                     });
 
                     await providerWallet.save();
-                    console.log(`✅ Provider wallet updated for ${payout.providerId}`);
                 }
             } else if (payout.userId) {
                 // --- User Wallet Update ---
@@ -96,7 +95,6 @@ export async function POST(req: NextRequest) {
                     });
 
                     await userWallet.save();
-                    console.log(`✅ User wallet updated for ${payout.userId}`);
                 }
             }
         }
