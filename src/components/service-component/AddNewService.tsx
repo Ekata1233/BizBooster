@@ -43,7 +43,7 @@ type TitleDescription = { title: string; description: string; icon?: string };
 
 type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
 type MoreInfo = { title: string; image: string; description: string };
-
+type ExtraImageItem = { file: File; previewUrl: string,  icon: string; };
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type BasicDetailsData = {
@@ -83,7 +83,7 @@ export type ServiceDetails = {
   moreInfo: MoreInfo[];
   connectWith: ConnectWith[];
   timeRequired: TimeRequired[];
-  extraImages: string[];
+  extraImages: ExtraImageItem[];
 };
 
 type FranchiseDetails = {
@@ -159,6 +159,56 @@ const AddNewService = () => {
     },
   });
 
+  // Define the initial empty state outside your component
+const initialFormData: FormDataType = {
+  basic: {
+    serviceName: '',
+    category: '',
+    subcategory: '',
+    price: 0,
+    discount: 0,
+    discountedPrice: 0,
+    gst: 0,
+    includeGst: false,
+    thumbnail: null,
+    covers: [],
+    tags: [],
+    keyValues: [{ key: '', value: '' }],
+    recommendedServices: false,
+  },
+  service: {
+    benefits: [''],
+    aboutUs: [''],
+    highlight: [''],
+    document: [''],
+    assuredByFetchTrue: [{ title: '', description: '', icon: '' }],
+    howItWorks: [{ title: '', description: '', icon: '' }],
+    termsAndConditions: [''],
+    faq: [{ question: '', answer: '' }],
+    extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
+    whyChooseUs: [{ title: '', description: '', icon: '' }],
+    packages: [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }],
+    weRequired: [{ title: '', description: '', icon: '' }],
+    weDeliver: [{ title: '', description: '', icon: '' }],
+    moreInfo: [{ title: '', image: '', description: '' }],
+    connectWith: [{ name: '', mobileNo: '', email: '' }],
+    timeRequired: [{ minDays: null, maxDays: null }],
+    extraImages: [],
+  },
+  franchise: {
+    commission: '',
+    commissionType: 'percentage',
+    termsAndConditions: '',
+    investmentRange: [],
+    monthlyEarnPotential: [],
+    franchiseModel: [],
+    rows: [],
+    extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
+    extraImages: [],
+  },
+};
+
+
   console.log("formdata at the timing of typing : ", formData);
 
   // ---------------- Build FormData ----------------
@@ -221,6 +271,14 @@ if (bannerFiles) {
   });
 }
 
+// ---------------- TAGS ----------------
+if (Array.isArray(formData.basic.tags)) {
+  formData.basic.tags.forEach((tag, i) => {
+    fd.append(`tags[${i}]`, tag || "");
+  });
+}
+
+
     // KeyValues
     formData.basic.keyValues?.forEach((kv, i) => {
       fd.append(`keyValues[${i}][key]`, kv.key || "");
@@ -231,6 +289,7 @@ if (bannerFiles) {
 
     // ---------------- SERVICE DETAILS ----------------
     Object.keys(formData.service).forEach((key) => {
+      // if (key === "highlight") return; 
       const value = (formData.service as any)[key];
       if (Array.isArray(value)) {
         value.forEach((v, i) => {
@@ -249,14 +308,14 @@ if (bannerFiles) {
                     fd.append("termsAndConditions",JSON.stringify(formData.service.termsAndConditions || []));
 
                     // ---------------- HIGHLIGHT ----------------
-formData.service.highlight?.forEach((item, i) => {
-  if (item instanceof File) {
-    fd.append(`serviceDetails[highlight][${i}]`, item);
-  } else if (typeof item === "string") {
-    // If it's a blob URL or string, you can send as string
-    fd.append(`serviceDetails[highlight][${i}]`, item);
-  }
-});
+// formData.service.highlight?.forEach((item, i) => {
+//   if (item instanceof File) {
+//     fd.append(`serviceDetails[highlight][${i}]`, item);
+//   } else if (typeof item === "string") {
+//     // If it's a blob URL or string, you can send as string
+//     fd.append(`serviceDetails[highlight][${i}]`, item);
+//   }
+// });
 
 
     // AssuredByFetchTrue
@@ -389,6 +448,24 @@ formData.service.timeRequired?.forEach((item, i) => {
   fd.append(`serviceDetails[timeRequired][${i}][maxDays]`, item.maxDays?.toString() || "");
 });
 
+// Extra Images in Service
+for (const [i, item] of formData.service.extraImages.entries()) {
+  if (!item) continue;
+
+  if (item.file instanceof File) {
+    fd.append(`serviceDetails[extraImages][${i}]`, item.file);
+  } 
+  else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
+    const response = await fetch(item.icon);
+    const blob = await response.blob();
+    const file = new File([blob], `extra-${i}.png`, { type: blob.type });
+    fd.append(`serviceDetails[extraImages][${i}]`, file);
+  }
+}
+
+
+
+
 
     // Extra Sections inside Service
     formData.service.extraSections?.forEach((section, i) => {
@@ -408,9 +485,9 @@ formData.service.timeRequired?.forEach((item, i) => {
       section.tags?.forEach((v, j) =>
         fd.append(`serviceDetails[extraSections][${i}][tags][${j}]`, v || "")
       );
-      section.image?.forEach((file, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][image][${j}]`, file)
-      );
+       if (section.image instanceof File) {
+    fd.append(`serviceDetails[extraSections][${i}][image]`, section.image);
+  }
     });
 
     // ---------------- FRANCHISE DETAILS ----------------
@@ -453,19 +530,36 @@ formData.service.timeRequired?.forEach((item, i) => {
       section.tags?.forEach((v, j) =>
         fd.append(`franchiseDetails[extraSections][${i}][tags][${j}]`, v || "")
       );
-      section.image?.forEach((file, j) =>
-        fd.append(`franchiseDetails[extraSections][${i}][image][${j}]`, file)
-      );
+       section.image?.forEach((file, j) =>
+    fd.append(`franchiseDetails[extraSections][${i}][image][${j}]`, file)
+  );
     });
 
-    formData.franchise.extraImages?.forEach((file, i) => {
-      fd.append(`franchiseDetails[extraImages][${i}]`, file);
-    });
+formData.franchise.extraImages?.forEach((file, i) => {
+  if (file instanceof File) {
+    fd.append(`franchiseDetails[extraImages][${i}]`, file);
+  }
+});
+
 
     // ---------------- CREATE SERVICE ----------------
-    const result = await createService(fd);
+try {
+  const result = await createService(fd);
+
+  // Check if result indicates success
+  if (result && !result.error) {
     console.log("Created service:", result);
-        alert("Serive Saved Successfully...");
+    alert("Service Saved Successfully...");
+      setFormData(initialFormData);
+  } else {
+    console.error("Service creation failed:", result);
+    alert("Failed to save service. Please try again.");
+  }
+} catch (error) {
+  console.error("Error creating service:", error);
+  alert("An error occurred while saving the service.");
+}
+
 
   } catch (err) {
     console.error(err);
