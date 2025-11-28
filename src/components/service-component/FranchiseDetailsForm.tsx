@@ -46,6 +46,8 @@ interface FranchiseDetailsFormProps {
 const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price }) => {
   const mounted = useRef(false);
 
+  console.log("franchise details for updating: ", data)
+
   // Commission and related states (unchanged logic / UI as requested)
   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>(data?.commissionType || 'percentage');
   const [commissionValue, setCommissionValue] = useState(() => {
@@ -86,44 +88,6 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       return;
     }
   }, []);
-
-// const mounted = useRef(false);
-
-// useEffect(() => {
-//   if (!mounted.current) {
-//     mounted.current = true;
-//     return;
-//   }
-
-//   const newData = {
-//     commission: commissionValue ? (commissionType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`) : '',
-//     commissionType,
-//     termsAndConditions,
-//     investmentRange,
-//     monthlyEarnPotential,
-//     franchiseModel,
-//     extraSections,
-//     extraImages,
-//     overview,
-//   };
-
-//   setData((prev) => {
-//     // optional: only update if data actually changed
-//     return JSON.stringify(prev.franchiseDetails) !== JSON.stringify(newData)
-//       ? { ...prev, franchiseDetails: newData }
-//       : prev;
-//   });
-// }, [
-//   commissionValue,
-//   commissionType,
-//   termsAndConditions,
-//   investmentRange,
-//   monthlyEarnPotential,
-//   franchiseModel,
-//   extraSections,
-//   extraImages,
-//   overview
-// ]);
 
 
   useEffect(() => {
