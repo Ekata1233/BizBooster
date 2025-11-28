@@ -247,7 +247,10 @@ console.log(JSON.stringify(formData, null, 2));
     // ---------------- BASIC DETAILS ----------------
     fd.append("serviceName", formData.basic.serviceName   || "");
     fd.append("category", formData.basic.category || "");
-    fd.append("subcategory", formData.basic.subcategory || "");
+if (formData.basic.subcategory && formData.basic.subcategory.trim() !== "") {
+  fd.append("subcategory", formData.basic.subcategory);
+}
+// else do nothing, omit field entirely
     fd.append("price", formData.basic.price?.toString() || "0");
     fd.append("discount", formData.basic.discount?.toString() || "0");
     fd.append("gst", formData.basic.gst?.toString() || "0");
@@ -546,19 +549,20 @@ formData.franchise.extraImages?.forEach((file, i) => {
 try {
   const result = await createService(fd);
 
-  // Check if result indicates success
-  if (result && !result.error) {
-    console.log("Created service:", result);
+  if (result.success) {
+    console.log("Created service:", result.data);
     alert("Service Saved Successfully...");
-      setFormData(initialFormData);
+    setFormData(initialFormData);
   } else {
-    console.error("Service creation failed:", result);
-    alert("Failed to save service. Please try again.");
+    // Display backend validation message
+    alert(result.message);
+    console.error("Service creation failed:", result.message);
   }
-} catch (error) {
+} catch (error: any) {
   console.error("Error creating service:", error);
-  alert("An error occurred while saving the service.");
+  alert(error?.message || "An error occurred while saving the service.");
 }
+
 
 
   } catch (err) {

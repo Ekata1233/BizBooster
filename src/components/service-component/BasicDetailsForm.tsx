@@ -43,6 +43,7 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
   const { subcategories } = useSubcategory();
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
+const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
 
   // Sync key-value rows with parent data
   useEffect(() => {
@@ -103,20 +104,35 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
 
   return (
     <div>
-      <h4 className="text-base font-medium text-gray-800 text-center my-4">Basic Details</h4>
+      <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LEFT SIDE */}
         <div className="space-y-4">
-          <div>
-            <Label>Service Name</Label>
-            <Input
-              type="text"
-              placeholder="Service name"
-              value={data.serviceName || ""}
-              onChange={(e) => setData({ serviceName: e.target.value || null })}
-            />
-          </div>
+        <div>
+  <Label>Service Name</Label>
+  <Input
+    type="text"
+    placeholder="Service name"
+    value={data.serviceName || ""}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      setData({ serviceName: value || null });
+
+      if (!value.trim()) {
+        setErrors(prev => ({ ...prev, serviceName: "Service name is required" }));
+      } else {
+        setErrors(prev => ({ ...prev, serviceName: "" }));
+      }
+    }}
+  />
+
+  {errors.serviceName && (
+    <p className="text-red-500 text-sm mt-1">{errors.serviceName}</p>
+  )}
+</div>
+
 
           <div>
             <Label>Price</Label>
@@ -177,11 +193,28 @@ const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
         <div className="space-y-4">
           <div>
             <Label>Select Category</Label>
-            <Select
-              options={categoryOptions}
-              value={data.category || ""}
-              onChange={(val) => setData({ category: val || null })}
-            />
+           <Select
+  options={categoryOptions}
+  value={data.category || ""}
+  onChange={(val) => {
+    // remove error when selecting value
+    setErrors(prev => ({ ...prev, category: "" }));
+
+    // update data
+    setData({ category: val || null });
+
+    // validate here
+    if (!val) {
+      setErrors(prev => ({ ...prev, category: "Category is required" }));
+    }
+  }}
+/>
+
+{errors.category && (
+  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+)}
+
+
           </div>
 
           <div>

@@ -2,8 +2,16 @@ import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema(
   {
-    serviceName: { type: String },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    serviceName: { 
+  type: String, 
+  required: [true, "Service name is required"] ,
+  trim: true
+},
+category: { 
+  type: mongoose.Schema.Types.ObjectId, 
+  ref: "Category",
+  required: [true, "Category is required"]
+},
     subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" },
 
     price: { type: Number, default: null },
