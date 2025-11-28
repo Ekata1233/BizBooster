@@ -4,86 +4,34 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { useService } from '@/context/ServiceContext';
-import BasicDetailsForm from '@/components/service-component/BasicDetailsForm';
-import ServiceDetailsForm from '@/components/service-component/ServiceDetailsForm';
+import BasicDetailsForm, { BasicDetailsData } from '@/components/service-component/BasicDetailsForm';
+import ServiceDetailsForm, { ServiceDetails } from '@/components/service-component/ServiceDetailsForm';
 import FranchiseDetailsForm from '@/components/service-component/FranchiseDetailsForm';
 import ComponentCard from '@/components/common/ComponentCard';
 
-interface ExtraSection {
-  title: string;
-  description: string;
-}
-
-interface WhyChooseItem {
-  _id?: string;
-}
-
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-interface KeyValue {
-  key: string;
-  value: string;
-}
-
-type FormDataType = {
-  basic: {
-    name: string;
-    category: string;
-    subcategory: string;
-    price: number;
-    discount?: number;
-    discountedPrice?: number;
-    gst?: number;
-    includeGst?: boolean;
-    thumbnail: File | null;
-    thumbnailPreview?: string;
-    bannerImages: File[];
+/**
+ * Central "edit" shape. We keep types loose (any) in some places because
+ * child components emit slightly different shapes; this keeps the page usable.
+ */
+type EditState = {
+  basic: Partial<BasicDetailsData> & {
+    // extras we use internally
     bannerPreviews?: string[];
-    tags?: string[];
-    keyValues?: KeyValue[];
-    recommendedServices?: boolean;
+    thumbnailPreview?: string;
   };
-  service: {
-    overview: string;
-    highlight: File[] | FileList | null;
-    highlightPreviews?: string[] | undefined;
-    benefits: string;
-    howItWorks: string;
-    terms: string;
-    document: string;
-    rows: ExtraSection[];
-    whyChoose: WhyChooseItem[];
-    faqs: FaqItem[];
-  };
-  franchise: {
-    overview: string;
-    commission: string;
-    howItWorks: string;
-    termsAndConditions: string;
-    rows: ExtraSection[];
-  };
+  service: Partial<ServiceDetails> & { highlight?: any[]; highlightPreviews?: string[] };
+  franchise: any; // FranchiseDetails shape lives inside FranchiseDetailsForm — keep flexible
 };
 
 const EditService: React.FC = () => {
   const { id } = useParams();
+  const router = useRouter();
   const { fetchSingleService, singleService: service, updateService } = useService();
 
-  const [step, setStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  console.log("console service id : ", id);
-    console.log("console service : ", service);
-  // console.log("console singleService : ", singleService);
-
-  const router = useRouter();
-
-  const [formData, setFormData] = useState<FormDataType>({
+  const [state, setState] = useState<EditState>({
     basic: {
       name: '',
+      serviceName: '',
       category: '',
       subcategory: '',
       price: 0,
@@ -92,227 +40,304 @@ const EditService: React.FC = () => {
       includeGst: false,
       thumbnail: null,
       bannerImages: [],
+      bannerPreviews: [],
       tags: [],
       keyValues: [{ key: '', value: '' }],
+      recommendedServices: false,
+      discountedPrice: 0,
     },
     service: {
       overview: '',
-      highlight: null,
-      benefits: '',
-      howItWorks: '',
-      terms: '',
-      document: '',
-      rows: [],
-      whyChoose: [],
-      faqs: [],
+      highlight: [],
+      highlightPreviews: [],
+      benefits: [],
+      howItWorks: [],
+      termsAndConditions: [],
+      document: [],
+      extraSections: [],
+      faq: [],
+      whyChooseUs: [],
+      packages: [],
+      timeRequired: [],
+      extraImages: [],
     },
     franchise: {
       overview: '',
       commission: '',
+      commissionType: 'percentage',
+      commissionValue: '',
       howItWorks: '',
       termsAndConditions: '',
-      rows: [],
+      investmentRange: [],
+      monthlyEarnPotential: [],
+      franchiseModel: [],
+      extraSections: [],
+      extraImages: [],
     },
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 1) Fetch single service on load
   useEffect(() => {
-    if (id) {
-      fetchSingleService(id as string);
-    }
+    if (!id) return;
+    fetchSingleService(id as string);
   }, [id]);
 
+  // 2) When service arrives, map fields into our state shape
   useEffect(() => {
-    if (service) {
-      const mappedKeyValues = Array.isArray(service.keyValues) && service.keyValues.length > 0
-        ? service.keyValues.map(({ key, value }) => ({ key, value }))
-        : [{ key: '', value: '' }];
+    if (!service) return;
 
-      setFormData({
-        basic: {
-          name: service.serviceName || '',
-          category: service.category?._id || '',
-          subcategory: service.subcategory?._id || '',
-          price: service.price,
-          discount: service.discount || 0,
-          gst: service.gst || 0,
-          includeGst: service.includeGst ?? false,
-          thumbnail: null,
-          thumbnailPreview: service.thumbnailImage || '',
-          bannerImages: [],
-          bannerPreviews: service.bannerImages || [],
-          tags: service.tags || [],
-          keyValues: mappedKeyValues,
-          recommendedServices: service.recommendedServices ?? false,
-        },
-        service: {
-          overview: service.serviceDetails?.overview || '',
-          // highlight: [], 
-          highlight: Array.isArray(service.serviceDetails?.highlight)
-            ? service.serviceDetails.highlight.filter((item: any) => typeof item === 'string')
-            : [],
+    const mappedBasic: any = {
+      name: service.serviceName || '',
+      serviceName: service.serviceName || '',
+      category: service.category?._id || '',
+      subcategory: service.subcategory?._id || '',
+      price: service.price ?? 0,
+      discount: service.discount ?? 0,
+      gst: service.gst ?? 0,
+      includeGst: service.includeGst ?? false,
+      thumbnail: null,
+      thumbnailPreview: service.thumbnailImage || '',
+      bannerImages: [], // actual File objects are not present — user may upload
+      bannerPreviews: Array.isArray(service.bannerImages) ? service.bannerImages : [],
+      tags: service.tags || [],
+      keyValues: Array.isArray(service.keyValues) ? service.keyValues.map((kv: any) => ({ key: kv.key, value: kv.value })) : [{ key: '', value: '' }],
+      recommendedServices: service.recommendedServices ?? false,
+      discountedPrice: service.discountedPrice ?? 0,
+    };
 
-          highlightPreviews: Array.isArray(service.serviceDetails?.highlight)
-            ? service.serviceDetails.highlight.filter(item => typeof item === 'string')
-            : [],
-          benefits: service.serviceDetails?.benefits || '',
-          howItWorks: service.serviceDetails?.howItWorks || '',
-          terms: service.serviceDetails?.termsAndConditions || '',
-          document: service.serviceDetails?.document || '',
-          rows: service.serviceDetails?.rows || [],
-          whyChoose: service.serviceDetails?.whyChoose?.map(item => ({ _id: item._id })) || [],
-          faqs: (service.serviceDetails as any)?.faq || [],
-        },
-        franchise: {
-          overview: service.franchiseDetails?.overview || '',
-          commission: service.franchiseDetails?.commission || '',
-          howItWorks: service.franchiseDetails?.howItWorks || '',
-          termsAndConditions: service.franchiseDetails?.termsAndConditions || '',
-          rows: service.franchiseDetails?.extraSections || [],
-        },
-      });
-      // console.log("Initialized FAQs:", service);
+    // Map service details (preserve arrays if already arrays; fallback to simple transforms)
+    const svcDetails: any = service.serviceDetails || {};
+    const mappedService: any = {
+      overview: svcDetails.overview ?? '',
+      highlight: Array.isArray(svcDetails.highlight) ? svcDetails.highlight.filter((x: any) => typeof x === 'string') : [],
+      highlightPreviews: Array.isArray(svcDetails.highlight) ? svcDetails.highlight.filter((x: any) => typeof x === 'string') : [],
+      benefits: Array.isArray(svcDetails.benefits) ? svcDetails.benefits : (svcDetails.benefits ? [svcDetails.benefits] : []),
+      howItWorks: Array.isArray(svcDetails.howItWorks) ? svcDetails.howItWorks : (svcDetails.howItWorks ? [svcDetails.howItWorks] : []),
+      termsAndConditions: Array.isArray(svcDetails.termsAndConditions) ? svcDetails.termsAndConditions : (svcDetails.termsAndConditions ? [svcDetails.termsAndConditions] : []),
+      document: Array.isArray(svcDetails.document) ? svcDetails.document : (svcDetails.document ? [svcDetails.document] : []),
+      extraSections: Array.isArray(svcDetails.extraSections) ? svcDetails.extraSections : [],
+      faq: Array.isArray(svcDetails.faq) ? svcDetails.faq : [],
+      whyChooseUs: svcDetails.whyChoose || [],
+      packages: svcDetails.packages || [],
+      timeRequired: svcDetails.timeRequired || [],
+      extraImages: svcDetails.extraImages || [],
+      // keep any other props
+      ...svcDetails,
+    };
 
-      if (service.serviceName && service.category?._id && service.subcategory?._id && service.price) {
-        setCompletedSteps([1]);
-      }
+    const fr = service.franchiseDetails || {};
+    const mappedFranchise: any = {
+      overview: fr.overview ?? '',
+      commission: fr.commission ?? '',
+      commissionType: fr.commissionType ?? 'percentage',
+      commissionValue: typeof fr.commission === 'string' ? fr.commission.replace(/[^\d]/g, '') : (fr.commissionValue ?? ''),
+      howItWorks: fr.howItWorks ?? '',
+      termsAndConditions: fr.termsAndConditions ?? '',
+      investmentRange: fr.investmentRange ?? [],
+      monthlyEarnPotential: fr.monthlyEarnPotential ?? [],
+      franchiseModel: fr.franchiseModel ?? [],
+      extraSections: fr.extraSections ?? [],
+      extraImages: fr.extraImages ?? [],
+      // keep other props
+      ...fr,
+    };
 
-      setHasInitialized(true);
+    setState({
+      basic: mappedBasic,
+      service: mappedService,
+      franchise: mappedFranchise,
+    });
+  }, [service]);
 
+  // ---------- Child setData handlers ----------
+  const onBasicSet = (newData: Partial<BasicDetailsData>) => {
+    // normalize old 'covers' -> bannerImages if present (your BasicDetailsForm code used covers in the past)
+    const normalized = { ...newData } as any;
+    if ((normalized as any).covers instanceof FileList) {
+      normalized.bannerImages = Array.from((normalized as any).covers as FileList);
+      delete (normalized as any).covers;
     }
-  }, [service,id]);
-
-  const isStepComplete = (stepNumber: number): boolean => {
-    switch (stepNumber) {
-      case 1:
-        return !!formData.basic.name.trim() && formData.basic.category !== '' && formData.basic.price >= 0;
-      case 2:
-        return !!formData.service.overview.trim() && !!formData.service.benefits.trim()
-          && !!formData.service.howItWorks.trim() && !!formData.service.document.trim();
-      case 3:
-        return !!formData.franchise.overview.trim() && !!formData.franchise.commission
-          && !!formData.franchise.howItWorks.trim() && !!formData.franchise.termsAndConditions.trim();
-      default:
-        return false;
-    }
+    setState(prev => ({ ...prev, basic: { ...prev.basic, ...normalized } }));
   };
 
-  const nextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (!isStepComplete(step)) {
-      alert(`Please complete all required fields in step ${step}`);
+  const onServiceSet = (newData: Partial<ServiceDetails> | any) => {
+    setState(prev => ({ ...prev, service: { ...prev.service, ...newData } }));
+  };
+
+  const onFranchiseSet = (newData: any) => {
+    setState(prev => ({ ...prev, franchise: { ...prev.franchise, ...newData } }));
+  };
+
+  // ---------- Build FormData and send update ----------
+  const handleUpdate = async () => {
+    if (!service) {
+      alert('Service not loaded yet.');
       return;
     }
-    if (!completedSteps.includes(step)) {
-      setCompletedSteps([...completedSteps, step]);
-    }
-    if (step < 3) setStep(step + 1);
-  };
-
-  const prevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (step > 1) setStep(step - 1);
-  };
-
-  console.log("formddta of hightlight : ", formData)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!service || !isStepComplete(3)) return;
 
     setIsSubmitting(true);
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.basic.name);
-      formDataToSend.append('category', formData.basic.category);
-      formDataToSend.append('subcategory', formData.basic.subcategory);
-      formDataToSend.append('price', formData.basic.price.toString());
-      formDataToSend.append('recommendedServices', formData.basic.recommendedServices ? 'true' : 'false');
+      const fd = new FormData();
 
-      if (formData.basic.discount !== undefined) formDataToSend.append('discount', formData.basic.discount.toString());
-      if (formData.basic.gst !== undefined) formDataToSend.append('gst', formData.basic.gst.toString());
-      if (formData.basic.includeGst !== undefined) formDataToSend.append('includeGst', formData.basic.includeGst.toString());
+      // --- BASIC fields ---
+      const b = state.basic;
+      fd.append('name', String(b.name ?? b.serviceName ?? ''));
+      fd.append('category', String(b.category ?? ''));
+      fd.append('subcategory', String(b.subcategory ?? ''));
+      fd.append('price', String(b.price ?? 0));
+      fd.append('recommendedServices', b.recommendedServices ? 'true' : 'false');
 
-      if (formData.basic.thumbnail) {
-        formDataToSend.append('thumbnailImage', formData.basic.thumbnail);
-      }
-      console.log("Banner Images to upload:", formData.basic.bannerImages);
+      if (typeof b.discount !== 'undefined') fd.append('discount', String(b.discount ?? 0));
+      if (typeof b.gst !== 'undefined') fd.append('gst', String(b.gst ?? 0));
+      if (typeof b.includeGst !== 'undefined') fd.append('includeGst', String(!!b.includeGst));
 
-      formData.basic.bannerImages.forEach(file => {
-        formDataToSend.append('bannerImages', file);
-      });
-      formData.basic.tags?.forEach((tag, index) => {
-        formDataToSend.append(`tags[${index}]`, tag);
-      });
+      // thumbnail file (if user selected a File)
+      if (b.thumbnail instanceof File) fd.append('thumbnailImage', b.thumbnail);
 
-      formData.basic.keyValues?.forEach((pair, index) => {
-        formDataToSend.append(`keyValues[${index}][key]`, pair.key);
-        formDataToSend.append(`keyValues[${index}][value]`, pair.value);
-      });
-
-
-      formDataToSend.append('serviceDetails[overview]', formData.service.overview);
-      if (formData.service.highlight) {
-        const filesArray = Array.isArray(formData.service.highlight)
-          ? formData.service.highlight
-          : Array.from(formData.service.highlight);
-        filesArray.forEach((file, index) => {
-          formDataToSend.append(`serviceDetails[highlight][${index}]`, file);
+      // banner images - File objects
+      if (Array.isArray(b.bannerImages) && b.bannerImages.length) {
+        (b.bannerImages as File[]).forEach((f: File) => {
+          if (f instanceof File) fd.append('bannerImages', f);
         });
       }
-      // if (formData.service.highlight) {
-      //   const highlightsArray = Array.isArray(formData.service.highlight)
-      //     ? formData.service.highlight
-      //     : Array.from(formData.service.highlight);
 
-      //   highlightsArray.forEach((item, index) => {
-      //     // if (item instanceof File) {
-      //     formDataToSend.append(`serviceDetails[highlight][${index}]`, item);
-      //     // }
-      //   });
-      // }
+      // tags
+      if (Array.isArray(b.tags)) {
+        b.tags.forEach((t: string, i: number) => fd.append(`tags[${i}]`, t));
+      }
 
+      // keyValues -> send as repeated pairs
+      if (Array.isArray(b.keyValues)) {
+        b.keyValues.forEach((kv: any, i: number) => {
+          fd.append(`keyValues[${i}][key]`, String(kv.key ?? ''));
+          fd.append(`keyValues[${i}][value]`, String(kv.value ?? ''));
+        });
+      }
 
-      formDataToSend.append('serviceDetails[benefits]', formData.service.benefits);
-      formDataToSend.append('serviceDetails[howItWorks]', formData.service.howItWorks);
-      formDataToSend.append('serviceDetails[termsAndConditions]', formData.service.terms);
-      formDataToSend.append('serviceDetails[document]', formData.service.document);
+      // --- SERVICE fields ---
+      const s = state.service || {};
 
-      formData.service.rows.forEach((section, index) => {
-        formDataToSend.append(`serviceDetails[extraSections][${index}][title]`, section.title);
-        formDataToSend.append(`serviceDetails[extraSections][${index}][description]`, section.description);
-      });
+      if (s.overview) fd.append('serviceDetails[overview]', String(s.overview));
 
-      formData.service.whyChoose.forEach((item, index) => {
-        if (item._id) {
-          formDataToSend.append(`serviceDetails[whyChoose][${index}][_id]`, item._id);
-        }
-      });
+      // highlights: append files and send any existing preview URLs under highlightPreviews
+      if (Array.isArray(s.highlight)) {
+        s.highlight.forEach((h: any, idx: number) => {
+          if (h instanceof File) fd.append(`serviceDetails[highlight][${idx}]`, h);
+          else if (typeof h === 'string') fd.append(`serviceDetails[highlightPreviews][${idx}]`, h);
+        });
+      }
 
-      formData.service.faqs.forEach((item, index) => {
-        formDataToSend.append(`serviceDetails[faq][${index}][question]`, item.question);
-        formDataToSend.append(`serviceDetails[faq][${index}][answer]`, item.answer);
-      });
+      // For arrays that are content (benefits, howItWorks, terms, document) we serialize as JSON.
+      // This keeps the API shape clear on the server side (server can JSON.parse).
+      const safeAppendJson = (field: string, value: any) => {
+        if (typeof value === 'undefined' || value === null) return;
+        if (Array.isArray(value)) fd.append(field, JSON.stringify(value));
+        else fd.append(field, typeof value === 'string' ? value : JSON.stringify(value));
+      };
 
-      formDataToSend.append('franchiseDetails[overview]', formData.franchise.overview);
-      formDataToSend.append('franchiseDetails[commission]', String(formData.franchise.commission));
-      formDataToSend.append('franchiseDetails[howItWorks]', formData.franchise.howItWorks);
-      formDataToSend.append('franchiseDetails[termsAndConditions]', formData.franchise.termsAndConditions);
+      safeAppendJson('serviceDetails[benefits]', s.benefits);
+      safeAppendJson('serviceDetails[howItWorks]', s.howItWorks);
+      safeAppendJson('serviceDetails[termsAndConditions]', s.termsAndConditions);
+      safeAppendJson('serviceDetails[document]', s.document);
 
-      formData.franchise.rows.forEach((section, index) => {
-        formDataToSend.append(`franchiseDetails[extraSections][${index}][title]`, section.title);
-        formDataToSend.append(`franchiseDetails[extraSections][${index}][description]`, section.description);
-      });
+      // faq
+      if (Array.isArray(s.faq)) {
+        s.faq.forEach((f: any, idx: number) => {
+          fd.append(`serviceDetails[faq][${idx}][question]`, String(f.question ?? ''));
+          fd.append(`serviceDetails[faq][${idx}][answer]`, String(f.answer ?? ''));
+        });
+      }
 
-      const response = await updateService(service._id, formDataToSend);
+      // extraSections: send title + description (and upload images if File)
+      if (Array.isArray(s.extraSections)) {
+        s.extraSections.forEach((sec: any, i: number) => {
+          if (sec.title) fd.append(`serviceDetails[extraSections][${i}][title]`, String(sec.title));
+          if (sec.description) {
+            if (Array.isArray(sec.description)) fd.append(`serviceDetails[extraSections][${i}][description]`, JSON.stringify(sec.description));
+            else fd.append(`serviceDetails[extraSections][${i}][description]`, String(sec.description));
+          }
+          // images in section
+          if (sec.image) {
+            if (Array.isArray(sec.image)) {
+              sec.image.forEach((img: any, j: number) => {
+                if (img instanceof File) fd.append(`serviceDetails[extraSections][${i}][images][${j}]`, img);
+                else if (typeof img === 'string') fd.append(`serviceDetails[extraSections][${i}][imagePreviews][${j}]`, img);
+              });
+            } else {
+              if (sec.image instanceof File) fd.append(`serviceDetails[extraSections][${i}][images][0]`, sec.image);
+              else if (typeof sec.image === 'string') fd.append(`serviceDetails[extraSections][${i}][imagePreviews][0]`, sec.image);
+            }
+          }
+        });
+      }
+
+      // whyChoose, packages, timeRequired, extraImages -> serialize as JSON (except files)
+      safeAppendJson('serviceDetails[whyChoose]', s.whyChoose || s.whyChooseUs);
+      safeAppendJson('serviceDetails[packages]', s.packages);
+      safeAppendJson('serviceDetails[timeRequired]', s.timeRequired);
+      // extraImages may be files or urls
+      if (Array.isArray(s.extraImages)) {
+        s.extraImages.forEach((img: any, idx: number) => {
+          if (img instanceof File) fd.append('serviceDetails[extraImages]', img);
+          else fd.append(`serviceDetails[extraImagesPreviews][${idx}]`, String(img));
+        });
+      }
+
+      // --- FRANCHISE fields ---
+      const f = state.franchise || {};
+      if (f.overview) fd.append('franchiseDetails[overview]', String(f.overview));
+      if (typeof f.commission !== 'undefined') fd.append('franchiseDetails[commission]', String(f.commission));
+      if (f.howItWorks) fd.append('franchiseDetails[howItWorks]', String(f.howItWorks));
+      if (f.termsAndConditions) fd.append('franchiseDetails[termsAndConditions]', String(f.termsAndConditions));
+
+      // extraSections for franchise (title+description + images)
+      if (Array.isArray(f.extraSections)) {
+        f.extraSections.forEach((sec: any, i: number) => {
+          if (sec.title) fd.append(`franchiseDetails[extraSections][${i}][title]`, String(sec.title));
+          if (sec.description) {
+            if (Array.isArray(sec.description)) fd.append(`franchiseDetails[extraSections][${i}][description]`, JSON.stringify(sec.description));
+            else fd.append(`franchiseDetails[extraSections][${i}][description]`, String(sec.description));
+          }
+          if (sec.image) {
+            if (Array.isArray(sec.image)) {
+              sec.image.forEach((img: any, j: number) => {
+                if (img instanceof File) fd.append(`franchiseDetails[extraSections][${i}][images][${j}]`, img);
+                else fd.append(`franchiseDetails[extraSections][${i}][imagePreviews][${j}]`, String(img));
+              });
+            } else {
+              if (sec.image instanceof File) fd.append(`franchiseDetails[extraSections][${i}][images][0]`, sec.image);
+              else fd.append(`franchiseDetails[extraSections][${i}][imagePreviews][0]`, String(sec.image));
+            }
+          }
+        });
+      }
+
+      // franchiseModel, investmentRange, monthlyEarnPotential -> send as JSON
+      if (Array.isArray(f.franchiseModel)) fd.append('franchiseDetails[franchiseModel]', JSON.stringify(f.franchiseModel));
+      if (Array.isArray(f.investmentRange)) fd.append('franchiseDetails[investmentRange]', JSON.stringify(f.investmentRange));
+      if (Array.isArray(f.monthlyEarnPotential)) fd.append('franchiseDetails[monthlyEarnPotential]', JSON.stringify(f.monthlyEarnPotential));
+      if (Array.isArray(f.extraImages)) {
+        f.extraImages.forEach((img: any, idx: number) => {
+          if (img instanceof File) fd.append('franchiseDetails[extraImages]', img);
+          else fd.append(`franchiseDetails[extraImagesPreviews][${idx}]`, String(img));
+        });
+      }
+
+      // finally call updateService (your context function)
+      const response = await updateService(service._id, fd);
+
       if (response?.success) {
         alert('Service updated successfully!');
-        router.push(`/service-management/service-list`);
+        router.push('/service-management/service-list');
       } else {
-        alert('Update failed. Please try again.');
+        console.error('Update failed', response);
+        alert('Update failed — check console for details.');
       }
-    } catch (error) {
-      console.error('Error updating service:', error);
-      alert('Failed to update service. Please try again.');
+    } catch (err) {
+      console.error('Error updating service:', err);
+      alert('An error occurred while updating. See console.');
     } finally {
       setIsSubmitting(false);
     }
@@ -320,116 +345,52 @@ const EditService: React.FC = () => {
 
   return (
     <div className="no-scrollbar w-full max-w-full rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 mx-auto mt-8">
-      <ComponentCard title="Edit Service">
-        <div>
-          <div className="flex items-center justify-between mb-10 relative">
-            {['Basic', 'Service', 'Franchise'].map((label, index) => {
-              const stepNumber = index + 1;
-              const isCompleted = completedSteps.includes(stepNumber) || step > stepNumber;
-              const isActive = step === stepNumber;
+      <ComponentCard title="Edit Service — All Sections">
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">All sections are shown. Edit fields in any section — data will be merged centrally. When ready click <strong>Update</strong>.</p>
 
-              return (
-                <div key={label} className="flex-1 flex flex-col items-center relative">
-                  {index !== 0 && (
-                    <div className="absolute top-5 left-[-50%] w-full h-1">
-                      <div className={`h-1 w-full ${isCompleted ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-                    </div>
-                  )}
-                  <div className={`z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 text-sm font-bold
-                      ${isCompleted ? 'bg-blue-600 text-white border-blue-600'
-                      : isActive ? 'bg-white text-blue-600 border-blue-600'
-                        : 'bg-white text-gray-400 border-gray-300'
-                    }`}>
-                    {isCompleted ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      stepNumber
-                    )}
-                  </div>
-                  <span className={`mt-2 text-sm text-center ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
+          <BasicDetailsForm
+            data={{
+              serviceName: state.basic.serviceName ?? state.basic.name,
+              category: state.basic.category,
+              subcategory: state.basic.subcategory,
+              price: state.basic.price,
+              discount: state.basic.discount,
+              includeGst: state.basic.includeGst,
+              gst: state.basic.gst,
+              recommendedServices: state.basic.recommendedServices,
+              discountedPrice: state.basic.discountedPrice,
+              thumbnailImage: state.basic.thumbnail,
+              bannerImages: state.basic.bannerImages,
+              tags: state.basic.tags,
+              keyValues: state.basic.keyValues,
+            }}
+            setData={(d) => onBasicSet(d)}
+          />
+
+          <ServiceDetailsForm
+            data={state.service as ServiceDetails}
+            setData={(d: any) => onServiceSet(d)}
+          />
+
+          <FranchiseDetailsForm
+            data={state.franchise}
+            setData={(d: any) => onFranchiseSet(d)}
+            price={state.basic.discountedPrice}
+          />
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+
+            <button
+              type="button"
+              onClick={handleUpdate}
+              disabled={isSubmitting}
+              className={`px-4 py-2 rounded text-white ${isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
+            >
+              {isSubmitting ? 'Updating...' : 'Update'}
+            </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {step === 1 && (
-
-              <BasicDetailsForm
-                data={formData.basic}
-                setData={(newData) => {
-                  const bannerImages = (newData.covers instanceof FileList)
-                    ? Array.from(newData.covers)
-                    : (Array.isArray(newData.covers) ? newData.covers : []);
-
-                  setFormData(prev => ({
-                    ...prev,
-                    basic: {
-                      ...prev.basic,
-                      ...newData,
-                      bannerImages: bannerImages.length ? bannerImages : prev.basic.bannerImages,
-                      tags: newData.tags ?? prev.basic.tags,
-                      keyValues: newData.keyValues ?? prev.basic.keyValues,
-                    },
-                  }));
-                }}
-              />
-
-            )}
-
-            {step === 2 && (
-              <ServiceDetailsForm
-                data={formData.service}
-                setData={(newData) => setFormData(prev => ({ ...prev, service: { ...prev.service, ...newData } }))}
-              />
-            )}
-
-            {step === 3 && (
-              <FranchiseDetailsForm
-                data={formData.franchise}
-                setData={(newData) => setFormData(prev => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
-                price={formData.basic?.discountedPrice}
-                // discountedPrice={formData.basic?.discountedPrice}
-              />
-            )}
-
-            <div className="flex justify-between pt-4">
-              {step > 1 ? (
-                <button type="button" onClick={prevStep} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-                  Previous
-                </button>
-              ) : <div></div>}
-
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={!isStepComplete(step) && !completedSteps.includes(step)}
-                  className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(step) || completedSteps.includes(step)
-                    ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                  Next
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={!isStepComplete(3) || isSubmitting}
-                  className={`ml-auto px-4 py-2 text-white rounded ${isStepComplete(3)
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                    }`}
-                >
-                  {isSubmitting ? 'Updating...' : 'Update'}
-                </button>
-              )}
-            </div>
-          </form>
         </div>
       </ComponentCard>
     </div>

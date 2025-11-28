@@ -11,6 +11,138 @@ import {
 } from "../../../../../icons/index";
 import Link from 'next/link';
 
+interface KeyValue {
+  key: string;
+  value: string;
+  _id?: string;
+}
+type RowData = { title: string; description: string[] };
+type InvestmentRangeItem = {
+  minRange: number | string;
+  maxRange: number | string;
+};
+type MonthlyEarnItem = {
+  minEarn: string | number;
+  maxEarn: string | number;
+};
+interface ConnectWithItem {
+  name: string;
+  email: string;
+  mobileNo: string;
+  _id?: string;
+}
+
+interface TitleDescItem {
+  title: string;
+  description: string;
+  image?: string | File | null;
+  _id?: string;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+  _id?: string;
+}
+
+interface PackageItem {
+  name: string;
+  price: number;
+  discount: number;
+  discountedPrice: number;
+  whatYouGet: string[];
+  _id?: string;
+}
+
+interface TimeRequiredItem {
+  minDays: number;
+  maxDays: number;
+  _id?: string;
+}
+
+interface ExtraSection {
+  title: string;
+  subtitle?: string[];
+  description?: string[];
+  subDescription?: string[];
+  lists?: string[];
+  tags?: string[];
+  image?: string[]; 
+  _id?: string;
+}
+
+interface ServiceDetails {
+  aboutUs: any[];
+  assuredByFetchTrue: TitleDescItem[];
+  benefits: any[];
+  highlight: any[];
+  howItWorks: TitleDescItem[];
+  whyChooseUs: TitleDescItem[];
+  faq: FaqItem[];
+  document: any[];
+  weRequired: TitleDescItem[];
+  weDeliver: TitleDescItem[];
+  moreInfo: TitleDescItem[];
+  packages: PackageItem[];
+  extraSections: ExtraSection[];
+  extraImages: string[];
+  connectWith: ConnectWithItem[];
+  timeRequired: TimeRequiredItem[];
+  termsAndConditions: any[];
+}
+
+interface FranchiseModelItem {
+  title: string;
+  agreement: string;
+  price: number;
+  discount: number;
+  gst: number;
+  _id?: string;
+}
+
+interface FranchiseDetails {
+   commission?: string;
+  commissionType?: 'percentage' | 'amount';
+ 
+  howItWorks?: string;
+  termsAndConditions?: string;
+  rows?: RowData[];
+  investmentRange?: InvestmentRangeItem[];
+  monthlyEarnPotential?: MonthlyEarnItem[];
+  franchiseModel?: FranchiseModelItem[];
+  extraSections?: ExtraSection[];
+  extraImages?: (File | string)[];
+}
+
+export interface ServiceData {
+  _id: string;
+  id: string;
+  serviceName: string;
+  name: string;
+  category: { _id: string; name: string };
+  subcategory: { _id: string; name: string };
+  thumbnailImage: string;
+  bannerImages: string[];
+  price: number;
+  discount: number;
+  gst: number;
+  includeGst: boolean;
+  gstInRupees?: number;
+  totalWithGst?: number;
+
+  keyValues: KeyValue[];
+  tags: string[];
+
+  serviceDetails: ServiceDetails;
+  franchiseDetails: FranchiseDetails;
+
+  recommendedServices?: boolean;
+  sortOrder?: number;
+  isDeleted: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 const ServiceDetailsPage = () => {
   const params = useParams();
   const id = params?.id as string;
@@ -23,6 +155,11 @@ const ServiceDetailsPage = () => {
     singleServiceLoading,
     singleServiceError,
   } = useService();
+
+const stripHtml = (html: string) => {
+  if (!html) return "";
+  return html.replace(/<[^>]+>/g, ""); // removes all tags
+};
 
   console.log("service details : ", singleService);
   
@@ -47,8 +184,9 @@ const ServiceDetailsPage = () => {
   const service = singleService;
 
   // Safe access to nested properties with fallbacks
-  const serviceDetails = service?.serviceDetails || {};
-  const franchiseDetails = service?.franchiseDetails || {};
+const serviceDetails: ServiceDetails = service?.serviceDetails || ({} as ServiceDetails);
+const franchiseDetails: FranchiseDetails = service?.franchiseDetails || ({} as FranchiseDetails);
+
   
   const highlightRaw = serviceDetails?.highlight || [];
   const benefits = serviceDetails?.benefits || [];
@@ -151,22 +289,30 @@ const ServiceDetailsPage = () => {
         <ComponentCard title="Service Details">
           <div className="space-y-4">
             {/* About Us */}
-            {serviceDetails.aboutUs && serviceDetails.aboutUs.length > 0 && (
-              <SectionCard title="About Us">
-                {serviceDetails.aboutUs.map((item: string, index: number) => (
-                  <p key={index} className="text-sm text-gray-700 mb-2">{item}</p>
-                ))}
-              </SectionCard>
-            )}
+           {/* About Us */}
+{serviceDetails.aboutUs && serviceDetails.aboutUs.length > 0 && (
+  <SectionCard title="About Us">
+    {serviceDetails.aboutUs.map((item: string, index: number) => (
+      <p key={index} className="text-sm text-gray-700 mb-2">
+        {stripHtml(item)}
+      </p>
+    ))}
+  </SectionCard>
+)}
 
-            {/* Benefits */}
-            {benefits.length > 0 && (
-              <SectionCard title="Benefits">
-                {benefits.map((benefit: string, index: number) => (
-                  <p key={index} className="text-sm text-gray-700 mb-2">• {benefit}</p>
-                ))}
-              </SectionCard>
-            )}
+
+      
+           {/* Benefits */}
+{benefits.length > 0 && (
+  <SectionCard title="Benefits">
+    {benefits.map((benefit: string, index: number) => (
+      <p key={index} className="text-sm text-gray-700 mb-2">
+        • {stripHtml(benefit)}
+      </p>
+    ))}
+  </SectionCard>
+)}
+
 
             {/* Highlight Images */}
             {highlightArray.length > 0 && (
@@ -326,23 +472,28 @@ const ServiceDetailsPage = () => {
               </SectionCard>
             )}
 
-            {/* Documents */}
-            {document.length > 0 && (
-              <SectionCard title="Documents">
-                {document.map((doc: string, index: number) => (
-                  <p key={index} className="text-sm text-gray-700 mb-2">• {doc}</p>
-                ))}
-              </SectionCard>
-            )}
+          
+           {/* Documents */}
+{document.length > 0 && (
+  <SectionCard title="Documents">
+    {document.map((doc: string, index: number) => (
+      <p key={index} className="text-sm text-gray-700 mb-2">
+        • {stripHtml(doc)}
+      </p>
+    ))}
+  </SectionCard>
+)}
 
-            {/* Terms and Conditions */}
-            {termsAndConditions.length > 0 && (
-              <SectionCard title="Terms and Conditions">
-                {termsAndConditions.map((term: string, index: number) => (
-                  <p key={index} className="text-sm text-gray-700 mb-2">• {term}</p>
-                ))}
-              </SectionCard>
-            )}
+{/* Terms and Conditions */}
+{termsAndConditions.length > 0 && (
+  <SectionCard title="Terms and Conditions">
+    {termsAndConditions.map((term: string, index: number) => (
+      <p key={index} className="text-sm text-gray-700 mb-2">
+        • {stripHtml(term)}
+      </p>
+    ))}
+  </SectionCard>
+)}
 
             {/* FAQ Section */}
             {faq.length > 0 && (
@@ -476,9 +627,13 @@ const ServiceDetailsPage = () => {
             )}
 
             {/* Terms & Conditions */}
-            {franchiseDetails.termsAndConditions && (
-              <SectionCard title="Terms & Conditions" isHtml content={franchiseDetails.termsAndConditions} />
-            )}
+           {franchiseDetails.termsAndConditions && (
+  <SectionCard
+    title="Terms & Conditions"
+    content={stripHtml(franchiseDetails.termsAndConditions)}
+  />
+)}
+
 
             {/* Investment Range */}
             {franchiseDetails.investmentRange && franchiseDetails.investmentRange.length > 0 && (
