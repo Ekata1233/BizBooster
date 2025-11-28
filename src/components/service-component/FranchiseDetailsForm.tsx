@@ -117,6 +117,33 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   ]);
 
 
+  useEffect(() => {
+     if (data?.termsAndConditions) {
+    setTermsAndConditions(data.termsAndConditions);
+  }
+  if (data.commission) {
+    const numericValue = data.commission.replace(/[^\d]/g, '');
+    setCommissionValue(numericValue);
+  }
+   if (Array.isArray(data.investmentRange) && data.investmentRange.length) {
+    setInvestmentRange(data.investmentRange);
+  }
+
+  if (
+    Array.isArray(data.monthlyEarnPotential) &&
+    data.monthlyEarnPotential.length
+  ) {
+    setMonthlyEarnPotential(data.monthlyEarnPotential);
+  }
+
+  if (Array.isArray(data.franchiseModel) && data.franchiseModel.length) {
+    setFranchiseModel(data.franchiseModel);
+  }
+
+  if (Array.isArray(data.extraSections) && data.extraSections.length) {
+    setExtraSections(data.extraSections);
+  }
+}, [data]);
   // -----------------------
   // Commission handlers (kept unchanged)
   // -----------------------
