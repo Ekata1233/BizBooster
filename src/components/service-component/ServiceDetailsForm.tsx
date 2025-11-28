@@ -64,8 +64,10 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
+  console.log("service details : ", data)
+
   // ------------------- STATES -------------------
-  const [benefits, setBenefits] = useState<string[]>(data?.benefits || []);
+  const [benefits, setBenefits] = useState<string[]>(Array.isArray(data?.benefits) ? data.benefits : ['']);
   const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
   const [highlight, setHighlight] = useState<string[]>(data?.highlight || ['']);
   const [highlightPreviews, setHighlightPreviews] = useState<string[]>(data?.highlightPreviews || []);
@@ -137,70 +139,35 @@ const [extraImages, setExtraImages] = useState<ExtraImageItem[]>(
     extraImages,]);
 
 
-
-//   console.log("data : ", data)
   useEffect(() => setEditorReady(true), []);
 
-//  useEffect(() => {
-//   if (!mounted.current) {
-//     mounted.current = true;
-//     return;
-//   }
+useEffect(() => {
+  if (!data) return;
 
-//   const serviceDetailsState: ServiceDetails = {
-//     benefits,
-//     aboutUs,
-//     highlight,
-//     highlightPreviews,
-//     document,
-//     assuredByFetchTrue,
-//     howItWorks,
-//     termsAndConditions,
-//     faq,
-//     extraSections,
-//     whyChooseUs,
-//     packages,
-//     weRequired,
-//     weDeliver,
-//     moreInfo,
-//     connectWith,
-//     timeRequired,
-//     extraImages,
-//   };
+  if (Array.isArray(data.benefits)) setBenefits(data.benefits);
+  if (Array.isArray(data.aboutUs)) setAboutUs(data.aboutUs);
+  if (Array.isArray(data.highlight)) setHighlight(data.highlight);
+  if (Array.isArray(data.highlightPreviews)) setHighlightPreviews(data.highlightPreviews);
+  if (Array.isArray(data.document)) setDocument(data.document);
+  if (data.assuredByFetchTrue?.length) setAssuredByFetchTrue(data.assuredByFetchTrue);
+  if (data.howItWorks?.length) setHowItWorks(data.howItWorks);
+  if (Array.isArray(data.termsAndConditions)) setTermsAndConditions(data.termsAndConditions);
+  if (data.faq?.length) setFaq(data.faq);
+  if (data.extraSections?.length) setExtraSections(data.extraSections);
+  if (data.whyChooseUs?.length) setWhyChooseUs(data.whyChooseUs);
+  if (data.packages?.length) setPackages(data.packages);
+  if (data.weRequired?.length) setWeRequired(data.weRequired);
+  if (data.weDeliver?.length) setWeDeliver(data.weDeliver);
+  if (data.moreInfo?.length) setMoreInfo(data.moreInfo);
+  if (data.connectWith?.length) setConnectWith(data.connectWith);
+  if (data.timeRequired?.length) setTimeRequired(data.timeRequired);
 
-//   setData(prevData => {
-//     // Only update if different
-//     const prevJSON = JSON.stringify(prevData.serviceDetails);
-//     const nextJSON = JSON.stringify(serviceDetailsState);
+}, [data]);
+console.log("assuredByFetchTrue : ", assuredByFetchTrue)
 
-//     console.log("prevjson : ", prevJSON)
-//         console.log("nextJSON : ", nextJSON)
+console.log("howItWorks : ", howItWorks)
 
-//     if (prevJSON === nextJSON) return prevData;
-//     return { serviceDetails: serviceDetailsState };
-//   });
-// }, [
-//   benefits,
-//   aboutUs,
-//   highlight,
-//   highlightPreviews,
-//   document,
-//   assuredByFetchTrue,
-//   howItWorks,
-//   termsAndConditions,
-//   faq,
-//   extraSections,
-//   whyChooseUs,
-//   packages,
-//   weRequired,
-//   weDeliver,
-//   moreInfo,
-//   connectWith,
-//   timeRequired,
-//   extraImages,
-// ]);
-
-
+console.log("whyChooseUs : ", whyChooseUs)
 
   // ------------------- FILE HANDLERS -------------------
   const handleMultipleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

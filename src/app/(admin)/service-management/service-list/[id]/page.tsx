@@ -343,11 +343,12 @@ const EditService: React.FC = () => {
     }
   };
 
+  console.log("selected service  : ", state)
+
   return (
     <div className="no-scrollbar w-full max-w-full rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 mx-auto mt-8">
       <ComponentCard title="Edit Service — All Sections">
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">All sections are shown. Edit fields in any section — data will be merged centrally. When ready click <strong>Update</strong>.</p>
 
           <BasicDetailsForm
             data={{
