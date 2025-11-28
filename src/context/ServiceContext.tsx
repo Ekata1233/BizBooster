@@ -234,19 +234,25 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   // ---------------------------------------------
   // CREATE SERVICE
   // ---------------------------------------------
-  const createService = async (formData: FormData) => {
-    try {
-      const res = await axios.post(`${BASE_URL}`, formData);
+const createService = async (formData: FormData) => {
+  try {
+    const res = await axios.post(`${BASE_URL}`, formData);
 
-      if (res.data.success) {
-        const newService = res.data.data;
-        setServices((prev) => [...prev, newService]);
-        return newService;
-      }
-    } catch (err) {
-      console.error("Create service error:", err);
+    // Return the whole backend response (success or error)
+    return res.data; 
+  } catch (err: any) {
+    console.error("Create service error:", err);
+
+    // If backend returned a response with error message
+    if (err.response && err.response.data) {
+      return err.response.data; // e.g., { success: false, message: "Service name is required" }
     }
-  };
+
+    // Fallback generic error
+    return { success: false, message: "Unknown error occurred" };
+  }
+};
+
 
   // ---------------------------------------------
   // UPDATE SERVICE

@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
 
       // ✅ FIRST sort Franchise → THEN sort by sortOrder
       {
-        $sort: { sortKey: 1, sortOrder: 1 }
+        $sort: {sortOrder: 1 }
       }
     ]);
 

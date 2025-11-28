@@ -292,26 +292,28 @@ function renderArrayField<T extends object>(
       </h4>
 
       {/* CKEditor fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <Label>Benefits</Label>
-          {editorReady && <ClientSideCustomEditor value={benefits.join('\n')} onChange={val => setBenefits(val.split('\n'))} />}
-        </div>
-        <div>
-          <Label>About Us</Label>
-          {editorReady && <ClientSideCustomEditor value={aboutUs.join('\n')} onChange={val => setAboutUs(val.split('\n'))} />}
-        </div>
-        <div>
-          <Label>Document</Label>
-          {editorReady && <ClientSideCustomEditor value={document.join('\n')} onChange={val => setDocument(val.split('\n'))} />}
-        </div>
-        <div>
-          <Label>Terms & Conditions</Label>
-          {editorReady && <ClientSideCustomEditor value={termsAndConditions.join('\n')} onChange={val => setTermsAndConditions(val.split('\n'))} />}
-        </div>
-      </div>
+    <div className="space-y-6">
+  <div>
+    <Label>Benefits</Label>
+    {editorReady && (
+      <ClientSideCustomEditor
+        value={benefits.join('\n')}
+        onChange={(val) => setBenefits(val.split('\n'))}
+      />
+    )}
+  </div>
 
-      {/* Highlight Images */}
+  <div>
+    <Label>About Us</Label>
+    {editorReady && (
+      <ClientSideCustomEditor
+        value={aboutUs.join('\n')}
+        onChange={(val) => setAboutUs(val.split('\n'))}
+      />
+    )}
+  </div>
+
+    {/* Highlight Images */}
       <Label>Highlight Images</Label>
       <FileInput onChange={handleMultipleFileChange} multiple />
       <div className="flex flex-wrap gap-4 mt-2">
@@ -319,10 +321,57 @@ function renderArrayField<T extends object>(
           <Image key={idx} src={src} alt={`highlight-${idx}`} width={100} height={100} className="rounded" />
         ))}
       </div>
+        
+        {/* Why Choose Us */}
+         <div>
+          <Label>Why Choose Us</Label>
+{renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
+  <div className="grid gap-2">
+    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
 
-      {/* Arrays and Nested Arrays */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Assured By FetchTrue */}
+    {/* FILE UPLOAD FOR ICON */}
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateItem({ ...item, icon: url });
+        }
+      }}
+    />
+
+    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+  </div>
+), { title: '', description: '', icon: '' })}
+
+        </div>
+
+       {/* How It Works */}
+        <div>
+          <Label>How It Works</Label>
+{renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
+  <div className="grid gap-2">
+    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+
+    {/* FILE UPLOAD FOR ICON */}
+    <FileInput
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          updateItem({ ...item, icon: url });
+        }
+      }}
+    />
+
+    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
+  </div>
+), { title: '', description: '', icon: '' })}
+
+        </div>
+
+     {/* Arrays and Nested Arrays */}
+       
         <div>
           <Label>Assured By FetchTrue</Label>
 {renderArrayField<TitleDescription>(
@@ -351,67 +400,120 @@ function renderArrayField<T extends object>(
 
         </div>
 
-        {/* How It Works */}
-        <div>
-          <Label>How It Works</Label>
-{renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
-  <div className="grid gap-2">
-    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+       {/* Packages */}
+<Label>Packages</Label>
+{renderArrayField<Package>(
+  packages,
+  setPackages,
+  (pkg, pkgIdx, updatePackage) => (
+    <div className="border p-2 rounded mb-2 relative">
+      <div className="grid gap-2">
+        
+        {/* Package Name */}
+        <Input
+          value={pkg.name}
+          placeholder="Package Name"
+          onChange={(e) =>
+            updatePackage({ ...pkg, name: e.target.value })
+          }
+        />
 
-    {/* FILE UPLOAD FOR ICON */}
-    <FileInput
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          const url = URL.createObjectURL(file);
-          updateItem({ ...item, icon: url });
-        }
-      }}
-    />
+        {/* Price */}
+        <Input
+          type="number"
+          value={pkg.price || ""}
+          placeholder="Price"
+          onChange={(e) => {
+            const price = Number(e.target.value);
+            const discount = pkg.discount || 0;
 
-    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-  </div>
-), { title: '', description: '', icon: '' })}
+            const discountedPrice =
+              price && discount
+                ? price - (price * discount) / 100
+                : price;
 
-        </div>
+            updatePackage({
+              ...pkg,
+              price,
+              discountedPrice,
+            });
+          }}
+        />
 
-        {/* Why Choose Us */}
-         <div>
-          <Label>Why Choose Us</Label>
-{renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
-  <div className="grid gap-2">
-    <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
+        {/* Discount (%) */}
+        <Input
+          type="number"
+          value={pkg.discount || ""}
+          placeholder="Discount %"
+          onChange={(e) => {
+            const discount = Number(e.target.value);
+            const price = pkg.price || 0;
 
-    {/* FILE UPLOAD FOR ICON */}
-    <FileInput
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          const url = URL.createObjectURL(file);
-          updateItem({ ...item, icon: url });
-        }
-      }}
-    />
+            const discountedPrice =
+              price && discount
+                ? price - (price * discount) / 100
+                : price;
 
-    <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
-  </div>
-), { title: '', description: '', icon: '' })}
+            updatePackage({
+              ...pkg,
+              discount,
+              discountedPrice,
+            });
+          }}
+        />
 
-        </div>
+        {/* Discounted Price (Auto Calculated) */}
+        <Input
+          type="number"
+          value={pkg.discountedPrice || ""}
+          placeholder="Discounted Price"
+          readOnly
+          className="bg-gray-100"
+        />
+      </div>
 
-        {/* Connect With */}
-        <div>
-          <Label>Connect With</Label>
-          {renderArrayField<ConnectWith>(connectWith, setConnectWith, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
-              <Input value={item.mobileNo} placeholder="Mobile No" onChange={e => updateItem({ ...item, mobileNo: e.target.value })} />
-              <Input value={item.email} placeholder="Email" onChange={e => updateItem({ ...item, email: e.target.value })} />
-            </div>
-          ), { name: '', mobileNo: '', email: '' })}
-        </div>
+      {/* What You Get */}
+      {renderArrayField<string>(
+        pkg.whatYouGet && pkg.whatYouGet.length > 0
+          ? pkg.whatYouGet
+          : [""],
+        (arrUpdater) =>
+          setPackages((prev) => {
+            const updated = [...prev];
+            const current = updated[pkgIdx];
 
-        {/* We Required */}
+            const newWhatYouGet =
+              typeof arrUpdater === "function"
+                ? arrUpdater(current.whatYouGet || [""])
+                : arrUpdater;
+
+            updated[pkgIdx] = {
+              ...current,
+              whatYouGet: newWhatYouGet,
+            };
+            return updated;
+          }),
+        (item, idx, updateItem) => (
+          <Input
+            value={item}
+            placeholder="What You Get"
+            onChange={(e) => updateItem(e.target.value)}
+          />
+        ),
+        ""
+      )}
+    </div>
+  ),
+  {
+    name: "",
+    price: null,
+    discount: null,
+    discountedPrice: null,
+    whatYouGet: [""],
+  }
+)}
+
+          {/* We Required */}
         <div>
           <Label>We Required</Label>
           {renderArrayField<TitleDescription>(weRequired, setWeRequired, (item, idx, updateItem) => (
@@ -432,8 +534,7 @@ function renderArrayField<T extends object>(
             </div>
           ), { title: '', description: '' })}
         </div>
-
-        {/* More Info */}
+   {/* More Info */}
         <div>
          <Label>More Info</Label>
 {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
@@ -456,6 +557,15 @@ function renderArrayField<T extends object>(
 ), { title: '', image: '', description: '' })}
 
         </div>
+         <div>
+    <Label>Terms & Conditions</Label>
+    {editorReady && (
+      <ClientSideCustomEditor
+        value={termsAndConditions.join('\n')}
+        onChange={(val) => setTermsAndConditions(val.split('\n'))}
+      />
+    )}
+  </div>
 
         {/* FAQ */}
         <div>
@@ -473,49 +583,31 @@ function renderArrayField<T extends object>(
             </div>
           ), { question: '', answer: '' })}
         </div>
-      </div>
+ {/* Connect With */}
+        <div>
+          <Label>Connect With</Label>
+          {renderArrayField<ConnectWith>(connectWith, setConnectWith, (item, idx, updateItem) => (
+            <div className="grid gap-2">
+              <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
+              <Input value={item.mobileNo} placeholder="Mobile No" onChange={e => updateItem({ ...item, mobileNo: e.target.value })} />
+              <Input value={item.email} placeholder="Email" onChange={e => updateItem({ ...item, email: e.target.value })} />
+            </div>
+          ), { name: '', mobileNo: '', email: '' })}
+        </div>
 
-      {/* Packages */}
-      <Label>Packages</Label>
-      {renderArrayField<Package>(packages, setPackages, (pkg, pkgIdx, updatePackage) => (
-        <div className="border p-2 rounded mb-2 relative">
-          <div className="grid gap-2">
-            <Input value={pkg.name} placeholder="Package Name" onChange={e => updatePackage({ ...pkg, name: e.target.value })} />
-            <Input type="number" value={pkg.price || ''} placeholder="Price" onChange={e => updatePackage({ ...pkg, price: Number(e.target.value) })} />
-            <Input type="number" value={pkg.discount || ''} placeholder="Discount" onChange={e => updatePackage({ ...pkg, discount: Number(e.target.value) })} />
-            <Input type="number" value={pkg.discountedPrice || ''} placeholder="Discounted Price" onChange={e => updatePackage({ ...pkg, discountedPrice: Number(e.target.value) })} />
-          </div>
+  <div>
+    <Label>Document</Label>
+    {editorReady && (
+      <ClientSideCustomEditor
+        value={document.join('\n')}
+        onChange={(val) => setDocument(val.split('\n'))}
+      />
+    )}
+  </div>
 
-            {/* What You Get */}
-{renderArrayField<string>(
-  pkg.whatYouGet && pkg.whatYouGet.length > 0 ? pkg.whatYouGet : [''],
-  (arrUpdater) =>
-    setPackages(prev => {
-      const updated = [...prev];
-      const current = updated[pkgIdx];
+ 
+</div>
 
-      const newWhatYouGet =
-        typeof arrUpdater === "function"
-          ? arrUpdater(current.whatYouGet || [''])
-          : arrUpdater;
-
-      updated[pkgIdx] = { ...current, whatYouGet: newWhatYouGet };
-      return updated;
-    }),
-  (item, idx, updateItem) => (
-    <Input
-      value={item}
-      placeholder="What You Get"
-      onChange={(e) => updateItem(e.target.value)}
-    />
-  ),
-  ''
-)}
-
-          </div>
-        ),
-        { name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }
-      )}
 
       {/* Time Required */}
       <Label>Time Required</Label>
