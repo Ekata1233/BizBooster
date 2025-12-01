@@ -256,7 +256,11 @@ function renderArrayField<T extends object>(
       {/* CKEditor fields */}
     <div className="space-y-6">
   <div>
-    <Label>Benefits</Label>
+  <div className="flex items-center gap-2">
+  <Label>Benefits</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
+
     {editorReady && (
       <ClientSideCustomEditor
         value={benefits.join('\n')}
@@ -266,7 +270,11 @@ function renderArrayField<T extends object>(
   </div>
 
   <div>
-    <Label>About Us</Label>
+     <div className="flex items-center gap-2">
+      
+  <Label>About Us</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
     {editorReady && (
       <ClientSideCustomEditor
         value={aboutUs.join('\n')}
@@ -276,7 +284,12 @@ function renderArrayField<T extends object>(
   </div>
 
     {/* Highlight Images */}
+<div className="flex items-center gap-2">
+      
       <Label>Highlight Images</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
+
       <FileInput onChange={handleMultipleFileChange} multiple />
       <div className="flex flex-wrap gap-4 mt-2">
         {highlightPreviews.map((src, idx) => (
@@ -286,7 +299,11 @@ function renderArrayField<T extends object>(
         
         {/* Why Choose Us */}
          <div>
+          <div className="flex items-center gap-2">
+      
           <Label>Why Choose Us</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
 {renderArrayField<TitleDescription>(whyChooseUs, setWhyChooseUs, (item, idx, updateItem) => (
   <div className="grid gap-2">
     <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -310,7 +327,11 @@ function renderArrayField<T extends object>(
 
        {/* How It Works */}
         <div>
+            <div className="flex items-center gap-2">
+      
           <Label>How It Works</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
 {renderArrayField<TitleDescription>(howItWorks, setHowItWorks, (item, idx, updateItem) => (
   <div className="grid gap-2">
     <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -335,7 +356,11 @@ function renderArrayField<T extends object>(
      {/* Arrays and Nested Arrays */}
        
         <div>
+           <div className="flex items-center gap-2">
+      
           <Label>Assured By FetchTrue</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
 {renderArrayField<TitleDescription>(
   assuredByFetchTrue,
   setAssuredByFetchTrue,
@@ -363,7 +388,11 @@ function renderArrayField<T extends object>(
         </div>
 
        {/* Packages */}
-<Label>Packages</Label>
+       <div className="flex items-center gap-2">
+      
+          <Label>Packages</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
 {renderArrayField<Package>(
   packages,
   setPackages,
@@ -477,7 +506,11 @@ function renderArrayField<T extends object>(
 
           {/* We Required */}
         <div>
-          <Label>We Required</Label>
+            <div className="flex items-center gap-2">
+                          
+                    <Label>We Required</Label>
+                      <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+                    </div>
           {renderArrayField<TitleDescription>(weRequired, setWeRequired, (item, idx, updateItem) => (
             <div className="grid gap-2">
               <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -488,7 +521,11 @@ function renderArrayField<T extends object>(
 
         {/* We Deliver */}
         <div>
-          <Label>We Deliver</Label>
+            <div className="flex items-center gap-2">
+                          
+                    <Label>We Deliver</Label>
+                      <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+                    </div>
           {renderArrayField<TitleDescription>(weDeliver, setWeDeliver, (item, idx, updateItem) => (
             <div className="grid gap-2">
               <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -498,7 +535,11 @@ function renderArrayField<T extends object>(
         </div>
    {/* More Info */}
         <div>
-         <Label>More Info</Label>
+           <div className="flex items-center gap-2">
+      
+<Label>More Info</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
 {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
   <div className="grid gap-2">
     <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -520,7 +561,11 @@ function renderArrayField<T extends object>(
 
         </div>
          <div>
-    <Label>Terms & Conditions</Label>
+           <div className="flex items-center gap-2">
+      
+<Label>Terms & Conditions</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
     {editorReady && (
       <ClientSideCustomEditor
         value={termsAndConditions.join('\n')}
@@ -531,7 +576,11 @@ function renderArrayField<T extends object>(
 
         {/* FAQ */}
         <div>
-          <Label>FAQs</Label>
+           <div className="flex items-center gap-2">
+      
+<Label>FAQs</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
           {renderArrayField<FAQ>(faq, setFaq, (item, idx, updateItem) => (
             <div className="grid gap-2">
               <Input value={item.question} placeholder="Question" onChange={e => updateItem({ ...item, question: e.target.value })} />
@@ -547,7 +596,11 @@ function renderArrayField<T extends object>(
         </div>
  {/* Connect With */}
         <div>
-          <Label>Connect With</Label>
+           <div className="flex items-center gap-2">
+      
+<Label>Connect With</Label>
+  <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+</div>
           {renderArrayField<ConnectWith>(connectWith, setConnectWith, (item, idx, updateItem) => (
             <div className="grid gap-2">
               <Input value={item.name} placeholder="Name" onChange={e => updateItem({ ...item, name: e.target.value })} />
