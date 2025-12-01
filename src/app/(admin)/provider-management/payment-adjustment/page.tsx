@@ -406,6 +406,7 @@ export default function PaymentAdjustment() {
 
     const totalPages = Math.ceil(filteredProviders.length / rowsPerPage);
     const indexOfLastRow = currentPage * rowsPerPage;
+    
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = filteredProviders.slice(indexOfFirstRow, indexOfLastRow);
 
