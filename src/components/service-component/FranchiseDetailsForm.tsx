@@ -367,7 +367,11 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 
         {/* Editors */}
         <div className="my-3">
-          <Label>Terms % Conditions</Label>
+           <div className="flex items-center gap-2">
+                
+          <Label>Terms & Conditions</Label>
+            <span className="text-red-500 text-sm font-semibold">(All Services)</span>
+          </div>
           <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
 
@@ -377,7 +381,11 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   {/* Investment Range */}
   <div>
     <div className="my-4">
-      <Label>Investment Range</Label>
+        <div className="flex items-center gap-2">
+                
+          <Label>Investment Range</Label>
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+          </div>
       <div className='border p-4 rounded'>
       {investmentRange.map((item, i) => (
         
@@ -421,7 +429,11 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   {/* Monthly Earn Potential */}
   <div>
     <div className="my-4">
-      <Label>Monthly Earn Potential</Label>
+       <div className="flex items-center gap-2">
+                
+          <Label>Monthly Earn Potential</Label>
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+          </div>
       <div className='border p-4 rounded'>
       {monthlyEarnPotential.map((item, i) => (
         <div key={i} className="flex gap-4 mt-2 items-center">
@@ -465,7 +477,11 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 
         {/* Franchise Model */}
         <div className="my-4">
+           <div className="flex items-center gap-2">
+                
           <Label>Franchise Model</Label>
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+          </div>
           {franchiseModel.map((item, i) => (
             <div key={i} className="border p-4 rounded mb-3 relative">
               <div className="flex justify-between items-center mb-2">
