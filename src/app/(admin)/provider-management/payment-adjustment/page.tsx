@@ -309,8 +309,8 @@ export default function PaymentAdjustment() {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage] = useState(10);
 
-    console.log("wallet : ", allWallet)
 
+    
     useEffect(() => {
         fetchAllWallet();
     }, [])
@@ -406,6 +406,7 @@ export default function PaymentAdjustment() {
 
     const totalPages = Math.ceil(filteredProviders.length / rowsPerPage);
     const indexOfLastRow = currentPage * rowsPerPage;
+    
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     const currentRows = filteredProviders.slice(indexOfFirstRow, indexOfLastRow);
 

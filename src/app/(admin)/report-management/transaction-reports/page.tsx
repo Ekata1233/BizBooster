@@ -8,7 +8,6 @@ import TransactionsTable from '@/components/admin/business-report/TransactionsTa
 const Page = () => {
   const { summary, loading, fetchSummary, transactions, fetchTransactions } = useAdminEarnings();
 
-  console.log("transaction summary : ", summary)
 
   useEffect(() => {
     fetchSummary();

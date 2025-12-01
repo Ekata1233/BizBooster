@@ -33,7 +33,6 @@ const ProviderWallet: React.FC<Props> = ({ provider }) => {
     const finalWallet = wallet || defaultWallet;
 
 
-    console.log("wallet : ", wallet)
     return (
         <div className="">
             <ComponentCard title="Wallet ">

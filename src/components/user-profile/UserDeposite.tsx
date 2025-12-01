@@ -91,7 +91,6 @@ const [remainingDays, setRemainingDays] = useState(0);
     }
   }, [id]);
 
-  console.log("wallet : ", wallet)
 
   // Filtered transactions from wallet
   const depositTransactions =

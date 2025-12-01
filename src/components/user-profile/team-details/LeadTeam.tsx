@@ -50,7 +50,6 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
   const params = useParams();
 
   const parentId = params?.id as string;
-  console.log("My E 3: ", myEarnings3Data);
 
 
   /** Safely coerce context users into AppUser[] */
@@ -280,7 +279,6 @@ const LeadTeam = ({ userId, isAction }: TeamLeadProps) => {
       accessor: 'myEarnings',
       render: (row: TeamLeadData) => {
         // Find the earnings for this userId in the array
-        console.log("row of my earnigs: ", row)
         const userEarnings = myEarnings3Data.find(
           (item) => item.userId === row.id
         )?.totalEarningsFromShare_3 || 0; // fallback to 0 if not found

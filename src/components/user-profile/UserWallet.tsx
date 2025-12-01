@@ -75,7 +75,6 @@ const UserWallet = ({ userId }: UserWalletProps) => {
     }
   }, [userId]);
 
-console.log("wallets :",wallet);
 
 
   const isNotFound = error?.toLowerCase().includes('wallet not found');

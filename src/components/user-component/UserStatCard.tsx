@@ -16,7 +16,6 @@ const UserStatCard = () => {
   const { checkouts } = useCheckout();
   const { allWallets, fetchAllWallets } = useUserWallet();
 
-  console.log("wallet detials : ", allWallets)
   useEffect(() => {
     fetchAllWallets();
   }, []);

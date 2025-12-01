@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-import { useService } from '@/context/ServiceContext';
+import { FranchiseDetails, useService } from '@/context/ServiceContext';
 import BasicDetailsForm, { BasicDetailsData } from '@/components/service-component/BasicDetailsForm';
 import ServiceDetailsForm, { ServiceDetails } from '@/components/service-component/ServiceDetailsForm';
 import FranchiseDetailsForm from '@/components/service-component/FranchiseDetailsForm';
@@ -20,7 +20,7 @@ type EditState = {
     thumbnailPreview?: string;
   };
   service: Partial<ServiceDetails> & { highlight?: any[]; highlightPreviews?: string[] };
-  franchise: any; // FranchiseDetails shape lives inside FranchiseDetailsForm — keep flexible
+  franchise: FranchiseDetails; // FranchiseDetails shape lives inside FranchiseDetailsForm — keep flexible
 };
 
 const EditService: React.FC = () => {
@@ -30,7 +30,6 @@ const EditService: React.FC = () => {
 
   const [state, setState] = useState<EditState>({
     basic: {
-      name: '',
       serviceName: '',
       category: '',
       subcategory: '',
@@ -89,7 +88,6 @@ const EditService: React.FC = () => {
     if (!service) return;
 
     const mappedBasic: any = {
-      name: service.serviceName || '',
       serviceName: service.serviceName || '',
       category: service.category?._id || '',
       subcategory: service.subcategory?._id || '',
@@ -183,7 +181,7 @@ const EditService: React.FC = () => {
 
       // --- BASIC fields ---
       const b = state.basic;
-      fd.append('name', String(b.name ?? b.serviceName ?? ''));
+      fd.append('serviceName', String(b.serviceName ?? ''));
       fd.append('category', String(b.category ?? ''));
       fd.append('subcategory', String(b.subcategory ?? ''));
       fd.append('price', String(b.price ?? 0));
@@ -352,7 +350,7 @@ const EditService: React.FC = () => {
 
           <BasicDetailsForm
             data={{
-              serviceName: state.basic.serviceName ?? state.basic.name,
+              serviceName: state.basic.serviceName ,
               category: state.basic.category,
               subcategory: state.basic.subcategory,
               price: state.basic.price,
