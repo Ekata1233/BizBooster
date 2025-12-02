@@ -106,10 +106,25 @@ type FormDataType = {
   franchise: FranchiseDetails;
 };
 
+import { FaStore, FaBusinessTime, FaBullhorn, FaBalanceScale, FaMoneyBillWave, FaLaptopCode, FaBook, FaTruck, FaRobot } from "react-icons/fa";
+import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
+
+const modules = [
+  { name: "Franchise", icon: <FaStore size={36} /> },
+  { name: "Business", icon: <FaBusinessTime size={36} /> },
+  { name: "Marketing", icon: <FaBullhorn size={36} /> },
+  { name: "LegalServices", icon: <FaBalanceScale size={36} /> },
+  { name: "Finance", icon: <FaMoneyBillWave size={36} /> },
+  { name: "ItServices", icon: <FaLaptopCode size={36} /> },
+  { name: "Education", icon: <FaBook size={36} /> },
+  { name: "OnDemand", icon: <FaTruck size={36} /> },
+  { name: "AIHub", icon: <FaRobot size={36} /> },
+];
 // ---------------- COMPONENT ----------------
 const AddNewService = () => {
   const { createService } = useService();
   const [isSubmitting, setIsSubmitting] = useState(false);
+const [selectedModule, setSelectedModule] = useState(modules[0].name);
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -158,6 +173,7 @@ const AddNewService = () => {
       extraImages: [],
     },
   });
+  
 
   // Define the initial empty state outside your component
 const initialFormData: FormDataType = {
@@ -572,25 +588,52 @@ try {
   }
 };
 
+  const config = moduleFieldConfig[selectedModule] || {};
   // ---------------- RENDER ----------------
   return (
     <div>
-      <ComponentCard title="Add New Service">
+      
+     <ComponentCard title="Add New Service">
+  <div >
+
+    {/* Sticky Module Selection */}
+    <div className="sticky top-16 z-20 bg-white  py-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-4">
+        {modules.map((mod) => (
+          <div
+            key={mod.name}
+            className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
+            ${selectedModule === mod.name 
+              ? "bg-blue-500 text-white border-blue-600" 
+              : "bg-white text-gray-700 hover:bg-gray-100"}`}
+            onClick={() => setSelectedModule(mod.name)}
+          >
+            <div className="text-2xl">{mod.icon}</div>
+            <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
         <form onSubmit={handleSubmit} className="space-y-5">
           <BasicDetailsForm
             data={formData.basic}
             setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+             fieldsConfig={config.basicDetails}
           />
           <hr className="border-gray-300" />
           <ServiceDetailsForm
             data={formData.service}
             setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
+              fieldsConfig={config.serviceDetails}
           />
           <hr className="border-gray-300" />
           <FranchiseDetailsForm
             data={formData.franchise}
             setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
             price={formData.basic.discountedPrice}
+              fieldsConfig={config.franchiseDetails}
           />
           <div className="flex justify-end pt-4">
             <button

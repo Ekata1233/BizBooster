@@ -7,6 +7,7 @@ import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -56,11 +57,12 @@ export type ServiceDetails = {
 interface Props {
   data: ServiceDetails;
   setData: (newData: { serviceDetails: ServiceDetails }) => void;
+   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
 
 
 // ------------------- COMPONENT -------------------
-const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
+const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) => {
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
@@ -250,11 +252,13 @@ function renderArrayField<T extends object>(
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-        ✨ Service Details
+        Service Details
       </h4>
 
       {/* CKEditor fields */}
     <div className="space-y-6">
+
+       {fieldsConfig?.benefits && (
   <div>
   <div className="flex items-center gap-2">
   <Label>Benefits</Label>
@@ -268,7 +272,9 @@ function renderArrayField<T extends object>(
       />
     )}
   </div>
+       )}
 
+{fieldsConfig?.aboutUs && (
   <div>
      <div className="flex items-center gap-2">
       
@@ -282,9 +288,12 @@ function renderArrayField<T extends object>(
       />
     )}
   </div>
+ )}
 
     {/* Highlight Images */}
-<div className="flex items-center gap-2">
+    {fieldsConfig?.highlight && (
+<div>
+  <div className="flex items-center gap-2">
       
       <Label>Highlight Images</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
@@ -296,8 +305,11 @@ function renderArrayField<T extends object>(
           <Image key={idx} src={src} alt={`highlight-${idx}`} width={100} height={100} className="rounded" />
         ))}
       </div>
+</div>
+    )}
         
         {/* Why Choose Us */}
+        {fieldsConfig?.whyChooseUs && (
          <div>
           <div className="flex items-center gap-2">
       
@@ -324,8 +336,10 @@ function renderArrayField<T extends object>(
 ), { title: '', description: '', icon: '' })}
 
         </div>
+        )}
 
        {/* How It Works */}
+       {fieldsConfig?.howItWork && (
         <div>
             <div className="flex items-center gap-2">
       
@@ -352,9 +366,10 @@ function renderArrayField<T extends object>(
 ), { title: '', description: '', icon: '' })}
 
         </div>
+       )}
 
-     {/* Arrays and Nested Arrays */}
-       
+     {/* assuredByFetchTrue */}
+       {fieldsConfig?.assuredByFetchTrue && (
         <div>
            <div className="flex items-center gap-2">
       
@@ -386,9 +401,12 @@ function renderArrayField<T extends object>(
 )}
 
         </div>
+       )}
 
        {/* Packages */}
-       <div className="flex items-center gap-2">
+       {fieldsConfig?.packages && (
+       <div>
+        <div className="flex items-center gap-2">
       
           <Label>Packages</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
@@ -503,8 +521,11 @@ function renderArrayField<T extends object>(
     whatYouGet: [""],
   }
 )}
+       </div>
+       )}
 
           {/* We Required */}
+          {fieldsConfig?.weRequired && (
         <div>
             <div className="flex items-center gap-2">
                           
@@ -518,8 +539,10 @@ function renderArrayField<T extends object>(
             </div>
           ), { title: '', description: '' })}
         </div>
+          )}
 
         {/* We Deliver */}
+        {fieldsConfig?.weDeliver && (
         <div>
             <div className="flex items-center gap-2">
                           
@@ -533,13 +556,19 @@ function renderArrayField<T extends object>(
             </div>
           ), { title: '', description: '' })}
         </div>
+        )}
+
    {/* More Info */}
+    {fieldsConfig?.moreInfo && (
         <div>
+
+          
            <div className="flex items-center gap-2">
       
 <Label>More Info</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
 </div>
+
 {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
   <div className="grid gap-2">
     <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -559,7 +588,11 @@ function renderArrayField<T extends object>(
   </div>
 ), { title: '', image: '', description: '' })}
 
-        </div>
+        </div>)}
+
+
+{/*Terms and condition */}
+        {fieldsConfig?.termsAndCondition && (
          <div>
            <div className="flex items-center gap-2">
       
@@ -573,8 +606,10 @@ function renderArrayField<T extends object>(
       />
     )}
   </div>
+        )}
 
         {/* FAQ */}
+        {fieldsConfig?.faqs && (
         <div>
            <div className="flex items-center gap-2">
       
@@ -594,7 +629,10 @@ function renderArrayField<T extends object>(
             </div>
           ), { question: '', answer: '' })}
         </div>
+        )}
+
  {/* Connect With */}
+ {fieldsConfig?.connectWith && (
         <div>
            <div className="flex items-center gap-2">
       
@@ -609,7 +647,10 @@ function renderArrayField<T extends object>(
             </div>
           ), { name: '', mobileNo: '', email: '' })}
         </div>
+ )}
 
+{/* document */}
+{fieldsConfig?.document && (
   <div>
     <Label>Document</Label>
     {editorReady && (
@@ -619,22 +660,28 @@ function renderArrayField<T extends object>(
       />
     )}
   </div>
-
+)}
  
 </div>
 
 
       {/* Time Required */}
-      <Label>Time Required</Label>
+      {fieldsConfig?.timeRequired && (
+     <div>
+       <Label>Time Required</Label>
       {renderArrayField<TimeRequired>(timeRequired, setTimeRequired, (item, idx, updateItem) => (
         <div className="grid gap-2">
           <Input type="number" value={item.minDays || ''} placeholder="Min Days" onChange={e => updateItem({ ...item, minDays: Number(e.target.value) })} />
           <Input type="number" value={item.maxDays || ''} placeholder="Max Days" onChange={e => updateItem({ ...item, maxDays: Number(e.target.value) })} />
         </div>
       ), { minDays: null, maxDays: null })}
+     </div>
+      )}
 
       {/* Extra Images */}
-<Label>Extra Images</Label>
+       {fieldsConfig?.extraImage && (
+<div>
+  <Label>Extra Images</Label>
 {renderArrayField<{ icon: string; file?: File }>(extraImages, setExtraImages, (img, idx, updateImg) => (
   <div className="flex items-center gap-2">
     <FileInput
@@ -649,10 +696,12 @@ function renderArrayField<T extends object>(
     />
   </div>
 ), { icon: "" })}
-
+</div>
+       )}
 
     
 {/* Extra Sections */}
+ {fieldsConfig?.extraSection && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -769,7 +818,7 @@ function renderArrayField<T extends object>(
     </>
   )}
 </div>
-
+ )}
 
     </div>
   );
