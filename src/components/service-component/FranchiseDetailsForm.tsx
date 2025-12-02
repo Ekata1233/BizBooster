@@ -41,9 +41,10 @@ interface FranchiseDetailsFormProps {
   data: FranchiseDetails;
   setData: (newData: Partial<FranchiseDetails>) => void;
   price?: number;
+   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["franchiseDetails"];
 }
 
-const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price }) => {
+const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price,fieldsConfig  }) => {
   const mounted = useRef(false);
 
 
@@ -313,7 +314,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-  🤝 Franchise Details
+  Franchise Details
 </h4>
 
 
@@ -392,6 +393,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
         </div>
 
         {/* Editors */}
+         {fieldsConfig?.termsAndConditions && (
         <div className="my-3">
            <div className="flex items-center gap-2">
                 
@@ -400,11 +402,13 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
           </div>
           <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
+        )}
 
       
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
+  {fieldsConfig?.investmentRange && (
   <div>
     <div className="my-4">
         <div className="flex items-center gap-2">
@@ -451,8 +455,10 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       </div>
     </div>
   </div>
+  )}
 
   {/* Monthly Earn Potential */}
+  {fieldsConfig?.monthlyEarnPotential && (
   <div>
     <div className="my-4">
        <div className="flex items-center gap-2">
@@ -498,10 +504,12 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       </div>
     </div>
   </div>
+  )}
 </div>
 
 
         {/* Franchise Model */}
+        {fieldsConfig?.franchiseModel && (
         <div className="my-4">
            <div className="flex items-center gap-2">
                 
@@ -566,8 +574,10 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
             + Add Franchise Model
           </button>
         </div>
+        )}
 
         {/* Extra Images (URLs) */}
+        {fieldsConfig?.extraImages && (
         <div className="my-4">
   <Label>Extra Images</Label>
 
@@ -609,10 +619,11 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     + Add Extra Image
   </button>
 </div>
- 
+        )}
 
-        {/* Extra Sections */}
+
 {/* Extra Sections */}
+{fieldsConfig?.extraSections && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -765,7 +776,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     </>
   )}
 </div>
-
+)}
 
       </div>
     </div>

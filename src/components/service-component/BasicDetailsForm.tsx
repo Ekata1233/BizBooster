@@ -9,6 +9,7 @@ import Switch from "../form/switch/Switch";
 import { TrashBinIcon } from "@/icons";
 import { useCategory } from "@/context/CategoryContext";
 import { useSubcategory } from "@/context/SubcategoryContext";
+import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
 
 interface KeyValue {
   key: string;
@@ -36,9 +37,10 @@ export interface BasicDetailsData {
 interface BasicDetailsFormProps {
   data: BasicDetailsData;
   setData: (newData: Partial<BasicDetailsData>) => void;
+    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
 
-const BasicDetailsForm = ({ data, setData }: BasicDetailsFormProps) => {
+const BasicDetailsForm = ({ data, setData,fieldsConfig  }: BasicDetailsFormProps) => {
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
@@ -109,6 +111,8 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LEFT SIDE */}
         <div className="space-y-4">
+
+ {fieldsConfig?.serviceName && (
         <div>
   <Label>Service Name</Label>
   <Input
@@ -132,9 +136,11 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
     <p className="text-red-500 text-sm mt-1">{errors.serviceName}</p>
   )}
 </div>
+ )}
 
-
+ {fieldsConfig?.price && (
           <div>
+            <div>
             <Label>Price</Label>
             <Input
               type="number"
@@ -157,8 +163,12 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
             <Label>After Discount Price</Label>
             <Input type="number" readOnly value={data.discountedPrice || 0} />
           </div>
+          </div>
+ )}
 
+ {fieldsConfig?.gst && (
           <div className="border p-3 rounded-md">
+
             <div className="flex items-center justify-between mb-2">
               <Label>Include GST</Label>
               <Switch
@@ -187,10 +197,13 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
               <Input disabled value={data.totalWithGst || 0} />
             </div>
           </div>
+           )}
         </div>
 
         {/* RIGHT SIDE */}
         <div className="space-y-4">
+
+           {fieldsConfig?.category && (
           <div>
             <Label>Select Category</Label>
            <Select
@@ -216,7 +229,9 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
 
 
           </div>
+           )}
 
+ {fieldsConfig?.subcategory && (
           <div>
             <Label>Select Subcategory</Label>
             <Select
@@ -225,17 +240,24 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
               onChange={(val) => setData({ subcategory: val || null })}
             />
           </div>
+ )}
+
+ {fieldsConfig?.thumbnail && (
 
           <div>
             <Label>Thumbnail</Label>
             <FileInput onChange={handleThumbnailChange} />
           </div>
+          )}
 
+ {fieldsConfig?.bannerImage && (
           <div>
             <Label>Banner Images</Label>
             <FileInput multiple onChange={handleBannerChange} />
           </div>
+ )}
 
+ {fieldsConfig?.tags && (
           <div>
             <Label>Tags</Label>
             <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
@@ -254,7 +276,9 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
               />
             </div>
           </div>
+ )}
 
+ {fieldsConfig?.keyValue && (
           <div>
             <Label>Key - Value</Label>
             {rows.map((row, index) => (
@@ -283,7 +307,9 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
               + Add New Row
             </button>
           </div>
+ )}
 
+ {fieldsConfig?.recomnded && (
           <div>
             <Label>Recommended Service</Label>
             <Switch
@@ -292,6 +318,7 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
               label="Recommended Service"
             />
           </div>
+ )}
         </div>
       </div>
     </div>
