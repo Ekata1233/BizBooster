@@ -115,16 +115,16 @@ const SelfLeadShare2 = ({ userId, isAction }: SelfLeadProps) => {
 
   if (loading) return <p>Loading...</p>;
 
-  if (error) {
-    return (
-      <ComponentCard title="Self Lead Table">
-        <div className="p-4 text-red-600">Error: {error}</div>
-      </ComponentCard>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <ComponentCard title="Self Lead Table">
+  //       <div className="p-4 text-red-600">Error: {error}</div>
+  //     </ComponentCard>
+  //   );
+  // }
 
   if (!checkouts || checkouts.length === 0) {
-    return (
+    return (      
       <ComponentCard title="Self Lead Table">
         <div className="p-4 text-gray-600 text-sm">No self leads found.</div>
       </ComponentCard>

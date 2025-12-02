@@ -181,21 +181,38 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center border-t-4 border-green-600">
           <div className="mb-4 text-green-600 text-xl font-semibold">Level Progress</div>
           <div className="relative w-[300px] h-[160px]">
-            <svg width="300" height="160" viewBox="0 0 300 160">
-              <path d="M40,140 A110,110 0 0,1 260,140" fill="none" stroke="#e5e7eb" strokeWidth="18" />
-              <path
-                d="M40,140 A110,110 0 0,1 260,140"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="18"
-                strokeLinecap="round"
-                strokeDasharray="345"
-                strokeDashoffset={345 - (leadPercent * 345) / 100}
-              />
-              <text x="150" y="100" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#10b981">
-                {leadPercent === 100 ? '5X' : `${currentLevel}X`}
-              </text>
-            </svg>
+           <svg width="300" height="160" viewBox="0 0 300 160">
+  {/* Background arc */}
+  <path
+    d="M40,140 A110,110 0 0,1 260,140"
+    fill="none"
+    stroke="#e5e7eb"
+    strokeWidth="18"
+  />
+
+  {/* Progress arc (Left → Right) */}
+  <path
+    d="M40,140 A110,110 0 0,1 260,140"
+    fill="none"
+    stroke="#10b981"
+    strokeWidth="18"
+    strokeLinecap="round"
+    strokeDasharray="345"
+    strokeDashoffset={(1 - leadPercent / 100) * 345}
+  />
+
+  <text
+    x="150"
+    y="100"
+    textAnchor="middle"
+    fontSize="20"
+    fontWeight="bold"
+    fill="#10b981"
+  >
+    {leadPercent === 100 ? "5X" : `${currentLevel}X`}
+  </text>
+</svg>
+
           </div>
           <div className="text-base mt-2 text-gray-600">Progress: {leadPercent.toFixed(1)}%</div>
         </div>
@@ -204,21 +221,36 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center border-t-4 border-blue-600">
           <div className="mb-4 text-blue-600 text-xl font-semibold">Earning Progress</div>
           <div className="relative w-[300px] h-[160px]">
-            <svg width="300" height="160" viewBox="0 0 300 160">
-              <path d="M40,140 A110,110 0 0,1 260,140" fill="none" stroke="#e5e7eb" strokeWidth="18" />
-              <path
-                d="M40,140 A110,110 0 0,1 260,140"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="18"
-                strokeLinecap="round"
-                strokeDasharray="345"
-                strokeDashoffset={345 - (earningPercent * 345) / 100}
-              />
-              <text x="150" y="100" textAnchor="middle" fontSize="20" fontWeight="bold" fill="#3b82f6">
-                ₹{Number(totalEarnings.toFixed(2))}
-              </text>
-            </svg>
+           <svg width="300" height="160" viewBox="0 0 300 160">
+  <path
+    d="M40,140 A110,110 0 0,1 260,140"
+    fill="none"
+    stroke="#e5e7eb"
+    strokeWidth="18"
+  />
+
+  <path
+    d="M40,140 A110,110 0 0,1 260,140"
+    fill="none"
+    stroke="#3b82f6"
+    strokeWidth="18"
+    strokeLinecap="round"
+    strokeDasharray="345"
+    strokeDashoffset={(1 - earningPercent / 100) * 345}
+  />
+
+  <text
+    x="150"
+    y="100"
+    textAnchor="middle"
+    fontSize="20"
+    fontWeight="bold"
+    fill="#3b82f6"
+  >
+    ₹{Number(totalEarnings.toFixed(2))}
+  </text>
+</svg>
+
           </div>
           <div className="text-base mt-2 text-gray-600">Progress: {earningPercent.toFixed(1)}%</div>
         </div>

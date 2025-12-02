@@ -8,15 +8,14 @@ import ComponentCard from '@/components/common/ComponentCard';
 import BasicTableOne from '@/components/tables/BasicTableOne';
 import Input from '@/components/form/input/InputField';
 import RouteLoader from '@/components/RouteLoader';
-import { PencilIcon, TrashBinIcon, EyeIcon } from '@/icons';
+import { EyeIcon } from '@/icons';
 import { useClaimNow } from '@/context/ClaimContext';
 
 const ClaimNowPage = () => {
-  const { claims, fetchClaims, loading, deleteClaim } = useClaimNow();
+  const { claims, fetchClaims, loading } = useClaimNow();
 
-  const [activeTab, setActiveTab] = useState<
-    'all' | 'requested' | 'approved' | 'reward' | 'monthlyearn' | 'settled'
-  >('all');
+  const [activeTab, setActiveTab] =
+    useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -25,53 +24,83 @@ const ClaimNowPage = () => {
     fetchClaims();
   }, []);
 
-  /* ─── Status helper ───────────────────────────────────────────── */
+  /* ───────────────────── Status Helper ───────────────────── */
   const getStatus = (claim: any) => {
     if (claim.isClaimSettled) return 'Settled';
     if (claim.isClaimAccepted) return 'Accepted';
     if (claim.isAdminApproved) return 'Approved';
-    if (claim.isClaimRequest || claim.isExtraMonthlyEarnRequest) return 'Requested';
+    if (claim.isClaimRequest || claim.isExtraMonthlyEarnRequest)
+      return 'Requested';
     return 'Pending';
   };
 
-  /* ─── Tab filter logic ────────────────────────────────────────── */
+  /* ─────────────────── Dynamic Tabs from Status ───────────── */
+  const uniqueStatuses = Array.from(
+    new Set(claims.map((c) => getStatus(c)))
+  );
+
+  const dynamicStatusTabs = uniqueStatuses.map((status) => ({
+    key: status.toLowerCase(),
+    label: `${status} (${claims.filter((c) => getStatus(c) === status).length})`,
+  }));
+
+  /* ─────────────── Special Tabs (Reward + Monthly Earn) ───────── */
+  const specialTabs = [
+    {
+      key: 'reward',
+      label: `Reward (${claims.filter((c) => c.isClaimRequest).length})`,
+    },
+    {
+      key: 'monthlyearn',
+      label: `Monthly Earn (${claims.filter((c) => c.isExtraMonthlyEarnRequest).length})`,
+    },
+  ];
+
+  /* ───────────────────── Final Tabs List ───────────────────── */
+  const tabs = [
+    { key: 'all', label: `All (${claims.length})` },
+    ...dynamicStatusTabs,
+    ...specialTabs,
+  ];
+
+  /* ───────────────── Filter Logic ─────────────────── */
   const filteredClaims = claims.filter((claim) => {
     const status = getStatus(claim).toLowerCase();
 
-    if (activeTab === 'requested' && !claim.isClaimRequest && !claim.isExtraMonthlyEarnRequest)
+    if (
+      activeTab !== 'all' &&
+      activeTab !== 'reward' &&
+      activeTab !== 'monthlyearn'
+    ) {
+      if (status !== activeTab) return false;
+    }
+
+    if (activeTab === 'reward' && !claim.isClaimRequest) return false;
+
+    if (
+      activeTab === 'monthlyearn' &&
+      !claim.isExtraMonthlyEarnRequest
+    )
       return false;
-    if (activeTab === 'approved' && !claim.isAdminApproved) return false;
-    if (activeTab === 'settled' && !claim.isClaimSettled) return false;
-    if (activeTab === 'reward' && !claim.isClaimAccepted) return false;
-    if (activeTab === 'monthlyearn' && !claim.isExtraMonthlyEarnRequest) return false;
 
     if (
       searchQuery &&
-      !claim?.user?.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+      !claim?.user?.fullName
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
     )
       return false;
+
     return true;
   });
 
-  /* ─── Pagination ──────────────────────────────────────────────── */
+  /* ───────────────── Pagination ───────────────── */
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentRows = filteredClaims.slice(startIndex, startIndex + rowsPerPage);
 
   if (loading) return <RouteLoader />;
 
-  /* ─── Tab counts ──────────────────────────────────────────────── */
-  const counts = {
-    all: claims.length,
-    requested: claims.filter(
-      (c) => c.isClaimRequest || c.isExtraMonthlyEarnRequest
-    ).length,
-    approved: claims.filter((c) => c.isAdminApproved).length,
-    reward: claims.filter((c) => c.isClaimAccepted).length,
-    monthlyearn: claims.filter((c) => c.isExtraMonthlyEarnRequest).length,
-    settled: claims.filter((c) => c.isClaimSettled).length,
-  };
-
-  /* ─── Table Columns ───────────────────────────────────────────── */
+  /* ───────────────── Table Columns ───────────────── */
   const columns = [
     {
       header: 'Sr. No',
@@ -116,6 +145,7 @@ const ClaimNowPage = () => {
           ) : (
             <div className="h-[50px] w-[50px] bg-gray-200 rounded" />
           )}
+
           <div>
             <p className="font-medium">{row.reward.name}</p>
             <p className="text-xs text-gray-500 truncate w-[160px]">
@@ -149,10 +179,9 @@ const ClaimNowPage = () => {
             : status === 'Settled'
             ? 'bg-green-100 text-green-700'
             : 'bg-gray-100 text-gray-700';
+
         return (
-          <span
-            className={`px-2 py-1 text-xs rounded-full font-semibold ${statusColor}`}
-          >
+          <span className={`px-2 py-1 text-xs rounded-full font-semibold ${statusColor}`}>
             {status}
           </span>
         );
@@ -173,16 +202,7 @@ const ClaimNowPage = () => {
     },
   ];
 
-  /* ─── UI ─────────────────────────────────────────────────────── */
-  const tabs: { key: any; label: string }[] = [
-    { key: 'all', label: `All (${counts.all})` },
-    { key: 'requested', label: `Requested (${counts.requested})` },
-    { key: 'approved', label: `Approved (${counts.approved})` },
-    { key: 'reward', label: `Reward (${counts.reward})` },
-    { key: 'monthlyearn', label: `Monthly Earn (${counts.monthlyearn})` },
-    { key: 'settled', label: `Settled (${counts.settled})` },
-  ];
-
+  /* ───────────────── UI ───────────────── */
   return (
     <div>
       <PageBreadcrumb pageTitle="Claim Requests" />
