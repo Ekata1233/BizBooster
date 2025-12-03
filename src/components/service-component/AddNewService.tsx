@@ -108,6 +108,7 @@ type FormDataType = {
 
 import { FaStore, FaBusinessTime, FaBullhorn, FaBalanceScale, FaMoneyBillWave, FaLaptopCode, FaBook, FaTruck, FaRobot } from "react-icons/fa";
 import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
+import FranchiseExtraDetails from './FranchiseExtraDetails';
 
 const modules = [
   { name: "Franchise", icon: <FaStore size={36} /> },
@@ -496,126 +497,198 @@ const AddNewService = () => {
 
   // ---------------- RENDER ----------------
   return (
+ <div>
+  <ComponentCard title="Add New Service">
     <div>
-      
-     <ComponentCard title="Add New Service">
-      <div >
-
-        {/* Sticky Module Selection */}
-        <div className="sticky top-16 z-20 bg-white  py-2">
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-4">
-            {modules.map((mod) => (
-              <div
-                key={mod.name}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
-                ${selectedModule === mod.name 
-                  ? "bg-blue-500 text-white border-blue-600" 
-                  : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                onClick={() => {
-                  setSelectedModule(mod.name);
-                  // reset stepper to step 1 whenever Franchise module is selected
-                  if (mod.name === 'Franchise') setFranchiseStep(1);
-                }}
-              >
-                <div className="text-2xl">{mod.icon}</div>
-                <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
-              </div>
-            ))}
-          </div>
+      {/* Sticky Module Selection */}
+      <div className="sticky top-16 z-20 bg-white py-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-4">
+          {modules.map((mod) => (
+            <div
+              key={mod.name}
+              className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
+              ${selectedModule === mod.name 
+                ? "bg-blue-500 text-white border-blue-600" 
+                : "bg-white text-gray-700 hover:bg-gray-100"}`}
+              onClick={() => {
+                setSelectedModule(mod.name);
+                // reset stepper to step 1 whenever Franchise module is selected
+                if (mod.name === 'Franchise') setFranchiseStep(1);
+              }}
+            >
+              <div className="text-2xl">{mod.icon}</div>
+              <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
+            </div>
+          ))}
         </div>
-
       </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+
+      {/* Franchise Stepper Header - Moved to top of BasicDetailsForm */}
+      {isFranchiseSelected && (
+       <div className="mb-6 border rounded-xl p-6 bg-white shadow-sm">
+  <div className="mb-6">
+    <h3 className="font-bold text-2xl text-gray-800">Franchise Module</h3>
+    <p className="text-gray-500 text-sm">Multi-step advanced franchise setup</p>
+  </div>
+
+  {/* Stepper */}
+ <div className="mb-8">
+  <div className="flex items-center justify-center gap-6">
+
+    {/* STEP 1 */}
+    <div
+      onClick={() => setFranchiseStep(1)}
+      className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all 
+        ${franchiseStep === 1 ? "bg-blue-600 text-white shadow-md border-blue-600" :
+        franchiseStep > 1 ? "bg-green-500 text-white border-green-500" :
+        "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}
+      `}
+    >
+      <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 border border-white">
+        {franchiseStep > 1 ? "✓" : "1"}
+      </div>
+      <span className="font-medium">All Forms</span>
+    </div>
+
+    {/* LINE */}
+    <div className="w-12 h-1 bg-gray-300"></div>
+
+    {/* STEP 2 */}
+    <div
+      onClick={() => setFranchiseStep(2)}
+      className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all
+        ${franchiseStep === 2 ? "bg-blue-600 text-white shadow-md border-blue-600" :
+        "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}
+      `}
+    >
+      <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 border border-white">
+        2
+      </div>
+      <span className="font-medium">Hello World</span>
+    </div>
+
+  </div>
+</div>
+
+
+
+  {/* Buttons */}
+  <div className="flex justify-between mt-6">
+    <div>
+      {franchiseStep > 1 && (
+        <button
+          type="button"
+          onClick={() => setFranchiseStep(franchiseStep - 1)}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition"
+        >
+          ← Back
+        </button>
+      )}
+    </div>
+
+    <div>
+      {franchiseStep < 2 ? (
+        <button
+          type="button"
+          onClick={() => setFranchiseStep(franchiseStep + 1)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition"
+        >
+          Continue →
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setFranchiseStep(1)}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition"
+        >
+          ✓ Done — Return to Step 1
+        </button>
+      )}
+    </div>
+  </div>
+</div>
+      )}
+    </div>
+    
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Conditionally render forms based on franchiseStep */}
+      {isFranchiseSelected ? (
+        // If franchise module is selected, show content based on step
+        franchiseStep === 1 ? (
+          // Step 1: Show all three forms
+          <>
+            <BasicDetailsForm
+              data={formData.basic}
+              setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+              fieldsConfig={config.basicDetails}
+            />
+            <hr className="border-gray-300" />
+            <ServiceDetailsForm
+              data={formData.service}
+              setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
+              fieldsConfig={config.serviceDetails}
+            />
+            <hr className="border-gray-300" />
+            <FranchiseDetailsForm
+              data={formData.franchise}
+              setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
+              price={formData.basic.discountedPrice}
+              fieldsConfig={config.franchiseDetails}
+            />
+          </>
+        ) : (
+          // Step 2: Show only "Hello World"
+          <FranchiseExtraDetails/>
+          // <div className="border rounded-lg p-8 text-center">
+          //   <h2 className="text-3xl font-bold text-blue-600 mb-4">Hello World!</h2>
+          //   <p className="text-gray-600">This is Step 2 content for Franchise module.</p>
+          //   <div className="mt-6 p-4 bg-blue-50 rounded-lg inline-block">
+          //     <p className="text-sm">No forms here, just a simple Hello World message.</p>
+          //   </div>
+          // </div>
+        )
+      ) : (
+        // If NOT franchise module, show all forms normally
+        <>
           <BasicDetailsForm
             data={formData.basic}
             setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
-             fieldsConfig={config.basicDetails}
+            fieldsConfig={config.basicDetails}
           />
           <hr className="border-gray-300" />
           <ServiceDetailsForm
             data={formData.service}
             setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
-              fieldsConfig={config.serviceDetails}
+            fieldsConfig={config.serviceDetails}
           />
           <hr className="border-gray-300" />
-
-          {/* Franchise stepper: only when Franchise module selected */}
-          {isFranchiseSelected ? (
-            <div className="space-y-4">
-              {/* Stepper header */}
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setFranchiseStep(1)}
-                  className={`px-3 py-1 rounded ${franchiseStep === 1 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-                >
-                  Step 1
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFranchiseStep(2)}
-                  className={`px-3 py-1 rounded ${franchiseStep === 2 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-                >
-                  Step 2 (Franchise-only)
-                </button>
-
-                <div className="ml-auto text-sm text-gray-600">You are editing Franchise module</div>
-              </div>
-
-              {/* Step content */}
-              <div>
-                {franchiseStep === 1 && (
-                  // Render your existing FranchiseDetailsForm unchanged
-                  <FranchiseDetailsForm
-                    data={formData.franchise}
-                    setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
-                    price={formData.basic.discountedPrice}
-                    fieldsConfig={config.franchiseDetails}
-                  />
-                )}
-
-                {franchiseStep === 2 && (
-                  // Extra franchise-only fields (small inline component) which updates the same formData.franchise
-                  <FranchiseExtraFields
-                    data={formData.franchise}
-                    setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
-                  />
-                )}
-              </div>
-
-              {/* Step nav */}
-              <div className="flex justify-between">
-                <div>
-                  {franchiseStep > 1 && (
-                    <button type="button" onClick={() => setFranchiseStep(franchiseStep - 1)} className="px-3 py-1 bg-gray-200 rounded">Back</button>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {franchiseStep < 2 ? (
-                    <button type="button" onClick={() => setFranchiseStep(franchiseStep + 1)} className="px-3 py-1 bg-blue-600 text-white rounded">Next</button>
-                  ) : (
-                    <button type="button" onClick={() => setFranchiseStep(1)} className="px-3 py-1 bg-green-500 text-white rounded">Done</button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            // if not franchise module, render franchise section normally (or omit - I left the original rendering out when not franchise)
+          
+          {/* For non-franchise modules, show FranchiseDetailsForm only if needed */}
+          {selectedModule === 'Franchise' ? (
             <div className="hidden" />
+          ) : (
+            <FranchiseDetailsForm
+              data={formData.franchise}
+              setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
+              price={formData.basic.discountedPrice}
+              fieldsConfig={config.franchiseDetails}
+            />
           )}
+        </>
+      )}
 
-          <div className="flex justify-end pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="ml-auto px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
-            </button>
-          </div>
-        </form>
-      </ComponentCard>
-    </div>
+      <div className="flex justify-end pt-4">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="ml-auto px-6 py-3 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium"
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit Service'}
+        </button>
+      </div>
+    </form>
+  </ComponentCard>
+</div>  
   );
 };
 

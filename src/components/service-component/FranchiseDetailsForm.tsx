@@ -80,58 +80,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
   );
   const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : []);
-const tabs = ["Small", "Medium", "Large"];
 
-  const [activeTab, setActiveTab] = useState("Small");
- const [formData, setFormData] = useState({
-    Small: {
-      franchiseSize: "Small",
-      areaRequired: "",
-      marketing: "",
-      returnOfInvestment: "",
-      manPower: "",
-      staffManagement: "",
-      royaltyPercent: "",
-      grossMargin: "",
-      radiusArea: "",
-    },
-    Medium: {
-      franchiseSize: "Medium",
-      areaRequired: "",
-      marketing: "",
-      returnOfInvestment: "",
-      manPower: "",
-      staffManagement: "",
-      royaltyPercent: "",
-      grossMargin: "",
-      radiusArea: "",
-    },
-    Large: {
-      franchiseSize: "Large",
-      areaRequired: "",
-      marketing: "",
-      returnOfInvestment: "",
-      manPower: "",
-      staffManagement: "",
-      royaltyPercent: "",
-      grossMargin: "",
-      radiusArea: "",
-    },
-  });
-
-  const handleChange = (e: any) => {
-    setFormData({
-      ...formData,
-      [activeTab]: {
-        ...formData[activeTab],
-        [e.target.name]: e.target.value,
-      },
-    });
-  };
-
-  
-
-  const current = formData[activeTab];
 
   useEffect(() => {
     // no-op to keep behavior consistent with other forms that use mounted ref
@@ -519,90 +468,7 @@ const tabs = ["Small", "Medium", "Large"];
     >
       + Add Investment Range
     </button>
-    <div className="my-4">
-      {/* Label */}
-      <div className="items-center gap-2 mb-2">
-        <Label>Investments Details</Label>
-      </div>
-
-      {/* ---- BORDER BOX ---- */}
-      <div className="border p-4 rounded">
-
-        {/* ---- Tabs ---- */}
-        <div className="flex gap-4 border-b pb-2 mb-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-                type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-semibold ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-600"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* ---- Inputs (same layout as Monthly Earn section) ---- */}
-        <div className="grid grid-cols-2 gap-4">
-
-          <Input
-            placeholder="Area Required"
-            name="areaRequired"
-            value={current.areaRequired}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Marketing"
-            name="marketing"
-            value={current.marketing}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Return of Investment"
-            name="returnOfInvestment"
-            value={current.returnOfInvestment}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Man Power"
-            name="manPower"
-            value={current.manPower}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Staff Management"
-            name="staffManagement"
-            value={current.staffManagement}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Royalty Percent"
-            name="royaltyPercent"
-            value={current.royaltyPercent}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Gross Margin"
-            name="grossMargin"
-            value={current.grossMargin}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Radius Area"
-            name="radiusArea"
-            value={current.radiusArea}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* ---- Add Button ---- */}
-       
-      </div>
-    </div>
+   
   </div>
 </div>
 
