@@ -20,42 +20,41 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { serviceId, model } = body;
 
-    if (!serviceId || !model?.franchiseSize) {
+  if (!serviceId || !Array.isArray(model) || model.length === 0) {
       return NextResponse.json(
-        { success: false, message: "serviceId and franchiseSize required" },
+        { success: false, message: "serviceId & model array required" },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const size = model.franchiseSize;
-
-    // Find franchise
     let franchise = await Franchise.findOne({ serviceId });
 
     if (!franchise) {
-      // First model entry for new service → create document
+      // Create first entry
       franchise = await Franchise.create({
         serviceId,
         investment: [],
-        model: [model]
+        model: model // directly save the full model array
       });
 
       return NextResponse.json(
-        { success: true, message: "Model (first entry) saved", data: franchise },
+        { success: true, message: "Models saved", data: franchise },
         { status: 201, headers: corsHeaders }
       );
     }
 
-    // Check if size already exists
-    const existingIndex = franchise.model.findIndex(
-      (m: any) => m.franchiseSize === size
-    );
+    // Update or add models by size
+    model.forEach((newModel: any) => {
+      const index = franchise.model.findIndex(
+        (m: any) => m.franchiseSize === newModel.franchiseSize
+      );
 
-    if (existingIndex >= 0) {
-      franchise.model[existingIndex] = model; // update
-    } else {
-      franchise.model.push(model); // add new size
-    }
+      if (index >= 0) {
+        franchise.model[index] = newModel; // update existing
+      } else {
+        franchise.model.push(newModel); // add new
+      }
+    });
 
     await franchise.save();
 

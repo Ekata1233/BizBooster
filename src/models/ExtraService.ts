@@ -74,7 +74,7 @@ const FranchiseModelDetailsSchema = new Schema({
   radiusArea: { type: String, required: true },
 });
 
-const FranchiseSchema = new Schema({
+const ExtraServiceSchema = new Schema({
   serviceId: { type: Types.ObjectId, required: true, ref: "Service" }, // reference to your service
  investment: {
     type: [FranchiseInvestmentRangeSchema], 
@@ -86,6 +86,6 @@ const FranchiseSchema = new Schema({
   }
 }, { timestamps: true });
 
-const Franchise = mongoose.models.Franchise || model("Franchise", FranchiseSchema);
+const ExtraService = mongoose.models.ExtraService || model("ExtraService", ExtraServiceSchema);
 
-export default Franchise;
+export default ExtraService;
