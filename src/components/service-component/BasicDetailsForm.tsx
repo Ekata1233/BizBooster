@@ -108,9 +108,6 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* LEFT SIDE */}
-        <div className="space-y-4">
 
  {fieldsConfig?.serviceName && (
         <div>
@@ -137,9 +134,79 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
   )}
 </div>
  )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT SIDE */}
+        <div className="space-y-4">
+
+           {fieldsConfig?.category && (
+          <div>
+            <Label>Select Category</Label>
+           <Select
+  options={categoryOptions}
+  value={data.category || ""}
+  onChange={(val) => {
+    // remove error when selecting value
+    setErrors(prev => ({ ...prev, category: "" }));
+
+    // update data
+    setData({ category: val || null });
+
+    // validate here
+    if (!val) {
+      setErrors(prev => ({ ...prev, category: "Category is required" }));
+    }
+  }}
+/>
+
+{errors.category && (
+  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+)}
+
+
+          </div>
+           )}
+
+            {fieldsConfig?.thumbnail && (
+
+          <div>
+            <Label>Thumbnail</Label>
+            <FileInput onChange={handleThumbnailChange} />
+          </div>
+          )}
+
+           {fieldsConfig?.tags && (
+          <div>
+            <Label>Tags</Label>
+            <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
+              {tags.map((tag, i) => (
+                <div key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
+                  {tag}
+                  <button type="button" className="text-red-500" onClick={() => handleRemoveTag(i)}>×</button>
+                </div>
+              ))}
+              <input
+                className="flex-grow outline-none"
+                placeholder="Press Enter to add"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+              />
+            </div>
+          </div>
+ )}
+  {fieldsConfig?.recomnded && (
+          <div>
+            <Label>Recommended Service</Label>
+            <Switch
+              checked={!!data.recommendedServices}
+              onChange={(val) => setData({ recommendedServices: val })}
+              label="Recommended Service"
+            />
+          </div>
+ )}
 
  {fieldsConfig?.price && (
-          <div>
+            <div className="border p-3 rounded-md">
             <div>
             <Label>Price</Label>
             <Input
@@ -163,6 +230,67 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
             <Label>After Discount Price</Label>
             <Input type="number" readOnly value={data.discountedPrice || 0} />
           </div>
+          </div>
+ )}
+
+
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div className="space-y-4">
+
+
+
+ {fieldsConfig?.subcategory && (
+          <div>
+            <Label>Select Subcategory</Label>
+            <Select
+              options={subcategoryOptions}
+              value={data.subcategory || ""}
+              onChange={(val) => setData({ subcategory: val || null })}
+            />
+          </div>
+ )}
+
+
+
+ {fieldsConfig?.bannerImage && (
+          <div>
+            <Label>Banner Images</Label>
+            <FileInput multiple onChange={handleBannerChange} />
+          </div>
+ )}
+
+
+
+ {fieldsConfig?.keyValue && (
+          <div>
+            <Label>Key - Value</Label>
+            {rows.map((row, index) => (
+              <div key={index} className="border rounded p-3 mb-3">
+                <div className="flex justify-between">
+                  <h3 className="font-medium">Row {index + 1}</h3>
+                  <button type="button" onClick={() => handleRemoveRow(index)}>
+                    <TrashBinIcon />
+                  </button>
+                </div>
+                <div className="flex gap-4 mt-3">
+                  <Input
+                    placeholder="Key"
+                    value={row.key}
+                    onChange={(e) => handleRowChange(index, "key", e.target.value)}
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={row.value}
+                    onChange={(e) => handleRowChange(index, "value", e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
+              + Add New Row
+            </button>
           </div>
  )}
 
@@ -198,127 +326,7 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
             </div>
           </div>
            )}
-        </div>
 
-        {/* RIGHT SIDE */}
-        <div className="space-y-4">
-
-           {fieldsConfig?.category && (
-          <div>
-            <Label>Select Category</Label>
-           <Select
-  options={categoryOptions}
-  value={data.category || ""}
-  onChange={(val) => {
-    // remove error when selecting value
-    setErrors(prev => ({ ...prev, category: "" }));
-
-    // update data
-    setData({ category: val || null });
-
-    // validate here
-    if (!val) {
-      setErrors(prev => ({ ...prev, category: "Category is required" }));
-    }
-  }}
-/>
-
-{errors.category && (
-  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-)}
-
-
-          </div>
-           )}
-
- {fieldsConfig?.subcategory && (
-          <div>
-            <Label>Select Subcategory</Label>
-            <Select
-              options={subcategoryOptions}
-              value={data.subcategory || ""}
-              onChange={(val) => setData({ subcategory: val || null })}
-            />
-          </div>
- )}
-
- {fieldsConfig?.thumbnail && (
-
-          <div>
-            <Label>Thumbnail</Label>
-            <FileInput onChange={handleThumbnailChange} />
-          </div>
-          )}
-
- {fieldsConfig?.bannerImage && (
-          <div>
-            <Label>Banner Images</Label>
-            <FileInput multiple onChange={handleBannerChange} />
-          </div>
- )}
-
- {fieldsConfig?.tags && (
-          <div>
-            <Label>Tags</Label>
-            <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
-              {tags.map((tag, i) => (
-                <div key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
-                  {tag}
-                  <button type="button" className="text-red-500" onClick={() => handleRemoveTag(i)}>×</button>
-                </div>
-              ))}
-              <input
-                className="flex-grow outline-none"
-                placeholder="Press Enter to add"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-              />
-            </div>
-          </div>
- )}
-
- {fieldsConfig?.keyValue && (
-          <div>
-            <Label>Key - Value</Label>
-            {rows.map((row, index) => (
-              <div key={index} className="border rounded p-3 mb-3">
-                <div className="flex justify-between">
-                  <h3 className="font-medium">Row {index + 1}</h3>
-                  <button type="button" onClick={() => handleRemoveRow(index)}>
-                    <TrashBinIcon />
-                  </button>
-                </div>
-                <div className="flex gap-4 mt-3">
-                  <Input
-                    placeholder="Key"
-                    value={row.key}
-                    onChange={(e) => handleRowChange(index, "key", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={row.value}
-                    onChange={(e) => handleRowChange(index, "value", e.target.value)}
-                  />
-                </div>
-              </div>
-            ))}
-            <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
-              + Add New Row
-            </button>
-          </div>
- )}
-
- {fieldsConfig?.recomnded && (
-          <div>
-            <Label>Recommended Service</Label>
-            <Switch
-              checked={!!data.recommendedServices}
-              onChange={(val) => setData({ recommendedServices: val })}
-              label="Recommended Service"
-            />
-          </div>
- )}
         </div>
       </div>
     </div>
