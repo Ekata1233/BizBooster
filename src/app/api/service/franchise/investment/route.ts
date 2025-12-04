@@ -20,42 +20,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { serviceId, investment } = body;
 
-    if (!serviceId || !investment?.franchiseSize) {
+     if (!serviceId || !investment || !Array.isArray(investment)) {
       return NextResponse.json(
-        { success: false, message: "serviceId and franchiseSize required" },
+        { success: false, message: "serviceId and investment array required" },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    const size = investment.franchiseSize; // Small | Medium | Large
-
-    // 🟦 Step 1: Find Franchise document or create it
     let franchise = await Franchise.findOne({ serviceId });
 
     if (!franchise) {
-      // First time → create
       franchise = await Franchise.create({
         serviceId,
-        investment: [investment],
+        investment,
         model: []
       });
 
       return NextResponse.json(
-        { success: true, message: "Investment (first entry) saved", data: franchise },
+        { success: true, message: "All investments saved", data: franchise },
         { status: 201, headers: corsHeaders }
       );
     }
 
-    // 🟦 Step 2: check if this size exists → update OR add
-    const existingIndex = franchise.investment.findIndex(
-      (i: any) => i.franchiseSize === size
-    );
+    investment.forEach((inv: any) => {
+      const index = franchise.investment.findIndex(
+        (i: any) => i.franchiseSize === inv.franchiseSize
+      );
 
-    if (existingIndex >= 0) {
-      franchise.investment[existingIndex] = investment; // update
-    } else {
-      franchise.investment.push(investment); // add new size
-    }
+      if (index >= 0) {
+        franchise.investment[index] = inv; // update
+      } else {
+        franchise.investment.push(inv); // insert
+      }
+    });
 
     await franchise.save();
 
