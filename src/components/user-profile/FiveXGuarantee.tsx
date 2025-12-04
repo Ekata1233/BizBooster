@@ -115,9 +115,6 @@ useEffect(() => {
   setRemainingDays(daysLeft);
 }, [singleUser]);
 
-
-
-
   // stats
   const totalLeads = userCheckouts.length;
   const totalEarnings = wallet?.totalCredits || 0;
@@ -147,7 +144,7 @@ useEffect(() => {
           <div className="flex flex-col items-center text-center relative z-10">
             <BadgeCheck className="w-16 h-16 text-white drop-shadow-md mb-4" />
 
-            <h2 className="text-3xl font-extrabold tracking-tight mb-2">🎉 You’re Eligible!</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight mb-2">🎉 You're Eligible!</h2>
 
             <p className="text-lg font-medium max-w-md">
               Congratulations! You successfully met the <span className="font-bold text-yellow-300">5X Guarantee</span> 🚀
@@ -181,38 +178,38 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center border-t-4 border-green-600">
           <div className="mb-4 text-green-600 text-xl font-semibold">Level Progress</div>
           <div className="relative w-[300px] h-[160px]">
-           <svg width="300" height="160" viewBox="0 0 300 160">
-  {/* Background arc */}
-  <path
-    d="M40,140 A110,110 0 0,1 260,140"
-    fill="none"
-    stroke="#e5e7eb"
-    strokeWidth="18"
-  />
+            <svg width="300" height="160" viewBox="0 0 300 160">
+              {/* Background arc - from left to right */}
+              <path
+                d="M50,140 A100,100 0 0,1 250,140"
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth="18"
+                strokeLinecap="round"
+              />
 
-  {/* Progress arc (Left → Right) */}
-  <path
-    d="M40,140 A110,110 0 0,1 260,140"
-    fill="none"
-    stroke="#10b981"
-    strokeWidth="18"
-    strokeLinecap="round"
-    strokeDasharray="345"
-    strokeDashoffset={(1 - leadPercent / 100) * 345}
-  />
+              {/* Progress arc - starts from left when 0% */}
+              <path
+                d="M50,140 A100,100 0 0,1 250,140"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="18"
+                strokeLinecap="round"
+                strokeDasharray="314.159"
+                strokeDashoffset={314.159 - (leadPercent / 100) * 314.159}
+              />
 
-  <text
-    x="150"
-    y="100"
-    textAnchor="middle"
-    fontSize="20"
-    fontWeight="bold"
-    fill="#10b981"
-  >
-    {leadPercent === 100 ? "5X" : `${currentLevel}X`}
-  </text>
-</svg>
-
+              <text
+                x="150"
+                y="100"
+                textAnchor="middle"
+                fontSize="20"
+                fontWeight="bold"
+                fill="#10b981"
+              >
+                {leadPercent === 100 ? "5X" : `${currentLevel}X`}
+              </text>
+            </svg>
           </div>
           <div className="text-base mt-2 text-gray-600">Progress: {leadPercent.toFixed(1)}%</div>
         </div>
@@ -221,40 +218,43 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center border-t-4 border-blue-600">
           <div className="mb-4 text-blue-600 text-xl font-semibold">Earning Progress</div>
           <div className="relative w-[300px] h-[160px]">
-           <svg width="300" height="160" viewBox="0 0 300 160">
-  <path
-    d="M40,140 A110,110 0 0,1 260,140"
-    fill="none"
-    stroke="#e5e7eb"
-    strokeWidth="18"
-  />
+            <svg width="300" height="160" viewBox="0 0 300 160">
+              {/* Background arc - from left to right */}
+              <path
+                d="M50,140 A100,100 0 0,1 250,140"
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth="18"
+                strokeLinecap="round"
+              />
 
-  <path
-    d="M40,140 A110,110 0 0,1 260,140"
-    fill="none"
-    stroke="#3b82f6"
-    strokeWidth="18"
-    strokeLinecap="round"
-    strokeDasharray="345"
-    strokeDashoffset={(1 - earningPercent / 100) * 345}
-  />
+              {/* Progress arc - starts from left when 0% */}
+              <path
+                d="M50,140 A100,100 0 0,1 250,140"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="18"
+                strokeLinecap="round"
+                strokeDasharray="314.159"
+                strokeDashoffset={314.159 - (earningPercent / 100) * 314.159}
+              />
 
-  <text
-    x="150"
-    y="100"
-    textAnchor="middle"
-    fontSize="20"
-    fontWeight="bold"
-    fill="#3b82f6"
-  >
-    ₹{Number(totalEarnings.toFixed(2))}
-  </text>
-</svg>
-
+              <text
+                x="150"
+                y="100"
+                textAnchor="middle"
+                fontSize="20"
+                fontWeight="bold"
+                fill="#3b82f6"
+              >
+                ₹{Number(totalEarnings.toFixed(2))}
+              </text>
+            </svg>
           </div>
           <div className="text-base mt-2 text-gray-600">Progress: {earningPercent.toFixed(1)}%</div>
         </div>
       </div>
+      
       {singleUser?.packageActive && (remainingMonths > 0 || remainingDays > 0) && (
         <div className="text-center mb-4">
           {remainingMonths > 0 ? (
@@ -268,6 +268,7 @@ useEffect(() => {
           )}
         </div>
       )}
+      
       {/* Summary Info */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <div className="bg-blue-50 border border-blue-200 rounded-xl py-4 shadow-sm">
