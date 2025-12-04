@@ -19,17 +19,17 @@ export interface ICheckout extends Document {
     platformFee: number;
     assurityfee: number;
 
-    listingPrice: Number;
-    serviceDiscountPrice: Number;
-    priceAfterDiscount: Number;
-    couponDiscountPrice: Number;
-    serviceGSTPrice: Number;
-    platformFeePrice: Number;
-    assurityChargesPrice: Number;
+    listingPrice: number;
+    serviceDiscountPrice: number;
+    priceAfterDiscount: number;
+    couponDiscountPrice: number;
+    serviceGSTPrice: number;
+    platformFeePrice: number;
+    assurityChargesPrice: number;
 
-    extraServicePrice: Number;
+    extraServicePrice: number;
 
-    commission: String;
+    commission: string;
 
     totalAmount: number;
     grandTotal: number;

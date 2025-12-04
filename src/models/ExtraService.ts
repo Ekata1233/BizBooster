@@ -43,46 +43,46 @@ export interface ExtraServiceDetails {
 
 
 const FranchiseInvestmentRangeSchema = new Schema({
-  franchiseSize: { type: String, required: true },
-  franchiseType: { type: String, required: true },
-  city: { type: String, required: true },
-  franchiseFee: { type: Number, required: true },
-  businessLicenses: { type: Number, required: true },
-  insurance: { type: Number, required: true },
-  legalAndAccountingFee: { type: Number, required: true },
-  inventoryFee: { type: Number, required: true },
-  officeSetup: { type: Number, required: true },
-  initialStartupEquipmentAndMarketing: { type: Number, required: true },
-  staffAndManagementTrainingExpense: { type: Number, required: true },
-  otherExpense: { type: Number, required: true },
-  totalInvestment: { type: Number, required: true },
+  franchiseSize: { type: String,  },
+  franchiseType: { type: String,  },
+  city: { type: String,  },
+  franchiseFee: { type: Number,  },
+  businessLicenses: { type: Number,  },
+  insurance: { type: Number,  },
+  legalAndAccountingFee: { type: Number,  },
+  inventoryFee: { type: Number,  },
+  officeSetup: { type: Number,  },
+  initialStartupEquipmentAndMarketing: { type: Number,  },
+  staffAndManagementTrainingExpense: { type: Number,  },
+  otherExpense: { type: Number,  },
+  totalInvestment: { type: Number,  },
   gstIncluded: { type: Boolean, default: false },
-  gst: { type: Number, required: true },
+  gst: { type: Number,  },
   tokenAmount: { type: Number },
 });
 
 const FranchiseModelDetailsSchema = new Schema({
-  franchiseSize: { type: String, required: true },
-  areaRequired: { type: String, required: true },
+  franchiseSize: { type: String,  },
+  areaRequired: { type: String,  },
   marketing: { type: String },
   returnOfInvestment: { type: String },
-  manPower: { type: Number, required: true },
-  staffManagement: { type: String, required: true },
+  manPower: { type: Number,  },
+  staffManagement: { type: String,  },
 
-  royaltyPercent: { type: String, required: true },
-  grossMargin: { type: String, required: true },
-  radiusArea: { type: String, required: true },
+  royaltyPercent: { type: String,  },
+  grossMargin: { type: String,  },
+  radiusArea: { type: String,  },
 });
 
 const ExtraServiceSchema = new Schema({
-  serviceId: { type: Types.ObjectId, required: true, ref: "Service" }, // reference to your service
+  serviceId: { type: Types.ObjectId, ref: "Service" }, 
  investment: {
     type: [FranchiseInvestmentRangeSchema], 
-    required: true
+    
   },
   model: {
     type: [FranchiseModelDetailsSchema],
-    required: true
+    
   }
 }, { timestamps: true });
 
