@@ -623,7 +623,7 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
           </>
         ) : (
           
-          <FranchiseExtraDetails serviceId={createdServiceId} />
+          <FranchiseExtraDetails serviceId={createdServiceId}  onSave={() => setFranchiseStep(1)} />
         )
       ) : (
         <>

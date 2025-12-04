@@ -2,7 +2,7 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 // ---------------------- Investment Details ----------------------
 export interface FranchiseInvestmentRange {
-  franchiseSize: 'Small' | 'Medium' | 'Large';
+  franchiseSize: string;
   franchiseType: string;
   city: string;
   franchiseFee: number; // ₹
@@ -22,7 +22,7 @@ export interface FranchiseInvestmentRange {
 
 // ---------------------- Franchise Model Details ----------------------
 export interface FranchiseModelDetails {
-  franchiseSize: 'Small' | 'Medium' | 'Large';
+  franchiseSize: string;
   areaRequired: string; // e.g., "₹500-1000 sq.ft."
   marketing?: string; // e.g., "360 Marketing"
   returnOfInvestment?: string; // e.g., "25-30%"
@@ -43,7 +43,7 @@ export interface ExtraServiceDetails {
 
 
 const FranchiseInvestmentRangeSchema = new Schema({
-  franchiseSize: { type: String, enum: ['Small', 'Medium', 'Large'], required: true },
+  franchiseSize: { type: String, required: true },
   franchiseType: { type: String, required: true },
   city: { type: String, required: true },
   franchiseFee: { type: Number, required: true },
@@ -62,7 +62,7 @@ const FranchiseInvestmentRangeSchema = new Schema({
 });
 
 const FranchiseModelDetailsSchema = new Schema({
-  franchiseSize: { type: String, enum: ['Small', 'Medium', 'Large'], required: true },
+  franchiseSize: { type: String, required: true },
   areaRequired: { type: String, required: true },
   marketing: { type: String },
   returnOfInvestment: { type: String },
