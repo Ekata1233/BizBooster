@@ -30,6 +30,7 @@ import { useCheckout } from "@/context/CheckoutContext";
 import { useLead } from "@/context/LeadContext";
 import { CalendarIcon, DollarSignIcon, Gift, HelpCircleIcon, MapIcon, Megaphone, TrendingUp } from "lucide-react";
 import axios from "axios";
+import { useSupportQuestions } from "@/context/SupportContext";
 
 // Define the new type for nested sub-items
 type SubNavItem = {
@@ -349,11 +350,11 @@ const AppSidebar: React.FC = () => {
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { checkouts } = useCheckout();
   const { leads } = useLead();
-  const [supportQuestions, setSupportQuestions] = useState<SupportQuestion[]>([]);
-  const [unansweredCount, setUnansweredCount] = useState(0);
+  
+const { unansweredCount } = useSupportQuestions();
   useEffect(() => {
-    // console.log("All Checkouts:", checkouts);
-  }, [checkouts]);
+    console.log("unansweredCount:", unansweredCount);
+  }, []);
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
 
@@ -504,30 +505,49 @@ const AppSidebar: React.FC = () => {
   }, [pathname, isActive, findActiveAndSetOpenSubmenus, updateSubmenuHeight]);
 
   //help and support count 
-  useEffect(() => {
-    const fetchSupportQuestions = async () => {
-      try {
-        const res = await axios.get("/api/support/question");
-        const questions = res.data?.data || [];
+// useEffect(() => {
+//   // Skip if already fetching
+//   if (isFetchingRef.current) return;
+  
+//   const fetchSupportQuestions = async () => {
+//     isFetchingRef.current = true;
+//     try {
+//       console.log("📞 FETCHING support questions...");
+//       const res = await axios.get("/api/support/question");
+//       const questions = res.data?.data || [];
+//       setSupportQuestions(questions);
+      
+//       const unanswered = questions.filter((q: SupportQuestion) => !q.answer).length;
+//       setUnansweredCount(unanswered);
+//       console.log("✅ Support questions fetched, unanswered:", unanswered);
+//     } catch (err) {
+//       console.error("Error fetching support questions:", err);
+//     } finally {
+//       isFetchingRef.current = false;
+//     }
+//   };
 
-        setSupportQuestions(questions);
+//   // Initial fetch
+//   fetchSupportQuestions();
 
-        // 🔹 Count unanswered
-        const unanswered = questions.filter((q: SupportQuestion) => !q.answer).length;
+//   // Clear any existing interval first
+//   if (supportFetchIntervalRef.current) {
+//     clearInterval(supportFetchIntervalRef.current);
+//   }
 
-
-        setUnansweredCount(unanswered);
-      } catch (err) {
-        console.error("Error fetching support questions:", err);
-      }
-    };
-
-    fetchSupportQuestions();
-
-    // Auto refresh every 30s (optional)
-    const interval = setInterval(fetchSupportQuestions, 30000);
-    return () => clearInterval(interval);
-  }, []);
+//   // Set up new interval for refreshing (every 30 seconds)
+//   supportFetchIntervalRef.current = setInterval(fetchSupportQuestions, 30000);
+  
+//   // Cleanup function - VERY IMPORTANT
+//   return () => {
+//     console.log("🧹 Cleaning up support questions interval");
+//     if (supportFetchIntervalRef.current) {
+//       clearInterval(supportFetchIntervalRef.current);
+//       supportFetchIntervalRef.current = null;
+//     }
+//     isFetchingRef.current = false;
+//   };
+// }, []); 
 
   const handleSubmenuToggle = useCallback((key: string) => {
     setOpenSubmenu((prevOpenSubmenu) => {
