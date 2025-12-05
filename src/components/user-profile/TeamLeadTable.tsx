@@ -17,9 +17,9 @@ interface TeamLeadData {
   joinDate: string;
   status: string; // 'Deleted' | 'GP' | 'SGP' | 'PGP' | 'NonGP'
   teamCount: number;
-  myEarnings: string;
+  myEarnings: number;
   leadCount: number;
-  packageEarnings: string;
+  packageEarnings: number;
 }
 
 interface TeamLeadProps {
@@ -115,7 +115,7 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
               status = "PGP";
             }
 
-
+console.log("members : ", member)
             const base: TeamLeadData = {
               id: user._id,
               userPhoto: member.profilePhoto || '/images/logo/user1.png',
@@ -125,8 +125,8 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
               joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : '',
               status,
               teamCount: Number(member?.team?.length || 0),
-              myEarnings: `₹${Number(member?.totalEarningsFromShare_2 || 0).toLocaleString()}`,
-              packageEarnings: `₹${Number(member?.packages[0].amount || 0).toLocaleString()}`,
+             myEarnings: Number(member?.totalEarningsFromShare_2 || 0),
+packageEarnings: Number(member?.packages?.[0]?.amount || 0),
               leadCount: Number(member?.leads?.length || 0),
             };
 
@@ -232,21 +232,30 @@ const TeamLeadTable = ({ userId, isAction }: TeamLeadProps) => {
       ),
     },
     {
-      header: 'My Earnings',
-      accessor: 'myEarnings',
-      render: (row: TeamLeadData) => (
-        <div className="flex flex-col text-sm">
-          <span>{row.myEarnings}</span>
-          {row.status === "GP" && (
-            <span className="text-xs text-green-600">(completed)</span>
-          )}
-          <span>{row.packageEarnings}</span>
-          {row.status === "GP" && (
-            <span className="text-xs text-green-600">(Package Earnings)</span>
-          )}
-        </div>
-      ),
-    },
+  header: 'My Earnings',
+  accessor: 'myEarnings',
+  render: (row: TeamLeadData) => {
+    return (
+      <div className="flex flex-col text-sm">
+        
+        {/* My Earnings */}
+        <span>₹{row.myEarnings.toLocaleString()}</span>
+
+        {/* {(row.status === "GP" || row.status==="Deleted") && ( */}
+          <span className="text-xs text-green-600">(completed)</span>
+        {/* )} */}
+
+        {/* Package Earnings */}
+        <span>₹{row.packageEarnings.toLocaleString()}</span>
+
+        {/* {(row.status === "GP" || row.status==="Deleted") && ( */}
+          <span className="text-xs text-green-600">(Package Earnings)</span>
+        {/* )} */}
+      </div>
+    );
+  }
+}
+,
     {
       header: 'Lead',
       accessor: 'leadCount',
