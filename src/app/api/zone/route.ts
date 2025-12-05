@@ -61,9 +61,6 @@ export async function GET() {
     { $group: { _id: "$storeInfo.zone", count: { $sum: 1 } } },
   ]);
 
-  console.log("Provider counts:", providerCounts);
-
-
     const countsMap = providerCounts.reduce((acc, item) => {
       acc[item._id.toString()] = item.count;
       return acc;

@@ -264,8 +264,6 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
     try {
       const fd = new FormData();
 
-      console.log("======= Raw Form Data =======");
-      console.log(JSON.stringify(formData, null, 2));
 
       // ---------------- BASIC DETAILS ----------------
       fd.append("serviceName", formData.basic.serviceName   || "");
@@ -310,18 +308,57 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
       });
 
       // ---------------- SERVICE DETAILS ----------------
-      Object.keys(formData.service).forEach((key) => {
-        const value = (formData.service as any)[key];
-        if (Array.isArray(value)) {
-          value.forEach((v, i) => {
-            if (v instanceof File) {
-              fd.append(`serviceDetails[${key}][${i}]`, v);
-            } else {
-              fd.append(`serviceDetails[${key}][${i}]`, v || "");
-            }
-          });
+      // Object.keys(formData.service).forEach((key) => {
+      //   const value = (formData.service as any)[key];
+      //   if (Array.isArray(value)) {
+      //     value.forEach((v, i) => {
+      //       if (v instanceof File) {
+      //         fd.append(`serviceDetails[${key}][${i}]`, v);
+      //       } else {
+      //         fd.append(`serviceDetails[${key}][${i}]`, v || "");
+      //       }
+      //     });
+      //   }
+      // });
+      // ---------------- SERVICE DETAILS ----------------
+Object.keys(formData.service).forEach((key) => {
+  const value = (formData.service as any)[key];
+
+  // CASE 1: value is File
+  if (value instanceof File) {
+    fd.append(`serviceDetails[${key}]`, value);
+    return;
+  }
+
+  // CASE 2: value is an array
+  if (Array.isArray(value)) {
+    // If array contains Files
+    if (value.some((item) => item instanceof File)) {
+      value.forEach((file, i) => {
+        if (file instanceof File) {
+          fd.append(`serviceDetails[${key}][${i}]`, file);
+        } else {
+          fd.append(`serviceDetails[${key}][${i}]`, file ? JSON.stringify(file) : "");
         }
       });
+      return;
+    }
+
+    // Array of objects or strings
+    fd.append(`serviceDetails[${key}]`, JSON.stringify(value));
+    return;
+  }
+
+  // CASE 3: value is object
+  if (typeof value === "object" && value !== null) {
+    fd.append(`serviceDetails[${key}]`, JSON.stringify(value));
+    return;
+  }
+
+  // CASE 4: simple string/number
+  fd.append(`serviceDetails[${key}]`, value || "");
+});
+
 
       fd.append("benefits", JSON.stringify(formData.service.benefits || []));
       fd.append("aboutUs",JSON.stringify(formData.service.aboutUs || []));

@@ -243,23 +243,51 @@ for (let i = 0; ; i++) {
 }
 
 
-    const arrayOfStringFields = [
-      "benefits",
-      "aboutUs",
-      "document",
-      "termsAndConditions",
-    ];
+   const arrayOfStringFields = [
+  "benefits",
+  "aboutUs",
+  "document",
+  "termsAndConditions",
+];
 
-    arrayOfStringFields.forEach((field) => {
-      const arr: string[] = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith(`serviceDetails[${field}]`)) {
-          const val = formData.get(key) as string;
-          if (val) arr.push(val);
-        }
-      }
-      serviceDetails[field] = arr;
-    });
+arrayOfStringFields.forEach((field) => {
+  const val = formData.get(`serviceDetails[${field}]`) as string | null;
+  if (val) {
+    try {
+      serviceDetails[field] = JSON.parse(val);
+    } catch (e) {
+      serviceDetails[field] = [];
+    }
+  } else {
+    serviceDetails[field] = [];
+  }
+});
+const objectArrayFields = [
+  "assuredByFetchTrue",
+  "howItWorks",
+  "whyChooseUs",
+  "weRequired",
+  "weDeliver",
+  "moreInfo",
+  "connectWith",
+  "timeRequired",
+  "faq",
+  "packages",
+  "extraSections"
+];
+
+objectArrayFields.forEach((field) => {
+  const val = formData.get(`serviceDetails[${field}]`) as string | null;
+  if (val) {
+    try {
+      serviceDetails[field] = JSON.parse(val);
+    } catch (e) {
+      serviceDetails[field] = [];
+    }
+  } else {
+    serviceDetails[field] = [];
+  }
+});
 
     // Upload highlight images
 serviceDetails.highlight = []; // reset
