@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         // ----------------------------
         // BUILD MATCH FILTER
         // ----------------------------
-        const match: any = { isDeleted: false };
+        const match: any = {  };
 
         // Search filter
         if (search) {
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
                 { email: regex },
                 { mobileNumber: regex },
                 { referralCode: regex },
+                {isDeleted: regex},
             ];
         }
 
@@ -129,7 +130,7 @@ export async function GET(req: NextRequest) {
                     profilePhoto: 1,
                     packageStatus: 1,
                     createdAt: 1,
-
+                    isDeleted: 1,
                     referredBy: { $arrayElemAt: ["$referrer.fullName", 0] },
                     totalBookings: {
                         $ifNull: [{ $arrayElemAt: ["$bookingsCount.count", 0] }, 0],
