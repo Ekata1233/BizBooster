@@ -6,6 +6,8 @@ import imagekit from "@/utils/imagekit";
 import { v4 as uuid } from "uuid";
 import '@/models/Zone'
 import '@/models/Module'
+import { File, Blob } from "buffer";
+
 export const runtime = "nodejs";
 
 /** ---- helpers ----------------------------------------------------------- */
@@ -53,11 +55,11 @@ async function parseFormAndUpload(
 
   // Handle text fields first
   for (const [key, value] of fd.entries()) {
-    if (value instanceof File) continue;      // files handled below
+    if (value instanceof Blob) continue; // Node-safe check
     try {
       storeInfo[key] = JSON.parse(value as string); // allow JSON strings
     } catch {
-      storeInfo[key] = value;                 // plain string
+      storeInfo[key] = value; // plain string
     }
   }
 
@@ -72,14 +74,15 @@ async function parseFormAndUpload(
 
   // Handle logo / cover files
   for (const key of ["logo", "cover"] as const) {
-    const maybeFile = fd.get(key);
-    if (maybeFile && maybeFile instanceof File && maybeFile.size > 0) {
-      storeInfo[key] = await uploadToImageKit(providerId, key, maybeFile);
+    const maybeFile = fd.get(key); // <-- define it here
+    if (maybeFile && maybeFile instanceof Blob && maybeFile.size > 0) {
+      storeInfo[key] = await uploadToImageKit(providerId, key, maybeFile as any);
     }
   }
 
   return storeInfo;
 }
+
 
 /** ---- API handlers ------------------------------------------------------ */
 
