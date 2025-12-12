@@ -1,12 +1,3 @@
-/**
- * src/app/api/provider/store-info/route.ts
- *
- * Handles:
- *   PUT  – save / update provider storeInfo (text + logo + cover)
- *   OPTIONS – CORS pre-flight
- *
- * Runtime: Node (needed for Buffer)
- */
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import { getUserIdFromRequest } from "@/utils/auth";
@@ -15,8 +6,6 @@ import imagekit from "@/utils/imagekit";
 import { v4 as uuid } from "uuid";
 import '@/models/Zone'
 import '@/models/Module'
-
-/** Ensure this route uses the Node runtime, not the Edge runtime */
 export const runtime = "nodejs";
 
 /** ---- helpers ----------------------------------------------------------- */
@@ -48,7 +37,7 @@ async function uploadToImageKit(
     file: buffer,                   // raw file bytes
     fileName,
     folder: `/providers/${providerId}`,
-    useUniqueFileName: false,       // we already append uuid
+    useUniqueFileName: false,      
   });
 
   return res.url;                   // public CDN URL
