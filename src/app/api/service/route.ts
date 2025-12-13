@@ -6,6 +6,8 @@ import imagekit from "@/utils/imagekit";
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/Provider"
+export const runtime = "nodejs";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -143,28 +145,41 @@ if (thumbnailFile && thumbnailFile instanceof File) {
     };
 
     // Helper function to extract list of objects (title + description)
-async function handleFileUpload(fileOrBlob: File | string, folder: string, prefix: string) {
-  if (fileOrBlob instanceof File) {
+async function handleFileUpload(
+  fileOrBlob: File | string,
+  folder: string,
+  prefix: string
+) {
+  // Case 1: Real File from formData
+  if (typeof fileOrBlob === "object" && "arrayBuffer" in fileOrBlob) {
     const buffer = Buffer.from(await fileOrBlob.arrayBuffer());
+
     const upload = await imagekit.upload({
       file: buffer,
-      fileName: `${uuidv4()}-${fileOrBlob.name}`,
+      fileName: `${uuidv4()}-${prefix}`,
       folder,
     });
-    return upload.url;
-  } else if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("blob:")) {
-    const blob = await fetch(fileOrBlob).then(res => res.blob());
-    const file = new File([blob], `${prefix}.png`, { type: blob.type });
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const upload = await imagekit.upload({
-      file: buffer,
-      fileName: `${uuidv4()}-${file.name}`,
-      folder,
-    });
+
     return upload.url;
   }
+
+  // Case 2: blob: URL (client preview image)
+  if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("blob:")) {
+    const res = await fetch(fileOrBlob);
+    const blob = await res.arrayBuffer();
+
+    const upload = await imagekit.upload({
+      file: Buffer.from(blob),
+      fileName: `${uuidv4()}-${prefix}.png`,
+      folder,
+    });
+
+    return upload.url;
+  }
+
   return "";
 }
+
 
 async function processSectionWithIcon(fieldName: string, folder: string , mediaKey: "icon" | "image") {
   const arr: any[] = [];
