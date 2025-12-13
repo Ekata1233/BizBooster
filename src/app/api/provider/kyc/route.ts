@@ -61,7 +61,8 @@ async function parseKycForm(
 
   // Handle text fields
   for (const [key, value] of fd.entries()) {
-    if (value instanceof File) continue; // skip files here
+    if (typeof value === "object" && "arrayBuffer" in value) continue;
+
     try {
       kyc[key] = JSON.parse(value as string);
     } catch {
@@ -69,28 +70,33 @@ async function parseKycForm(
     }
   }
 
-  // Handle files with max 2 per field
+  // Handle files (max 2 per field)
   for (const [key, value] of fd.entries()) {
-    if (!(value instanceof File) || value.size === 0) continue;
+    if (
+      typeof value !== "object" ||
+      !("arrayBuffer" in value) ||
+      value.size === 0
+    ) {
+      continue;
+    }
 
-    const url = await uploadFile(providerId, key, value);
+    const file = value as File;
+    const url = await uploadFile(providerId, key, file);
 
-    // Initialize as array
     if (!kyc[key]) {
       kyc[key] = [url];
     } else if (Array.isArray(kyc[key])) {
       if (kyc[key].length < 2) {
         kyc[key].push(url);
       }
-      // If already 2, ignore additional uploads
     } else {
-      // Convert existing single value into array (respect 2 limit)
       kyc[key] = [kyc[key], url].slice(0, 2);
     }
   }
 
   return kyc;
 }
+
 
 
 /* ------------------------------------------------------------------------ */

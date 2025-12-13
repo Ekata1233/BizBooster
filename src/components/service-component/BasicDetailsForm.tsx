@@ -169,13 +169,26 @@ console.log("update data for the update : ", data)
           </div>
            )}
 
-            {fieldsConfig?.thumbnail && (
+         {fieldsConfig?.thumbnail && (
+  <div>
+    <Label>Thumbnail</Label>
+    <FileInput onChange={handleThumbnailChange} />
 
-          <div>
-            <Label>Thumbnail</Label>
-            <FileInput onChange={handleThumbnailChange} />
-          </div>
-          )}
+    {/* 🔥 Thumbnail Preview */}
+    {data.thumbnailImage && (
+      <img
+        src={
+          typeof data.thumbnailImage === "string"
+            ? data.thumbnailImage
+            : URL.createObjectURL(data.thumbnailImage)
+        }
+        className="w-32 h-32 mt-3 rounded-lg object-cover border"
+        alt="Thumbnail Preview"
+      />
+    )}
+  </div>
+)}
+
 
            {fieldsConfig?.tags && (
           <div>
@@ -258,11 +271,29 @@ console.log("update data for the update : ", data)
 
 
  {fieldsConfig?.bannerImage && (
-          <div>
-            <Label>Banner Images</Label>
-            <FileInput multiple onChange={handleBannerChange} />
-          </div>
- )}
+  <div>
+    <Label>Banner Images</Label>
+    <FileInput multiple onChange={handleBannerChange} />
+
+    {/* 🔥 Banner Preview */}
+    {data.bannerImages && (
+      <div className="flex gap-3 flex-wrap mt-3">
+        {Array.from(data.bannerImages).map((img: any, index: number) => (
+          <img
+            key={index}
+            src={
+              typeof img === "string"
+                ? img
+                : URL.createObjectURL(img)
+            }
+            className="w-32 h-32 rounded-lg object-cover border"
+            alt={`Banner ${index}`}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
 
 

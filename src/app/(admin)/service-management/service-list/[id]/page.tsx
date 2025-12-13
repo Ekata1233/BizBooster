@@ -55,7 +55,7 @@ const EditService: React.FC = () => {
       discountedPrice: 0,
       gst: 0,
       includeGst: false,
-      thumbnail: null,
+      thumbnailImage: null,
       bannerImages: [],
       bannerPreviews: [],
       tags: [],
@@ -117,8 +117,8 @@ const EditService: React.FC = () => {
       discountedPrice: service.discountedPrice ?? 0,
       gst: service.gst ?? 0,
       includeGst: service.includeGst ?? false,
-      thumbnail: null,
-      bannerImages: [],
+      thumbnailImage: service.thumbnailImage || null,   // ✅ FIX
+  bannerImages: service.bannerImages || [], 
       bannerPreviews: Array.isArray(service.bannerImages) ? service.bannerImages : [],
       tags: service.tags || [],
       keyValues: Array.isArray(service.keyValues) ? service.keyValues.map((kv: any) => ({ key: kv.key, value: kv.value })) : [{ key: '', value: '' }],
@@ -207,7 +207,7 @@ const EditService: React.FC = () => {
       fd.append('gst', String(b.gst ?? 0));
       fd.append('includeGst', b.includeGst ? 'true' : 'false');
       fd.append('recommendedServices', b.recommendedServices ? 'true' : 'false');
-      if (b.thumbnail instanceof File) fd.append('thumbnail', b.thumbnail);
+      if (b.thumbnailImage instanceof File) fd.append('thumbnail', b.thumbnailImage);
       b.bannerImages?.forEach((file: File) => fd.append('bannerImages', file));
       b.tags?.forEach((tag, i) => fd.append(`tags[${i}]`, tag));
       b.keyValues?.forEach((kv, i) => {
@@ -369,7 +369,7 @@ const EditService: React.FC = () => {
                     gst: state.basic.gst,
                     recommendedServices: state.basic.recommendedServices,
                     discountedPrice: state.basic.discountedPrice,
-                    thumbnailImage: state.basic.thumbnail,
+                    thumbnailImage: state.basic.thumbnailImage,
                     bannerImages: state.basic.bannerImages,
                     tags: state.basic.tags,
                     keyValues: state.basic.keyValues,
@@ -421,7 +421,7 @@ const EditService: React.FC = () => {
                   gst: state.basic.gst,
                   recommendedServices: state.basic.recommendedServices,
                   discountedPrice: state.basic.discountedPrice,
-                  thumbnailImage: state.basic.thumbnail,
+                  thumbnailImage: state.basic.thumbnailImage,
                   bannerImages: state.basic.bannerImages,
                   tags: state.basic.tags,
                   keyValues: state.basic.keyValues,
