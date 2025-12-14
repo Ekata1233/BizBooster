@@ -55,9 +55,6 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
   }, [data.keyValues]);
   
 
-
-console.log("update data for the update : ", data)
-
   // Calculate discountedPrice, gstInRupees, totalWithGst
   useEffect(() => {
     const price = data.price || 0;

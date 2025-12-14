@@ -230,7 +230,6 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
   };
 
 
-  console.log("formdata at the timing of typing : ", formData);
 
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
@@ -259,11 +258,8 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
     e.preventDefault();
     setIsSubmitting(true);
 
-
-
     try {
       const fd = new FormData();
-
 
       // ---------------- BASIC DETAILS ----------------
       fd.append("serviceName", formData.basic.serviceName   || "");
@@ -307,67 +303,95 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
         fd.append(`keyValues[${i}][value]`, kv.value || "");
       });
 
-      // ---------------- SERVICE DETAILS ----------------
-      // Object.keys(formData.service).forEach((key) => {
-      //   const value = (formData.service as any)[key];
-      //   if (Array.isArray(value)) {
-      //     value.forEach((v, i) => {
-      //       if (v instanceof File) {
-      //         fd.append(`serviceDetails[${key}][${i}]`, v);
-      //       } else {
-      //         fd.append(`serviceDetails[${key}][${i}]`, v || "");
-      //       }
-      //     });
-      //   }
-      // });
-      // ---------------- SERVICE DETAILS ----------------
-Object.keys(formData.service).forEach((key) => {
-  const value = (formData.service as any)[key];
+        /* ================= TEXT ARRAYS ================= */
+    fd.append("serviceDetails[benefits]", JSON.stringify(formData.service.benefits || []));
+    fd.append("serviceDetails[aboutUs]", JSON.stringify(formData.service.aboutUs || []));
+    fd.append("serviceDetails[document]", JSON.stringify(formData.service.document || []));
+    fd.append(
+      "serviceDetails[termsAndConditions]",
+      JSON.stringify(formData.service.termsAndConditions || [])
+    );
 
-  // CASE 1: value is File
-  if (value instanceof File) {
-    fd.append(`serviceDetails[${key}]`, value);
-    return;
-  }
+    /* ================= FAQ ================= */
+    fd.append("serviceDetails[faq]", JSON.stringify(formData.service.faq || []));
 
-  // CASE 2: value is an array
-  if (Array.isArray(value)) {
-    // If array contains Files
-    if (value.some((item) => item instanceof File)) {
-      value.forEach((file, i) => {
+    /* ================= PACKAGES ================= */
+    fd.append("serviceDetails[packages]", JSON.stringify(formData.service.packages || []));
+
+    /* ================= TIME REQUIRED ================= */
+    const validTime = formData.service.timeRequired?.filter(
+      (t) => t.minDays != null || t.maxDays != null
+    );
+    fd.append("serviceDetails[timeRequired]", JSON.stringify(validTime || []));
+
+    /* ================= ASSURED / WHY / HOW ================= */
+    ["assuredByFetchTrue", "whyChooseUs", "howItWorks", "weRequired", "weDeliver"].forEach(
+      (key) => {
+        (formData.service as any)[key]?.forEach((item: any, i: number) => {
+          if (item.title || item.description) {
+            fd.append(`serviceDetails[${key}][${i}][title]`, item.title || "");
+            fd.append(`serviceDetails[${key}][${i}][description]`, item.description || "");
+
+            if (item.icon instanceof File) {
+              fd.append(`serviceDetails[${key}][${i}][icon]`, item.icon);
+            }
+          }
+        });
+      }
+    );
+
+    /* ================= EXTRA SECTIONS (FIXED) ================= */
+    formData.service.extraSections?.forEach((section, i) => {
+      if (!section.title) return;
+
+      fd.append(`serviceDetails[extraSections][${i}][title]`, section.title);
+
+      ["subtitle", "description", "subDescription", "lists", "tags"].forEach((field) => {
+        section[field]?.forEach((v: string, j: number) => {
+          if (v) {
+            fd.append(`serviceDetails[extraSections][${i}][${field}][${j}]`, v);
+          }
+        });
+      });
+
+      section.image?.forEach((file: File, j: number) => {
         if (file instanceof File) {
-          fd.append(`serviceDetails[${key}][${i}]`, file);
-        } else {
-          fd.append(`serviceDetails[${key}][${i}]`, file ? JSON.stringify(file) : "");
+          fd.append(`serviceDetails[extraSections][${i}][image][${j}]`, file);
         }
       });
-      return;
-    }
+    });
 
-    // Array of objects or strings
-    fd.append(`serviceDetails[${key}]`, JSON.stringify(value));
-    return;
-  }
+    /* ================= EXTRA IMAGES ================= */
+    formData.service.extraImages?.forEach((file: File, i: number) => {
+      if (file instanceof File) {
+        fd.append(`serviceDetails[extraImages][${i}]`, file);
+      }
+    });
 
-  // CASE 3: value is object
-  if (typeof value === "object" && value !== null) {
-    fd.append(`serviceDetails[${key}]`, JSON.stringify(value));
-    return;
-  }
+    /* ================= HIGHLIGHT PREVIEWS ================= */
+    formData.service.highlightPreviews?.forEach((file: File, i: number) => {
+      if (file instanceof File) {
+        fd.append(`serviceDetails[highlightPreviews][${i}]`, file);
+      }
+    });
 
-  // CASE 4: simple string/number
-  fd.append(`serviceDetails[${key}]`, value || "");
-});
+    /* ================= MORE INFO ================= */
+    formData.service.moreInfo?.forEach((item, i) => {
+      if (item.title || item.description) {
+        fd.append(`serviceDetails[moreInfo][${i}][title]`, item.title || "");
+        fd.append(`serviceDetails[moreInfo][${i}][description]`, item.description || "");
 
+        if (item.image instanceof File) {
+          fd.append(`serviceDetails[moreInfo][${i}][image]`, item.image);
+        }
+      }
+    });
 
-      fd.append("benefits", JSON.stringify(formData.service.benefits || []));
-      fd.append("aboutUs",JSON.stringify(formData.service.aboutUs || []));
-      fd.append("document", JSON.stringify(formData.service.document || []));
-      fd.append("termsAndConditions",JSON.stringify(formData.service.termsAndConditions || []));
-
-      // (rest of your existing building logic remains unchanged...)
-      // ... AssuredByFetchTrue, howItWorks, whyChooseUs, packages, weRequired, weDeliver, moreInfo, connectWith, timeRequired, extraImages, extraSections (same as original)
-
+    /* ================= CONNECT WITH ================= */
+    fd.append(
+      "serviceDetails[connectWith]",
+      JSON.stringify(formData.service.connectWith || [])
+    );
       // ---------------- FRANCHISE DETAILS ----------------
       fd.append("franchiseDetails[commission]", formData.franchise.commission || "");
       fd.append("franchiseDetails[termsAndConditions]", formData.franchise.termsAndConditions || "");
