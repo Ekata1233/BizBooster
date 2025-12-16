@@ -19,7 +19,7 @@ type TitleDescription = { title: string; description: string; icon?: string };
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: { url: string; file?: File }[];
+  image: string[];
   description: string[];
   subDescription: string[];
   lists: string[];
@@ -32,14 +32,15 @@ type TimeRequired = { minDays: number | null; maxDays: number | null };
 
 // ------------------- SERVICE DETAILS -------------------
 export type ServiceDetails = {
-  benefits: string;
-  aboutUs: string;
+  benefits: string[];
+  aboutUs: string[];
   highlight: string[];
+
   highlightPreviews?: string[];
-  document: string;
+  document: string[];
   assuredByFetchTrue: TitleDescription[];
   howItWorks: TitleDescription[];
-  termsAndConditions: string;
+  termsAndConditions: string[];
   faq: FAQ[];
   extraSections: ExtraSection[];
   whyChooseUs: TitleDescription[];
@@ -65,15 +66,15 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
 
 
   // ------------------- STATES -------------------
-const [benefits, setBenefits] = useState<string>('');
-const [aboutUs, setAboutUs] = useState<string>('');
+  const [benefits, setBenefits] = useState<string[]>(Array.isArray(data?.benefits) ? data.benefits : ['']);
+  const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
   const [highlight, setHighlight] = useState<string[]>(data?.highlight || ['']);
   const [highlightPreviews, setHighlightPreviews] = useState<string[]>(data?.highlightPreviews || []);
-const [document, setDocument] = useState<string>('');
+  const [document, setDocument] = useState<string[]>(data?.document || []);
   const [assuredByFetchTrue, setAssuredByFetchTrue] = useState<TitleDescription[]>(data?.assuredByFetchTrue?.length ? data.assuredByFetchTrue : [{ title: '', description: '', icon: '' }]);
   const [howItWorks, setHowItWorks] = useState<TitleDescription[]>(data?.howItWorks?.length ? data.howItWorks : [{ title: '', description: '', icon: '' }]);
-const [termsAndConditions, setTermsAndConditions] = useState<string>(''); 
- const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
+  const [termsAndConditions, setTermsAndConditions] = useState<string[]>(data?.termsAndConditions || []);
+  const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
   const [extraSections, setExtraSections] = useState<ExtraSection[]>(data?.extraSections?.length ? data.extraSections : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]);
   const [whyChooseUs, setWhyChooseUs] = useState<TitleDescription[]>(data?.whyChooseUs?.length ? data.whyChooseUs : [{ title: '', description: '', icon: '' }]);
   const [packages, setPackages] = useState<Package[]>(data?.packages?.length ? data.packages : [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }]);
@@ -91,63 +92,50 @@ const [extraImages, setExtraImages] = useState<ExtraImageItem[]>(
     : [{ icon: "" }] // default empty object
 );  const [showExtraSections, setShowExtraSections] = useState(false);
 
-const isFirstRender = useRef(true);
+  useEffect(() => {
 
-useEffect(() => {
-  // Skip first render to avoid overwriting initial data
-  if (isFirstRender.current) {
-    isFirstRender.current = false;
-    return;
-  }
+    const newData = {
+      benefits,
+    aboutUs,
+    highlight,
+    highlightPreviews,
+    document,
+    assuredByFetchTrue,
+    howItWorks,
+    termsAndConditions,
+    faq,
+    extraSections,
+    whyChooseUs,
+    packages,
+    weRequired,
+    weDeliver,
+    moreInfo,
+    connectWith,
+    timeRequired,
+    extraImages,
+    };
 
-  const timeout = setTimeout(() => {
-    setData({
-      serviceDetails: {
-        benefits,
-        aboutUs,
-        highlight,
-        highlightPreviews,
-        document,
-        assuredByFetchTrue,
-        howItWorks,
-        termsAndConditions,
-        faq,
-        extraSections,
-        whyChooseUs,
-        packages,
-        weRequired,
-        weDeliver,
-        moreInfo,
-        connectWith,
-        timeRequired,
-        extraImages,
-      },
-    });
-  }, 400); // debounce delay (300–500ms is ideal)
-
-  return () => clearTimeout(timeout);
-}, [
-  benefits,
-  aboutUs,
-  highlight,
-  highlightPreviews,
-  document,
-  assuredByFetchTrue,
-  howItWorks,
-  termsAndConditions,
-  faq,
-  extraSections,
-  whyChooseUs,
-  packages,
-  weRequired,
-  weDeliver,
-  moreInfo,
-  connectWith,
-  timeRequired,
-  extraImages,
-  setData,
-]);
-;
+    if (JSON.stringify(newData) !== JSON.stringify(data)) {
+      setData(newData);
+    }
+  }, [ benefits,
+    aboutUs,
+    highlight,
+    highlightPreviews,
+    document,
+    assuredByFetchTrue,
+    howItWorks,
+    termsAndConditions,
+    faq,
+    extraSections,
+    whyChooseUs,
+    packages,
+    weRequired,
+    weDeliver,
+    moreInfo,
+    connectWith,
+    timeRequired,
+    extraImages,]);
 
 
   useEffect(() => setEditorReady(true), []);
@@ -275,8 +263,8 @@ function renderArrayField<T extends object>(
 
     {editorReady && (
       <ClientSideCustomEditor
-         value={benefits}
-  onChange={(val) => setBenefits(val)}
+        value={benefits.join('\n')}
+        onChange={(val) => setBenefits(val.split('\n'))}
       />
     )}
   </div>
@@ -289,8 +277,8 @@ function renderArrayField<T extends object>(
 </div>
     {editorReady && (
       <ClientSideCustomEditor
-        value={aboutUs}
-        onChange={(val) => setAboutUs(val)}
+        value={aboutUs.join('\n')}
+        onChange={(val) => setAboutUs(val.split('\n'))}
       />
     )}
   </div>
@@ -580,8 +568,8 @@ function renderArrayField<T extends object>(
 </div>
     {editorReady && (
       <ClientSideCustomEditor
-        value={termsAndConditions}
-        onChange={(val) => setTermsAndConditions(val)}
+        value={termsAndConditions.join('\n')}
+        onChange={(val) => setTermsAndConditions(val.split('\n'))}
       />
     )}
   </div>
@@ -626,8 +614,8 @@ function renderArrayField<T extends object>(
     <Label>Document</Label>
     {editorReady && (
       <ClientSideCustomEditor
-        value={document}
-        onChange={(val) => setDocument(val)}
+        value={document.join('\n')}
+        onChange={(val) => setDocument(val.split('\n'))}
       />
     )}
   </div>

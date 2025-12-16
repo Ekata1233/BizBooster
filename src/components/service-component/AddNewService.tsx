@@ -221,11 +221,6 @@ const initialFormData: FormDataType = {
   },
 };
 
-
-useEffect(() => {
-  console.log("formData changed:", formData);
-}, [formData]);
-
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
     if (data && typeof data === 'object' && !(data instanceof File) && !(data instanceof Blob)) {

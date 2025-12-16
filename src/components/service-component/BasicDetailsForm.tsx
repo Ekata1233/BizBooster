@@ -47,11 +47,11 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
 
   // Sync key-value rows with parent data
   useEffect(() => {
-  if (JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
-    setData({ keyValues: rows });
-  }
-}, [rows]);
-
+    if (data.keyValues && JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
+      setRows(data.keyValues);
+    }
+  }, [data.keyValues]);
+  
 
   // Calculate discountedPrice, gstInRupees, totalWithGst
   useEffect(() => {
