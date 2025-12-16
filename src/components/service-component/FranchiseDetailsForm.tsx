@@ -41,10 +41,9 @@ interface FranchiseDetailsFormProps {
   data: FranchiseDetails;
   setData: (newData: Partial<FranchiseDetails>) => void;
   price?: number;
-   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["franchiseDetails"];
 }
 
-const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price,fieldsConfig  }) => {
+const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price }) => {
   const mounted = useRef(false);
 
 
@@ -80,7 +79,6 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
   );
   const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : []);
-
 
   useEffect(() => {
     // no-op to keep behavior consistent with other forms that use mounted ref
@@ -315,7 +313,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-  Franchise Details
+  🤝 Franchise Details
 </h4>
 
 
@@ -394,162 +392,121 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
         </div>
 
         {/* Editors */}
-         {fieldsConfig?.termsAndConditions && (
         <div className="my-3">
            <div className="flex items-center gap-2">
                 
           <Label>Terms & Conditions</Label>
+            <span className="text-red-500 text-sm font-semibold">(All Services)</span>
           </div>
           <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
-        )}
 
       
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
-  {fieldsConfig?.investmentRange && (
   <div>
-  <div className="my-4">
-  <div className="items-center gap-2">
-    <Label>Investment Range</Label>
-  
-  </div>
-
-  <div className="border p-4 rounded">
-    {investmentRange.map((item, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2 items-center"
+    <div className="my-4">
+        <div className="flex items-center gap-2">
+                
+          <Label>Investment Range</Label>
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+          </div>
+      <div className='border p-4 rounded'>
+      {investmentRange.map((item, i) => (
+        
+        <div key={i} className="flex gap-4 mt-2 items-center  ">
+          <Input
+            type="number"
+            placeholder="Min Range"
+            value={item.minRange ?? ''}
+            onChange={(e) =>
+              updateInvestmentRange(i, 'minRange', e.target.value ? Number(e.target.value) : null)
+            }
+          />
+          <Input
+            type="number"
+            placeholder="Max Range"
+            value={item.maxRange ?? ''}
+            onChange={(e) =>
+              updateInvestmentRange(i, 'maxRange', e.target.value ? Number(e.target.value) : null)
+            }
+          />
+          <button
+            type="button"
+            className="text-red-500"
+            onClick={() => removeInvestmentRange(i)}
+          >
+            <TrashBinIcon className="w-5 h-5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addInvestmentRange}
+        className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
       >
-        {/* Min Range */}
-        <Input
-          type="number"
-          placeholder="Min Range"
-          value={item.minRange ?? ''}
-          onChange={(e) =>
-            updateInvestmentRange(
-              i,
-              'minRange',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Max Range */}
-        <Input
-          type="number"
-          placeholder="Max Range"
-          value={item.maxRange ?? ''}
-          onChange={(e) =>
-            updateInvestmentRange(
-              i,
-              'maxRange',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Delete Button */}
-        <button
-          type="button"
-          className="text-red-500 flex justify-start md:justify-center"
-          onClick={() => removeInvestmentRange(i)}
-        >
-          <TrashBinIcon className="w-5 h-5" />
-        </button>
+        + Add Investment Range
+      </button>
       </div>
-    ))}
-
-    {/* Add Button */}
-    <button
-      type="button"
-      onClick={addInvestmentRange}
-      className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
-    >
-      + Add Investment Range
-    </button>
-   
+    </div>
   </div>
-</div>
-
-  </div>
-  )}
 
   {/* Monthly Earn Potential */}
-  {fieldsConfig?.monthlyEarnPotential && (
   <div>
-   <div className="my-4">
-  <div className="items-center gap-2">
-    <Label>Monthly Earn Potential</Label>
-    
-  </div>
-
-  <div className="border p-4 rounded">
-    {monthlyEarnPotential.map((item, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2 items-center"
+    <div className="my-4">
+       <div className="flex items-center gap-2">
+                
+          <Label>Monthly Earn Potential</Label>
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+          </div>
+      <div className='border p-4 rounded'>
+      {monthlyEarnPotential.map((item, i) => (
+        <div key={i} className="flex gap-4 mt-2 items-center">
+          <Input
+            type="number"
+            placeholder="Min Earn"
+            value={item.minEarn ?? ''}
+            onChange={(e) =>
+              updateMonthlyEarn(i, 'minEarn', e.target.value ? Number(e.target.value) : null)
+            }
+          />
+          <Input
+            type="number"
+            placeholder="Max Earn"
+            value={item.maxEarn ?? ''}
+            onChange={(e) =>
+              updateMonthlyEarn(i, 'maxEarn', e.target.value ? Number(e.target.value) : null)
+            }
+          />
+          <button
+            type="button"
+            className="text-red-500"
+            onClick={() => removeMonthlyEarn(i)}
+          >
+            <TrashBinIcon className="w-5 h-5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addMonthlyEarn}
+        className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
       >
-        {/* Min Earn */}
-        <Input
-          type="number"
-          placeholder="Min Earn"
-          value={item.minEarn ?? ''}
-          onChange={(e) =>
-            updateMonthlyEarn(
-              i,
-              'minEarn',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Max Earn */}
-        <Input
-          type="number"
-          placeholder="Max Earn"
-          value={item.maxEarn ?? ''}
-          onChange={(e) =>
-            updateMonthlyEarn(
-              i,
-              'maxEarn',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Delete button */}
-        <button
-          type="button"
-          className="text-red-500 flex justify-start md:justify-center"
-          onClick={() => removeMonthlyEarn(i)}
-        >
-          <TrashBinIcon className="w-5 h-5" />
-        </button>
+        + Add Monthly Earn
+      </button>
       </div>
-    ))}
-
-    <button
-      type="button"
-      onClick={addMonthlyEarn}
-      className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
-    >
-      + Add Monthly Earn
-    </button>
+    </div>
   </div>
 </div>
-
-  </div>
-  )}
 
 
         {/* Franchise Model */}
-        {fieldsConfig?.franchiseModel && (
         <div className="my-4">
            <div className="flex items-center gap-2">
                 
           <Label>Franchise Model</Label>
-            
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
           </div>
           {franchiseModel.map((item, i) => (
             <div key={i} className="border p-4 rounded mb-3 relative">
@@ -609,10 +566,8 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
             + Add Franchise Model
           </button>
         </div>
-        )}
 
         {/* Extra Images (URLs) */}
-        {fieldsConfig?.extraImages && (
         <div className="my-4">
   <Label>Extra Images</Label>
 
@@ -654,11 +609,10 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     + Add Extra Image
   </button>
 </div>
-        )}
+ 
 
-
+        {/* Extra Sections */}
 {/* Extra Sections */}
-{fieldsConfig?.extraSections && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -811,7 +765,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     </>
   )}
 </div>
-)}
+
 
       </div>
     </div>
@@ -819,4 +773,3 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 };
 
 export default FranchiseDetailsForm;
- 

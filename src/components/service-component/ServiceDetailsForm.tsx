@@ -7,7 +7,6 @@ import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -20,7 +19,7 @@ type TitleDescription = { title: string; description: string; icon?: string };
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: string[];
+  image: { url: string; file?: File }[];
   description: string[];
   subDescription: string[];
   lists: string[];
@@ -33,15 +32,14 @@ type TimeRequired = { minDays: number | null; maxDays: number | null };
 
 // ------------------- SERVICE DETAILS -------------------
 export type ServiceDetails = {
-  benefits: string[];
-  aboutUs: string[];
+  benefits: string;
+  aboutUs: string;
   highlight: string[];
-
   highlightPreviews?: string[];
-  document: string[];
+  document: string;
   assuredByFetchTrue: TitleDescription[];
   howItWorks: TitleDescription[];
-  termsAndConditions: string[];
+  termsAndConditions: string;
   faq: FAQ[];
   extraSections: ExtraSection[];
   whyChooseUs: TitleDescription[];
@@ -57,26 +55,25 @@ export type ServiceDetails = {
 interface Props {
   data: ServiceDetails;
   setData: (newData: { serviceDetails: ServiceDetails }) => void;
-   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
 
 
 // ------------------- COMPONENT -------------------
-const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) => {
+const ServiceDetailsForm: React.FC<Props> = ({ data, setData }) => {
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
 
   // ------------------- STATES -------------------
-  const [benefits, setBenefits] = useState<string[]>(Array.isArray(data?.benefits) ? data.benefits : ['']);
-  const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
+const [benefits, setBenefits] = useState<string>('');
+const [aboutUs, setAboutUs] = useState<string>('');
   const [highlight, setHighlight] = useState<string[]>(data?.highlight || ['']);
   const [highlightPreviews, setHighlightPreviews] = useState<string[]>(data?.highlightPreviews || []);
-  const [document, setDocument] = useState<string[]>(data?.document || []);
+const [document, setDocument] = useState<string>('');
   const [assuredByFetchTrue, setAssuredByFetchTrue] = useState<TitleDescription[]>(data?.assuredByFetchTrue?.length ? data.assuredByFetchTrue : [{ title: '', description: '', icon: '' }]);
   const [howItWorks, setHowItWorks] = useState<TitleDescription[]>(data?.howItWorks?.length ? data.howItWorks : [{ title: '', description: '', icon: '' }]);
-  const [termsAndConditions, setTermsAndConditions] = useState<string[]>(data?.termsAndConditions || []);
-  const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
+const [termsAndConditions, setTermsAndConditions] = useState<string>(''); 
+ const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
   const [extraSections, setExtraSections] = useState<ExtraSection[]>(data?.extraSections?.length ? data.extraSections : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]);
   const [whyChooseUs, setWhyChooseUs] = useState<TitleDescription[]>(data?.whyChooseUs?.length ? data.whyChooseUs : [{ title: '', description: '', icon: '' }]);
   const [packages, setPackages] = useState<Package[]>(data?.packages?.length ? data.packages : [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }]);
@@ -94,50 +91,63 @@ const [extraImages, setExtraImages] = useState<ExtraImageItem[]>(
     : [{ icon: "" }] // default empty object
 );  const [showExtraSections, setShowExtraSections] = useState(false);
 
-  useEffect(() => {
+const isFirstRender = useRef(true);
 
-    const newData = {
-      benefits,
-    aboutUs,
-    highlight,
-    highlightPreviews,
-    document,
-    assuredByFetchTrue,
-    howItWorks,
-    termsAndConditions,
-    faq,
-    extraSections,
-    whyChooseUs,
-    packages,
-    weRequired,
-    weDeliver,
-    moreInfo,
-    connectWith,
-    timeRequired,
-    extraImages,
-    };
+useEffect(() => {
+  // Skip first render to avoid overwriting initial data
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
 
-    if (JSON.stringify(newData) !== JSON.stringify(data)) {
-      setData(newData);
-    }
-  }, [ benefits,
-    aboutUs,
-    highlight,
-    highlightPreviews,
-    document,
-    assuredByFetchTrue,
-    howItWorks,
-    termsAndConditions,
-    faq,
-    extraSections,
-    whyChooseUs,
-    packages,
-    weRequired,
-    weDeliver,
-    moreInfo,
-    connectWith,
-    timeRequired,
-    extraImages,]);
+  const timeout = setTimeout(() => {
+    setData({
+      serviceDetails: {
+        benefits,
+        aboutUs,
+        highlight,
+        highlightPreviews,
+        document,
+        assuredByFetchTrue,
+        howItWorks,
+        termsAndConditions,
+        faq,
+        extraSections,
+        whyChooseUs,
+        packages,
+        weRequired,
+        weDeliver,
+        moreInfo,
+        connectWith,
+        timeRequired,
+        extraImages,
+      },
+    });
+  }, 400); // debounce delay (300–500ms is ideal)
+
+  return () => clearTimeout(timeout);
+}, [
+  benefits,
+  aboutUs,
+  highlight,
+  highlightPreviews,
+  document,
+  assuredByFetchTrue,
+  howItWorks,
+  termsAndConditions,
+  faq,
+  extraSections,
+  whyChooseUs,
+  packages,
+  weRequired,
+  weDeliver,
+  moreInfo,
+  connectWith,
+  timeRequired,
+  extraImages,
+  setData,
+]);
+;
 
 
   useEffect(() => setEditorReady(true), []);
@@ -252,13 +262,11 @@ function renderArrayField<T extends object>(
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-        Service Details
+        ✨ Service Details
       </h4>
 
       {/* CKEditor fields */}
     <div className="space-y-6">
-
-       {fieldsConfig?.benefits && (
   <div>
   <div className="flex items-center gap-2">
   <Label>Benefits</Label>
@@ -267,14 +275,12 @@ function renderArrayField<T extends object>(
 
     {editorReady && (
       <ClientSideCustomEditor
-        value={benefits.join('\n')}
-        onChange={(val) => setBenefits(val.split('\n'))}
+         value={benefits}
+  onChange={(val) => setBenefits(val)}
       />
     )}
   </div>
-       )}
 
-{fieldsConfig?.aboutUs && (
   <div>
      <div className="flex items-center gap-2">
       
@@ -283,17 +289,14 @@ function renderArrayField<T extends object>(
 </div>
     {editorReady && (
       <ClientSideCustomEditor
-        value={aboutUs.join('\n')}
-        onChange={(val) => setAboutUs(val.split('\n'))}
+        value={aboutUs}
+        onChange={(val) => setAboutUs(val)}
       />
     )}
   </div>
- )}
 
     {/* Highlight Images */}
-    {fieldsConfig?.highlight && (
-<div>
-  <div className="flex items-center gap-2">
+<div className="flex items-center gap-2">
       
       <Label>Highlight Images</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
@@ -305,11 +308,8 @@ function renderArrayField<T extends object>(
           <Image key={idx} src={src} alt={`highlight-${idx}`} width={100} height={100} className="rounded" />
         ))}
       </div>
-</div>
-    )}
         
         {/* Why Choose Us */}
-        {fieldsConfig?.whyChooseUs && (
          <div>
           <div className="flex items-center gap-2">
       
@@ -336,10 +336,8 @@ function renderArrayField<T extends object>(
 ), { title: '', description: '', icon: '' })}
 
         </div>
-        )}
 
        {/* How It Works */}
-       {fieldsConfig?.howItWork && (
         <div>
             <div className="flex items-center gap-2">
       
@@ -366,10 +364,9 @@ function renderArrayField<T extends object>(
 ), { title: '', description: '', icon: '' })}
 
         </div>
-       )}
 
-     {/* assuredByFetchTrue */}
-       {fieldsConfig?.assuredByFetchTrue && (
+     {/* Arrays and Nested Arrays */}
+       
         <div>
            <div className="flex items-center gap-2">
       
@@ -401,12 +398,9 @@ function renderArrayField<T extends object>(
 )}
 
         </div>
-       )}
 
        {/* Packages */}
-       {fieldsConfig?.packages && (
-       <div>
-        <div className="flex items-center gap-2">
+       <div className="flex items-center gap-2">
       
           <Label>Packages</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
@@ -521,11 +515,8 @@ function renderArrayField<T extends object>(
     whatYouGet: [""],
   }
 )}
-       </div>
-       )}
 
           {/* We Required */}
-          {fieldsConfig?.weRequired && (
         <div>
             <div className="flex items-center gap-2">
                           
@@ -539,10 +530,8 @@ function renderArrayField<T extends object>(
             </div>
           ), { title: '', description: '' })}
         </div>
-          )}
 
         {/* We Deliver */}
-        {fieldsConfig?.weDeliver && (
         <div>
             <div className="flex items-center gap-2">
                           
@@ -556,19 +545,13 @@ function renderArrayField<T extends object>(
             </div>
           ), { title: '', description: '' })}
         </div>
-        )}
-
    {/* More Info */}
-    {fieldsConfig?.moreInfo && (
         <div>
-
-          
            <div className="flex items-center gap-2">
       
 <Label>More Info</Label>
   <span className="text-red-500 text-sm font-semibold">(All Services)</span>
 </div>
-
 {renderArrayField<MoreInfo>(moreInfo, setMoreInfo, (item, idx, updateItem) => (
   <div className="grid gap-2">
     <Input value={item.title} placeholder="Title" onChange={e => updateItem({ ...item, title: e.target.value })} />
@@ -588,11 +571,7 @@ function renderArrayField<T extends object>(
   </div>
 ), { title: '', image: '', description: '' })}
 
-        </div>)}
-
-
-{/*Terms and condition */}
-        {fieldsConfig?.termsAndCondition && (
+        </div>
          <div>
            <div className="flex items-center gap-2">
       
@@ -601,15 +580,13 @@ function renderArrayField<T extends object>(
 </div>
     {editorReady && (
       <ClientSideCustomEditor
-        value={termsAndConditions.join('\n')}
-        onChange={(val) => setTermsAndConditions(val.split('\n'))}
+        value={termsAndConditions}
+        onChange={(val) => setTermsAndConditions(val)}
       />
     )}
   </div>
-        )}
 
         {/* FAQ */}
-        {fieldsConfig?.faqs && (
         <div>
            <div className="flex items-center gap-2">
       
@@ -629,10 +606,7 @@ function renderArrayField<T extends object>(
             </div>
           ), { question: '', answer: '' })}
         </div>
-        )}
-
  {/* Connect With */}
- {fieldsConfig?.connectWith && (
         <div>
            <div className="flex items-center gap-2">
       
@@ -647,41 +621,32 @@ function renderArrayField<T extends object>(
             </div>
           ), { name: '', mobileNo: '', email: '' })}
         </div>
- )}
 
-{/* document */}
-{fieldsConfig?.document && (
   <div>
     <Label>Document</Label>
     {editorReady && (
       <ClientSideCustomEditor
-        value={document.join('\n')}
-        onChange={(val) => setDocument(val.split('\n'))}
+        value={document}
+        onChange={(val) => setDocument(val)}
       />
     )}
   </div>
-)}
+
  
 </div>
 
 
       {/* Time Required */}
-      {fieldsConfig?.timeRequired && (
-     <div>
-       <Label>Time Required</Label>
+      <Label>Time Required</Label>
       {renderArrayField<TimeRequired>(timeRequired, setTimeRequired, (item, idx, updateItem) => (
         <div className="grid gap-2">
           <Input type="number" value={item.minDays || ''} placeholder="Min Days" onChange={e => updateItem({ ...item, minDays: Number(e.target.value) })} />
           <Input type="number" value={item.maxDays || ''} placeholder="Max Days" onChange={e => updateItem({ ...item, maxDays: Number(e.target.value) })} />
         </div>
       ), { minDays: null, maxDays: null })}
-     </div>
-      )}
 
       {/* Extra Images */}
-       {fieldsConfig?.extraImage && (
-<div>
-  <Label>Extra Images</Label>
+<Label>Extra Images</Label>
 {renderArrayField<{ icon: string; file?: File }>(extraImages, setExtraImages, (img, idx, updateImg) => (
   <div className="flex items-center gap-2">
     <FileInput
@@ -696,12 +661,10 @@ function renderArrayField<T extends object>(
     />
   </div>
 ), { icon: "" })}
-</div>
-       )}
+
 
     
 {/* Extra Sections */}
- {fieldsConfig?.extraSection && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -818,7 +781,7 @@ function renderArrayField<T extends object>(
     </>
   )}
 </div>
- )}
+
 
     </div>
   );

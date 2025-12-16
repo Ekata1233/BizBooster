@@ -22,6 +22,7 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
     if (!mounted || cloud.status === 'loading') {
         return <div>Loading...</div>;
     }
+    
 
     const {
         ClassicEditor,
@@ -43,8 +44,8 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
         List,
         Indent,
         IndentBlock,
-        FontColor,              // ✅ Added
-        FontBackgroundColor     // ✅ Added
+        FontColor,             
+        FontBackgroundColor     
     } = cloud.CKEditor;
 
     const { FormatPainter } = cloud.CKEditorPremiumFeatures;
@@ -58,8 +59,8 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 onChange(data);
             }}
             config={{
-                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjUzMjQ3OTksImp0aSI6ImU5YWYzMTVmLTFhNDUtNDkzZC05YTRhLTk2ZDAzMzEwYzc5NyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjBkNjE0NzcxIn0.lv6j0o6iNfwcxdH_Y5MqhOpPdDQwSbQJgULp1F9hDPRoy9RPXdCCubGCKO4KFSmcfiFFvzGa4c28u6GSy7OOBg',
-                plugins: [
+                licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjY3OTM1OTksImp0aSI6ImNkZmJkYjg5LWJjODctNGY5Yi1iNWRmLWQ0NmZhMzZkODM0ZiIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImQzZjc4YTllIn0.DQUAEe90KTZiBQB5Zrz6nKixBX9SiNR4JxMM1z45xqeM7Jazxe9tskcOUJWJO91y_EMNIwRXy66NVMxWmje6vw',
+                  plugins: [
                     Essentials,
                     Paragraph,
                     Bold,
@@ -79,14 +80,14 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                     Indent,
                     IndentBlock,
                     FormatPainter,
-                    FontColor,              // ✅ Added
-                    FontBackgroundColor     // ✅ Added
+                    FontColor,              
+                    FontBackgroundColor
                 ],
                 toolbar: [
                     'undo', 'redo', '|',
                     'heading', '|',
                     'bold', 'italic', 'link', '|',
-                    'fontColor', 'fontBackgroundColor', '|',   // ✅ Added
+                    'fontColor', 'fontBackgroundColor', '|',
                     'bulletedList', 'numberedList', '|',
                     'outdent', 'indent', '|',
                     'blockQuote', 'insertTable', 'mediaEmbed', '|',
@@ -95,16 +96,10 @@ const CustomEditor: React.FC<CustomEditorProps> = ({ value, onChange }) => {
                 ],
                 image: {
                     toolbar: [
-                        'toggleImageCaption',
-						'imageTextAlternative',
-						'|',
-						'imageStyle:inline',
-						'imageStyle:wrapText',
-						'imageStyle:breakText',
-						'|',
-						'resizeImage',
-						'|',
-						'ckboxImageEdit'
+                        'imageStyle:full',
+                        'imageStyle:side',
+                        '|',
+                        'imageTextAlternative'
                     ]
                 },
                 table: {

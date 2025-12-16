@@ -44,6 +44,7 @@ const EditService: React.FC = () => {
   const { fetchSingleService, singleService: service, updateService } = useService();
     const [selectedModule, setSelectedModule] = useState(modules[0].name);
   const [createdServiceId, setCreatedServiceId] = useState(null);
+  const [initialized, setInitialized] = useState(false);
   const [franchiseStep, setFranchiseStep] = useState<number>(1);
   const [state, setState] = useState<EditState>({
     basic: {
@@ -94,6 +95,7 @@ const EditService: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
   // 1) Fetch single service on load
   useEffect(() => {
     if (!id) return;
@@ -102,7 +104,7 @@ const EditService: React.FC = () => {
 
   // 2) When service arrives, map fields into our state shape
   useEffect(() => {
-    if (!service) return;
+   if (!service || initialized) return;
 
     const mappedBasic: any = {
       serviceName: service.serviceName || '',
@@ -164,7 +166,9 @@ const EditService: React.FC = () => {
       service: mappedService,
       franchise: mappedFranchise,
     });
-  }, [service]);
+
+     setInitialized(true);
+  }, [service, initialized]);
 
   // ---------- Child setData handlers ----------
   const onBasicSet = (newData: Partial<BasicDetailsData>) => {
