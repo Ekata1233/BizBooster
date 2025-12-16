@@ -30,6 +30,8 @@ const ClaimNowDetailsPage = () => {
     const [rewardDescription, setRewardDescription] = useState("");
     const [settleMessage, setSettleMessage] = useState("");
     const [settling, setSettling] = useState(false);
+const [approveError, setApproveError] = useState("");
+const [settleError, setSettleError] = useState("");
 
     useEffect(() => {
         const fetchClaim = async () => {
@@ -48,11 +50,18 @@ const ClaimNowDetailsPage = () => {
 
     const openModal = () => setIsOpen(true);
     const closeModal = () => setIsOpen(false);
+const handleApprove = async () => {
+    if (!claim) return;
 
-    const handleApprove = async () => {
-        if (!claim) return;
-        setSaving(true);
-        setMessage("");
+    // 🔥 Required Validation
+    if (!rewardTitle.trim() || !disclaimer.trim()) {
+        setApproveError("Title and Disclaimer are required!");
+        return;
+    }
+
+    setSaving(true);
+    setMessage("");
+    setApproveError("");
 
         try {
             const res = await fetch(
@@ -85,9 +94,18 @@ const ClaimNowDetailsPage = () => {
 
     // ✅ Handle Settlement Submission
     const handleSettle = async () => {
-        if (!claim) return;
-        setSettling(true);
-        setSettleMessage("");
+    if (!claim) return;
+
+    // 🔥 Required fields: Photo + Description
+    if (!rewardPhotoFile || !rewardDescription.trim()) {
+        setSettleError("Reward photo and description are required!");
+        return;
+    }
+
+    setSettling(true);
+    setSettleMessage("");
+    setSettleError("");
+
 
         const formData = new FormData();
         if (rewardPhotoFile) formData.append("rewardPhoto", rewardPhotoFile);
@@ -261,7 +279,7 @@ const ClaimNowDetailsPage = () => {
                     </Button>
                 )}
                 {claim.isAdminApproved && !claim.isClaimSettled && (
-                    <Button onClick={() => setIsSettleOpen(true)} variant="success">
+                    <Button onClick={() => setIsSettleOpen(true)} className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                         Settle
                     </Button>
                 )}
@@ -269,70 +287,88 @@ const ClaimNowDetailsPage = () => {
 
             {/* Approve Modal */}
             <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[600px] m-4">
-                <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
-                    <h4 className="font-semibold text-gray-800 text-lg">Admin Approval</h4>
-                    <input
-                        type="text"
-                        value={rewardTitle}
-                        onChange={(e) => setRewardTitle(e.target.value)}
-                        placeholder="Title"
-                        className="w-full border rounded px-3 py-2"
-                    />
-                    <TextArea
-                        value={disclaimer}
-                        onChange={(value: string) => setDisclaimer(value)}
-                        rows={3}
-                        placeholder="Disclaimer"
-                    />
-                    {message && (
-                        <p className={`text-sm ${message.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{message}</p>
-                    )}
-                    <div className="flex items-center justify-end gap-3">
-                        <Button variant="outline" onClick={closeModal}>
-                            Close
-                        </Button>
-                        <Button onClick={handleApprove} disabled={saving}>
-                            {saving ? "Saving..." : "Confirm Approve"}
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+    <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
+        <h4 className="font-semibold text-gray-800 text-lg">Admin Approval</h4>
+
+        <input
+            type="text"
+            value={rewardTitle}
+            onChange={(e) => setRewardTitle(e.target.value)}
+            placeholder="Title"
+            className="w-full border rounded px-3 py-2"
+        />
+
+        <TextArea
+            value={disclaimer}
+            onChange={(value: string) => setDisclaimer(value)}
+            rows={3}
+            placeholder="Disclaimer"
+        />
+
+        {/* 🔥 Required Validation Error */}
+        {approveError && (
+            <p className="text-red-500 text-sm">{approveError}</p>
+        )}
+
+        {message && (
+            <p className={`text-sm ${message.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
+                {message}
+            </p>
+        )}
+
+        <div className="flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={closeModal}>
+                Close
+            </Button>
+            <Button onClick={handleApprove} disabled={saving}>
+                {saving ? "Saving..." : "Confirm Approve"}
+            </Button>
+        </div>
+    </div>
+</Modal>
+
 
             {/* ✅ Settlement Modal */}
-            <Modal isOpen={isSettleOpen} onClose={() => setIsSettleOpen(false)} className="max-w-[600px] m-4">
-                <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
-                    <h4 className="font-semibold text-gray-800 text-lg">Settle Claim</h4>
+           <Modal isOpen={isSettleOpen} onClose={() => setIsSettleOpen(false)} className="max-w-[600px] m-4">
+    <div className="flex flex-col w-full max-w-[600px] gap-6 p-6">
+        <h4 className="font-semibold text-gray-800 text-lg">Settle Claim</h4>
 
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setRewardPhotoFile(e.target.files?.[0] || null)}
-                        className="w-full border rounded px-3 py-2"
-                    />
+        <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setRewardPhotoFile(e.target.files?.[0] || null)}
+            className="w-full border rounded px-3 py-2"
+        />
 
-                    <TextArea
-                        value={rewardDescription}
-                        onChange={(val: string) => setRewardDescription(val)}
-                        rows={3}
-                        placeholder="Reward Description"
-                    />
+        <TextArea
+            value={rewardDescription}
+            onChange={(val: string) => setRewardDescription(val)}
+            rows={3}
+            placeholder="Reward Description"
+        />
 
-                    {settleMessage && (
-                        <p className={`text-sm ${settleMessage.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
-                            {settleMessage}
-                        </p>
-                    )}
+        {/* 🔥 Required Validation Error */}
+        {settleError && (
+            <p className="text-red-500 text-sm">{settleError}</p>
+        )}
 
-                    <div className="flex items-center justify-end gap-3">
-                        <Button variant="outline" onClick={() => setIsSettleOpen(false)}>
-                            Close
-                        </Button>
-                        <Button onClick={handleSettle} disabled={settling}>
-                            {settling ? "Saving..." : "Confirm Settle"}
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+        {settleMessage && (
+            <p className={`text-sm ${settleMessage.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
+                {settleMessage}
+            </p>
+        )}
+
+        <div className="flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsSettleOpen(false)}>
+                Close
+            </Button>
+            <Button onClick={handleSettle} disabled={settling}>
+                {settling ? "Saving..." : "Confirm Settle"}
+            </Button>
+        </div>
+    </div>
+</Modal>
+
         </div>
     );
 };

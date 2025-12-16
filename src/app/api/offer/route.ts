@@ -309,14 +309,31 @@ export async function POST(req: NextRequest) {
       { success: true, data: newOffer },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    console.error('POST /api/offer error:', error);
+  } catch (error: any) {
+  console.error("POST /api/offer error:", error);
+
+  // Handle mongoose validation errors
+  if (error.name === "ValidationError") {
+    const messages = Object.values(error.errors).map((err: any) =>
+      err.message.replace("Path `", "").replace("` is required.", " is required.")
+    );
+
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Internal Server Error',
+        message: messages.join(", "), // clean, readable message
+        errors: messages, // full list, optional
       },
-      { status: 500, headers: corsHeaders }
+      { status: 400, headers: corsHeaders }
     );
   }
+
+  return NextResponse.json(
+    {
+      success: false,
+      message: error instanceof Error ? error.message : "Internal Server Error",
+    },
+    { status: 500, headers: corsHeaders }
+  );
+}
 }
