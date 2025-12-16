@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         // ----------------------------
         // QUERY PARAMETERS
         // ----------------------------
-        const { search, sort, page, limit, startDate, endDate } =
+        const { search, sort, page, limit, startDate, endDate,status } =
             Object.fromEntries(new URL(req.url).searchParams);
             
 
@@ -58,6 +58,23 @@ export async function GET(req: NextRequest) {
                 const d = new Date(endDate);
                 d.setHours(23, 59, 59, 999);
                 match.createdAt.$lte = d;
+            }
+        }
+
+        if (status) {
+            if (status === "Deleted") {
+                match.isDeleted = true;
+            } else if (status === "NonGP") {
+                match.isDeleted = false;
+                match.$or = [
+                    { packageStatus: null },
+                    { packageStatus: "" },
+                    { packageStatus: "NonGP" },
+                    { packageStatus: { $exists: false } },
+                ];
+            } else {
+                match.isDeleted = false;
+                match.packageStatus = status; // GP, SGP, PGP
             }
         }
 
