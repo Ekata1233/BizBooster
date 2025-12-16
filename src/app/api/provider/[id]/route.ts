@@ -58,10 +58,11 @@ export async function GET(req: NextRequest) {
       path: "subscribedServices",
       select: "serviceName price discountedPrice category",
       populate: {
-        path: "category", // field inside subscribedServices
-        select: "name", // fields from Category model
+        path: "category", 
+        select: "name", 
       },
     });
+    
 
   if (!provider) {
     return NextResponse.json(

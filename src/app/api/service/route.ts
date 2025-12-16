@@ -1,11 +1,16 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import { File } from "buffer";
+
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/Provider"
+export const runtime = "nodejs";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -143,28 +148,42 @@ if (thumbnailFile && thumbnailFile instanceof File) {
     };
 
     // Helper function to extract list of objects (title + description)
-async function handleFileUpload(fileOrBlob: File | string, folder: string, prefix: string) {
-  if (fileOrBlob instanceof File) {
+async function handleFileUpload(
+  fileOrBlob: File | string,
+  folder: string,
+  prefix: string
+) {
+  // Case 1: Real File from formData
+  if (typeof fileOrBlob === "object" && "arrayBuffer" in fileOrBlob) {
     const buffer = Buffer.from(await fileOrBlob.arrayBuffer());
+
     const upload = await imagekit.upload({
       file: buffer,
-      fileName: `${uuidv4()}-${fileOrBlob.name}`,
+      fileName: `${uuidv4()}-${prefix}`,
       folder,
     });
-    return upload.url;
-  } else if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("blob:")) {
-    const blob = await fetch(fileOrBlob).then(res => res.blob());
-    const file = new File([blob], `${prefix}.png`, { type: blob.type });
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const upload = await imagekit.upload({
-      file: buffer,
-      fileName: `${uuidv4()}-${file.name}`,
-      folder,
-    });
+
     return upload.url;
   }
+
+  // Case 2: blob: URL (client preview image)
+  if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("blob:")) {
+    const res = await fetch(fileOrBlob);
+    const blob = await res.arrayBuffer();
+
+    const upload = await imagekit.upload({
+      file: Buffer.from(blob),
+      fileName: `${uuidv4()}-${prefix}.png`,
+      folder,
+    });
+
+    return upload.url;
+  }
+
   return "";
 }
+
+
 
 async function processSectionWithIcon(fieldName: string, folder: string , mediaKey: "icon" | "image") {
   const arr: any[] = [];
@@ -243,23 +262,51 @@ for (let i = 0; ; i++) {
 }
 
 
-    const arrayOfStringFields = [
-      "benefits",
-      "aboutUs",
-      "document",
-      "termsAndConditions",
-    ];
+   const arrayOfStringFields = [
+  "benefits",
+  "aboutUs",
+  "document",
+  "termsAndConditions",
+];
 
-    arrayOfStringFields.forEach((field) => {
-      const arr: string[] = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith(`serviceDetails[${field}]`)) {
-          const val = formData.get(key) as string;
-          if (val) arr.push(val);
-        }
-      }
-      serviceDetails[field] = arr;
-    });
+arrayOfStringFields.forEach((field) => {
+  const val = formData.get(`serviceDetails[${field}]`) as string | null;
+  if (val) {
+    try {
+      serviceDetails[field] = JSON.parse(val);
+    } catch (e) {
+      serviceDetails[field] = [];
+    }
+  } else {
+    serviceDetails[field] = [];
+  }
+});
+const objectArrayFields = [
+  "assuredByFetchTrue",
+  "howItWorks",
+  "whyChooseUs",
+  "weRequired",
+  "weDeliver",
+  "moreInfo",
+  "connectWith",
+  "timeRequired",
+  "faq",
+  "packages",
+  "extraSections"
+];
+
+objectArrayFields.forEach((field) => {
+  const val = formData.get(`serviceDetails[${field}]`) as string | null;
+  if (val) {
+    try {
+      serviceDetails[field] = JSON.parse(val);
+    } catch (e) {
+      serviceDetails[field] = [];
+    }
+  } else {
+    serviceDetails[field] = [];
+  }
+});
 
     // Upload highlight images
 serviceDetails.highlight = []; // reset
@@ -507,6 +554,8 @@ for (const [key, value] of formData.entries()) {
 // NEW PAGINATION
 export async function GET(req: NextRequest) {
   await connectToDatabase();
+
+
 
   try {
     const { searchParams } = new URL(req.url);

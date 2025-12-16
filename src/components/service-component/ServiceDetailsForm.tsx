@@ -20,7 +20,8 @@ type TitleDescription = { title: string; description: string; icon?: string };
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: string[];
+  image: string[];        // URLs ONLY
+  imageFiles?: File[];
   description: string[];
   subDescription: string[];
   lists: string[];
@@ -77,7 +78,20 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [howItWorks, setHowItWorks] = useState<TitleDescription[]>(data?.howItWorks?.length ? data.howItWorks : [{ title: '', description: '', icon: '' }]);
   const [termsAndConditions, setTermsAndConditions] = useState<string[]>(data?.termsAndConditions || []);
   const [faq, setFaq] = useState<FAQ[]>(data?.faq?.length ? data.faq : [{ question: '', answer: '' }]);
-  const [extraSections, setExtraSections] = useState<ExtraSection[]>(data?.extraSections?.length ? data.extraSections : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]);
+const [extraSections, setExtraSections] = useState<ExtraSection[]>(
+  data?.extraSections?.length
+    ? data.extraSections.map(sec => ({ ...sec, imageFiles: [] }))
+    : [{
+        title: '',
+        subtitle: [''],
+        image: [],
+        imageFiles: [],
+        description: [''],
+        subDescription: [''],
+        lists: [''],
+        tags: [''],
+      }]
+);
   const [whyChooseUs, setWhyChooseUs] = useState<TitleDescription[]>(data?.whyChooseUs?.length ? data.whyChooseUs : [{ title: '', description: '', icon: '' }]);
   const [packages, setPackages] = useState<Package[]>(data?.packages?.length ? data.packages : [{ name: '', price: null, discount: null, discountedPrice: null, whatYouGet: [''] }]);
   const [weRequired, setWeRequired] = useState<TitleDescription[]>(data?.weRequired?.length ? data.weRequired : [{ title: '', description: '' }]);
@@ -739,23 +753,31 @@ function renderArrayField<T extends object>(
       {key === "image" ? (
         <>
           <FileInput
-            onChange={(e: any) => {
-              const file = e.target.files?.[0];
-              updateSection({
-                ...section,
-                image: file || null,
-              });
-            }}
-          />
+  onChange={(e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+
+    updateSection({
+      ...section,
+      imageFiles: [...(section.imageFiles || []), file], // store file
+      image: [...section.image, previewUrl],             // store preview URL
+    });
+  }}
+/>
+
 
           {/* Preview */}
-          {section.image && typeof section.image === "string" && (
-            <img
-              src={section.image}
-              alt="preview"
-              className="w-24 h-24 rounded mt-2 object-cover"
-            />
-          )}
+         {section.image.map((img, i) => (
+  <img
+    key={i}
+    src={img}
+    alt="preview"
+    className="w-24 h-24 rounded mt-2 object-cover"
+  />
+))}
+
 
           {section.image && section.image instanceof File && (
             <p className="text-sm mt-1 text-gray-500">

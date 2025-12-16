@@ -25,8 +25,9 @@ export async function GET(req: NextRequest) {
         // ----------------------------
         // QUERY PARAMETERS
         // ----------------------------
-        const { search, sort, page, limit, startDate, endDate } =
+        const { search, sort, page, limit, startDate, endDate,status } =
             Object.fromEntries(new URL(req.url).searchParams);
+            
 
         const pageNum = Number(page) || 1;
         const perPage = Number(limit) || 50;
@@ -57,6 +58,23 @@ export async function GET(req: NextRequest) {
                 const d = new Date(endDate);
                 d.setHours(23, 59, 59, 999);
                 match.createdAt.$lte = d;
+            }
+        }
+
+        if (status) {
+            if (status === "Deleted") {
+                match.isDeleted = true;
+            } else if (status === "NonGP") {
+                match.isDeleted = false;
+                match.$or = [
+                    { packageStatus: null },
+                    { packageStatus: "" },
+                    { packageStatus: "NonGP" },
+                    { packageStatus: { $exists: false } },
+                ];
+            } else {
+                match.isDeleted = false;
+                match.packageStatus = status; // GP, SGP, PGP
             }
         }
 
@@ -149,10 +167,40 @@ export async function GET(req: NextRequest) {
         const users = await User.aggregate(pipeline);
         const totalUsers = await User.countDocuments(match);
 
+        const statusAggregation = await User.aggregate([
+    { $match: match },
+    {
+        $project: {
+            status: {
+                $cond: [
+                    "$isDeleted",
+                    "Deleted",
+                    { $toUpper: { $ifNull: ["$packageStatus", "NonGP"] } }
+                ],
+            },
+        },
+    },
+    {
+        $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+        },
+    },
+]);
+
+
+        const statusCounts: Record<string, number> = { GP: 0, SGP: 0, PGP: 0, NonGP: 0, Deleted: 0 };
+statusAggregation.forEach((s: any) => {
+    const key = s._id === "NONGP" ? "NonGP" : s._id;
+    statusCounts[key] = s.count;
+});
+//{ serviceName: "Risk Assessments" } 683ea5a86d41ff233234cd57
+
         return NextResponse.json(
             {
                 success: true,
                 total: totalUsers,
+                 statusCounts,
                 page: pageNum,
                 limit: perPage,
                 data: users,

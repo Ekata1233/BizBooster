@@ -1,12 +1,3 @@
-/**
- * src/app/api/provider/store-info/route.ts
- *
- * Handles:
- *   PUT  – save / update provider storeInfo (text + logo + cover)
- *   OPTIONS – CORS pre-flight
- *
- * Runtime: Node (needed for Buffer)
- */
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import { getUserIdFromRequest } from "@/utils/auth";
@@ -15,8 +6,8 @@ import imagekit from "@/utils/imagekit";
 import { v4 as uuid } from "uuid";
 import '@/models/Zone'
 import '@/models/Module'
+import { File, Blob } from "buffer";
 
-/** Ensure this route uses the Node runtime, not the Edge runtime */
 export const runtime = "nodejs";
 
 /** ---- helpers ----------------------------------------------------------- */
@@ -48,7 +39,7 @@ async function uploadToImageKit(
     file: buffer,                   // raw file bytes
     fileName,
     folder: `/providers/${providerId}`,
-    useUniqueFileName: false,       // we already append uuid
+    useUniqueFileName: false,      
   });
 
   return res.url;                   // public CDN URL
@@ -64,11 +55,11 @@ async function parseFormAndUpload(
 
   // Handle text fields first
   for (const [key, value] of fd.entries()) {
-    if (value instanceof File) continue;      // files handled below
+    if (value instanceof Blob) continue; // Node-safe check
     try {
       storeInfo[key] = JSON.parse(value as string); // allow JSON strings
     } catch {
-      storeInfo[key] = value;                 // plain string
+      storeInfo[key] = value; // plain string
     }
   }
 
@@ -83,14 +74,15 @@ async function parseFormAndUpload(
 
   // Handle logo / cover files
   for (const key of ["logo", "cover"] as const) {
-    const maybeFile = fd.get(key);
-    if (maybeFile && maybeFile instanceof File && maybeFile.size > 0) {
-      storeInfo[key] = await uploadToImageKit(providerId, key, maybeFile);
+    const maybeFile = fd.get(key); // <-- define it here
+    if (maybeFile && maybeFile instanceof Blob && maybeFile.size > 0) {
+      storeInfo[key] = await uploadToImageKit(providerId, key, maybeFile as any);
     }
   }
 
   return storeInfo;
 }
+
 
 /** ---- API handlers ------------------------------------------------------ */
 
