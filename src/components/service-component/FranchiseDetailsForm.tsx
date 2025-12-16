@@ -59,6 +59,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
   const [showExtraSections, setShowExtraSections] = useState(false);
+const didInitFromData = useRef(false);
 
 
   // Newly added schema-aligned fields
@@ -116,33 +117,47 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   ]);
 
 
-  useEffect(() => {
-     if (data?.termsAndConditions) {
-    setTermsAndConditions(data.termsAndConditions);
-  }
+useEffect(() => {
+  if (!data || didInitFromData.current) return;
+
+  didInitFromData.current = true;
+
+  setTermsAndConditions(data.termsAndConditions || '');
+
   if (data.commission) {
     const numericValue = data.commission.replace(/[^\d]/g, '');
     setCommissionValue(numericValue);
   }
-   if (Array.isArray(data.investmentRange) && data.investmentRange.length) {
-    setInvestmentRange(data.investmentRange);
-  }
 
-  if (
-    Array.isArray(data.monthlyEarnPotential) &&
-    data.monthlyEarnPotential.length
-  ) {
-    setMonthlyEarnPotential(data.monthlyEarnPotential);
-  }
+  setCommissionType(data.commissionType || 'percentage');
 
-  if (Array.isArray(data.franchiseModel) && data.franchiseModel.length) {
-    setFranchiseModel(data.franchiseModel);
-  }
+  setInvestmentRange(
+    Array.isArray(data.investmentRange) && data.investmentRange.length
+      ? data.investmentRange
+      : [{ minRange: null, maxRange: null }]
+  );
 
-  if (Array.isArray(data.extraSections) && data.extraSections.length) {
-    setExtraSections(data.extraSections);
-  }
-}, [data]);
+  setMonthlyEarnPotential(
+    Array.isArray(data.monthlyEarnPotential) && data.monthlyEarnPotential.length
+      ? data.monthlyEarnPotential
+      : [{ minEarn: null, maxEarn: null }]
+  );
+
+  setFranchiseModel(
+    Array.isArray(data.franchiseModel) && data.franchiseModel.length
+      ? data.franchiseModel
+      : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
+  );
+
+  setExtraSections(
+    Array.isArray(data.extraSections) && data.extraSections.length
+      ? data.extraSections
+      : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
+  );
+
+  setExtraImages(Array.isArray(data.extraImages) ? data.extraImages : []);
+}, []);
+
   // -----------------------
   // Commission handlers (kept unchanged)
   // -----------------------

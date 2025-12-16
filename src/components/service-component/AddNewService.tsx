@@ -222,9 +222,7 @@ const initialFormData: FormDataType = {
 };
 
 
-useEffect(() => {
-  console.log("formData changed:", formData);
-}, [formData]);
+ 
 
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
@@ -305,35 +303,20 @@ if (Array.isArray(formData.basic.tags)) {
 
 
 
-    // ---------------- SERVICE DETAILS ----------------
-    Object.keys(formData.service).forEach((key) => {
-      // if (key === "highlight") return; 
-      const value = (formData.service as any)[key];
-      if (Array.isArray(value)) {
-        value.forEach((v, i) => {
-          if (v instanceof File) {
-            fd.append(`serviceDetails[${key}][${i}]`, v);
-          } else {
-            fd.append(`serviceDetails[${key}][${i}]`, v || "");
-          }
-        });
-      }
-    });
-
         fd.append("benefits", JSON.stringify(formData.service.benefits || []));
             fd.append("aboutUs",JSON.stringify(formData.service.aboutUs || []));
                 fd.append("document", JSON.stringify(formData.service.document || []));
                     fd.append("termsAndConditions",JSON.stringify(formData.service.termsAndConditions || []));
 
                     // ---------------- HIGHLIGHT ----------------
-// formData.service.highlight?.forEach((item, i) => {
-//   if (item instanceof File) {
-//     fd.append(`serviceDetails[highlight][${i}]`, item);
-//   } else if (typeof item === "string") {
-//     // If it's a blob URL or string, you can send as string
-//     fd.append(`serviceDetails[highlight][${i}]`, item);
-//   }
-// });
+formData.service.highlight?.forEach((item, i) => {
+  if (item instanceof File) {
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  } else if (typeof item === "string") {
+    // If it's a blob URL or string, you can send as string
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  }
+});
 
 
     // AssuredByFetchTrue
