@@ -108,10 +108,9 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* LEFT SIDE */}
+        
        
-        <div className="space-y-4">
+        
            {fieldsConfig?.serviceName && (
         <div>
   <Label>Service Name</Label>
@@ -137,6 +136,76 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
   )}
 </div>
 )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT SIDE */}
+<div className="space-y-4">
+  {fieldsConfig?.category && (
+          <div>
+            <Label>Select Category</Label>
+           <Select
+  options={categoryOptions}
+  value={data.category || ""}
+  onChange={(val) => {
+    // remove error when selecting value
+    setErrors(prev => ({ ...prev, category: "" }));
+
+    // update data
+    setData({ category: val || null });
+
+    // validate here
+    if (!val) {
+      setErrors(prev => ({ ...prev, category: "Category is required" }));
+    }
+  }}
+/>
+
+{errors.category && (
+  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+)}
+
+
+          </div>
+          )}
+
+          {fieldsConfig?.thumbnail && (
+          <div>
+            <Label>Thumbnail</Label>
+            <FileInput onChange={handleThumbnailChange} />
+          </div>
+)}
+
+ {fieldsConfig?.tags && (
+          <div>
+            <Label>Tags</Label>
+            <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
+              {tags.map((tag, i) => (
+                <div key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
+                  {tag}
+                  <button type="button" className="text-red-500" onClick={() => handleRemoveTag(i)}>×</button>
+                </div>
+              ))}
+              <input
+                className="flex-grow outline-none"
+                placeholder="Press Enter to add"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+              />
+            </div>
+          </div>
+           )}
+
+             {fieldsConfig?.recomnded && (
+          <div>
+            <Label>Recommended Service</Label>
+            <Switch
+              checked={!!data.recommendedServices}
+              onChange={(val) => setData({ recommendedServices: val })}
+              label="Recommended Service"
+            />
+          </div>
+           )}
 
  {fieldsConfig?.price && (
             <div className="border p-3 rounded-md">
@@ -165,68 +234,13 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
           </div></div>
  )}
 
- {fieldsConfig?.gst && (
-          <div className="border p-3 rounded-md">
-            <div className="flex items-center justify-between mb-2">
-              <Label>Include GST</Label>
-              <Switch
-                checked={!!data.includeGst}
-                onChange={(val) => setData({ includeGst: val })}
-                label="Enable feature"
-              />
-            </div>
 
-            <div>
-              <Label>GST (%)</Label>
-              <Input
-                type="number"
-                value={data.gst || 0}
-                onChange={(e) => setData({ gst: Number(e.target.value) || 0 })}
-              />
-            </div>
-
-            <div className="mt-3">
-              <Label>GST in Rupees</Label>
-              <Input disabled value={data.gstInRupees || 0} />
-            </div>
-
-            <div className="mt-3">
-              <Label>Total with GST</Label>
-              <Input disabled value={data.totalWithGst || 0} />
-            </div>
-          </div>
-           )}
         </div>
+
 
         {/* RIGHT SIDE */}
         <div className="space-y-4">
-          {fieldsConfig?.category && (
-          <div>
-            <Label>Select Category</Label>
-           <Select
-  options={categoryOptions}
-  value={data.category || ""}
-  onChange={(val) => {
-    // remove error when selecting value
-    setErrors(prev => ({ ...prev, category: "" }));
-
-    // update data
-    setData({ category: val || null });
-
-    // validate here
-    if (!val) {
-      setErrors(prev => ({ ...prev, category: "Category is required" }));
-    }
-  }}
-/>
-
-{errors.category && (
-  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-)}
-
-
-          </div>
-          )}
+          
 
  {fieldsConfig?.subcategory && (
           <div>
@@ -239,10 +253,7 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
           </div>
  )}
 
-          <div>
-            <Label>Thumbnail</Label>
-            <FileInput onChange={handleThumbnailChange} />
-          </div>
+
 
  {fieldsConfig?.bannerImage && (
           <div>
@@ -251,26 +262,7 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
           </div>
  )}
 
-           {fieldsConfig?.tags && (
-          <div>
-            <Label>Tags</Label>
-            <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
-              {tags.map((tag, i) => (
-                <div key={i} className="bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
-                  {tag}
-                  <button type="button" className="text-red-500" onClick={() => handleRemoveTag(i)}>×</button>
-                </div>
-              ))}
-              <input
-                className="flex-grow outline-none"
-                placeholder="Press Enter to add"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-              />
-            </div>
-          </div>
-           )}
+          
 
 
  {fieldsConfig?.keyValue && (
@@ -304,16 +296,38 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
           </div>
  )}
 
-  {fieldsConfig?.recomnded && (
-          <div>
-            <Label>Recommended Service</Label>
-            <Switch
-              checked={!!data.recommendedServices}
-              onChange={(val) => setData({ recommendedServices: val })}
-              label="Recommended Service"
-            />
+ {fieldsConfig?.gst && (
+          <div className="border p-3 rounded-md">
+            <div className="flex items-center justify-between mb-2">
+              <Label>Include GST</Label>
+              <Switch
+                checked={!!data.includeGst}
+                onChange={(val) => setData({ includeGst: val })}
+                label="Enable feature"
+              />
+            </div>
+
+            <div>
+              <Label>GST (%)</Label>
+              <Input
+                type="number"
+                value={data.gst || 0}
+                onChange={(e) => setData({ gst: Number(e.target.value) || 0 })}
+              />
+            </div>
+
+            <div className="mt-3">
+              <Label>GST in Rupees</Label>
+              <Input disabled value={data.gstInRupees || 0} />
+            </div>
+
+            <div className="mt-3">
+              <Label>Total with GST</Label>
+              <Input disabled value={data.totalWithGst || 0} />
+            </div>
           </div>
            )}
+
         </div>
       </div>
     </div>
