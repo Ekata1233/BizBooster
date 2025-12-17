@@ -226,9 +226,6 @@ const initialFormData: FormDataType = {
   },
 };
 
-
- 
-
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
     if (data && typeof data === 'object' && !(data instanceof File) && !(data instanceof Blob)) {
@@ -251,6 +248,14 @@ const initialFormData: FormDataType = {
     return fd;
   };
 
+  const resetForm = () => {
+  setFormData(initialFormData);
+  setSelectedModule(modules[0].name);
+  setFranchiseStep(1);
+  setCreatedServiceId(null);
+  setIsSubmitting(false);
+};
+
     const config = moduleFieldConfig[selectedModule] || {};
   const isFranchiseSelected = selectedModule === 'Franchise';
   // ---------------- Handle Submit ----------------
@@ -260,9 +265,6 @@ const initialFormData: FormDataType = {
 
   try {
     const fd = new FormData();
-
-    console.log("======= Raw Form Data =======");
-console.log(JSON.stringify(formData, null, 2));
 
     // ---------------- BASIC DETAILS ----------------
     fd.append("serviceName", formData.basic.serviceName   || "");
@@ -558,6 +560,7 @@ try {
       } else {
         alert("Service Saved Successfully...");
         setFormData(initialFormData);
+        resetForm();
       }
         } else {
           // Display backend validation message

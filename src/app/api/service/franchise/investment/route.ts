@@ -75,7 +75,10 @@ export async function GET(req: NextRequest) {
   const serviceId = req.nextUrl.searchParams.get("serviceId");
 
   try {
-    const data = await Franchise.findOne({ serviceId });
+     const data = await Franchise.findOne(
+      { serviceId },
+      { model: 0 } // 👈 exclude model field
+    );
     return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
   } catch (err: any) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500, headers: corsHeaders });
