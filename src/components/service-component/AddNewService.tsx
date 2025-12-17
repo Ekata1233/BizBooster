@@ -258,6 +258,12 @@ const initialFormData: FormDataType = {
 
     const config = moduleFieldConfig[selectedModule] || {};
   const isFranchiseSelected = selectedModule === 'Franchise';
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    e.preventDefault();
+  }
+};
   // ---------------- Handle Submit ----------------
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -746,7 +752,7 @@ try {
 </div>
       )}
     </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5"  onKeyDown={handleKeyDown}>
           {isFranchiseSelected ? (
         // If franchise module is selected, show content based on step
         franchiseStep === 1 ? (
