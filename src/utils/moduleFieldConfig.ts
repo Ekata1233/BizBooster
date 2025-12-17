@@ -90,7 +90,7 @@ export const moduleFieldConfig = {
       serviceName: true,
       category: true,
       subcategory: true,
-      price: true,
+      price: false,
       gst: true,
       bannerImage: true,
       thumbnail: true,
