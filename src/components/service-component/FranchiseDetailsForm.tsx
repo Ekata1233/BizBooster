@@ -7,6 +7,7 @@ import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import dynamic from 'next/dynamic';
 import { FranchiseDetails } from '@/context/ServiceContext';
+import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -41,9 +42,10 @@ interface FranchiseDetailsFormProps {
   data: FranchiseDetails;
   setData: (newData: Partial<FranchiseDetails>) => void;
   price?: number;
+  fieldsConfig?: typeof moduleFieldConfig["Franchise"]["franchiseDetails"];
 }
 
-const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price }) => {
+const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price ,fieldsConfig  }) => {
   const mounted = useRef(false);
 
 
@@ -59,6 +61,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
   const [showExtraSections, setShowExtraSections] = useState(false);
+const didInitFromData = useRef(false);
 
 
   // Newly added schema-aligned fields
@@ -116,33 +119,47 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   ]);
 
 
-  useEffect(() => {
-     if (data?.termsAndConditions) {
-    setTermsAndConditions(data.termsAndConditions);
-  }
+useEffect(() => {
+  if (!data || didInitFromData.current) return;
+
+  didInitFromData.current = true;
+
+  setTermsAndConditions(data.termsAndConditions || '');
+
   if (data.commission) {
     const numericValue = data.commission.replace(/[^\d]/g, '');
     setCommissionValue(numericValue);
   }
-   if (Array.isArray(data.investmentRange) && data.investmentRange.length) {
-    setInvestmentRange(data.investmentRange);
-  }
 
-  if (
-    Array.isArray(data.monthlyEarnPotential) &&
-    data.monthlyEarnPotential.length
-  ) {
-    setMonthlyEarnPotential(data.monthlyEarnPotential);
-  }
+  setCommissionType(data.commissionType || 'percentage');
 
-  if (Array.isArray(data.franchiseModel) && data.franchiseModel.length) {
-    setFranchiseModel(data.franchiseModel);
-  }
+  setInvestmentRange(
+    Array.isArray(data.investmentRange) && data.investmentRange.length
+      ? data.investmentRange
+      : [{ minRange: null, maxRange: null }]
+  );
 
-  if (Array.isArray(data.extraSections) && data.extraSections.length) {
-    setExtraSections(data.extraSections);
-  }
-}, [data]);
+  setMonthlyEarnPotential(
+    Array.isArray(data.monthlyEarnPotential) && data.monthlyEarnPotential.length
+      ? data.monthlyEarnPotential
+      : [{ minEarn: null, maxEarn: null }]
+  );
+
+  setFranchiseModel(
+    Array.isArray(data.franchiseModel) && data.franchiseModel.length
+      ? data.franchiseModel
+      : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
+  );
+
+  setExtraSections(
+    Array.isArray(data.extraSections) && data.extraSections.length
+      ? data.extraSections
+      : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
+  );
+
+  setExtraImages(Array.isArray(data.extraImages) ? data.extraImages : []);
+}, []);
+
   // -----------------------
   // Commission handlers (kept unchanged)
   // -----------------------
@@ -161,29 +178,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     }
   };
 
-  // -----------------------
-  // Row handlers
-  // -----------------------
-  const handleAddRow = () => {
-    const newRows = [...rows, { title: '', description: '' }];
-    setRows(newRows);
-  };
-
-  const handleRemoveRow = (index: number) => {
-    const updated = [...rows];
-    updated.splice(index, 1);
-    setRows(updated);
-  };
-
-  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
-    const updated = [...rows];
-    updated[index] = { ...updated[index], [field]: value };
-    setRows(updated);
-  };
-
-  // -----------------------
-  // InvestmentRange handlers
-  // -----------------------
+  
   const addInvestmentRange = () => setInvestmentRange([...investmentRange, { minRange: null, maxRange: null }]);
   const removeInvestmentRange = (i: number) => setInvestmentRange(investmentRange.filter((_, idx) => idx !== i));
   const updateInvestmentRange = (i: number, key: 'minRange' | 'maxRange', value: number | null) => {
@@ -267,49 +262,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   };
   const removeExtraImage = (i: number) => setExtraImages(extraImages.filter((_, idx) => idx !== i));
 
-  // -----------------------
-  // render helper for generic array sections (keeps style similar to ServiceDetailsForm)
-  // -----------------------
-  const renderArrayField = <T extends object>(
-    items: T[] | undefined,
-    setItems: React.Dispatch<React.SetStateAction<T[]>>,
-    renderItem: (item: T, idx: number, updateItem: (newItem: T) => void) => React.ReactNode,
-    defaultItem: T
-  ) => {
-    const safeItems = items || [];
-    return (
-      <div className="my-3">
-        {safeItems.map((item, idx) => (
-          <div key={idx} className="border p-4 rounded mb-3 relative">
-            {renderItem(item, idx, (newItem: T) =>
-              setItems((prev) => {
-                const arr = prev || [];
-                return arr.map((it, i) => (i === idx ? newItem : it));
-              })
-            )}
-            <button
-              type="button"
-              className="absolute top-2 right-2 text-red-500"
-              onClick={() => setItems(safeItems.filter((_, i) => i !== idx))}
-            >
-              <TrashBinIcon className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => setItems([...safeItems, defaultItem])}
-        >
-          + Add More
-        </button>
-      </div>
-    );
-  };
 
-  // -----------------------
-  // Render
-  // -----------------------
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
@@ -392,6 +345,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
         </div>
 
         {/* Editors */}
+        {fieldsConfig?.termsAndConditions && (
         <div className="my-3">
            <div className="flex items-center gap-2">
                 
@@ -400,11 +354,13 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
           </div>
           <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
+        )}
 
       
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
+   {fieldsConfig?.investmentRange && (
   <div>
     <div className="my-4">
         <div className="flex items-center gap-2">
@@ -451,8 +407,10 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       </div>
     </div>
   </div>
+   )}
 
   {/* Monthly Earn Potential */}
+    {fieldsConfig?.monthlyEarnPotential && (
   <div>
     <div className="my-4">
        <div className="flex items-center gap-2">
@@ -498,10 +456,12 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       </div>
     </div>
   </div>
+    )}
 </div>
 
 
         {/* Franchise Model */}
+         {fieldsConfig?.franchiseModel && (
         <div className="my-4">
            <div className="flex items-center gap-2">
                 
@@ -566,8 +526,10 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
             + Add Franchise Model
           </button>
         </div>
+         )}
 
         {/* Extra Images (URLs) */}
+        {fieldsConfig?.extraImages && (
         <div className="my-4">
   <Label>Extra Images</Label>
 
@@ -609,10 +571,12 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     + Add Extra Image
   </button>
 </div>
+        )}
  
 
         {/* Extra Sections */}
 {/* Extra Sections */}
+{fieldsConfig?.extraSections && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -765,7 +729,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     </>
   )}
 </div>
-
+)}
 
       </div>
     </div>

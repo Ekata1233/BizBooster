@@ -6,6 +6,9 @@ import BasicDetailsForm from './BasicDetailsForm';
 import ServiceDetailsForm from './ServiceDetailsForm';
 import FranchiseDetailsForm from './FranchiseDetailsForm';
 import { useService } from '@/context/ServiceContext';
+import { FaStore, FaBusinessTime, FaBullhorn, FaBalanceScale, FaMoneyBillWave, FaLaptopCode, FaBook, FaTruck, FaRobot } from "react-icons/fa";
+import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
+import FranchiseExtraDetails from './FranchiseExtraDetails';
 
 // ---------------- TYPES ----------------
 type KeyValue = { key: string; value: string };
@@ -107,22 +110,24 @@ type FormDataType = {
 };
 
 const modules = [
-  "Franchise",
-  "Business",
-  "Marketing",
-  "Legal Services",
-  "Finance",
-  "IT Services",
-  "Education",
-  "On-Demand",
-  "AI Hub",
+  { name: "Franchise", icon: <FaStore size={36} /> },
+  { name: "Business", icon: <FaBusinessTime size={36} /> },
+  { name: "Marketing", icon: <FaBullhorn size={36} /> },
+  { name: "LegalServices", icon: <FaBalanceScale size={36} /> },
+  { name: "Finance", icon: <FaMoneyBillWave size={36} /> },
+  { name: "ItServices", icon: <FaLaptopCode size={36} /> },
+  { name: "Education", icon: <FaBook size={36} /> },
+  { name: "OnDemand", icon: <FaTruck size={36} /> },
+  { name: "AIHub", icon: <FaRobot size={36} /> },
 ];
 
 // ---------------- COMPONENT ----------------
 const AddNewService = () => {
   const { createService } = useService();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedModule, setSelectedModule] = useState(modules[0]);
+  const [selectedModule, setSelectedModule] = useState(modules[0].name);
+const [createdServiceId, setCreatedServiceId] = useState(null);
+  const [franchiseStep, setFranchiseStep] = useState<number>(1);
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -221,6 +226,9 @@ const initialFormData: FormDataType = {
   },
 };
 
+
+ 
+
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
     if (data && typeof data === 'object' && !(data instanceof File) && !(data instanceof Blob)) {
@@ -243,6 +251,8 @@ const initialFormData: FormDataType = {
     return fd;
   };
 
+    const config = moduleFieldConfig[selectedModule] || {};
+  const isFranchiseSelected = selectedModule === 'Franchise';
   // ---------------- Handle Submit ----------------
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -300,35 +310,20 @@ if (Array.isArray(formData.basic.tags)) {
 
 
 
-    // ---------------- SERVICE DETAILS ----------------
-    Object.keys(formData.service).forEach((key) => {
-      // if (key === "highlight") return; 
-      const value = (formData.service as any)[key];
-      if (Array.isArray(value)) {
-        value.forEach((v, i) => {
-          if (v instanceof File) {
-            fd.append(`serviceDetails[${key}][${i}]`, v);
-          } else {
-            fd.append(`serviceDetails[${key}][${i}]`, v || "");
-          }
-        });
-      }
-    });
-
         fd.append("benefits", JSON.stringify(formData.service.benefits || []));
             fd.append("aboutUs",JSON.stringify(formData.service.aboutUs || []));
                 fd.append("document", JSON.stringify(formData.service.document || []));
                     fd.append("termsAndConditions",JSON.stringify(formData.service.termsAndConditions || []));
 
                     // ---------------- HIGHLIGHT ----------------
-// formData.service.highlight?.forEach((item, i) => {
-//   if (item instanceof File) {
-//     fd.append(`serviceDetails[highlight][${i}]`, item);
-//   } else if (typeof item === "string") {
-//     // If it's a blob URL or string, you can send as string
-//     fd.append(`serviceDetails[highlight][${i}]`, item);
-//   }
-// });
+formData.service.highlight?.forEach((item, i) => {
+  if (item instanceof File) {
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  } else if (typeof item === "string") {
+    // If it's a blob URL or string, you can send as string
+    fd.append(`serviceDetails[highlight][${i}]`, item);
+  }
+});
 
 
     // AssuredByFetchTrue
@@ -476,10 +471,6 @@ for (const [i, item] of formData.service.extraImages.entries()) {
   }
 }
 
-
-
-
-
     // Extra Sections inside Service
     formData.service.extraSections?.forEach((section, i) => {
       fd.append(`serviceDetails[extraSections][${i}][title]`, section.title || "");
@@ -558,67 +549,223 @@ formData.franchise.extraImages?.forEach((file, i) => {
     // ---------------- CREATE SERVICE ----------------
 try {
   const result = await createService(fd);
-
-  if (result.success) {
-    console.log("Created service:", result.data);
-    alert("Service Saved Successfully...");
-    setFormData(initialFormData);
-  } else {
-    // Display backend validation message
-    alert(result.message);
-    console.error("Service creation failed:", result.message);
-  }
-} catch (error: any) {
-  console.error("Error creating service:", error);
-  alert(error?.message || "An error occurred while saving the service.");
-}
-
-
-
-  } catch (err) {
+ setCreatedServiceId(result?.data?._id);
+ if (result.success) {
+          if (isFranchiseSelected && franchiseStep === 1) {
+        // 👉 Only move to next step after successful save
+        alert("Step-1 Saved Successfully...");
+        setFranchiseStep(2);
+      } else {
+        alert("Service Saved Successfully...");
+        setFormData(initialFormData);
+      }
+        } else {
+          // Display backend validation message
+          alert(result.message);
+          console.error("Service creation failed:", result.message);
+        }
+      } catch (error: any) {
+        console.error("Error creating service:", error);
+        alert(error?.message || "An error occurred while saving the service.");
+      }} catch (err) {
     console.error(err);
   } finally {
     setIsSubmitting(false);
   }
 };
 
+// ---------------- ADDITIONAL FRANCHISE FIELDS COMPONENT (step 2) ----------------
+  const FranchiseExtraFields: React.FC<{
+    data: FranchiseDetails;
+    setData: (val: Partial<FranchiseDetails>) => void;
+  }> = ({ data, setData }) => {
+    // local temporary controlled fields for adding a franchiseModel item
+    const [model, setModel] = useState<Partial<FranchiseModelItem>>({
+      title: '',
+      agreement: '',
+      price: '',
+      discount: '',
+      gst: '',
+      fees: ''
+    });
+
+    const addModel = () => {
+      const arr = data.franchiseModel ? [...data.franchiseModel] : [];
+      arr.push({
+        title: model.title || '',
+        agreement: model.agreement || '',
+        price: model.price || '',
+        discount: model.discount || 0,
+        gst: model.gst || 0,
+        fees: model.fees || 0,
+      } as FranchiseModelItem);
+      setData({ ...data, franchiseModel: arr });
+      setModel({ title: '', agreement: '', price: '', discount: '', gst: '', fees: '' });
+    };
+
+    const removeModel = (idx: number) => {
+      const arr = (data.franchiseModel || []).filter((_, i) => i !== idx);
+      setData({ ...data, franchiseModel: arr });
+    };
+
+    const handleExtraImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files) return;
+      const arr = data.extraImages ? [...data.extraImages] : [];
+      for (let i = 0; i < files.length; i++) {
+        arr.push(files[i]);
+      }
+      setData({ ...data, extraImages: arr });
+    };
+    return (
+      <div className="border p-4 rounded space-y-4">
+        <h3 className="font-semibold">Franchise - Extra Fields</h3>
+
+        <div>
+          <label className="block text-sm font-medium">Add Franchise Model</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            <input value={model.title} onChange={(e)=>setModel({...model, title: e.target.value})} placeholder="Title" className="p-2 border rounded" />
+            <input value={model.agreement} onChange={(e)=>setModel({...model, agreement: e.target.value})} placeholder="Agreement" className="p-2 border rounded" />
+            <input value={model.price as any} onChange={(e)=>setModel({...model, price: e.target.value})} placeholder="Price" className="p-2 border rounded" />
+            <input value={model.discount as any} onChange={(e)=>setModel({...model, discount: e.target.value})} placeholder="Discount" className="p-2 border rounded" />
+            <input value={model.gst as any} onChange={(e)=>setModel({...model, gst: e.target.value})} placeholder="GST" className="p-2 border rounded" />
+            <input value={model.fees as any} onChange={(e)=>setModel({...model, fees: e.target.value})} placeholder="Fees" className="p-2 border rounded" />
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={addModel} className="px-3 py-1 bg-blue-600 text-white rounded">Add Model</button>
+          </div>
+
+          {/* list existing models */}
+          <div className="mt-3">
+            {(data.franchiseModel || []).map((m, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 border rounded mb-2">
+                <div>
+                  <div className="text-sm font-medium">{m.title}</div>
+                  <div className="text-xs text-gray-600">Price: {m.price} • Agreement: {m.agreement}</div>
+                </div>
+                <button type="button" onClick={()=>removeModel(idx)} className="text-red-600 text-sm">Remove</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Extra Images (franchise)</label>
+          <input type="file" multiple onChange={handleExtraImages} className="mt-2" />
+          <div className="mt-2">
+            {(data.extraImages || []).map((f, i) => (
+              <div key={i} className="text-xs">{(f as File).name || String(f)}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ---------------- RENDER ----------------
   return (
+ <div>
+  <ComponentCard title="Add New Service">
     <div>
-      <div>
-      {/* Module Selection */}
-      <div className="flex gap-4 mb-6">
-        {modules.map((mod) => (
-          <button
-            key={mod}
-            className={`px-4 py-2 rounded ${selectedModule === mod ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            onClick={() => setSelectedModule(mod)}
-          >
-            {mod}
-          </button>
-        ))}
+      {/* Sticky Module Selection */}
+      <div className="sticky top-16 z-20 bg-white py-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-4">
+          {modules.map((mod) => (
+            <div
+              key={mod.name}
+              className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
+              ${selectedModule === mod.name 
+                ? "bg-blue-500 text-white border-blue-600" 
+                : "bg-white text-gray-700 hover:bg-gray-100"}`}
+              onClick={() => {
+                setSelectedModule(mod.name);
+                // reset stepper to step 1 whenever Franchise module is selected
+                if (mod.name === 'Franchise') setFranchiseStep(1);
+              }}
+            >
+              <div className="text-2xl">{mod.icon}</div>
+              <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Tabs + Forms */}
-      {/* <ModuleTabs selectedModule={selectedModule} data={formData} setData={setFormData} price={10000} /> */}
+      {/* Franchise Stepper Header - Moved to top of BasicDetailsForm */}
+      {isFranchiseSelected && (
+       <div className="mb-6 border rounded-xl p-6 bg-white shadow-sm">
+ 
+
+  {/* Stepper */}
+ <div className="">
+  <div className="flex items-center justify-center gap-6">
+
+    {/* STEP 1 */}
+    <div
+      onClick={() => setFranchiseStep(1)}
+      className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all 
+        ${franchiseStep === 1 ? "bg-blue-600 text-white shadow-md border-blue-600" :
+        "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}
+      `}
+    >
+      <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 border border-gray-400">
+        {franchiseStep > 1 ? "✓" : "1"}
+      </div>
+      <span className="font-medium">Franchise Basic Details</span>
     </div>
-      <ComponentCard title="Add New Service">
+
+    {/* LINE */}
+    <div className="w-12 h-1 bg-gray-300"></div>
+
+    {/* STEP 2 */}
+    <div
+      onClick={() => {
+    if (!createdServiceId) {
+      alert("Please complete Step-1 and submit before going to Step-2.");
+      return;
+    }
+    setFranchiseStep(2);
+  }}
+      className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all
+        ${franchiseStep === 2 ? "bg-blue-600 text-white shadow-md border-blue-600" :
+        "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}
+      `}
+    >
+      <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 border border-gray-400">
+        2
+      </div>
+      <span className="font-medium">Franchise Extra Details</span>
+    </div>
+
+  </div>
+</div>
+
+
+</div>
+      )}
+    </div>
         <form onSubmit={handleSubmit} className="space-y-5">
+          {isFranchiseSelected ? (
+        // If franchise module is selected, show content based on step
+        franchiseStep === 1 ? (
+          // Step 1: Show all three forms
+          <>
           <BasicDetailsForm
             data={formData.basic}
             setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+             fieldsConfig={config.basicDetails}
           />
           <hr className="border-gray-300" />
           <ServiceDetailsForm
             data={formData.service}
             setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
+             fieldsConfig={config.serviceDetails}
           />
           <hr className="border-gray-300" />
           <FranchiseDetailsForm
             data={formData.franchise}
             setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
             price={formData.basic.discountedPrice}
+             fieldsConfig={config.franchiseDetails}
           />
           <div className="flex justify-end pt-4">
             <button
@@ -628,7 +775,44 @@ try {
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
-          </div>
+          </div> 
+          </>
+
+) : (
+          
+          <FranchiseExtraDetails serviceId={createdServiceId}  onSave={() => setFranchiseStep(1)} />
+        )
+      ) : (
+  <>
+          <BasicDetailsForm
+            data={formData.basic}
+            setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+             fieldsConfig={config.basicDetails}
+          />
+          <hr className="border-gray-300" />
+          <ServiceDetailsForm
+            data={formData.service}
+            setData={(newData) => setFormData((prev) => ({ ...prev, service: { ...prev.service, ...newData } }))}
+             fieldsConfig={config.serviceDetails}
+          />
+          <hr className="border-gray-300" />
+          <FranchiseDetailsForm
+            data={formData.franchise}
+            setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
+            price={formData.basic.discountedPrice}
+             fieldsConfig={config.franchiseDetails}
+          />
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="ml-auto px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </div> 
+          </>
+          )}
         </form>
       </ComponentCard>
     </div>
