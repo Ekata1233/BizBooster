@@ -211,6 +211,91 @@ export async function POST(req: NextRequest) {
       }
       serviceDetails.packages.push(pkg);
     }
+    
+    // --- Extra Images ---
+serviceDetails.extraImages = [];
+for (const key of formData.keys()) {
+  if (key.startsWith("serviceDetails[extraImages]")) {
+    const file = formData.get(key);
+    if (file instanceof File) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder: "/services/extraImages",
+      });
+      serviceDetails.extraImages.push(upload.url);
+    }
+  }
+}
+
+
+    // --- Extra Sections ---
+for (let i = 0; i < 1000; i++) {
+  const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
+  if (!title) break;
+
+  const extraSection: any = {
+    title,
+    subtitle: [],
+    description: [],
+    subDescription: [],
+    lists: [],
+    tags: [],
+    image: [],
+  };
+
+  for (let j = 0; j < 1000; j++) {
+    const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
+    if (!subtitle) break;
+    extraSection.subtitle.push(subtitle);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
+    if (!description) break;
+    extraSection.description.push(description);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
+    if (!subDescription) break;
+    extraSection.subDescription.push(subDescription);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
+    if (!list) break;
+    extraSection.lists.push(list);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
+    if (!tag) break;
+    extraSection.tags.push(tag);
+  }
+
+   for (let j = 0; j < 1000; j++) {
+    const imageFile = formData.get(
+      `serviceDetails[extraSections][${i}][image][${j}]`
+    );
+
+    if (!(imageFile instanceof File)) break;
+
+    const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+    const upload = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}-${imageFile.name}`,
+      folder: "/services/extraSections",
+    });
+
+    extraSection.image.push(upload.url);
+  }
+
+  serviceDetails.extraSections.push(extraSection);
+}
+
 
     // --- Franchise Details ---
     const franchiseDetails: any = {
@@ -249,6 +334,77 @@ export async function POST(req: NextRequest) {
         fees: formData.get(`franchiseDetails[franchiseModel][${i}][fees]`),
       });
     }
+
+    // --- Extra Sections ---
+for (let i = 0; i < 1000; i++) {
+  const title = formData.get(`serviceDetails[franchiseDetails][${i}][title]`);
+  if (!title) break;
+
+  const extraSection: any = {
+    title,
+    subtitle: [],
+    description: [],
+    subDescription: [],
+    lists: [],
+    tags: [],
+    image: [],
+  };
+
+  for (let j = 0; j < 1000; j++) {
+    const subtitle = formData.get(`serviceDetails[franchiseDetails][${i}][subtitle][${j}]`);
+    if (!subtitle) break;
+    extraSection.subtitle.push(subtitle);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const description = formData.get(`serviceDetails[franchiseDetails][${i}][description][${j}]`);
+    if (!description) break;
+    extraSection.description.push(description);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const subDescription = formData.get(`serviceDetails[franchiseDetails][${i}][subDescription][${j}]`);
+    if (!subDescription) break;
+    extraSection.subDescription.push(subDescription);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const list = formData.get(`serviceDetails[franchiseDetails][${i}][lists][${j}]`);
+    if (!list) break;
+    extraSection.lists.push(list);
+  }
+
+  for (let j = 0; j < 1000; j++) {
+    const tag = formData.get(`serviceDetails[franchiseDetails][${i}][tags][${j}]`);
+    if (!tag) break;
+    extraSection.tags.push(tag);
+  }
+
+for (let j = 0; j < 1000; j++) {
+    const imageFile = formData.get(`serviceDetails[extraSections][${i}][image][${j}]`);
+
+    if (
+      imageFile &&
+      typeof imageFile === "object" &&
+      "arrayBuffer" in imageFile
+    ) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${imageFile.name || "extra-section.png"}`,
+        folder: "/services/extraSections",
+      });
+
+      extraSection.image.push(upload.url);
+    } else {
+      break;
+    }
+  }
+
+  serviceDetails.extraSections.push(extraSection);
+}
+
 
     // --- Final Price Calculations ---
     const discountedPrice = discount ? Math.floor(price - price * (discount / 100)) : price;

@@ -264,6 +264,8 @@ const initialFormData: FormDataType = {
     e.preventDefault();
   }
 };
+
+console.log("formdata service add : ", formData)
   // ---------------- Handle Submit ----------------
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -464,43 +466,65 @@ formData.service.timeRequired?.forEach((item, i) => {
   fd.append(`serviceDetails[timeRequired][${i}][maxDays]`, item.maxDays?.toString() || "");
 });
 
-// Extra Images in Service
-for (const [i, item] of formData.service.extraImages.entries()) {
-  if (!item) continue;
+// ---------------- Extra Images in Service ----------------
+if (Array.isArray(formData.service.extraImages)) {
+  formData.service.extraImages.forEach((file, i) => {
+    if (file instanceof File) {
+      fd.append(`serviceDetails[extraImages][${i}]`, file);
+    }
+  });
+}
 
-  if (item.file instanceof File) {
-    fd.append(`serviceDetails[extraImages][${i}]`, item.file);
-  } 
-  else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
-    const response = await fetch(item.icon);
-    const blob = await response.blob();
-    const file = new File([blob], `extra-${i}.png`, { type: blob.type });
-    fd.append(`serviceDetails[extraImages][${i}]`, file);
+
+    // Extra Sections inside Service
+// ---------------- EXTRA SECTIONS (SERVICE) ----------------
+if (Array.isArray(formData.service.extraSections)) {
+  for (let i = 0; i < formData.service.extraSections.length; i++) {
+    const section = formData.service.extraSections[i];
+
+    fd.append(`serviceDetails[extraSections][${i}][title]`, section.title || "");
+
+    section.subtitle?.forEach((v, j) =>
+      fd.append(`serviceDetails[extraSections][${i}][subtitle][${j}]`, v || "")
+    );
+
+    section.description?.forEach((v, j) =>
+      fd.append(`serviceDetails[extraSections][${i}][description][${j}]`, v || "")
+    );
+
+    section.subDescription?.forEach((v, j) =>
+      fd.append(`serviceDetails[extraSections][${i}][subDescription][${j}]`, v || "")
+    );
+
+    section.lists?.forEach((v, j) =>
+      fd.append(`serviceDetails[extraSections][${i}][lists][${j}]`, v || "")
+    );
+
+    section.tags?.forEach((v, j) =>
+      fd.append(`serviceDetails[extraSections][${i}][tags][${j}]`, v || "")
+    );
+
+    // ✅ IMAGE ARRAY FIX (THIS IS THE KEY)
+    if (Array.isArray(section.image)) {
+      for (let j = 0; j < section.image.length; j++) {
+        const img = section.image[j];
+
+        if (img instanceof File) {
+          fd.append(`serviceDetails[extraSections][${i}][image][${j}]`, img);
+        }
+        else if (typeof img === "string" && img.startsWith("blob:")) {
+          const response = await fetch(img);
+          const blob = await response.blob();
+          const file = new File([blob], `extra-section-${i}-${j}.png`, {
+            type: blob.type,
+          });
+          fd.append(`serviceDetails[extraSections][${i}][image][${j}]`, file);
+        }
+      }
+    }
   }
 }
 
-    // Extra Sections inside Service
-    formData.service.extraSections?.forEach((section, i) => {
-      fd.append(`serviceDetails[extraSections][${i}][title]`, section.title || "");
-      section.subtitle?.forEach((v, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][subtitle][${j}]`, v || "")
-      );
-      section.description?.forEach((v, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][description][${j}]`, v || "")
-      );
-      section.subDescription?.forEach((v, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][subDescription][${j}]`, v || "")
-      );
-      section.lists?.forEach((v, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][lists][${j}]`, v || "")
-      );
-      section.tags?.forEach((v, j) =>
-        fd.append(`serviceDetails[extraSections][${i}][tags][${j}]`, v || "")
-      );
-       if (section.image instanceof File) {
-    fd.append(`serviceDetails[extraSections][${i}][image]`, section.image);
-  }
-    });
 
     // ---------------- FRANCHISE DETAILS ----------------
     fd.append("franchiseDetails[commission]", formData.franchise.commission || "");
