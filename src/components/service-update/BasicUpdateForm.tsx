@@ -199,7 +199,7 @@ interface BasicUpdateFormProps {
 
 const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
   if (!data) return null;
-    console.log("Basic Details form  : ", data)
+    // console.log("Basic Details form  : ", data)
 
     const { categories } = useCategory();
     const { subcategories } = useSubcategory();

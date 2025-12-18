@@ -46,7 +46,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   fieldsConfig,
 }) => {
 
-    console.log("franchise details form  : ", data)
+    // console.log("franchise details form  : ", data)
 
   const [editorReady, setEditorReady] = useState(false);
 
@@ -80,6 +80,48 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   ]);
 
   const [showExtraSections, setShowExtraSections] = useState(false);
+
+  useEffect(() => {
+  if (!data?.franchiseDetails) return;
+  const fd = data.franchiseDetails;
+  setTermsAndConditions(fd.termsAndConditions || '');
+  setInvestmentRange(
+    fd.investmentRange?.length
+      ? fd.investmentRange
+      : [{ minRange: null, maxRange: null }]
+  );
+  setMonthlyEarnPotential(
+    fd.monthlyEarnPotential?.length
+      ? fd.monthlyEarnPotential
+      : [{ minEarn: null, maxEarn: null }]
+  );
+  setFranchiseModel(
+    fd.franchiseModel?.length
+      ? fd.franchiseModel
+      : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
+  );
+  setExtraImages(
+    fd.extraImages?.length ? fd.extraImages : ['']
+  );
+  setExtraSections(
+    fd.extraSections?.length
+      ? fd.extraSections
+      : [
+          {
+            title: '',
+            subtitle: [''],
+            image: [],
+            description: [''],
+            subDescription: [''],
+            lists: [''],
+            tags: [''],
+          },
+        ]
+  );
+  setShowExtraSections(!!fd.extraSections?.length);
+
+}, [data]);
+
 
   useEffect(() => setEditorReady(true), []);
 

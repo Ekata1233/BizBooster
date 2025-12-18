@@ -45,7 +45,7 @@ interface ServiceUpdateFromProps {
 // ---------------- COMPONENT ----------------
 const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) => {
 
-  console.log("service details form  : ", data)
+  // console.log("service details form  : ", data)
 
   // ---------- BASIC STATES ----------
   const [editorReady, setEditorReady] = useState(false);
@@ -79,7 +79,63 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) 
   const [extraSections, setExtraSections] = useState<ExtraSection[]>([]);
   const [showExtraSections, setShowExtraSections] = useState(false);
 
+  useEffect(() => {
+  if (!data?.serviceDetails) return;
+
+  const sd = data.serviceDetails;
+
+  // Editors (HTML string inside array)
+  setBenefits(sd.benefits?.length ? sd.benefits : ['']);
+  setAboutUs(sd.aboutUs?.length ? sd.aboutUs : ['']);
+  setTerms(sd.termsAndConditions?.length ? sd.termsAndConditions : ['']);
+  setDocument(sd.document?.length ? sd.document : ['']);
+
+  // Simple arrays
+  setHighlightImages(sd.highlight || []);
+  setExtraImages(sd.extraImages || []);
+  setExtraSections(sd.extraSections || []);
+
+  // Object arrays
+  setWhyChooseUs(sd.whyChooseUs || []);
+  setHowItWorks(sd.howItWorks || []);
+  setAssuredByFetchTrue(sd.assuredByFetchTrue || []);
+  setWeRequired(sd.weRequired || []);
+  setWeDeliver(sd.weDeliver || []);
+  setPackages(sd.packages || []);
+  setMoreInfo(sd.moreInfo || []);
+  setFaqs(sd.faq || []);
+  setConnectWith(sd.connectWith || []);
+  setTimeRequired(sd.timeRequired || []);
+setExtraImages(
+    Array.isArray(sd.extraImages) && sd.extraImages.length
+      ? sd.extraImages.map((img: string) => ({ icon: img }))
+      : [{ icon: '' }]
+  );
+   setExtraSections(
+    Array.isArray(sd.extraSections) && sd.extraSections.length
+      ? sd.extraSections
+      : []
+  );
+
+  // Auto open extra sections UI if data exists
+  setShowExtraSections(!!sd.extraSections?.length);
+
+}, [data]);
+
+
   useEffect(() => setEditorReady(true), []);
+
+    // const benefitsValue = data?.serviceDetails?.benefits?.[0] || "";
+    // const aboutUsValue = data?.serviceDetails?.aboutUs?.[0] || "";
+    // const termsAndConditionValue = data?.serviceDetails?.termsAndConditions?.[0] || "";
+    // const documentValue = data?.serviceDetails?.document?.[0] || "";
+
+    const benefitsValue = benefits[0] || "";
+const aboutUsValue = aboutUs[0] || "";
+const termsAndConditionValue = terms[0] || "";
+const documentValue = document[0] || "";
+
+    
 
   // ---------------- HELPERS ----------------
   const handleEditorChange = (
@@ -134,8 +190,16 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) 
         <Label>Benefits</Label>
         {editorReady && (
           <ClientSideCustomEditor
-           value={data.serviceDetails?.aboutUs || []}
-        onChange={() => {}}
+           value={benefitsValue} // ✅ STRING
+          onChange={(value: string) =>
+            setData((prev) => ({
+              ...prev,
+              serviceDetails: {
+                ...prev.serviceDetails,
+                benefits: [value], // ✅ ARRAY
+              },
+            }))
+          }
           />
         )}
       </div>
@@ -145,8 +209,16 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) 
         <Label>About Us</Label>
         {editorReady && (
           <ClientSideCustomEditor
-            value={aboutUs[0]}
-            onChange={v => handleEditorChange(setAboutUs, v)}
+             value={aboutUsValue} // ✅ STRING
+          onChange={(value: string) =>
+            setData((prev) => ({
+              ...prev,
+              serviceDetails: {
+                ...prev.serviceDetails,
+                aboutUs: [value], // ✅ ARRAY
+              },
+            }))
+          }
           />
         )}
       </div>
@@ -397,8 +469,16 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) 
         <Label>Terms & Conditions</Label>
         {editorReady && (
           <ClientSideCustomEditor
-            value={terms[0]}
-            onChange={v => handleEditorChange(setTerms, v)}
+            value={termsAndConditionValue} // ✅ STRING
+          onChange={(value: string) =>
+            setData((prev) => ({
+              ...prev,
+              serviceDetails: {
+                ...prev.serviceDetails,
+                terms: [value], // ✅ ARRAY
+              },
+            }))
+          }
           />
         )}
       </div>
@@ -451,8 +531,16 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) 
         <Label>Document</Label>
         {editorReady && (
           <ClientSideCustomEditor
-            value={document[0]}
-            onChange={v => handleEditorChange(setDocument, v)}
+            value={documentValue} // ✅ STRING
+          onChange={(value: string) =>
+            setData((prev) => ({
+              ...prev,
+              serviceDetails: {
+                ...prev.serviceDetails,
+                document: [value], // ✅ ARRAY
+              },
+            }))
+          }
           />
         )}
       </div>

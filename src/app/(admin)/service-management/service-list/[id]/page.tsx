@@ -60,7 +60,7 @@ const [formData, setFormData] = useState(initialFormData);
   useEffect(() => {
     if (!id) return;
     fetchSingleService(id as string);
-    console.log("fetched service for the update : ", service)
+    // console.log("fetched service for the update : ", service)
 
   }, [id]);
 
@@ -120,6 +120,8 @@ const [formData, setFormData] = useState(initialFormData);
       franchiseDetails: service.franchiseDetails || {}
     });
   }, [service]);
+
+  console.log("formdata for the update : ", formData);
 
   if (!service) return <p>Loading...</p>;
 
