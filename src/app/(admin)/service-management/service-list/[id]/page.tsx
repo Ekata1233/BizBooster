@@ -77,7 +77,7 @@ const [formData, setFormData] = useState(initialFormData);
       const fd = new FormData();
 
       // --- BASIC fields ---
-     
+     console.log("fd : ", fd)
 
       // finally call updateService (your context function)
       const response = await updateService(service._id, fd);

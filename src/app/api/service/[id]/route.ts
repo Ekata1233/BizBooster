@@ -53,7 +53,9 @@ export async function PUT(req: NextRequest) {
 
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop(); // get the id from URL
+    const id = url.pathname.split("/").pop(); 
+
+    console.log("id : ", id)
 
     if (!id) {
       return NextResponse.json({ success: false, message: "Service ID is required" }, { status: 400, headers: corsHeaders });
@@ -80,10 +82,6 @@ export async function PUT(req: NextRequest) {
     service.includeGst = formData.get("includeGst") === "true";
 
     service.recommendedServices = formData.get("recommendedServices") === "true";
-
-    // -------------------------------
-    // TAGS
-    // -------------------------------
     const tags: string[] = [];
     for (const key of formData.keys()) {
       if (key.startsWith("tags[")) {
