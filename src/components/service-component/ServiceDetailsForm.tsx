@@ -286,7 +286,7 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-        ✨ Service Details
+        Service Details
       </h4>
 
       <div className="space-y-6">
