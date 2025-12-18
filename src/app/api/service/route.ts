@@ -5,7 +5,7 @@ import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import { File } from "buffer";
-
+import mongoose from "mongoose";
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/Provider"
@@ -27,9 +27,7 @@ export async function POST(req: NextRequest) {
     console.log("-------------formdata : ", formData);
 
     // --- Basic Fields ---
-const serviceName = (formData.get("serviceName") as string)
-  ?.trim()
-  .replace(/\s+/g, " ");
+    const serviceName = (formData.get("serviceName") as string)?.trim();
     const category = (formData.get("category") as string)?.trim();
     const subcategory = (formData.get("subcategory") as string)?.trim() || null;
     const price = Number(formData.get("price") || 0);
@@ -287,18 +285,58 @@ const serviceName = (formData.get("serviceName") as string)
   }
 }
 
+const removeEmpty = (value: any): any => {
+  // ✅ keep ObjectId & Date untouched
+  if (
+    value instanceof mongoose.Types.ObjectId ||
+    value instanceof Date
+  ) {
+    return value;
+  }
+
+  // remove empty string
+  if (value === "") return undefined;
+
+  // handle arrays
+  if (Array.isArray(value)) {
+    const cleanedArray = value
+      .map(removeEmpty)
+      .filter(v => v !== undefined);
+
+    return cleanedArray.length > 0 ? cleanedArray : undefined;
+  }
+
+  // handle objects
+  if (typeof value === "object" && value !== null) {
+    const cleanedObject: any = {};
+
+    for (const key in value) {
+      const cleanedValue = removeEmpty(value[key]);
+
+      if (cleanedValue !== undefined) {
+        cleanedObject[key] = cleanedValue;
+      }
+    }
+
+    return Object.keys(cleanedObject).length > 0 ? cleanedObject : undefined;
+  }
+
+  // keep numbers, booleans, valid strings
+  return value;
+};
+
+
+
 // NEW PAGINATION
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
-
-
   try {
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
-    const subcategory = searchParams.get('subcategory');
-    const sort = searchParams.get('sort');
+    const search = searchParams.get("search");
+    const category = searchParams.get("category");
+    const subcategory = searchParams.get("subcategory");
+    const sort = searchParams.get("sort");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : null;
@@ -307,7 +345,7 @@ export async function GET(req: NextRequest) {
     const filter: Record<string, unknown> = { isDeleted: false };
 
     if (search) {
-      filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: 'i' };
+      filter.serviceName = { $regex: `\\b${search}[a-zA-Z]*`, $options: "i" };
     }
 
     if (category) filter.category = category;
@@ -316,31 +354,35 @@ export async function GET(req: NextRequest) {
     let sortOption: Record<string, 1 | -1> = {};
 
     switch (sort) {
-      case 'latest': sortOption = { createdAt: -1 }; break;
-      case 'oldest': sortOption = { createdAt: 1 }; break;
-      case 'ascending': sortOption = { serviceName: 1 }; break;
-      case 'descending': sortOption = { serviceName: -1 }; break;
-      case 'asc': sortOption = { price: 1 }; break;
-      case 'desc': sortOption = { price: -1 }; break;
+      case "latest": sortOption = { createdAt: -1 }; break;
+      case "oldest": sortOption = { createdAt: 1 }; break;
+      case "ascending": sortOption = { serviceName: 1 }; break;
+      case "descending": sortOption = { serviceName: -1 }; break;
+      case "asc": sortOption = { price: 1 }; break;
+      case "desc": sortOption = { price: -1 }; break;
       default: sortOption = { createdAt: -1 };
     }
 
     const total = await Service.countDocuments(filter);
 
     let query = Service.find(filter)
-      .populate('category')
-      .populate('subcategory')
+      .populate("category")
+      .populate("subcategory")
       .populate({
-        path: 'providerPrices.provider',
-        model: 'Provider',
-        select: 'fullName storeInfo.storeName storeInfo.logo',
+        path: "providerPrices.provider",
+        select: "fullName storeInfo.storeName storeInfo.logo",
       })
       .sort({ sortOrder: 1, ...sortOption })
-      .lean();
+      .lean(); // ✅ IMPORTANT
 
     if (limit) query = query.skip(skip).limit(limit);
 
     const services = await query.exec();
+
+    /* ✅ CLEAN + SAFE RESPONSE */
+    const cleanedServices = services
+      .map(service => removeEmpty(service))
+      .filter(Boolean);
 
     return NextResponse.json(
       {
@@ -349,7 +391,7 @@ export async function GET(req: NextRequest) {
         limit: limit ?? total,
         total,
         totalPages: limit ? Math.ceil(total / limit) : 1,
-        data: services,
+        data: cleanedServices,
       },
       { status: 200, headers: corsHeaders }
     );
@@ -360,6 +402,8 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+
 
 
 
