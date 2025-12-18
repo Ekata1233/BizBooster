@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest) {
 
     const formData = await req.formData();
 
-    console.log("formdata for updating : ", formData);
+    console.log("service backend data : ", formData);
 
     // -------------------------------
     // BASIC DETAILS

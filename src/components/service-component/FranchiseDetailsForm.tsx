@@ -266,7 +266,7 @@ useEffect(() => {
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
-  🤝 Franchise Details
+  Franchise Details
 </h4>
 
 
