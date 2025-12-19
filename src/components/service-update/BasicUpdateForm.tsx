@@ -284,7 +284,11 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
   options={categoryOptions}
   value={data.category || ""}
   onChange={(val) => {
-    setData({ category: val || null });
+    setData((prev) => ({
+      ...prev,
+      category: val || null,
+      subcategory: null, // reset subcategory when category changes
+    }));
   }}
 />
           </div>
@@ -396,7 +400,12 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
             <Select
               options={subcategoryOptions}
               value={data.subcategory || ""}
-              onChange={(val) => setData({ subcategory: val || null })}
+              onChange={(val) =>
+                setData((prev) => ({
+                  ...prev,
+                  subcategory: val || null,
+                }))
+              }
             />
           </div>
 

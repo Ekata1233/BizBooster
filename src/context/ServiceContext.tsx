@@ -219,6 +219,9 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
       setSingleServiceLoading(true);
       const res = await axios.get(`${BASE_URL}/${id}`);
 
+
+      console.log("fetch seingle service : ", res)
+
       if (res.data.success) {
         setSingleService(res.data.data);
       } else {
