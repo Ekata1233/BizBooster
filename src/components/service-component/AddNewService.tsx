@@ -128,6 +128,9 @@ const AddNewService = () => {
   const [selectedModule, setSelectedModule] = useState(modules[0].name);
 const [createdServiceId, setCreatedServiceId] = useState(null);
   const [franchiseStep, setFranchiseStep] = useState<number>(1);
+const [formKey, setFormKey] = useState(0);
+const [franchiseExtraKey, setFranchiseExtraKey] = useState(0);
+const [franchiseFormKey, setFranchiseFormKey] = useState(0);
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -248,13 +251,20 @@ const initialFormData: FormDataType = {
     return fd;
   };
 
-  const resetForm = () => {
+const resetForm = () => {
+  // Reset parent state
   setFormData(initialFormData);
   setSelectedModule(modules[0].name);
   setFranchiseStep(1);
   setCreatedServiceId(null);
   setIsSubmitting(false);
+
+  // 🔥 FORCE REMOUNT (THIS IS THE FIX)
+  setFormKey(prev => prev + 1);              // Basic + Service forms
+  setFranchiseFormKey(prev => prev + 1);     // FranchiseDetailsForm (step-1)
+  setFranchiseExtraKey(prev => prev + 1);    // FranchiseExtraDetails (step-2)
 };
+
 
     const config = moduleFieldConfig[selectedModule] || {};
   const isFranchiseSelected = selectedModule === 'Franchise';
@@ -588,9 +598,14 @@ try {
         alert("Step-1 Saved Successfully...");
         setFranchiseStep(2);
       } else {
-        alert("Service Saved Successfully...");
-        setFormData(initialFormData);
-        resetForm();
+       alert("Service Saved Successfully...");
+
+// reset parent state
+resetForm();
+
+// force remount all child components
+setFormKey(prev => prev + 1);
+
       }
         } else {
           // Display backend validation message
@@ -776,7 +791,12 @@ try {
 </div>
       )}
     </div>
-        <form onSubmit={handleSubmit} className="space-y-5"  onKeyDown={handleKeyDown}>
+<form
+  key={formKey}
+  onSubmit={handleSubmit}
+  className="space-y-5"
+  onKeyDown={handleKeyDown}
+>
           {isFranchiseSelected ? (
         // If franchise module is selected, show content based on step
         franchiseStep === 1 ? (
@@ -794,12 +814,20 @@ try {
              fieldsConfig={config.serviceDetails}
           />
           <hr className="border-gray-300" />
-          <FranchiseDetailsForm
-            data={formData.franchise}
-            setData={(newData) => setFormData((prev) => ({ ...prev, franchise: { ...prev.franchise, ...newData } }))}
-            price={formData.basic.discountedPrice}
-             fieldsConfig={config.franchiseDetails}
-          />
+         <FranchiseDetailsForm
+  key={franchiseFormKey}
+  data={formData.franchise}
+  setData={(newData) =>
+    setFormData(prev => ({
+      ...prev,
+      franchise: { ...prev.franchise, ...newData },
+    }))
+  }
+  price={formData.basic.discountedPrice}
+  fieldsConfig={config.franchiseDetails}
+/>
+
+
           <div className="flex justify-end pt-4">
             <button
               type="submit"
@@ -813,7 +841,15 @@ try {
 
 ) : (
           
-          <FranchiseExtraDetails serviceId={createdServiceId}  onSave={() => setFranchiseStep(1)} />
+<FranchiseExtraDetails
+  key={franchiseExtraKey}
+  serviceId={createdServiceId}
+  onSave={() => {
+    alert("Service Saved Successfully...");
+    resetForm(); // 🔥 resets everything cleanly
+  }}
+/>
+
         )
       ) : (
   <>
