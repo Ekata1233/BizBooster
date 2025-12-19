@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     // --- Key Values ---
     const keyValues: any[] = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const key = formData.get(`keyValues[${i}][key]`);
       const value = formData.get(`keyValues[${i}][value]`);
       if (!key || !value) break;
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     // --- Provider Prices ---
     const providerPrices: any[] = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const provider = formData.get(`providerPrices[${i}][provider]`);
       if (!provider) break;
       providerPrices.push({
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     // --- Sections with icon/image ---
     async function processSection(field: string, folder: string, mediaKey: "icon" | "image") {
       const arr: any[] = [];
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 10; i++) {
         const title = formData.get(`serviceDetails[${field}][${i}][title]`);
         if (!title) break;
         const description = formData.get(`serviceDetails[${field}][${i}][description]`);
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
     serviceDetails.moreInfo = await processSection("moreInfo", "/services/moreInfo", "image");
 
     // --- Connect With ---
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const name = formData.get(`serviceDetails[connectWith][${i}][name]`);
       if (!name) break;
       serviceDetails.connectWith.push({
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Time Required ---
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const minDays = formData.get(`serviceDetails[timeRequired][${i}][minDays]`);
       if (!minDays) break;
       serviceDetails.timeRequired.push({
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- FAQ ---
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const question = formData.get(`serviceDetails[faq][${i}][question]`);
       if (!question) break;
       const answer = formData.get(`serviceDetails[faq][${i}][answer]`);
@@ -194,7 +194,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Packages ---
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const name = formData.get(`serviceDetails[packages][${i}][name]`);
       if (!name) break;
       const pkg: any = {
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
         discountedPrice: formData.get(`serviceDetails[packages][${i}][discountedPrice]`),
         whatYouGet: [],
       };
-      for (let j = 0; j < 1000; j++) {
+      for (let j = 0; j < 10; j++) {
         const item = formData.get(`serviceDetails[packages][${i}][whatYouGet][${j}]`);
         if (!item) break;
         pkg.whatYouGet.push(item);
@@ -231,7 +231,7 @@ for (const key of formData.keys()) {
 
 
     // --- Extra Sections ---
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 10; i++) {
   const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
   if (!title) break;
 
@@ -245,37 +245,37 @@ for (let i = 0; i < 1000; i++) {
     image: [],
   };
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
     if (!subtitle) break;
     extraSection.subtitle.push(subtitle);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
     if (!description) break;
     extraSection.description.push(description);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
     if (!subDescription) break;
     extraSection.subDescription.push(subDescription);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
     if (!list) break;
     extraSection.lists.push(list);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
     if (!tag) break;
     extraSection.tags.push(tag);
   }
 
-   for (let j = 0; j < 1000; j++) {
+   for (let j = 0; j < 10; j++) {
     const imageFile = formData.get(
       `serviceDetails[extraSections][${i}][image][${j}]`
     );
@@ -308,21 +308,21 @@ for (let i = 0; i < 1000; i++) {
       extraImages: [],
     };
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const min = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`);
       const max = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`);
       if (!min) break;
       franchiseDetails.investmentRange.push({ minRange: min, maxRange: max });
     }
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const min = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`);
       const max = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`);
       if (!min) break;
       franchiseDetails.monthlyEarnPotential.push({ minEarn: min, maxEarn: max });
     }
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`);
       if (!title) break;
       franchiseDetails.franchiseModel.push({
@@ -336,7 +336,7 @@ for (let i = 0; i < 1000; i++) {
     }
 
     // --- Extra Sections ---
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 10; i++) {
   const title = formData.get(`serviceDetails[franchiseDetails][${i}][title]`);
   if (!title) break;
 
@@ -350,37 +350,37 @@ for (let i = 0; i < 1000; i++) {
     image: [],
   };
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const subtitle = formData.get(`serviceDetails[franchiseDetails][${i}][subtitle][${j}]`);
     if (!subtitle) break;
     extraSection.subtitle.push(subtitle);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const description = formData.get(`serviceDetails[franchiseDetails][${i}][description][${j}]`);
     if (!description) break;
     extraSection.description.push(description);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const subDescription = formData.get(`serviceDetails[franchiseDetails][${i}][subDescription][${j}]`);
     if (!subDescription) break;
     extraSection.subDescription.push(subDescription);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const list = formData.get(`serviceDetails[franchiseDetails][${i}][lists][${j}]`);
     if (!list) break;
     extraSection.lists.push(list);
   }
 
-  for (let j = 0; j < 1000; j++) {
+  for (let j = 0; j < 10; j++) {
     const tag = formData.get(`serviceDetails[franchiseDetails][${i}][tags][${j}]`);
     if (!tag) break;
     extraSection.tags.push(tag);
   }
 
-for (let j = 0; j < 1000; j++) {
+for (let j = 0; j < 10; j++) {
     const imageFile = formData.get(`serviceDetails[extraSections][${i}][image][${j}]`);
 
     if (
