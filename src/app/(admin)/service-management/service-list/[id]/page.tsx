@@ -707,7 +707,7 @@ const initialFormData = {
     thumbnailImage: "",
     bannerImages: [],
   },
-  service: {
+  serviceDetails: {
     benefits: [],
     aboutUs: [],
     document: [],
@@ -726,7 +726,7 @@ const initialFormData = {
     extraImages: [],
     extraSections: [],
   },
-  franchise: {
+  franchiseDetails: {
     commission: "",
     termsAndConditions: "",
     investmentRange: [],
@@ -778,6 +778,10 @@ const EditService: React.FC = () => {
     });
   }, [service , initialized]);
 
+    console.log("service  : ", service)
+
+  console.log("formdata : ", formData)
+
   const handleUpdate = async () => {
     if (!service) {
       alert("Service not loaded yet.");
@@ -788,47 +792,48 @@ const EditService: React.FC = () => {
 
     try {
       const fd = new FormData();
+      console.log("ff : ", fd)
 
       /* ================= BASIC ================= */
-      fd.append("serviceName", formData.basic.serviceName || "");
-      fd.append("category", formData.basic.category || "");
+      fd.append("serviceName", formData.serviceName || "");
+      fd.append("category", formData.category || "");
 
-      if (formData.basic.subcategory?.trim()) {
-        fd.append("subcategory", formData.basic.subcategory);
+      if (formData.subcategory?.trim()) {
+        fd.append("subcategory", formData.subcategory);
       }
 
-      fd.append("price", String(formData.basic.price || 0));
-      fd.append("discount", String(formData.basic.discount || 0));
-      fd.append("discountedPrice", String(formData.basic.discountedPrice || 0));
-      fd.append("gst", String(formData.basic.gst || 0));
-      fd.append("includeGst", formData.basic.includeGst ? "true" : "false");
+      fd.append("price", String(formData.price || 0));
+      fd.append("discount", String(formData.discount || 0));
+      fd.append("discountedPrice", String(formData.discountedPrice || 0));
+      fd.append("gst", String(formData.gst || 0));
+      fd.append("includeGst", formData.includeGst ? "true" : "false");
       fd.append(
         "recommendedServices",
-        formData.basic.recommendedServices ? "true" : "false"
+        formData.recommendedServices ? "true" : "false"
       );
 
       /* ================= TAGS ================= */
-      formData.basic.tags?.forEach((tag, i) =>
+      formData.tags?.forEach((tag, i) =>
         fd.append(`tags[${i}]`, tag)
       );
 
       /* ================= KEY VALUES ================= */
-      formData.basic.keyValues?.forEach((kv, i) => {
+      formData.keyValues?.forEach((kv, i) => {
         fd.append(`keyValues[${i}][key]`, kv.key || "");
         fd.append(`keyValues[${i}][value]`, kv.value || "");
       });
 
       /* ================= THUMBNAIL ================= */
-      if (formData.basic.thumbnailImage instanceof File) {
-        fd.append("thumbnail", formData.basic.thumbnailImage);
-      } else if (formData.basic.thumbnailImage) {
-        fd.append("thumbnail", formData.basic.thumbnailImage);
+      if (formData.thumbnailImage instanceof File) {
+        fd.append("thumbnail", formData.thumbnailImage);
+      } else if (formData.thumbnailImage) {
+        fd.append("thumbnail", formData.thumbnailImage);
       }
 
       /* ================= BANNER ================= */
       const existingBannerUrls: string[] = [];
 
-      formData.basic.bannerImages?.forEach((img, i) => {
+      formData.bannerImages?.forEach((img, i) => {
         if (img instanceof File) {
           fd.append(`bannerImages[${i}]`, img);
         } else if (typeof img === "string") {
@@ -841,17 +846,17 @@ const EditService: React.FC = () => {
       }
 
       /* ================= SERVICE DETAILS ================= */
-      fd.append("benefits", JSON.stringify(formData.service.benefits || []));
-      fd.append("aboutUs", JSON.stringify(formData.service.aboutUs || []));
-      fd.append("document", JSON.stringify(formData.service.document || []));
+      fd.append("benefits", JSON.stringify(formData.serviceDetails.benefits || []));
+      fd.append("aboutUs", JSON.stringify(formData.serviceDetails.aboutUs || []));
+      fd.append("document", JSON.stringify(formData.serviceDetails.document || []));
       fd.append(
         "termsAndConditions",
-        JSON.stringify(formData.service.termsAndConditions || [])
+        JSON.stringify(formData.serviceDetails.termsAndConditions || [])
       );
 
       /* ================= HIGHLIGHT ================= */
       await Promise.all(
-        (formData.service.highlight || []).map(async (item, i) => {
+        (formData.serviceDetails.highlight || []).map(async (item, i) => {
           if (item instanceof File) {
             fd.append(`serviceDetails[highlight][${i}]`, item);
           } else if (typeof item === "string" && item.startsWith("blob:")) {
@@ -892,20 +897,20 @@ const EditService: React.FC = () => {
         );
       };
 
-      await iconSection(formData.service.assuredByFetchTrue || [], "assuredByFetchTrue");
-      await iconSection(formData.service.howItWorks || [], "howItWorks");
-      await iconSection(formData.service.whyChooseUs || [], "whyChooseUs");
-      await iconSection(formData.service.weRequired || [], "weRequired");
-      await iconSection(formData.service.weDeliver || [], "weDeliver");
+      await iconSection(formData.serviceDetails.assuredByFetchTrue || [], "assuredByFetchTrue");
+      await iconSection(formData.serviceDetails.howItWorks || [], "howItWorks");
+      await iconSection(formData.serviceDetails.whyChooseUs || [], "whyChooseUs");
+      await iconSection(formData.serviceDetails.weRequired || [], "weRequired");
+      await iconSection(formData.serviceDetails.weDeliver || [], "weDeliver");
 
       /* ================= FAQ ================= */
-      (formData.service.faq || []).forEach((f, i) => {
+      (formData.serviceDetails.faq || []).forEach((f, i) => {
         fd.append(`serviceDetails[faq][${i}][question]`, f.question || "");
         fd.append(`serviceDetails[faq][${i}][answer]`, f.answer || "");
       });
 
       /* ================= PACKAGES ================= */
-      (formData.service.packages || []).forEach((p, i) => {
+      (formData.serviceDetails.packages || []).forEach((p, i) => {
         fd.append(`serviceDetails[packages][${i}][name]`, p.name || "");
         fd.append(`serviceDetails[packages][${i}][price]`, String(p.price || 0));
         fd.append(`serviceDetails[packages][${i}][discount]`, String(p.discount || 0));
@@ -919,7 +924,7 @@ const EditService: React.FC = () => {
       });
 
       /* ================= TIME REQUIRED ================= */
-      (formData.service.timeRequired || []).forEach((t, i) => {
+      (formData.serviceDetails.timeRequired || []).forEach((t, i) => {
         fd.append(
           `serviceDetails[timeRequired][${i}][minDays]`,
           String(t.minDays || 0)
@@ -932,7 +937,7 @@ const EditService: React.FC = () => {
 
       /* ================= MORE INFO ================= */
       await Promise.all(
-        (formData.service.moreInfo || []).map(async (m, i) => {
+        (formData.serviceDetails.moreInfo || []).map(async (m, i) => {
           fd.append(`serviceDetails[moreInfo][${i}][title]`, m.title || "");
           fd.append(
             `serviceDetails[moreInfo][${i}][description]`,
@@ -957,7 +962,7 @@ const EditService: React.FC = () => {
       );
 
       /* ================= CONNECT WITH ================= */
-      (formData.service.connectWith || []).forEach((c, i) => {
+      (formData.serviceDetails.connectWith || []).forEach((c, i) => {
         fd.append(`serviceDetails[connectWith][${i}][name]`, c.name || "");
         fd.append(`serviceDetails[connectWith][${i}][mobileNo]`, c.mobileNo || "");
         fd.append(`serviceDetails[connectWith][${i}][email]`, c.email || "");
@@ -965,7 +970,8 @@ const EditService: React.FC = () => {
 
       /* ================= EXTRA IMAGES ================= */
       await Promise.all(
-        (formData.service.extraImages || []).map(async (img, i) => {
+        (formData.serviceDetails
+          .extraImages || []).map(async (img, i) => {
           if (img instanceof File) {
             fd.append(`serviceDetails[extraImages][${i}]`, img);
           } else if (typeof img === "string" && img.startsWith("blob:")) {
@@ -982,16 +988,16 @@ const EditService: React.FC = () => {
       if (selectedModule === "Franchise") {
         fd.append(
           "franchiseDetails[commission]",
-          formData.franchise.commission || ""
+          formData.franchiseDetails.commission || ""
         );
         
         fd.append(
           "franchiseDetails[termsAndConditions]",
-          formData.franchise.termsAndConditions || ""
+          formData.franchiseDetails.termsAndConditions || ""
         );
         
         /* -------- Investment Range -------- */
-        (formData.franchise.investmentRange || []).forEach((item, i) => {
+        (formData.franchiseDetails.investmentRange || []).forEach((item, i) => {
           fd.append(
             `franchiseDetails[investmentRange][${i}][minRange]`,
             String(item.minRange || 0)
@@ -1003,7 +1009,7 @@ const EditService: React.FC = () => {
         });
         
         /* -------- Monthly Earn Potential -------- */
-        (formData.franchise.monthlyEarnPotential || []).forEach((item, i) => {
+        (formData.franchiseDetails.monthlyEarnPotential || []).forEach((item, i) => {
           fd.append(
             `franchiseDetails[monthlyEarnPotential][${i}][minEarn]`,
             String(item.minEarn || 0)
@@ -1015,7 +1021,7 @@ const EditService: React.FC = () => {
         });
         
         /* -------- Franchise Model -------- */
-        (formData.franchise.franchiseModel || []).forEach((model, i) => {
+        (formData.franchiseDetails.franchiseModel || []).forEach((model, i) => {
           fd.append(
             `franchiseDetails[franchiseModel][${i}][title]`,
             model.title || ""
@@ -1044,7 +1050,7 @@ const EditService: React.FC = () => {
         
         /* -------- Extra Sections (Franchise) -------- */
         await Promise.all(
-          (formData.franchise.extraSections || []).map(async (section, i) => {
+          (formData.franchiseDetails.extraSections || []).map(async (section, i) => {
             fd.append(
               `franchiseDetails[extraSections][${i}][title]`,
               section.title || ""
@@ -1119,7 +1125,7 @@ const EditService: React.FC = () => {
         
         /* -------- Extra Images -------- */
         await Promise.all(
-          (formData.franchise.extraImages || []).map(async (img, i) => {
+          (formData.franchiseDetails.extraImages || []).map(async (img, i) => {
             if (img instanceof File) {
               fd.append(`franchiseDetails[extraImages][${i}]`, img);
             } else if (typeof img === "string" && img.startsWith("blob:")) {
@@ -1134,6 +1140,7 @@ const EditService: React.FC = () => {
           }));
       }
 
+      console.log("ff : ", fd)
       /* ================= API ================= */
       const res = await updateService(service._id, fd);
 
