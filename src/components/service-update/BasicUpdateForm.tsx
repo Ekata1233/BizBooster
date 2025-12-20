@@ -181,7 +181,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Select from "../form/Select";
@@ -214,6 +214,72 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
         setRows(data.keyValues);
       }
     }, [data.keyValues]);
+
+    const handleThumbnailUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+  
+      // Create blob URL for preview
+      const url = URL.createObjectURL(file);
+      
+      // Update parent data with blob URL
+      setData((prev: any) => ({
+        ...prev,
+        thumbnailImage: url,
+        thumbnailFile: file // Optionally store the file object for later upload
+      }));
+    }, [setData]);
+  
+    // Handle banner images upload
+    const handleBannerImagesUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+  
+      // Create blob URLs for all selected files
+      const urls = Array.from(files).map(file => URL.createObjectURL(file));
+      const filesArray = Array.from(files);
+      
+      // Update parent data with blob URLs
+      setData((prev: any) => ({
+        ...prev,
+        bannerImages: [...(prev.bannerImages || []), ...urls],
+        bannerFiles: [...(prev.bannerFiles || []), ...filesArray] // Optionally store file objects
+      }));
+    }, [setData]);
+
+    const removeBannerImage = useCallback((index: number) => {
+      setData((prev: any) => {
+        const currentImages = prev.bannerImages || [];
+        const currentFiles = prev.bannerFiles || [];
+        
+        // Revoke blob URL to prevent memory leak
+        if (currentImages[index]?.startsWith('blob:')) {
+          URL.revokeObjectURL(currentImages[index]);
+        }
+        
+        return {
+          ...prev,
+          bannerImages: currentImages.filter((_: string, i: number) => i !== index),
+          bannerFiles: currentFiles.filter((_: File, i: number) => i !== index)
+        };
+      });
+    }, [setData]);
+  
+    // Remove thumbnail image
+    const removeThumbnailImage = useCallback(() => {
+      setData((prev: any) => {
+        // Revoke blob URL to prevent memory leak
+        if (prev.thumbnailImage?.startsWith('blob:')) {
+          URL.revokeObjectURL(prev.thumbnailImage);
+        }
+        
+        return {
+          ...prev,
+          thumbnailImage: null,
+          thumbnailFile: null
+        };
+      });
+    }, [setData]);
 
 
   const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
@@ -296,7 +362,7 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
           {/* Thumbnail */}
           <div>
             <Label>Thumbnail</Label>
-            <FileInput />
+            <FileInput  onChange={handleThumbnailUpload} />
             {data.thumbnailImage && (
   <div className="mt-3 relative w-40 h-40">
     <Image
@@ -307,6 +373,13 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
       sizes="160px"
       priority={false}
     />
+    <button
+                  type="button"
+                  onClick={removeThumbnailImage}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  ×
+                </button>
   </div>
 )}
 
@@ -412,7 +485,7 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
           {/* Banner Images */}
           <div>
             <Label>Banner Images</Label>
-            <FileInput multiple />
+            <FileInput multiple  onChange={handleBannerImagesUpload} />
             {data.bannerImages?.length > 0 && (
   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
     {data.bannerImages.map((img: string, index: number) => (
@@ -431,19 +504,12 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
 
         {/* Optional remove button */}
         <button
-          type="button"
-          onClick={() =>
-            setData((prev) => ({
-              ...prev,
-              bannerImages: prev.bannerImages.filter(
-                (_: string, i: number) => i !== index
-              ),
-            }))
-          }
-          className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 text-xs"
-        >
-          ×
-        </button>
+                      type="button"
+                      onClick={() => removeBannerImage(index)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
+                      ×
+                    </button>
       </div>
     ))}
   </div>

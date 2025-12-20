@@ -822,27 +822,45 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
     );
   }, []);
 
+
+  const handleExtraSectionTitleChange = useCallback(
+    (sectionIndex: number, value: string) => {
+      setExtraSections(prev =>
+        prev.map((section, idx) =>
+          idx === sectionIndex
+            ? { ...section, title: value }
+            : section
+        )
+      );
+    },
+    []
+  );
+  
   // Handle extra section change
-  const handleExtraSectionChange = useCallback((
-    sectionIndex: number, 
-    field: keyof ExtraSection, 
-    valueIndex: number, 
-    value: string
-  ) => {
-    setExtraSections(prev => 
-      prev.map((section, secIdx) => {
-        if (secIdx !== sectionIndex) return section;
-        
-        const currentField = section[field] as string[];
-        return {
-          ...section,
-          [field]: currentField.map((val, idx) => 
-            idx === valueIndex ? value : val
-          )
-        };
-      })
-    );
-  }, []);
+  const handleExtraSectionArrayChange = useCallback(
+    (
+      sectionIndex: number,
+      field: Exclude<keyof ExtraSection, 'title' | 'image'>,
+      valueIndex: number,
+      value: string
+    ) => {
+      setExtraSections(prev =>
+        prev.map((section, secIdx) => {
+          if (secIdx !== sectionIndex) return section;
+  
+          const arr = section[field] as string[];
+          return {
+            ...section,
+            [field]: arr.map((val, idx) =>
+              idx === valueIndex ? value : val
+            ),
+          };
+        })
+      );
+    },
+    []
+  );
+  
 
   // Add new array item to extra section
   const addToExtraSection = useCallback((sectionIndex: number, field: keyof ExtraSection) => {
@@ -1168,7 +1186,10 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                   <Input
                     placeholder="Section Title"
                     value={section.title}
-                    onChange={e => handleExtraSectionChange(sectionIdx, 'title', 0, e.target.value)}
+                    onChange={e =>
+                      handleExtraSectionTitleChange(sectionIdx, e.target.value)
+                    }
+                  
                   />
 
                   {(['subtitle', 'description', 'subDescription', 'lists', 'tags'] as const).map(
@@ -1178,10 +1199,13 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                         {section[field].map((val, i) => (
                           <div key={i} className="flex gap-2 mb-2">
                             <Input
-                              value={val}
-                              onChange={e => handleExtraSectionChange(sectionIdx, field, i, e.target.value)}
-                              placeholder={`Enter ${field}`}
-                            />
+  value={val || ''}
+  onChange={e =>
+    handleExtraSectionArrayChange(sectionIdx, field, i, e.target.value)
+  }
+  placeholder={`Enter ${field}`}
+/>
+
                           </div>
                         ))}
                         <button
@@ -1195,57 +1219,47 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                     )
                   )}
 
-                  <div>
-                    <Label>Images</Label>
-                    <FileInput
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files) {
-                          const files = Array.from(e.target.files);
-                          const readers = files.map(file => {
-                            return new Promise<string>((resolve) => {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                resolve(reader.result as string);
-                              };
-                              reader.readAsDataURL(file);
-                            });
-                          });
-
-                          Promise.all(readers).then(urls => {
-                            setExtraSections(prev =>
-                              prev.map((sec, idx) =>
-                                idx === sectionIdx
-                                  ? { ...sec, image: [...sec.image, ...urls] }
-                                  : sec
-                              )
-                            );
-                          });
-                        }
-                      }}
-                    />
-                    <div className="flex gap-3 mt-3 flex-wrap">
-                      {section.image.map((img, idx) => (
-                        <div key={idx} className="w-20 h-20 relative group">
-                          <Image 
-                            src={img} 
-                            alt={`section-${sectionIdx}-${idx}`} 
-                            fill 
-                            className="rounded-lg object-cover"
-                            unoptimized
-                          />
-                          <button
-                            type="button"
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeSectionImage(sectionIdx, idx)}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+<div>
+  <Label>Images</Label>
+  <FileInput
+    multiple
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files) {
+        const files = Array.from(e.target.files);
+        const urls = files.map(file => URL.createObjectURL(file));
+        
+        setExtraSections(prev =>
+          prev.map((sec, idx) =>
+            idx === sectionIdx
+              ? { ...sec, image: [...sec.image, ...urls] }
+              : sec
+          )
+        );
+      }
+    }}
+  />
+  <div className="flex gap-3 mt-3 flex-wrap">
+    {section.image.map((img, idx) => (
+      <div key={idx} className="w-20 h-20 relative group">
+        <Image 
+          src={img} 
+          alt={`section-${sectionIdx}-${idx}`} 
+          fill 
+          className="rounded-lg object-cover"
+          unoptimized
+        />
+        <button
+          type="button"
+          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => removeSectionImage(sectionIdx, idx)}
+        >
+          ×
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
 
                   <button
                     type="button"
