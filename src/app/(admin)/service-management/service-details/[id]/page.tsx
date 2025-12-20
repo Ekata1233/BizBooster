@@ -338,14 +338,31 @@ const ServiceDetailsPage = () => {
               
               {/* Rating */}
               <Link href={`/service-management/service-details/review/${service._id}`}>
-                <div className="bg-white border rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-2xl font-bold text-yellow-500">⭐</span>
-                    <span className="text-2xl font-bold text-gray-900">{service.averageRating || 0}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">{service.totalReviews || 0} Reviews</p>
-                </div>
-              </Link>
+  <div className="bg-white border rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    
+    {/* Rating */}
+    <div className="flex items-center justify-center gap-1 mb-1">
+      <span className="text-2xl font-bold text-yellow-500">⭐</span>
+      <span className="text-2xl font-bold text-gray-900">
+        {service.averageRating || 0}
+      </span>
+    </div>
+
+    <p className="text-sm text-gray-600">
+      {service.totalReviews || 0} Reviews
+    </p>
+
+    {/* Recommended Badge (below rating section) */}
+    {service.recommendedServices && (
+      <span className="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+        ★ Recommended Service
+      </span>
+    )}
+
+  </div>
+</Link>
+
+              
             </div>
 
             {/* Price Section */}
@@ -409,32 +426,34 @@ const ServiceDetailsPage = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </div>
 
-            {/* Tabs */}
-            <div className="border-b border-gray-200 mb-6">
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => setActiveTab('service')}
-                  className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                    activeTab === 'service'
-                      ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Service Details
-                </button>
-                <button
-                  onClick={() => setActiveTab('franchise')}
-                  className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                    activeTab === 'franchise'
-                      ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Franchise Details
-                </button>
-              </div>
-            </div>
+      {/* Tabs - Moved outside the main service card */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200">
+          <div className="flex space-x-1">
+            <button
+              onClick={() => setActiveTab('service')}
+              className={`px-8 py-4 text-base font-medium rounded-t-lg transition-colors ${
+                activeTab === 'service'
+                  ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600 font-semibold'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Service Details
+            </button>
+            <button
+              onClick={() => setActiveTab('franchise')}
+              className={`px-8 py-4 text-base font-medium rounded-t-lg transition-colors ${
+                activeTab === 'franchise'
+                  ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600 font-semibold'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Franchise Details
+            </button>
           </div>
         </div>
       </div>
@@ -546,12 +565,12 @@ const ServiceDetailsPage = () => {
               </ComponentCard>
             )}
 
-            {/* Packages */}
+            {/* Packages - Updated to 3 columns */}
             {packages.length > 0 && (
               <ComponentCard title="Packages">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {packages.map((pkg, index) => (
-                    <div key={pkg._id || index} className="border-2 border-blue-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div key={pkg._id || index} className="border-2 border-blue-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="text-xl font-bold text-gray-900">{pkg.name}</h4>
                         {pkg.discount > 0 && (
@@ -561,7 +580,7 @@ const ServiceDetailsPage = () => {
                         )}
                       </div>
                       
-                      <div className="space-y-3 mb-6">
+                      <div className="space-y-3 mb-6 flex-grow">
                         <div className="flex items-center justify-between">
                           <span className="text-gray-600">Original Price:</span>
                           <span className="text-lg font-semibold text-gray-900">
@@ -579,13 +598,13 @@ const ServiceDetailsPage = () => {
                       </div>
 
                       {pkg.whatYouGet && pkg.whatYouGet.length > 0 && (
-                        <div>
+                        <div className="mt-auto">
                           <h5 className="font-semibold text-gray-700 mb-3">What You Get:</h5>
                           <ul className="space-y-2">
                             {pkg.whatYouGet.map((item, i) => (
                               <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                {item}
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                                <span className="flex-grow">{item}</span>
                               </li>
                             ))}
                           </ul>
@@ -900,9 +919,9 @@ const ServiceDetailsPage = () => {
             {/* Franchise Models */}
             {franchiseModel.length > 0 && (
               <ComponentCard title="Franchise Models">
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {franchiseModel.map((model, index) => (
-                    <div key={index} className="bg-white border rounded-xl p-6 shadow-sm">
+                    <div key={index} className="bg-white border rounded-xl p-6 shadow-sm h-full">
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="text-xl font-bold text-gray-900">{model.title}</h4>
                         <div className="text-right">
@@ -915,17 +934,17 @@ const ServiceDetailsPage = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-3">
                         {model.agreement && (
                           <div>
                             <span className="text-sm font-medium text-gray-600">Agreement:</span>
-                            <p className="text-gray-800">{model.agreement}</p>
+                            <p className="text-gray-800 mt-1">{model.agreement}</p>
                           </div>
                         )}
                         {model.gst > 0 && (
                           <div>
                             <span className="text-sm font-medium text-gray-600">GST:</span>
-                            <p className="text-gray-800">{model.gst}%</p>
+                            <p className="text-gray-800 mt-1">{model.gst}%</p>
                           </div>
                         )}
                       </div>
