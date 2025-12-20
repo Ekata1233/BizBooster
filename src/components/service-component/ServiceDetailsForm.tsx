@@ -613,7 +613,7 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
         {/* Document */}
         {fieldsConfig?.document && (
         <div>
-          <Label>Document</Label>
+          <Label>Extra CkEditor</Label>
           {editorReady && (
             <ClientSideCustomEditor
               value={document[0] || ''}
