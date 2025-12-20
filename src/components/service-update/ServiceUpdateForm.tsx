@@ -46,6 +46,7 @@ interface ServiceUpdateFromProps {
 // ---------------- COMPONENT ----------------
 const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) => {
   // ---------- BASIC STATES ----------
+  console.log("servie update data ; ", data)
   const [editorReady, setEditorReady] = useState(false);
 
   const [benefits, setBenefits] = useState<string[]>(['']);

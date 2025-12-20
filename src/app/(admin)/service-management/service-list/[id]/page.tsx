@@ -678,6 +678,7 @@ import FranchiseExtraDetails from '@/components/service-component/FranchiseExtra
 import BasicUpdateForm from '@/components/service-update/BasicUpdateForm';
 import ServiceUpdateForm from '@/components/service-update/ServiceUpdateForm';
 import FranchiseUpdateForm from '@/components/service-update/FranchiseUpdateForm';
+import FranchiseExtraUpdate from '@/components/service-update/FranchiseExtraUpdate';
 
 const modules = [
   { name: "Franchise", icon: <FaStore size={36} /> },
@@ -744,10 +745,13 @@ const EditService: React.FC = () => {
   const [newService, setNewService] = useState<any>(null);
   const [selectedModule, setSelectedModule] = useState(modules[0].name);
   const [initialized, setInitialized] = useState(false);
-  const [franchiseStep, setFranchiseStep] = useState<number>(1);
+  const [franchiseStep, setFranchiseStep] = useState<number>(2);
   const [formData, setFormData] = useState(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const createdServiceId = service?._id;
+  const [formKey, setFormKey] = useState(0);
+  const [franchiseExtraKey, setFranchiseExtraKey] = useState(0);
+  const [franchiseFormKey, setFranchiseFormKey] = useState(0);
+  const [createdServiceId, setCreatedServiceId] = useState(null);
 
   // Fetch single service on load
   useEffect(() => {
@@ -758,7 +762,7 @@ const EditService: React.FC = () => {
   // Initialize form data when service is loaded
   useEffect(() => {
     if (!service) return;
-
+    setCreatedServiceId(service._id);
     setFormData({
       serviceName: service.serviceName || "",
       category: service.category?._id || "",
@@ -846,23 +850,13 @@ const EditService: React.FC = () => {
       }
 
       /* ================= SERVICE DETAILS ================= */
+      fd.append("benefits", JSON.stringify(formData.serviceDetails.benefits || []));
+      fd.append("aboutUs", JSON.stringify(formData.serviceDetails.aboutUs || []));
+      fd.append("document", JSON.stringify(formData.serviceDetails.document || []));
       fd.append(
-        "serviceDetails[benefits]",
-        JSON.stringify(formData.serviceDetails.benefits || [])
-      );
-      fd.append(
-        "serviceDetails[aboutUs]",
-        JSON.stringify(formData.serviceDetails.aboutUs || [])
-      );
-      fd.append(
-        "serviceDetails[document]",
-        JSON.stringify(formData.serviceDetails.document || [])
-      );
-      fd.append(
-        "serviceDetails[termsAndConditions]",
+        "termsAndConditions",
         JSON.stringify(formData.serviceDetails.termsAndConditions || [])
       );
-      
 
       /* ================= HIGHLIGHT ================= */
       await Promise.all(
@@ -1237,10 +1231,17 @@ await Promise.all(
       console.log("ff : ", fd)
       /* ================= API ================= */
       const res = await updateService(service._id, fd);
-
+      setCreatedServiceId(res?.data?._id);
       if (res?.success) {
-        alert("Service updated successfully");
-        router.push("/service-management/service-list");
+        if (isFranchiseSelected && franchiseStep === 1) {
+          alert("Step-1 Update Successfully...");
+          setFranchiseStep(2);
+        } else {
+         alert("Service Update Successfully...");
+  // resetForm();
+  setFormKey(prev => prev + 1);
+  
+        }
       } else {
         alert(res?.message || "Update failed");
       }
@@ -1362,9 +1363,13 @@ await Promise.all(
                 </div>
               </>
             ) : (
-              <FranchiseExtraDetails 
-                serviceId={createdServiceId}  
-                onSave={() => setFranchiseStep(1)} 
+              <FranchiseExtraUpdate 
+              key={franchiseExtraKey}
+              serviceId={createdServiceId}
+              onSave={() => {
+                alert("Service Saved Successfully...");
+                // resetForm(); 
+              }}
               />
             )
           ) : (
