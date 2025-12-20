@@ -762,7 +762,7 @@ const EditService: React.FC = () => {
   // Initialize form data when service is loaded
   useEffect(() => {
     if (!service) return;
-    setCreatedServiceId(service._id);
+    // setCreatedServiceId(service._id);
     setFormData({
       serviceName: service.serviceName || "",
       category: service.category?._id || "",
@@ -1076,7 +1076,7 @@ await Promise.all(
 
         fd.append(
           "franchiseDetails[commission]",
-          formData.franchiseDetails.commission || ""
+          formData.commission || ""
         );
         
         fd.append(
