@@ -336,31 +336,37 @@ const ServiceDetailsPage = () => {
                 </div>
               </div>
               
-              {/* Rating */}
-              <Link href={`/service-management/service-details/review/${service._id}`}>
-  <div className="bg-white border rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-    
-    {/* Rating */}
-    <div className="flex items-center justify-center gap-1 mb-1">
-      <span className="text-2xl font-bold text-yellow-500">⭐</span>
-      <span className="text-2xl font-bold text-gray-900">
-        {service.averageRating || 0}
-      </span>
+            {/* Parent Wrapper */}
+<div className="text-center">
+
+  {/* Rating (Clickable) */}
+  <Link href={`/service-management/service-details/review/${service._id}`}>
+    <div className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+      
+      <div className="flex items-center justify-center gap-1 mb-1">
+        <span className="text-2xl font-bold text-yellow-500">⭐</span>
+        <span className="text-2xl font-bold text-gray-900">
+          {service.averageRating || 0}
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-600">
+        {service.totalReviews || 0} Reviews
+      </p>
+
     </div>
+  </Link>
 
-    <p className="text-sm text-gray-600">
-      {service.totalReviews || 0} Reviews
-    </p>
-
-    {/* Recommended Badge (below rating section) */}
-    {service.recommendedServices && (
-      <span className="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+  {/* Recommended Service (Outside Link but same card section) */}
+  {service.recommendedServices && (
+    <div className="mt-2">
+      <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
         ★ Recommended Service
       </span>
-    )}
+    </div>
+  )}
 
-  </div>
-</Link>
+</div>
 
               
             </div>
@@ -770,81 +776,178 @@ const ServiceDetailsPage = () => {
             )}
 
             {/* Extra Sections */}
-            {extraSections.length > 0 && (
+        {extraSections.length > 0 && (
               <ComponentCard title="Additional Details">
                 <div className="space-y-8">
-                  {extraSections.map((item, index) => (
-                    <div key={item._id || index} className="bg-white border rounded-xl p-6">
-                      {item.title && (
-                        <h4 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h4>
-                      )}
-                      
-                      {item.subtitle && item.subtitle.length > 0 && (
-                        <div className="mb-4">
-                          {item.subtitle.map((sub, subIndex) => (
-                            <p key={subIndex} className="font-medium text-gray-800 mb-1">{sub}</p>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {item.description && item.description.length > 0 && (
-                        <div className="mb-4 space-y-2">
-                          {item.description.map((desc, descIndex) => (
-                            <p key={descIndex} className="text-gray-700">{desc}</p>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {item.subDescription && item.subDescription.length > 0 && (
-                        <div className="mb-4 space-y-1">
-                          {item.subDescription.map((subDesc, subDescIndex) => (
-                            <p key={subDescIndex} className="text-sm text-gray-600">{subDesc}</p>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {item.lists && item.lists.length > 0 && (
-                        <ul className="mb-4 space-y-2 pl-5">
-                          {item.lists.map((listItem, listIndex) => (
-                            <li key={listIndex} className="text-gray-700 list-disc">
-                              {listItem}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      
-                      {item.tags && item.tags.length > 0 && (
-                        <div className="mb-4">
-                          <span className="text-sm font-medium text-gray-600 mb-2 block">Tags:</span>
-                          <div className="flex flex-wrap gap-2">
-                            {item.tags.map((tag, tagIndex) => (
-                              <span
-                                key={tagIndex}
-                                className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
-                              >
-                                {tag}
-                              </span>
+                  {extraSections.map((item, index) => {
+                    // Check if this is a counter section (based on data structure)
+                    const isCounterSection = 
+                      item.title?.toLowerCase() === 'counter' && 
+                      item.subtitle?.length > 0 && 
+                      item.subDescription?.length > 0;
+                    
+                    // Check if this is a comparison table (based on data structure)
+                    const isComparisonSection = 
+                      item.title?.includes('Franchise') && 
+                      item.subtitle?.length > 0 && 
+                      item.subDescription?.length > 0;
+
+                    if (isCounterSection) {
+                      // Render counter section with stats
+                      return (
+                        <div key={item._id || index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8">
+                          <h4 className="text-2xl font-bold text-gray-900 mb-8 text-center">{item.title}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {item.subtitle?.map((value, i) => (
+                              <div key={i} className="text-center">
+                                <div className="text-4xl font-bold text-blue-600 mb-2">
+                                  {value}
+                                </div>
+                                <div className="text-gray-600">
+                                  {item.subDescription?.[i] || `Stat ${i + 1}`}
+                                </div>
+                              </div>
                             ))}
                           </div>
                         </div>
-                      )}
-                      
-                      {item.image && item.image.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {item.image.map((img, imgIndex) => (
-                            <div key={imgIndex} className="relative h-48 rounded-lg overflow-hidden">
-                              <Image
-                                src={img}
-                                alt={`${item.title || 'Extra'} image ${imgIndex + 1}`}
-                                fill
-                                className="object-cover"
-                              />
+                      );
+                    } else if (isComparisonSection) {
+                      // Render comparison table
+                      return (
+                        <div key={item._id || index} className="bg-white border rounded-xl p-6 shadow-sm">
+                          <h4 className="text-2xl font-bold text-gray-900 mb-6">{item.title}</h4>
+                          
+                          {item.description && item.description.length > 0 && (
+                            <p className="text-gray-700 mb-6">{item.description[0]}</p>
+                          )}
+                          
+                          {item.subtitle && item.subtitle.length > 0 && (
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Aspect
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Details
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {item.subtitle.map((aspect, aspectIndex) => (
+                                    <tr key={aspectIndex} className="hover:bg-gray-50">
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {aspect}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {item.subDescription?.[aspectIndex] || 'N/A'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
-                          ))}
+                          )}
+                          
+                          {item.lists && item.lists.length > 0 && (
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                              <h5 className="font-semibold text-blue-800 mb-2">Example:</h5>
+                              <p className="text-blue-700">{item.lists[0]}</p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      );
+                    } else {
+                      // Default rendering for other sections
+                      return (
+                        <div key={item._id || index} className="bg-white border rounded-xl p-6 shadow-sm">
+                          {item.title && (
+                            <h4 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h4>
+                          )}
+                          
+                          {item.subtitle && item.subtitle.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Sub Titles:</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {item.subtitle.map((sub, subIndex) => (
+                                  <span key={subIndex} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                                    {sub}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {item.description && item.description.length > 0 && (
+                            <div className="mb-4 space-y-3">
+                              {item.description.map((desc, descIndex) => (
+                                <p key={descIndex} className="text-gray-700">{desc}</p>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {item.subDescription && item.subDescription.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Details:</h5>
+                              <ul className="space-y-2">
+                                {item.subDescription.map((subDesc, subDescIndex) => (
+                                  <li key={subDescIndex} className="flex items-start gap-2">
+                                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                                    <span className="text-gray-600">{subDesc}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {item.lists && item.lists.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">List Items:</h5>
+                              <ul className="space-y-2 pl-5">
+                                {item.lists.map((listItem, listIndex) => (
+                                  <li key={listIndex} className="text-gray-700 list-disc">
+                                    {listItem}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {item.tags && item.tags.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Tags:</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {item.tags.map((tag, tagIndex) => (
+                                  <span
+                                    key={tagIndex}
+                                    className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {item.image && item.image.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                              {item.image.map((img, imgIndex) => (
+                                <div key={imgIndex} className="relative h-48 rounded-lg overflow-hidden">
+                                  <Image
+                                    src={img}
+                                    alt={`${item.title || 'Extra'} image ${imgIndex + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
               </ComponentCard>
             )}
