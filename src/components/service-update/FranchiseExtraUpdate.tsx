@@ -346,15 +346,45 @@
 
 
 
-import React, { useEffect, useState, useCallback, ChangeEvent } from "react";
+import React, { useState, useEffect } from "react";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 
-/* ---------------- TYPES ---------------- */
+interface InvestmentData {
+  franchiseSize: string;
+  franchiseType: string;
+  city: string;
+  franchiseFee: number;
+  businessLicenses: number;
+  insurance: number;
+  legalAndAccountingFee: number;
+  inventoryFee: number;
+  officeSetup: number;
+  initialStartupEquipmentAndMarketing: number;
+  staffAndManagementTrainingExpense: number;
+  otherExpense: number;
+  totalInvestment: number;
+  gstIncluded: boolean;
+  gst: number;
+  tokenAmount: number;
+  _id?: string;
+}
+
+interface ModelData {
+  franchiseSize: string;
+  areaRequired: string;
+  marketing: string;
+  returnOfInvestment: string;
+  manPower: number;
+  staffManagement: string;
+  royaltyPercent: string;
+  grossMargin: string;
+  radiusArea: string;
+  _id?: string;
+}
 
 interface FranchiseData {
   franchiseSize: string;
-  investmentFranchiseSize: string;
   areaRequired: string;
   marketing: string;
   returnOfInvestment: string;
@@ -380,11 +410,8 @@ interface FranchiseData {
   tokenAmount: string;
 }
 
-/* ---------------- CONSTANTS ---------------- */
-
-const EMPTY_FRANCHISE: FranchiseData = {
+const getEmptyFranchise = (): FranchiseData => ({
   franchiseSize: "",
-  investmentFranchiseSize: "",
   areaRequired: "",
   marketing: "",
   returnOfInvestment: "",
@@ -408,626 +435,618 @@ const EMPTY_FRANCHISE: FranchiseData = {
   gstIncluded: false,
   gst: "",
   tokenAmount: "",
-};
+});
 
-/* ---------------- HELPERS ---------------- */
-
-const getEmptyFranchise = (): FranchiseData => ({ ...EMPTY_FRANCHISE });
-
-// Normalize franchise size to handle typos like "meduim" vs "medium"
-const normalizeFranchiseSize = (size: string): string => {
-  if (!size) return "";
-  return size.toLowerCase().trim();
-};
-
-/* ---------------- COMPONENT ---------------- */
-
-interface FranchiseExtraUpdateProps {
-  onSave?: () => void;
-  serviceId?: string;
-}
-
-function FranchiseExtraUpdate({ 
-  onSave, 
-  serviceId: propServiceId 
-}: FranchiseExtraUpdateProps) {
-  const serviceId = propServiceId || "694647700bf8b17c997a9e8c";
-  
+function FranchiseExtraUpdate({ serviceId, onSave }: { serviceId: string; onSave?: () => void }) {
   const [franchises, setFranchises] = useState<FranchiseData[]>([getEmptyFranchise()]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /* ---------------- FETCH & PREFILL ---------------- */
-
   useEffect(() => {
+    if (serviceId) {
+      fetchFranchiseData();
+    }
+  }, [serviceId]);
+
+  const fetchFranchiseData = async () => {
     if (!serviceId) {
-      setFranchises([getEmptyFranchise()]);
+      setLoading(false);
       return;
     }
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        console.log("Fetching franchise data for serviceId:", serviceId);
-
-        const [investmentRes, modelRes] = await Promise.all([
-          fetch(`/api/service/franchise/investment?serviceId=${serviceId}`),
-          fetch(`/api/service/franchise/model?serviceId=${serviceId}`),
-        ]);
-
-        if (!investmentRes.ok || !modelRes.ok) {
-          throw new Error(`Failed to fetch franchise data: ${investmentRes.status} ${modelRes.status}`);
-        }
-
-        const investmentJson = await investmentRes.json();
-        const modelJson = await modelRes.json();
-
-        console.log("API Response - investment:", investmentJson);
-        console.log("API Response - model:", modelJson);
-
-        const investmentArr = investmentJson?.data?.investment || [];
-        const modelArr = modelJson?.data?.model || [];
-
-        console.log("investment array:", investmentArr);
-        console.log("model array:", modelArr);
-
-        /* ---- MERGE BY franchiseSize (with normalization) ---- */
-        const mergedMap: Map<string, FranchiseData> = new Map();
-
-        // First pass: Add investment data
-        investmentArr.forEach((inv: any) => {
-          if (!inv || !inv.franchiseSize) return;
-          
-          const key = normalizeFranchiseSize(inv.franchiseSize);
-          console.log(`Processing investment data for key: "${key}"`);
-          
-          mergedMap.set(key, {
-            ...getEmptyFranchise(),
-            investmentFranchiseSize: inv.franchiseSize,
-            franchiseType: inv.franchiseType || "",
-            city: inv.city || "",
-            franchiseFee: String(inv.franchiseFee || ""),
-            businessLicenses: String(inv.businessLicenses || ""),
-            insurance: String(inv.insurance || ""),
-            legalAndAccountingFee: String(inv.legalAndAccountingFee || ""),
-            inventoryFee: String(inv.inventoryFee || ""),
-            officeSetup: String(inv.officeSetup || ""),
-            initialStartupEquipmentAndMarketing: String(
-              inv.initialStartupEquipmentAndMarketing || ""
-            ),
-            staffAndManagementTrainingExpense: String(
-              inv.staffAndManagementTrainingExpense || ""
-            ),
-            otherExpense: String(inv.otherExpense || ""),
-            totalInvestment: String(inv.totalInvestment || ""),
-            gstIncluded: Boolean(inv.gstIncluded),
-            gst: String(inv.gst || ""),
-            tokenAmount: String(inv.tokenAmount || ""),
-          });
-        });
-
-        // Second pass: Merge model data
-        modelArr.forEach((mod: any) => {
-          if (!mod || !mod.franchiseSize) return;
-          
-          const key = normalizeFranchiseSize(mod.franchiseSize);
-          console.log(`Processing model data for key: "${key}"`);
-          
-          const existing = mergedMap.get(key) || getEmptyFranchise();
-          
-          mergedMap.set(key, {
-            ...existing,
-            franchiseSize: mod.franchiseSize, // Keep original casing
-            areaRequired: mod.areaRequired || "",
-            marketing: mod.marketing || "",
-            returnOfInvestment: mod.returnOfInvestment || "",
-            manPower: String(mod.manPower || ""),
-            staffManagement: mod.staffManagement || "",
-            royaltyPercent: mod.royaltyPercent || "",
-            grossMargin: mod.grossMargin || "",
-            radiusArea: mod.radiusArea || "",
-            // Ensure investmentFranchiseSize is set if it wasn't from investment data
-            investmentFranchiseSize: existing.investmentFranchiseSize || mod.franchiseSize,
-          });
-        });
-
-        // Debug: Log what's in the map
-        console.log("Merged Map contents:");
-        mergedMap.forEach((value, key) => {
-          console.log(`Key: "${key}"`, value);
-        });
-
-        const finalData = Array.from(mergedMap.values());
-        
-        // Sort by franchise size for consistent ordering
-        finalData.sort((a, b) => {
-          const sizes = ['small', 'medium', 'large'];
-          const aIndex = sizes.indexOf(normalizeFranchiseSize(a.franchiseSize));
-          const bIndex = sizes.indexOf(normalizeFranchiseSize(b.franchiseSize));
-          return aIndex - bIndex;
-        });
-
-        console.log("Final merged data:", finalData);
-        
-        setFranchises(finalData.length > 0 ? finalData : [getEmptyFranchise()]);
-        setActiveIndex(0);
-      } catch (err) {
-        console.error("Failed to load franchise data", err);
-        setError(`Failed to load franchise data: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        setFranchises([getEmptyFranchise()]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [serviceId]);
-
-  /* ---------------- HANDLERS ---------------- */
-
-  const handleChange = useCallback((
-    index: number, 
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
-
-    setFranchises(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [name]: type === "checkbox" ? checked : value,
-      };
-      return updated;
-    });
-  }, []);
-
-  const addFranchise = useCallback(() => {
-    setFranchises(prev => [...prev, getEmptyFranchise()]);
-    setActiveIndex(franchises.length);
-  }, [franchises.length]);
-
-  const removeFranchise = useCallback((index: number) => {
-    if (franchises.length <= 1) return;
-    
-    setFranchises(prev => prev.filter((_, i) => i !== index));
-    setActiveIndex(Math.min(index, franchises.length - 2));
-  }, [franchises.length]);
-
-  /* ---------------- SUBMIT HANDLER ---------------- */
-
-  const handleSubmit = async () => {
     try {
+      setLoading(true);
       setError(null);
 
-      // Validate data
-      const invalidFranchises = franchises.filter(f => 
-        f.franchiseSize.trim() && !f.investmentFranchiseSize.trim()
-      );
-      
-      if (invalidFranchises.length > 0) {
-        setError("Please ensure all franchises have both model and investment franchise sizes.");
-        return;
-      }
+      // Fetch both APIs in parallel
+      const [investmentRes, modelRes] = await Promise.all([
+        fetch(`/api/service/franchise/investment?serviceId=${serviceId}`),
+        fetch(`/api/service/franchise/model?serviceId=${serviceId}`)
+      ]);
 
+      const investmentData = await investmentRes.json();
+      const modelData = await modelRes.json();
+
+      console.log("Investment API Response:", investmentData);
+      console.log("Model API Response:", modelData);
+
+      // Handle case where APIs return empty or error
+      const investmentList = investmentData.success ? investmentData.data?.investment || [] : [];
+      const modelList = modelData.success ? modelData.data?.model || [] : [];
+
+      console.log("Investment List:", investmentList);
+      console.log("Model List:", modelList);
+
+      // Create a map to merge data by franchiseSize
+      const franchiseMap = new Map<string, FranchiseData>();
+
+      // First, add all franchises from investment data
+      investmentList.forEach((item: InvestmentData) => {
+        const key = item.franchiseSize.toLowerCase();
+        franchiseMap.set(key, {
+          ...getEmptyFranchise(),
+          franchiseSize: item.franchiseSize,
+          franchiseType: item.franchiseType || "",
+          city: item.city || "",
+          franchiseFee: item.franchiseFee?.toString() || "",
+          businessLicenses: item.businessLicenses?.toString() || "",
+          insurance: item.insurance?.toString() || "",
+          legalAndAccountingFee: item.legalAndAccountingFee?.toString() || "",
+          inventoryFee: item.inventoryFee?.toString() || "",
+          officeSetup: item.officeSetup?.toString() || "",
+          initialStartupEquipmentAndMarketing: item.initialStartupEquipmentAndMarketing?.toString() || "",
+          staffAndManagementTrainingExpense: item.staffAndManagementTrainingExpense?.toString() || "",
+          otherExpense: item.otherExpense?.toString() || "",
+          totalInvestment: item.totalInvestment?.toString() || "",
+          gstIncluded: item.gstIncluded || false,
+          gst: item.gst?.toString() || "",
+          tokenAmount: item.tokenAmount?.toString() || "",
+        });
+      });
+
+      // Then, merge model data with investment data
+      modelList.forEach((item: ModelData) => {
+        const key = item.franchiseSize.toLowerCase();
+        
+        if (franchiseMap.has(key)) {
+          // Merge with existing investment data
+          const existing = franchiseMap.get(key)!;
+          franchiseMap.set(key, {
+            ...existing,
+            franchiseSize: item.franchiseSize,
+            areaRequired: item.areaRequired || "",
+            marketing: item.marketing || "",
+            returnOfInvestment: item.returnOfInvestment || "",
+            manPower: item.manPower?.toString() || "",
+            staffManagement: item.staffManagement || "",
+            royaltyPercent: item.royaltyPercent || "",
+            grossMargin: item.grossMargin || "",
+            radiusArea: item.radiusArea || "",
+          });
+        } else {
+          // Create new entry with only model data
+          franchiseMap.set(key, {
+            ...getEmptyFranchise(),
+            franchiseSize: item.franchiseSize,
+            areaRequired: item.areaRequired || "",
+            marketing: item.marketing || "",
+            returnOfInvestment: item.returnOfInvestment || "",
+            manPower: item.manPower?.toString() || "",
+            staffManagement: item.staffManagement || "",
+            royaltyPercent: item.royaltyPercent || "",
+            grossMargin: item.grossMargin || "",
+            radiusArea: item.radiusArea || "",
+          });
+        }
+      });
+
+      // Convert map to array
+      const mergedFranchises = Array.from(franchiseMap.values());
+
+      console.log("Merged Franchises:", mergedFranchises);
+
+      if (mergedFranchises.length > 0) {
+        setFranchises(mergedFranchises);
+        if (mergedFranchises.length > 1) {
+          setActiveIndex(0);
+        }
+      } else {
+        // No data found, start with empty form
+        setFranchises([getEmptyFranchise()]);
+      }
+    } catch (error) {
+      console.error("Error fetching franchise data:", error);
+      setError("Failed to load franchise data. Please try again.");
+      setFranchises([getEmptyFranchise()]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    const newFranchises = [...franchises];
+    newFranchises[index] = {
+      ...newFranchises[index],
+      [name]: type === "checkbox" ? checked : value,
+    };
+    setFranchises(newFranchises);
+  };
+
+  const addFranchise = () => {
+    setFranchises([...franchises, getEmptyFranchise()]);
+    setActiveIndex(franchises.length);
+  };
+
+  const removeFranchise = (index: number) => {
+    if (franchises.length <= 1) {
+      // If removing the last franchise, reset to empty
+      setFranchises([getEmptyFranchise()]);
+      setActiveIndex(0);
+      return;
+    }
+    
+    const newFranchises = franchises.filter((_, i) => i !== index);
+    setFranchises(newFranchises);
+    
+    // Adjust active index if needed
+    if (activeIndex >= newFranchises.length) {
+      setActiveIndex(newFranchises.length - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!serviceId) {
+      alert("Service ID is required!");
+      return;
+    }
+
+    try {
       // Prepare model data
-      const model = franchises
-        .filter(f => f.franchiseSize.trim())
+      const modelData = franchises
+        .filter(f => f.franchiseSize.trim() !== "") // Only include franchises with a size
         .map(item => ({
-          franchiseSize: item.franchiseSize.trim(),
-          areaRequired: item.areaRequired,
-          marketing: item.marketing,
-          returnOfInvestment: item.returnOfInvestment,
+          franchiseSize: item.franchiseSize,
+          areaRequired: item.areaRequired || "",
+          marketing: item.marketing || "",
+          returnOfInvestment: item.returnOfInvestment || "",
           manPower: Number(item.manPower) || 0,
-          staffManagement: item.staffManagement,
-          royaltyPercent: item.royaltyPercent,
-          grossMargin: item.grossMargin,
-          radiusArea: item.radiusArea,
+          staffManagement: item.staffManagement || "",
+          royaltyPercent: item.royaltyPercent || "",
+          grossMargin: item.grossMargin || "",
+          radiusArea: item.radiusArea || "",
         }));
 
       // Prepare investment data
-      const investment = franchises
-        .filter(f => f.investmentFranchiseSize.trim())
+      const investmentData = franchises
+        .filter(f => f.franchiseSize.trim() !== "") // Only include franchises with a size
         .map(item => ({
-          franchiseSize: item.investmentFranchiseSize.trim(),
-          franchiseType: item.franchiseType,
-          city: item.city,
+          franchiseSize: item.franchiseSize,
+          franchiseType: item.franchiseType || "",
+          city: item.city || "",
           franchiseFee: Number(item.franchiseFee) || 0,
           businessLicenses: Number(item.businessLicenses) || 0,
           insurance: Number(item.insurance) || 0,
           legalAndAccountingFee: Number(item.legalAndAccountingFee) || 0,
           inventoryFee: Number(item.inventoryFee) || 0,
           officeSetup: Number(item.officeSetup) || 0,
-          initialStartupEquipmentAndMarketing:
-            Number(item.initialStartupEquipmentAndMarketing) || 0,
-          staffAndManagementTrainingExpense:
-            Number(item.staffAndManagementTrainingExpense) || 0,
+          initialStartupEquipmentAndMarketing: Number(item.initialStartupEquipmentAndMarketing) || 0,
+          staffAndManagementTrainingExpense: Number(item.staffAndManagementTrainingExpense) || 0,
           otherExpense: Number(item.otherExpense) || 0,
           totalInvestment: Number(item.totalInvestment) || 0,
-          gstIncluded: item.gstIncluded,
+          gstIncluded: Boolean(item.gstIncluded),
           gst: Number(item.gst) || 0,
           tokenAmount: Number(item.tokenAmount) || 0,
         }));
 
-      console.log("Submitting model data:", model);
-      console.log("Submitting investment data:", investment);
+      console.log("Sending Model Data:", modelData);
+      console.log("Sending Investment Data:", investmentData);
 
-      // Send requests
-      const promises = [];
-      
-      if (model.length > 0) {
-        promises.push(
+      // Send data to both APIs
+      const requests = [];
+
+      if (modelData.length > 0) {
+        requests.push(
           fetch("/api/service/franchise/model", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ serviceId, model }),
-          }).then(async res => {
-            if (!res.ok) {
-              const errorText = await res.text();
-              throw new Error(`Model API error: ${res.status} - ${errorText}`);
-            }
-            return res.json();
-          })
+            body: JSON.stringify({ 
+              serviceId, 
+              model: modelData 
+            }),
+          }).then(res => res.json())
         );
       }
 
-      if (investment.length > 0) {
-        promises.push(
+      if (investmentData.length > 0) {
+        requests.push(
           fetch("/api/service/franchise/investment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ serviceId, investment }),
-          }).then(async res => {
-            if (!res.ok) {
-              const errorText = await res.text();
-              throw new Error(`Investment API error: ${res.status} - ${errorText}`);
-            }
-            return res.json();
-          })
+            body: JSON.stringify({ 
+              serviceId, 
+              investment: investmentData 
+            }),
+          }).then(res => res.json())
         );
       }
 
-      if (promises.length === 0) {
-        setError("No data to save. Please add franchise details.");
+      if (requests.length === 0) {
+        alert("No franchise data to save!");
         return;
       }
 
-      await Promise.all(promises);
+      const responses = await Promise.all(requests);
+      console.log("API Responses:", responses);
+
+      const allSuccessful = responses.every(res => res.success);
       
-      alert("Franchise details saved successfully!");
-      if (onSave) onSave();
-    } catch (err) {
-      console.error("Failed to save franchise data:", err);
-      setError(`Failed to save franchise details: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      if (allSuccessful) {
+        alert("Franchise details saved successfully!");
+        // Refresh data after saving
+        await fetchFranchiseData();
+        if (onSave) onSave();
+      } else {
+        throw new Error("Some API calls failed");
+      }
+    } catch (error) {
+      console.error("Error saving franchise data:", error);
+      alert("Failed to save franchise details. Please try again.");
     }
   };
 
-  /* ---------------- RENDER ---------------- */
+  const current = franchises[activeIndex];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <span className="ml-4 text-gray-600">Loading franchise details...</span>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-lg text-gray-600">Loading franchise data...</div>
       </div>
     );
   }
 
-  const current = franchises[activeIndex];
-
   return (
-    <div className="space-y-6">
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Franchise Details</h2>
+        <button
+          type="button"
+          onClick={fetchFranchiseData}
+          className="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "Refresh Data"}
+        </button>
+      </div>
+
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="p-3 mb-4 text-red-700 bg-red-100 border border-red-300 rounded">
           {error}
+          <button
+            onClick={fetchFranchiseData}
+            className="ml-2 text-red-700 underline"
+          >
+            Retry
+          </button>
         </div>
       )}
 
-      {/* Debug info - remove in production */}
-      <div className="bg-gray-50 p-4 rounded text-sm text-gray-600">
-        <div>Active Franchise: #{activeIndex + 1} of {franchises.length}</div>
-        <div>Service ID: {serviceId}</div>
-      </div>
-
-      {/* ---------- TABS ---------- */}
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
-        {franchises.map((franchise, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => setActiveIndex(idx)}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-              activeIndex === idx
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            {franchise.franchiseSize || `Franchise #${idx + 1}`}
-            {franchises.length > 1 && (
+      {/* Franchise Tabs */}
+      <div className="mb-6">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {franchises.map((franchise, idx) => (
+            <div key={idx} className="flex items-center">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFranchise(idx);
-                }}
-                className="ml-1 text-red-500 hover:text-red-700 text-lg"
-                aria-label="Remove franchise"
+                onClick={() => setActiveIndex(idx)}
+                className={`px-4 py-2 rounded-t-lg font-medium ${
+                  activeIndex === idx
+                    ? "bg-white border-t border-l border-r border-gray-300 text-blue-600"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
-                ×
+                {franchise.franchiseSize 
+                  ? `${franchise.franchiseSize.charAt(0).toUpperCase() + franchise.franchiseSize.slice(1)} Franchise`
+                  : `Franchise #${idx + 1}`}
               </button>
-            )}
+              {franchises.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeFranchise(idx)}
+                  className="px-2 py-1 ml-1 text-red-600 hover:text-red-800"
+                  title="Remove this franchise"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addFranchise}
+            className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            + Add New Franchise
           </button>
-        ))}
-        
-        <button
-          type="button"
-          onClick={addFranchise}
-          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-        >
-          + Add Franchise
-        </button>
-      </div>
-
-      {/* Display merge status */}
-      {current.franchiseSize !== current.investmentFranchiseSize && 
-       current.franchiseSize && current.investmentFranchiseSize && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded">
-          Note: Model franchise size "{current.franchiseSize}" and Investment franchise size "{current.investmentFranchiseSize}" don't match. They will be saved as separate entries.
         </div>
-      )}
 
-      {/* ---------- INVESTMENT DETAILS ---------- */}
-      <div className="border border-gray-200 rounded-lg p-6 shadow-sm">
-        <Label className="text-lg font-semibold mb-4">Investment Details</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Input
-            label="Franchise Size"
-            name="investmentFranchiseSize"
-            placeholder="e.g., small, medium, large"
-            value={current.investmentFranchiseSize}
-            onChange={(e) => handleChange(activeIndex, e)}
-            required
-          />
-          
-          <Input
-            label="Franchise Type"
-            name="franchiseType"
-            placeholder="e.g., Master, Unit"
-            value={current.franchiseType}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="City"
-            name="city"
-            placeholder="City name"
-            value={current.city}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Franchise Fee"
-            name="franchiseFee"
-            type="number"
-            placeholder="0"
-            value={current.franchiseFee}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Business Licenses"
-            name="businessLicenses"
-            type="number"
-            placeholder="0"
-            value={current.businessLicenses}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Insurance"
-            name="insurance"
-            type="number"
-            placeholder="0"
-            value={current.insurance}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Legal & Accounting Fee"
-            name="legalAndAccountingFee"
-            type="number"
-            placeholder="0"
-            value={current.legalAndAccountingFee}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Inventory Fee"
-            name="inventoryFee"
-            type="number"
-            placeholder="0"
-            value={current.inventoryFee}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Office Setup"
-            name="officeSetup"
-            type="number"
-            placeholder="0"
-            value={current.officeSetup}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Equipment & Marketing"
-            name="initialStartupEquipmentAndMarketing"
-            type="number"
-            placeholder="0"
-            value={current.initialStartupEquipmentAndMarketing}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Staff & Training Expense"
-            name="staffAndManagementTrainingExpense"
-            type="number"
-            placeholder="0"
-            value={current.staffAndManagementTrainingExpense}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Other Expense"
-            name="otherExpense"
-            type="number"
-            placeholder="0"
-            value={current.otherExpense}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Total Investment"
-            name="totalInvestment"
-            type="number"
-            placeholder="0"
-            value={current.totalInvestment}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="GST"
-            name="gst"
-            type="number"
-            placeholder="0"
-            value={current.gst}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Token Amount"
-            name="tokenAmount"
-            type="number"
-            placeholder="0"
-            value={current.tokenAmount}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-            <input
-              type="checkbox"
-              id="gstIncluded"
-              name="gstIncluded"
-              checked={current.gstIncluded}
-              onChange={(e) => handleChange(activeIndex, e)}
-              className="h-5 w-5 text-blue-500"
-            />
-            <label htmlFor="gstIncluded" className="text-gray-700">
-              GST Included
-            </label>
+        {/* Model Details Section */}
+        <div className="p-4 mb-6 bg-white border border-gray-300 rounded">
+          <h3 className="mb-4 text-lg font-semibold">Model Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="franchiseSize">Franchise Size *</Label>
+              <Input
+                id="franchiseSize"
+                name="franchiseSize"
+                placeholder="e.g., small, medium, large"
+                value={current.franchiseSize}
+                onChange={(e) => handleChange(activeIndex, e)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="areaRequired">Area Required</Label>
+              <Input
+                id="areaRequired"
+                name="areaRequired"
+                placeholder="e.g., 2000 sq ft"
+                value={current.areaRequired}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="marketing">Marketing Budget</Label>
+              <Input
+                id="marketing"
+                name="marketing"
+                placeholder="Marketing budget"
+                value={current.marketing}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="returnOfInvestment">Return of Investment</Label>
+              <Input
+                id="returnOfInvestment"
+                name="returnOfInvestment"
+                placeholder="ROI percentage or amount"
+                value={current.returnOfInvestment}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="manPower">Man Power Required</Label>
+              <Input
+                id="manPower"
+                name="manPower"
+                placeholder="Number of staff"
+                value={current.manPower}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="staffManagement">Staff Management</Label>
+              <Input
+                id="staffManagement"
+                name="staffManagement"
+                placeholder="Staff management details"
+                value={current.staffManagement}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="royaltyPercent">Royalty Percentage</Label>
+              <Input
+                id="royaltyPercent"
+                name="royaltyPercent"
+                placeholder="Royalty percentage"
+                value={current.royaltyPercent}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="grossMargin">Gross Margin</Label>
+              <Input
+                id="grossMargin"
+                name="grossMargin"
+                placeholder="Gross margin"
+                value={current.grossMargin}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="radiusArea">Radius Area</Label>
+              <Input
+                id="radiusArea"
+                name="radiusArea"
+                placeholder="Radius area coverage"
+                value={current.radiusArea}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ---------- MODEL DETAILS ---------- */}
-      <div className="border border-gray-200 rounded-lg p-6 shadow-sm">
-        <Label className="text-lg font-semibold mb-4">Model Details</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Input
-            label="Franchise Size"
-            name="franchiseSize"
-            placeholder="e.g., small, medium, large"
-            value={current.franchiseSize}
-            onChange={(e) => handleChange(activeIndex, e)}
-            required
-          />
-          
-          <Input
-            label="Area Required"
-            name="areaRequired"
-            placeholder="e.g., 500 sq ft"
-            value={current.areaRequired}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Marketing"
-            name="marketing"
-            placeholder="Marketing details"
-            value={current.marketing}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Return of Investment"
-            name="returnOfInvestment"
-            placeholder="e.g., 24 months"
-            value={current.returnOfInvestment}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Man Power"
-            name="manPower"
-            type="number"
-            placeholder="Number of people"
-            value={current.manPower}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Staff Management"
-            name="staffManagement"
-            placeholder="Management details"
-            value={current.staffManagement}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Royalty Percent"
-            name="royaltyPercent"
-            placeholder="e.g., 5%"
-            value={current.royaltyPercent}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Gross Margin"
-            name="grossMargin"
-            placeholder="e.g., 30%"
-            value={current.grossMargin}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
-          
-          <Input
-            label="Radius Area"
-            name="radiusArea"
-            placeholder="e.g., 5 km radius"
-            value={current.radiusArea}
-            onChange={(e) => handleChange(activeIndex, e)}
-          />
+        {/* Investment Details Section */}
+        <div className="p-4 mb-6 bg-white border border-gray-300 rounded">
+          <h3 className="mb-4 text-lg font-semibold">Investment Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="franchiseType">Franchise Type</Label>
+              <Input
+                id="franchiseType"
+                name="franchiseType"
+                placeholder="Type of franchise"
+                value={current.franchiseType}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                placeholder="City location"
+                value={current.city}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="franchiseFee">Franchise Fee</Label>
+              <Input
+                id="franchiseFee"
+                name="franchiseFee"
+                placeholder="Franchise fee amount"
+                value={current.franchiseFee}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="businessLicenses">Business Licenses</Label>
+              <Input
+                id="businessLicenses"
+                name="businessLicenses"
+                placeholder="License costs"
+                value={current.businessLicenses}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="insurance">Insurance</Label>
+              <Input
+                id="insurance"
+                name="insurance"
+                placeholder="Insurance costs"
+                value={current.insurance}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="legalAndAccountingFee">Legal & Accounting Fee</Label>
+              <Input
+                id="legalAndAccountingFee"
+                name="legalAndAccountingFee"
+                placeholder="Legal and accounting fees"
+                value={current.legalAndAccountingFee}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="inventoryFee">Inventory Fee</Label>
+              <Input
+                id="inventoryFee"
+                name="inventoryFee"
+                placeholder="Inventory costs"
+                value={current.inventoryFee}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="officeSetup">Office Setup</Label>
+              <Input
+                id="officeSetup"
+                name="officeSetup"
+                placeholder="Office setup costs"
+                value={current.officeSetup}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="initialStartupEquipmentAndMarketing">Equipment & Marketing</Label>
+              <Input
+                id="initialStartupEquipmentAndMarketing"
+                name="initialStartupEquipmentAndMarketing"
+                placeholder="Startup equipment and marketing"
+                value={current.initialStartupEquipmentAndMarketing}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="staffAndManagementTrainingExpense">Staff & Training Expense</Label>
+              <Input
+                id="staffAndManagementTrainingExpense"
+                name="staffAndManagementTrainingExpense"
+                placeholder="Training expenses"
+                value={current.staffAndManagementTrainingExpense}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="otherExpense">Other Expense</Label>
+              <Input
+                id="otherExpense"
+                name="otherExpense"
+                placeholder="Other miscellaneous expenses"
+                value={current.otherExpense}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="totalInvestment">Total Investment</Label>
+              <Input
+                id="totalInvestment"
+                name="totalInvestment"
+                placeholder="Total investment amount"
+                value={current.totalInvestment}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="gst">GST Percentage</Label>
+              <Input
+                id="gst"
+                name="gst"
+                placeholder="GST percentage"
+                value={current.gst}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="tokenAmount">Token Amount</Label>
+              <Input
+                id="tokenAmount"
+                name="tokenAmount"
+                placeholder="Token amount"
+                value={current.tokenAmount}
+                onChange={(e) => handleChange(activeIndex, e)}
+              />
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="gstIncluded"
+                name="gstIncluded"
+                checked={current.gstIncluded}
+                onChange={(e) => handleChange(activeIndex, e)}
+                className="w-4 h-4 mr-2"
+              />
+              <Label htmlFor="gstIncluded" className="mb-0">GST Included</Label>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* ---------- SUBMIT BUTTON ---------- */}
-      <div className="flex justify-end gap-4">
-        <button
-          type="button"
-          onClick={() => console.log("Current data:", franchises)}
-          className="bg-gray-500 hover:bg-gray-600 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-sm"
-        >
-          Debug Data
-        </button>
-        
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-sm"
-        >
-          Save Franchise Details
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-6 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+          >
+            Save All Franchise Details
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFranchises([getEmptyFranchise()]);
+              setActiveIndex(0);
+            }}
+            className="px-6 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+          >
+            Clear Form
+          </button>
+        </div>
       </div>
     </div>
   );

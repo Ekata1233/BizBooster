@@ -745,7 +745,7 @@ const EditService: React.FC = () => {
   const [newService, setNewService] = useState<any>(null);
   const [selectedModule, setSelectedModule] = useState(modules[0].name);
   const [initialized, setInitialized] = useState(false);
-  const [franchiseStep, setFranchiseStep] = useState<number>(2);
+  const [franchiseStep, setFranchiseStep] = useState<number>(1);
   const [formData, setFormData] = useState(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formKey, setFormKey] = useState(0);
