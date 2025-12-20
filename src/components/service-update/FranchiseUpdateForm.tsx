@@ -1,6 +1,9 @@
+
+
+
 // 'use client';
 
-// import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState, useCallback, useMemo } from 'react';
 // import Label from '../form/Label';
 // import Input from '../form/input/InputField';
 // import FileInput from '../form/input/FileInput';
@@ -42,17 +45,16 @@
 
 // /* ---------------- COMPONENT ---------------- */
 // const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
-//  data, setData ,
+//   data,
+//   setData,
 //   fieldsConfig,
 // }) => {
+//   // Extract price from form data
+//   const price = data?.price || 0;
 
-//     // console.log("franchise details form  : ", data)
-//   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>(data?.commissionType || 'percentage');
-//   const [commissionValue, setCommissionValue] = useState(() => {
-//     if (!data?.commission) return '';
-//     const numericValue = data.commission.replace(/[^\d]/g, '');
-//     return numericValue;
-//   });
+//   // Local state for form fields
+//   const [commissionType, setCommissionType] = useState<'percentage' | 'amount'>('percentage');
+//   const [commissionValue, setCommissionValue] = useState<string>('');
 //   const [editorReady, setEditorReady] = useState(false);
 //   const [termsAndConditions, setTermsAndConditions] = useState('');
 //   const [investmentRange, setInvestmentRange] = useState<InvestmentRange[]>([
@@ -76,150 +78,276 @@
 //       tags: [''],
 //     },
 //   ]);
-
 //   const [showExtraSections, setShowExtraSections] = useState(false);
 
+//   // Initialize form from parent data - RUNS ONLY ONCE
 //   useEffect(() => {
-//   if (!data?.franchiseDetails) return;
-//   const fd = data.franchiseDetails;
-//   if (data.commission) {
-//     const numericValue = data.commission.replace(/[^\d]/g, '');
-//     setCommissionValue(numericValue);
-//   }
+//     if (!data?.franchiseDetails) return;
+    
+//     const fd = data.franchiseDetails;
+    
+//     // Set commission values
+//     if (data.commission) {
+//       const numericValue = data.commission.replace(/[^\d]/g, '');
+//       setCommissionValue(numericValue);
+//     }
+    
+//     if (data.commissionType) {
+//       setCommissionType(data.commissionType);
+//     }
+    
+//     // Set franchise details
+//     setTermsAndConditions(fd.termsAndConditions || '');
+    
+//     if (fd.investmentRange?.length) {
+//       setInvestmentRange(fd.investmentRange);
+//     }
+    
+//     if (fd.monthlyEarnPotential?.length) {
+//       setMonthlyEarnPotential(fd.monthlyEarnPotential);
+//     }
+    
+//     if (fd.franchiseModel?.length) {
+//       setFranchiseModel(fd.franchiseModel);
+//     }
+    
+//     if (fd.extraImages?.length) {
+//       setExtraImages(fd.extraImages);
+//     }
+    
+//     if (fd.extraSections?.length) {
+//       setExtraSections(fd.extraSections);
+//       setShowExtraSections(true);
+//     }
+//   }, []); // Empty dependency array - runs only on mount
 
-//   setCommissionType(data.commissionType || 'percentage');
-//   setTermsAndConditions(fd.termsAndConditions || '');
-//   setInvestmentRange(
-//     fd.investmentRange?.length
-//       ? fd.investmentRange
-//       : [{ minRange: null, maxRange: null }]
-//   );
-//   setMonthlyEarnPotential(
-//     fd.monthlyEarnPotential?.length
-//       ? fd.monthlyEarnPotential
-//       : [{ minEarn: null, maxEarn: null }]
-//   );
-//   setFranchiseModel(
-//     fd.franchiseModel?.length
-//       ? fd.franchiseModel
-//       : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
-//   );
-//   setExtraImages(
-//     fd.extraImages?.length ? fd.extraImages : ['']
-//   );
-//   setExtraSections(
-//     fd.extraSections?.length
-//       ? fd.extraSections
-//       : [
-//           {
-//             title: '',
-//             subtitle: [''],
-//             image: [],
-//             description: [''],
-//             subDescription: [''],
-//             lists: [''],
-//             tags: [''],
-//           },
-//         ]
-//   );
-//   setShowExtraSections(!!fd.extraSections?.length);
+//   // Update parent data when local state changes
+//   const updateParentData = useCallback(() => {
+//     const franchiseDetails = {
+//       termsAndConditions,
+//       investmentRange: investmentRange.filter(item => item.minRange !== null || item.maxRange !== null),
+//       monthlyEarnPotential: monthlyEarnPotential.filter(item => item.minEarn !== null || item.maxEarn !== null),
+//       franchiseModel: franchiseModel.filter(item => item.title.trim() !== ''),
+//       extraImages: extraImages.filter(img => img !== ''),
+//       extraSections: showExtraSections ? extraSections.filter(section => section.title.trim() !== '') : [],
+//     };
 
-// }, [data]);
+//     setData((prev: any) => ({
+//       ...prev,
+//       franchiseDetails,
+//       commission: commissionType === 'percentage' 
+//         ? `${commissionValue}%` 
+//         : `₹${commissionValue}`,
+//       commissionType,
+//     }));
+//   }, [
+//     termsAndConditions,
+//     investmentRange,
+//     monthlyEarnPotential,
+//     franchiseModel,
+//     extraImages,
+//     extraSections,
+//     showExtraSections,
+//     commissionType,
+//     commissionValue,
+//     setData,
+//   ]);
 
-// const handleTypeChange = (newType: 'percentage' | 'amount') => {
+//   // Debounced update to parent - prevents too many updates
+//   useEffect(() => {
+//     const timeoutId = setTimeout(() => {
+//       updateParentData();
+//     }, 300);
+
+//     return () => clearTimeout(timeoutId);
+//   }, [updateParentData]);
+
+//   // Handle commission type change
+//   const handleTypeChange = (newType: 'percentage' | 'amount') => {
 //     setCommissionType(newType);
-//     const formatted = newType === 'percentage' ? `${commissionValue}%` : `₹${commissionValue}`;
-//     setData({ commissionType: newType, commission: formatted });
 //   };
 
+//   // Handle commission value change
 //   const handleCommissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     const value = e.target.value;
 //     if (/^\d*$/.test(value)) {
 //       setCommissionValue(value);
-//       const formatted = commissionType === 'percentage' ? `${value}%` : `₹${value}`;
-//       setData({ commission: formatted });
 //     }
 //   };
 
-//   useEffect(() => setEditorReady(true), []);
+//   // Initialize editor
+//   useEffect(() => {
+//     setEditorReady(true);
+//   }, []);
 
-//   /* ---------------- RENDER ---------------- */
+//   // Calculate commission distribution
+//   const commissionDistribution = useMemo(() => {
+//     const totalCommission = commissionType === 'percentage'
+//       ? (Number(price || 0) * Number(commissionValue || 0)) / 100
+//       : Number(commissionValue || 0);
+
+//     const distributionPercents = [0.5, 0.2, 0.1, 0.2];
+//     return distributionPercents.map((ratio) => totalCommission * ratio);
+//   }, [price, commissionType, commissionValue]);
+
+//   // Handle investment range change
+//   const handleInvestmentRangeChange = useCallback((index: number, field: 'minRange' | 'maxRange', value: string) => {
+//     setInvestmentRange(prev => 
+//       prev.map((item, idx) => 
+//         idx === index 
+//           ? { ...item, [field]: value === '' ? null : Number(value) } 
+//           : item
+//       )
+//     );
+//   }, []);
+
+//   // Handle monthly earn potential change
+//   const handleMonthlyEarnChange = useCallback((index: number, field: 'minEarn' | 'maxEarn', value: string) => {
+//     setMonthlyEarnPotential(prev => 
+//       prev.map((item, idx) => 
+//         idx === index 
+//           ? { ...item, [field]: value === '' ? null : Number(value) } 
+//           : item
+//       )
+//     );
+//   }, []);
+
+//   // Handle franchise model change
+//   const handleFranchiseModelChange = useCallback((index: number, field: keyof FranchiseModel, value: string) => {
+//     setFranchiseModel(prev => 
+//       prev.map((item, idx) => 
+//         idx === index 
+//           ? { 
+//               ...item, 
+//               [field]: field === 'title' || field === 'agreement' 
+//                 ? value 
+//                 : value === '' ? null : Number(value)
+//             } 
+//           : item
+//       )
+//     );
+//   }, []);
+
+//   // Handle extra section change
+//   const handleExtraSectionChange = useCallback((
+//     sectionIndex: number, 
+//     field: keyof ExtraSection, 
+//     valueIndex: number, 
+//     value: string
+//   ) => {
+//     setExtraSections(prev => 
+//       prev.map((section, secIdx) => {
+//         if (secIdx !== sectionIndex) return section;
+        
+//         return {
+//           ...section,
+//           [field]: Array.isArray(section[field]) 
+//             ? section[field].map((val: string, idx: number) => 
+//                 idx === valueIndex ? value : val
+//               )
+//             : [value]
+//         };
+//       })
+//     );
+//   }, []);
+
+//   // Add new array item to extra section
+//   const addToExtraSection = useCallback((sectionIndex: number, field: keyof ExtraSection) => {
+//     setExtraSections(prev => 
+//       prev.map((section, idx) => 
+//         idx === sectionIndex 
+//           ? { ...section, [field]: [...section[field], ''] }
+//           : section
+//       )
+//     );
+//   }, []);
+
+//   // Handle file upload for extra images
+//   const handleExtraImageUpload = useCallback((index: number, files: FileList | null) => {
+//     if (!files?.[0]) return;
+
+//     const file = files[0];
+//     const reader = new FileReader();
+    
+//     reader.onloadend = () => {
+//       const url = reader.result as string;
+//       setExtraImages(prev => 
+//         prev.map((img, idx) => idx === index ? url : img)
+//       );
+//     };
+    
+//     reader.readAsDataURL(file);
+//   }, []);
+
 //   return (
 //     <div className="space-y-6">
-//       <h4 className="text-xl font-bold text-center"> Franchise Details</h4>
+//       <h4 className="text-xl font-bold text-center">Franchise Details</h4>
 
 //       <div className="flex flex-wrap gap-6">
-//           {/* Basic Price display (unchanged) */}
-//           <div className="w-2/6">
-//             <Label>Basic Price</Label>
-//             <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
-//               ₹{price || 0}
-//             </div>
+//         {/* Basic Price display */}
+//         <div className="w-2/6">
+//           <Label>Basic Price</Label>
+//           <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
+//             ₹{price || 0}
 //           </div>
-
-//           {/* Commission (UNCHANGED logic/UI) */}
-//           <div className="w-3/6">
-//             <Label>{commissionType === 'percentage' ? 'Commission (%)' : 'Commission (₹)'}</Label>
-//             <div className="flex items-center gap-4">
-//               <div className="relative w-32">
-//                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
-//                   {commissionType === 'percentage' ? '%' : '₹'}
-//                 </span>
-//                 <Input
-//                   type="text"
-//                   value={commissionValue}
-//                   onChange={handleCommissionChange}
-//                   placeholder="Commission"
-//                   className="pl-8"
-//                 />
-//               </div>
-//               <div className="flex gap-2">
-//                 <button
-//                   type="button"
-//                   onClick={() => handleTypeChange('percentage')}
-//                   className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === 'percentage'
-//                     ? 'bg-blue-600 text-white border-blue-600'
-//                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
-//                 >
-//                   %
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => handleTypeChange('amount')}
-//                   className={`px-3 py-2 rounded-md border text-sm transition ${commissionType === 'amount'
-//                     ? 'bg-blue-600 text-white border-blue-600'
-//                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
-//                 >
-//                   ₹
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Commission Distribution (unchanged) */}
-//           {(() => {
-//             const totalCommission =
-//               commissionType === 'percentage'
-//                 ? (Number(price || 0) * Number(commissionValue || 0)) / 100
-//                 : Number(commissionValue || 0);
-
-//             const distributionPercents = [0.5, 0.2, 0.1, 0.2];
-//             const distributedValues = distributionPercents.map((ratio) => totalCommission * ratio);
-
-//             return (
-//               <>
-//                 {distributedValues.map((val, idx) => (
-//                   <div key={idx} className="w-1/5">
-//                     <Label>Share {idx + 1} ({distributionPercents[idx] * 100}%)</Label>
-//                     <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
-//                       ₹{val.toFixed(2)}
-//                     </div>
-//                   </div>
-//                 ))}
-//               </>
-//             );
-//           })()}
 //         </div>
+
+//         {/* Commission */}
+//         <div className="w-3/6">
+//           <Label>{commissionType === 'percentage' ? 'Commission (%)' : 'Commission (₹)'}</Label>
+//           <div className="flex items-center gap-4">
+//             <div className="relative w-32">
+//               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">
+//                 {commissionType === 'percentage' ? '%' : '₹'}
+//               </span>
+//               <Input
+//                 type="text"
+//                 value={commissionValue}
+//                 onChange={handleCommissionChange}
+//                 placeholder="Commission"
+//                 className="pl-8"
+//               />
+//             </div>
+//             <div className="flex gap-2">
+//               <button
+//                 type="button"
+//                 onClick={() => handleTypeChange('percentage')}
+//                 className={`px-3 py-2 rounded-md border text-sm transition ${
+//                   commissionType === 'percentage'
+//                     ? 'bg-blue-600 text-white border-blue-600'
+//                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+//                 }`}
+//               >
+//                 %
+//               </button>
+//               <button
+//                 type="button"
+//                 onClick={() => handleTypeChange('amount')}
+//                 className={`px-3 py-2 rounded-md border text-sm transition ${
+//                   commissionType === 'amount'
+//                     ? 'bg-blue-600 text-white border-blue-600'
+//                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+//                 }`}
+//               >
+//                 ₹
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Commission Distribution */}
+//         {commissionDistribution.map((value, idx) => {
+//           const percentages = ['50%', '20%', '10%', '20%'];
+//           return (
+//             <div key={idx} className="w-1/5">
+//               <Label>Share {idx + 1} ({percentages[idx]})</Label>
+//               <div className="px-4 py-2 border rounded-md bg-gray-50 text-gray-800 text-base">
+//                 ₹{value.toFixed(2)}
+//               </div>
+//             </div>
+//           );
+//         })}
+//       </div>
 
 //       {/* Terms & Conditions */}
 //       {fieldsConfig?.termsAndConditions && (
@@ -228,7 +356,10 @@
 //           {editorReady && (
 //             <ClientSideCustomEditor
 //               value={termsAndConditions}
-//               onChange={setTermsAndConditions}
+//               onChange={(content) => {
+//                 setTermsAndConditions(content);
+//                 updateParentData();
+//               }}
 //             />
 //           )}
 //         </div>
@@ -244,25 +375,13 @@
 //                 type="number"
 //                 placeholder="Min Range"
 //                 value={item.minRange ?? ''}
-//                 onChange={e =>
-//                   setInvestmentRange(v =>
-//                     v.map((x, idx) =>
-//                       idx === i ? { ...x, minRange: Number(e.target.value) || null } : x
-//                     )
-//                   )
-//                 }
+//                 onChange={e => handleInvestmentRangeChange(i, 'minRange', e.target.value)}
 //               />
 //               <Input
 //                 type="number"
 //                 placeholder="Max Range"
 //                 value={item.maxRange ?? ''}
-//                 onChange={e =>
-//                   setInvestmentRange(v =>
-//                     v.map((x, idx) =>
-//                       idx === i ? { ...x, maxRange: Number(e.target.value) || null } : x
-//                     )
-//                   )
-//                 }
+//                 onChange={e => handleInvestmentRangeChange(i, 'maxRange', e.target.value)}
 //               />
 //               <button onClick={() => setInvestmentRange(v => v.filter((_, idx) => idx !== i))}>
 //                 <TrashBinIcon className="w-5 h-5 text-red-500" />
@@ -288,25 +407,13 @@
 //                 type="number"
 //                 placeholder="Min Earn"
 //                 value={item.minEarn ?? ''}
-//                 onChange={e =>
-//                   setMonthlyEarnPotential(v =>
-//                     v.map((x, idx) =>
-//                       idx === i ? { ...x, minEarn: Number(e.target.value) || null } : x
-//                     )
-//                   )
-//                 }
+//                 onChange={e => handleMonthlyEarnChange(i, 'minEarn', e.target.value)}
 //               />
 //               <Input
 //                 type="number"
 //                 placeholder="Max Earn"
 //                 value={item.maxEarn ?? ''}
-//                 onChange={e =>
-//                   setMonthlyEarnPotential(v =>
-//                     v.map((x, idx) =>
-//                       idx === i ? { ...x, maxEarn: Number(e.target.value) || null } : x
-//                     )
-//                   )
-//                 }
+//                 onChange={e => handleMonthlyEarnChange(i, 'maxEarn', e.target.value)}
 //               />
 //               <button onClick={() => setMonthlyEarnPotential(v => v.filter((_, idx) => idx !== i))}>
 //                 <TrashBinIcon className="w-5 h-5 text-red-500" />
@@ -331,20 +438,12 @@
 //               <Input
 //                 placeholder="Title"
 //                 value={item.title}
-//                 onChange={e =>
-//                   setFranchiseModel(v =>
-//                     v.map((x, idx) => (idx === i ? { ...x, title: e.target.value } : x))
-//                   )
-//                 }
+//                 onChange={e => handleFranchiseModelChange(i, 'title', e.target.value)}
 //               />
 //               <Input
 //                 placeholder="Agreement"
 //                 value={item.agreement}
-//                 onChange={e =>
-//                   setFranchiseModel(v =>
-//                     v.map((x, idx) => (idx === i ? { ...x, agreement: e.target.value } : x))
-//                   )
-//                 }
+//                 onChange={e => handleFranchiseModelChange(i, 'agreement', e.target.value)}
 //               />
 //               <div className="grid grid-cols-4 gap-2">
 //                 {(['price', 'discount', 'gst', 'fees'] as const).map(field => (
@@ -353,13 +452,7 @@
 //                     type="number"
 //                     placeholder={field}
 //                     value={item[field] ?? ''}
-//                     onChange={e =>
-//                       setFranchiseModel(v =>
-//                         v.map((x, idx) =>
-//                           idx === i ? { ...x, [field]: Number(e.target.value) || null } : x
-//                         )
-//                       )
-//                     }
+//                     onChange={e => handleFranchiseModelChange(i, field, e.target.value)}
 //                   />
 //                 ))}
 //               </div>
@@ -385,34 +478,27 @@
 //         </div>
 //       )}
 
-//       {/* Extra Images */}
-//       {fieldsConfig?.extraImages && (
-//         <div>
-//           <Label>Extra Images</Label>
-//           {extraImages.map((img, i) => (
-//             <div key={i} className="flex gap-3 mt-2">
+// <div className="space-y-2">
+//         <Label className="text-lg font-semibold">Extra Images</Label>
+//         {renderArrayField(
+//           extraImages,
+//           setExtraImages,
+//           (item, _, update) => (
+//             <div>
 //               <FileInput
-//                 onChange={e => {
-//                   const file = e.target.files?.[0];
-//                   if (file) {
-//                     const url = URL.createObjectURL(file);
-//                     setExtraImages(v => v.map((x, idx) => (idx === i ? url : x)));
-//                   }
-//                 }}
+//                 accept="image/*"
+//                 onChange={(e) => handleSingleFileUpload(e, (url) => update({ icon: url }))}
 //               />
-//               <button onClick={() => setExtraImages(v => v.filter((_, idx) => idx !== i))}>
-//                 <TrashBinIcon className="w-5 h-5 text-red-500" />
-//               </button>
+//               {item.icon && (
+//                 <div className="w-24 h-24 relative mt-2">
+//                   <Image src={item.icon} alt="extra" fill className="rounded-lg object-cover" />
+//                 </div>
+//               )}
 //             </div>
-//           ))}
-//           <button
-//             className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-//             onClick={() => setExtraImages(v => [...v, ''])}
-//           >
-//             + Add Extra Image
-//           </button>
-//         </div>
-//       )}
+//           ),
+//           { icon: '' }
+//         )}
+//       </div>
 
 //       {/* Extra Sections */}
 //       {fieldsConfig?.extraSections && (
@@ -433,13 +519,7 @@
 //                   <Input
 //                     placeholder="Section Title"
 //                     value={sec.title}
-//                     onChange={e =>
-//                       setExtraSections(v =>
-//                         v.map((x, idx) =>
-//                           idx === sIdx ? { ...x, title: e.target.value } : x
-//                         )
-//                       )
-//                     }
+//                     onChange={e => handleExtraSectionChange(sIdx, 'title', 0, e.target.value)}
 //                   />
 
 //                   {(['subtitle', 'description', 'subDescription', 'lists', 'tags'] as const).map(
@@ -450,39 +530,57 @@
 //                           <Input
 //                             key={i}
 //                             value={val}
-//                             onChange={e =>
-//                               setExtraSections(v =>
-//                                 v.map((x, idx) =>
-//                                   idx === sIdx
-//                                     ? {
-//                                         ...x,
-//                                         [field]: x[field].map((y, j) =>
-//                                           j === i ? e.target.value : y
-//                                         ),
-//                                       }
-//                                     : x
-//                                 )
-//                               )
-//                             }
+//                             onChange={e => handleExtraSectionChange(sIdx, field, i, e.target.value)}
 //                           />
 //                         ))}
 //                         <button
 //                           className="mt-1 bg-blue-500 text-white px-2 py-1 rounded"
-//                           onClick={() =>
-//                             setExtraSections(v =>
-//                               v.map((x, idx) =>
-//                                 idx === sIdx
-//                                   ? { ...x, [field]: [...x[field], ''] }
-//                                   : x
-//                               )
-//                             )
-//                           }
+//                           onClick={() => addToExtraSection(sIdx, field)}
 //                         >
 //                           + Add {field}
 //                         </button>
 //                       </div>
 //                     )
 //                   )}
+//                    <div>
+//                   <Label>Images</Label>
+//                   <FileInput
+//                     multiple
+//                     accept="image/*"
+//                     onChange={(e) => {
+//                       if (e.target.files) {
+//                         const urls = Array.from(e.target.files).map(f => URL.createObjectURL(f));
+//                         const newSections = [...extraSections];
+//                         newSections[sectionIdx] = {
+//                           ...section,
+//                           image: [...section.image, ...urls]
+//                         };
+//                         setExtraSections(newSections);
+//                       }
+//                     }}
+//                   />
+//                   <div className="flex gap-3 mt-3 flex-wrap">
+//                     {section.image.map((img, idx) => (
+//                       <div key={idx} className="w-20 h-20 relative group">
+//                         <Image src={img} alt="section" fill className="rounded-lg object-cover" />
+//                         <button
+//                           type="button"
+//                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+//                           onClick={() => {
+//                             const newSections = [...extraSections];
+//                             newSections[sectionIdx] = {
+//                               ...section,
+//                               image: section.image.filter((_, i) => i !== idx)
+//                             };
+//                             setExtraSections(newSections);
+//                           }}
+//                         >
+//                           ×
+//                         </button>
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </div>
 //                 </div>
 //               ))}
 //             </>
@@ -504,6 +602,7 @@ import Input from '../form/input/InputField';
 import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 
 const ClientSideCustomEditor = dynamic(
@@ -734,13 +833,12 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       prev.map((section, secIdx) => {
         if (secIdx !== sectionIndex) return section;
         
+        const currentField = section[field] as string[];
         return {
           ...section,
-          [field]: Array.isArray(section[field]) 
-            ? section[field].map((val: string, idx: number) => 
-                idx === valueIndex ? value : val
-              )
-            : [value]
+          [field]: currentField.map((val, idx) => 
+            idx === valueIndex ? value : val
+          )
         };
       })
     );
@@ -751,7 +849,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
     setExtraSections(prev => 
       prev.map((section, idx) => 
         idx === sectionIndex 
-          ? { ...section, [field]: [...section[field], ''] }
+          ? { ...section, [field]: [...(section[field] as string[]), ''] }
           : section
       )
     );
@@ -760,18 +858,47 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   // Handle file upload for extra images
   const handleExtraImageUpload = useCallback((index: number, files: FileList | null) => {
     if (!files?.[0]) return;
-
+  
     const file = files[0];
-    const reader = new FileReader();
+    // Use URL.createObjectURL instead of FileReader for blob URLs
+    const url = URL.createObjectURL(file);
     
-    reader.onloadend = () => {
-      const url = reader.result as string;
-      setExtraImages(prev => 
-        prev.map((img, idx) => idx === index ? url : img)
-      );
-    };
-    
-    reader.readAsDataURL(file);
+    setExtraImages(prev => 
+      prev.map((img, idx) => idx === index ? url : img)
+    );
+  }, []);
+
+  // Handle single file upload
+  const handleSingleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    const url = URL.createObjectURL(file);
+    callback(url);
+  };
+
+  // Add new extra image field
+  const addExtraImageField = useCallback(() => {
+    setExtraImages(prev => [...prev, '']);
+  }, []);
+
+  // Remove extra image field
+  const removeExtraImageField = useCallback((index: number) => {
+    setExtraImages(prev => prev.filter((_, idx) => idx !== index));
+  }, []);
+
+  // Remove image from extra section
+  const removeSectionImage = useCallback((sectionIdx: number, imageIdx: number) => {
+    setExtraSections(prev =>
+      prev.map((section, idx) =>
+        idx === sectionIdx
+          ? {
+              ...section,
+              image: section.image.filter((_, i) => i !== imageIdx)
+            }
+          : section
+      )
+    );
   }, []);
 
   return (
@@ -878,12 +1005,16 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                 value={item.maxRange ?? ''}
                 onChange={e => handleInvestmentRangeChange(i, 'maxRange', e.target.value)}
               />
-              <button onClick={() => setInvestmentRange(v => v.filter((_, idx) => idx !== i))}>
+              <button 
+                type="button"
+                onClick={() => setInvestmentRange(v => v.filter((_, idx) => idx !== i))}
+              >
                 <TrashBinIcon className="w-5 h-5 text-red-500" />
               </button>
             </div>
           ))}
           <button
+            type="button"
             className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
             onClick={() => setInvestmentRange(v => [...v, { minRange: null, maxRange: null }])}
           >
@@ -910,12 +1041,16 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                 value={item.maxEarn ?? ''}
                 onChange={e => handleMonthlyEarnChange(i, 'maxEarn', e.target.value)}
               />
-              <button onClick={() => setMonthlyEarnPotential(v => v.filter((_, idx) => idx !== i))}>
+              <button 
+                type="button"
+                onClick={() => setMonthlyEarnPotential(v => v.filter((_, idx) => idx !== i))}
+              >
                 <TrashBinIcon className="w-5 h-5 text-red-500" />
               </button>
             </div>
           ))}
           <button
+            type="button"
             className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
             onClick={() => setMonthlyEarnPotential(v => [...v, { minEarn: null, maxEarn: null }])}
           >
@@ -952,6 +1087,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
                 ))}
               </div>
               <button
+                type="button"
                 className="text-red-500 mt-2"
                 onClick={() => setFranchiseModel(v => v.filter((_, idx) => idx !== i))}
               >
@@ -960,6 +1096,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
             </div>
           ))}
           <button
+            type="button"
             className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
             onClick={() =>
               setFranchiseModel(v => [
@@ -973,33 +1110,43 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
         </div>
       )}
 
-      {/* Extra Images
-      {fieldsConfig?.extraImages && (
-        <div>
-          <Label>Extra Images</Label>
-          {extraImages.map((img, i) => (
-            <div key={i} className="flex gap-3 mt-2">
-              <FileInput
-                onChange={e => handleExtraImageUpload(i, e.target.files)}
-              />
-              {img && img !== '' && (
-                <div className="w-20 h-20 border rounded overflow-hidden">
-                  <img src={img} alt={`Extra ${i}`} className="w-full h-full object-cover" />
-                </div>
-              )}
-              <button onClick={() => setExtraImages(v => v.filter((_, idx) => idx !== i))}>
-                <TrashBinIcon className="w-5 h-5 text-red-500" />
-              </button>
-            </div>
-          ))}
-          <button
-            className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-            onClick={() => setExtraImages(v => [...v, ''])}
-          >
-            + Add Extra Image
-          </button>
-        </div>
-      )} */}
+      {/* Extra Images */}
+      <div className="space-y-2">
+        <Label className="text-lg font-semibold">Extra Images</Label>
+        {extraImages.map((imageUrl, index) => (
+          <div key={index} className="flex items-center gap-3 mb-3">
+            <FileInput
+              accept="image/*"
+              onChange={(e) => handleExtraImageUpload(index, e.target.files)}
+            />
+            {imageUrl && imageUrl !== '' && (
+              <div className="w-24 h-24 relative">
+                <Image 
+                  src={imageUrl} 
+                  alt={`extra-${index}`} 
+                  fill 
+                  className="rounded-lg object-cover"
+                  unoptimized
+                />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => removeExtraImageField(index)}
+              className="text-red-500"
+            >
+              <TrashBinIcon className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+          onClick={addExtraImageField}
+        >
+          + Add Extra Image
+        </button>
+      </div>
 
       {/* Extra Sections */}
       {fieldsConfig?.extraSections && (
@@ -1008,6 +1155,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
 
           {!showExtraSections ? (
             <button
+              type="button"
               onClick={() => setShowExtraSections(true)}
               className="bg-blue-500 text-white px-4 py-2 rounded"
             >
@@ -1015,36 +1163,120 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
             </button>
           ) : (
             <>
-              {extraSections.map((sec, sIdx) => (
-                <div key={sIdx} className="border p-4 rounded mt-3 space-y-2">
+              {extraSections.map((section, sectionIdx) => (
+                <div key={sectionIdx} className="border p-4 rounded mt-3 space-y-4">
                   <Input
                     placeholder="Section Title"
-                    value={sec.title}
-                    onChange={e => handleExtraSectionChange(sIdx, 'title', 0, e.target.value)}
+                    value={section.title}
+                    onChange={e => handleExtraSectionChange(sectionIdx, 'title', 0, e.target.value)}
                   />
 
                   {(['subtitle', 'description', 'subDescription', 'lists', 'tags'] as const).map(
-                    field => (
+                    (field) => (
                       <div key={field}>
-                        <Label>{field}</Label>
-                        {sec[field].map((val, i) => (
-                          <Input
-                            key={i}
-                            value={val}
-                            onChange={e => handleExtraSectionChange(sIdx, field, i, e.target.value)}
-                          />
+                        <Label className="capitalize">{field}</Label>
+                        {section[field].map((val, i) => (
+                          <div key={i} className="flex gap-2 mb-2">
+                            <Input
+                              value={val}
+                              onChange={e => handleExtraSectionChange(sectionIdx, field, i, e.target.value)}
+                              placeholder={`Enter ${field}`}
+                            />
+                          </div>
                         ))}
                         <button
-                          className="mt-1 bg-blue-500 text-white px-2 py-1 rounded"
-                          onClick={() => addToExtraSection(sIdx, field)}
+                          type="button"
+                          className="mt-1 bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                          onClick={() => addToExtraSection(sectionIdx, field)}
                         >
                           + Add {field}
                         </button>
                       </div>
                     )
                   )}
+
+                  <div>
+                    <Label>Images</Label>
+                    <FileInput
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          const files = Array.from(e.target.files);
+                          const readers = files.map(file => {
+                            return new Promise<string>((resolve) => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                resolve(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                          });
+
+                          Promise.all(readers).then(urls => {
+                            setExtraSections(prev =>
+                              prev.map((sec, idx) =>
+                                idx === sectionIdx
+                                  ? { ...sec, image: [...sec.image, ...urls] }
+                                  : sec
+                              )
+                            );
+                          });
+                        }
+                      }}
+                    />
+                    <div className="flex gap-3 mt-3 flex-wrap">
+                      {section.image.map((img, idx) => (
+                        <div key={idx} className="w-20 h-20 relative group">
+                          <Image 
+                            src={img} 
+                            alt={`section-${sectionIdx}-${idx}`} 
+                            fill 
+                            className="rounded-lg object-cover"
+                            unoptimized
+                          />
+                          <button
+                            type="button"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeSectionImage(sectionIdx, idx)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="text-red-500 mt-2"
+                    onClick={() => setExtraSections(prev => prev.filter((_, idx) => idx !== sectionIdx))}
+                  >
+                    Remove Section
+                  </button>
                 </div>
               ))}
+
+              <button
+                type="button"
+                className="mt-3 bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={() =>
+                  setExtraSections(prev => [
+                    ...prev,
+                    {
+                      title: '',
+                      subtitle: [''],
+                      image: [],
+                      description: [''],
+                      subDescription: [''],
+                      lists: [''],
+                      tags: [''],
+                    },
+                  ])
+                }
+              >
+                + Add Another Section
+              </button>
             </>
           )}
         </div>

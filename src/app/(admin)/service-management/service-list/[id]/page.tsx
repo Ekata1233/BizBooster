@@ -778,6 +778,9 @@ const EditService: React.FC = () => {
     });
   }, [service , initialized]);
 
+  console.log("formdata for the update : ", formData);
+
+
   const handleUpdate = async () => {
     if (!service) {
       alert("Service not loaded yet.");
@@ -1150,6 +1153,8 @@ const EditService: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+
 
   const config = moduleFieldConfig[selectedModule] || {};
   const isFranchiseSelected = selectedModule === 'Franchise';
