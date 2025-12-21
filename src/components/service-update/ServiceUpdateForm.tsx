@@ -7,6 +7,8 @@ import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { useService } from '@/context/ServiceContext';
+import { useParams } from 'next/navigation';
 
 // ---------------- EDITOR ----------------
 const ClientSideCustomEditor = dynamic(
@@ -39,14 +41,21 @@ type ExtraSection = {
 };
 
 interface ServiceUpdateFromProps {
-  data: any;
+  datas: any;
   setData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 // ---------------- COMPONENT ----------------
-const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ data, setData }) => {
+const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData }) => {
   // ---------- BASIC STATES ----------
-  console.log("servie update data ; ", data)
+    const { id } = useParams();
+    const { fetchSingleService, singleService: service } = useService();
+    useEffect(() => {
+        if (!id) return;
+        fetchSingleService(id as string);
+      }, [id]);
+  const data = service;
+  // console.log("servie update data ; ", data)
   const [editorReady, setEditorReady] = useState(false);
 
   const [benefits, setBenefits] = useState<string[]>(['']);
@@ -131,36 +140,60 @@ extraImages: memoizedExtraImages,
   }, []);
 
   // Update parent data whenever any field changes
-  useEffect(() => {
-    setData((prev: any) => ({
-      ...prev,
-      serviceDetails: {
-        ...prev.serviceDetails,
-        benefits,
-        aboutUs,
-        termsAndConditions: terms,
-        document,
-        highlight: highlightImages,
-        whyChooseUs,
-        howItWorks,
-        assuredByFetchTrue,
-        weRequired,
-        weDeliver,
-        packages,
-        moreInfo,
-        faq: faqs,
-        connectWith,
-        timeRequired,
-        extraImages: extraImages.map(img => img.icon),
-        extraSections: showExtraSections ? extraSections : []
-      }
-    }));
-  }, [
-    benefits, aboutUs, terms, document, highlightImages,
-    whyChooseUs, howItWorks, assuredByFetchTrue, weRequired,
-    weDeliver, packages, moreInfo, faqs, connectWith,
-    timeRequired, extraImages, extraSections, showExtraSections
-  ]);
+useEffect(() => {
+  if (!service?.serviceDetails) return;
+
+  const details = service.serviceDetails;
+  
+  // Set array fields with proper fallbacks
+  setBenefits(details.benefits || ['']);
+  setAboutUs(details.aboutUs || ['']);
+  setTerms(details.termsAndConditions || ['']);
+  setDocument(details.document || ['']);
+  setHighlightImages(details.highlight || []);
+  
+  // For arrays of objects, ensure they're not empty
+  setWhyChooseUs(details.whyChooseUs?.length ? details.whyChooseUs : [{ title: '', description: '', icon: '' }]);
+  setHowItWorks(details.howItWorks?.length ? details.howItWorks : [{ title: '', description: '', icon: '' }]);
+  setAssuredByFetchTrue(details.assuredByFetchTrue?.length ? details.assuredByFetchTrue : [{ title: '', description: '', icon: '' }]);
+  
+  // These arrays might be empty in your data, so provide defaults
+  setWeRequired(details.weRequired?.length ? details.weRequired : [{ title: '', description: '' }]);
+  setWeDeliver(details.weDeliver?.length ? details.weDeliver : [{ title: '', description: '' }]);
+  
+  // Packages - ensure at least one package exists
+  setPackages(details.packages?.length ? details.packages : [{
+    name: '',
+    price: null,
+    discount: null,
+    discountedPrice: null,
+    whatYouGet: ['']
+  }]);
+  
+  setMoreInfo(details.moreInfo?.length ? details.moreInfo : [{ title: '', image: '', description: '' }]);
+  setFaqs(details.faq?.length ? details.faq : [{ question: '', answer: '' }]);
+  setConnectWith(details.connectWith?.length ? details.connectWith : [{ name: '', mobileNo: '', email: '' }]);
+  
+  // Time required might have null values
+  setTimeRequired(details.timeRequired?.length ? details.timeRequired : [{ minDays: null, maxDays: null }]);
+  
+  // Convert string array to ExtraImageItem array
+  const extraImagesArray = details.extraImages?.length 
+    ? details.extraImages.map(icon => ({ icon })) 
+    : [{ icon: '' }];
+  setExtraImages(extraImagesArray);
+  
+  // Extra sections
+  setExtraSections(details.extraSections || []);
+  setShowExtraSections(!!details.extraSections?.length);
+  
+  // Also set basic service info if needed (from service object directly)
+  // For example, if you have additional top-level fields:
+  // setServiceName(service.serviceName || '');
+  // setCategory(service.category || null);
+  
+  console.log("Form initialized with data:", details);
+}, [service]);
 
   const benefitsValue = benefits[0] || "";
   const aboutUsValue = aboutUs[0] || "";

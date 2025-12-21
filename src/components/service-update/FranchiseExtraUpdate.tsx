@@ -349,6 +349,7 @@
 import React, { useState, useEffect } from "react";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
+import { useRouter } from "next/navigation";
 
 interface InvestmentData {
   franchiseSize: string;
@@ -442,6 +443,7 @@ function FranchiseExtraUpdate({ serviceId, onSave }: { serviceId: string; onSave
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+const router = useRouter();
 
   useEffect(() => {
     if (serviceId) {
@@ -687,6 +689,7 @@ function FranchiseExtraUpdate({ serviceId, onSave }: { serviceId: string; onSave
         // Refresh data after saving
         await fetchFranchiseData();
         if (onSave) onSave();
+         router.push("/service-management/service-list");
       } else {
         throw new Error("Some API calls failed");
       }

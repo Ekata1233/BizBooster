@@ -742,7 +742,6 @@ const EditService: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   const { fetchSingleService, singleService: service, updateService } = useService();
-  const [newService, setNewService] = useState<any>(null);
   const [selectedModule, setSelectedModule] = useState(modules[0].name);
   const [initialized, setInitialized] = useState(false);
   const [franchiseStep, setFranchiseStep] = useState<number>(1);
@@ -750,9 +749,8 @@ const EditService: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [franchiseExtraKey, setFranchiseExtraKey] = useState(0);
-  const [franchiseFormKey, setFranchiseFormKey] = useState(0);
   const [createdServiceId, setCreatedServiceId] = useState(null);
-
+const [loading, setLoading] = useState(true);
   // Fetch single service on load
   useEffect(() => {
     if (!id) return;
@@ -1339,9 +1337,9 @@ await Promise.all(
               <>
                 <BasicUpdateForm data={formData} setData={setFormData} />
                 <hr className="border-gray-300" />
-                <ServiceUpdateForm data={formData} setData={setFormData} />
+                <ServiceUpdateForm datas={formData} setData={setFormData} />
                 <hr className="border-gray-300" />
-                <FranchiseUpdateForm data={formData} setData={setFormData} fieldsConfig={config.franchiseDetails} />
+                <FranchiseUpdateForm datas={formData} setData={setFormData} fieldsConfig={config.franchiseDetails} />
 
                 <div className="flex justify-end gap-3 pt-4">
                   <button 
@@ -1376,9 +1374,9 @@ await Promise.all(
             <>
               <BasicUpdateForm data={formData} setData={setFormData} />
               <hr className="border-gray-300" />
-              <ServiceUpdateForm data={formData} setData={setFormData} />
+              <ServiceUpdateForm datas={formData} setData={setFormData} />
               <hr className="border-gray-300" />
-              <FranchiseUpdateForm data={formData} setData={setFormData} fieldsConfig={config.franchiseDetails} />
+              <FranchiseUpdateForm datas={formData} setData={setFormData} fieldsConfig={config.franchiseDetails} />
 
               <div className="flex justify-end gap-3 pt-4">
                 <button 

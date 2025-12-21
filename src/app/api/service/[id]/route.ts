@@ -1082,28 +1082,65 @@ export async function PUT(req: NextRequest) {
         if (!title) break;
 
         const extraSection: any = {
-          title: title.trim(),
-          content: [],
-          image: [],
-        };
+  title: title.trim(),
+  subtitle: [],
+  description: [],
+  subDescription: [],
+  lists: [],
+  tags: [],
+  image: [],
+};
 
-        // Process content array
-        for (let j = 0; j < 10; j++) {
-          const content = formData.get(`franchiseDetails[extraSections][${i}][content][${j}]`) as string;
-          if (!content) break;
-          extraSection.content.push(content.trim());
-        }
 
-        // Process image array
-        for (let j = 0; j < 10; j++) {
-          const imageFile = formData.get(`franchiseDetails[extraSections][${i}][image][${j}]`);
-          if (imageFile instanceof File && imageFile.size > 0) {
-            const url = await handleFileUpload(imageFile, "/services/franchise/extraSections");
-            extraSection.image.push(url);
-          } else {
-            break;
-          }
-        }
+       // subtitle
+for (let j = 0; j < 10; j++) {
+  const val = formData.get(
+    `franchiseDetails[extraSections][${i}][subtitle][${j}]`
+  ) as string;
+  if (!val) break;
+  extraSection.subtitle.push(val.trim());
+}
+
+// --- description ---
+for (let j = 0; j < 10; j++) {
+  const description = formData.get(
+    `franchiseDetails[extraSections][${i}][description][${j}]`
+  ) as string;
+
+  if (!description) break;
+  extraSection.description.push(description.trim());
+}
+
+// --- subDescription ---
+for (let j = 0; j < 10; j++) {
+  const subDescription = formData.get(
+    `franchiseDetails[extraSections][${i}][subDescription][${j}]`
+  ) as string;
+
+  if (!subDescription) break;
+  extraSection.subDescription.push(subDescription.trim());
+}
+
+// --- lists ---
+for (let j = 0; j < 10; j++) {
+  const list = formData.get(
+    `franchiseDetails[extraSections][${i}][lists][${j}]`
+  ) as string;
+
+  if (!list) break;
+  extraSection.lists.push(list.trim());
+}
+
+// --- tags ---
+for (let j = 0; j < 10; j++) {
+  const tag = formData.get(
+    `franchiseDetails[extraSections][${i}][tags][${j}]`
+  ) as string;
+
+  if (!tag) break;
+  extraSection.tags.push(tag.trim());
+}
+
 
         franchiseDetails.extraSections.push(extraSection);
       }

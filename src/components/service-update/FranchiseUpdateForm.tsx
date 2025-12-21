@@ -8,6 +8,8 @@ import { TrashBinIcon } from '../../icons';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
+import { useParams } from 'next/navigation';
+import { useService } from '@/context/ServiceContext';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -36,18 +38,26 @@ type ExtraSection = {
 };
 
 interface FranchiseUpdateFormProps {
-  data: any;
+  datas: any;
   setData: React.Dispatch<React.SetStateAction<any>>;
   fieldsConfig?: any;
 }
 
 /* ---------------- COMPONENT ---------------- */
 const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
-  data,
+  datas,
   setData,
   fieldsConfig,
 }) => {
 
+      const { id } = useParams();
+      const { fetchSingleService, singleService: service } = useService();
+      useEffect(() => {
+          if (!id) return;
+          fetchSingleService(id as string);
+        }, [id]);
+    const data = service;
+    console.log("servie update data ; ", data)
   // console.log("franchise update data ; ", data)
 
   // Extract price from form data
@@ -88,13 +98,13 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
     const fd = data.franchiseDetails;
     
     // Set commission values
-    if (data.commission) {
-      const numericValue = data.commission.replace(/[^\d]/g, '');
+    if (fd.commission) {
+      const numericValue = fd.commission.replace(/[^\d]/g, '');
       setCommissionValue(numericValue);
     }
     
-    if (data.commissionType) {
-      setCommissionType(data.commissionType);
+    if (fd.commissionType) {
+      setCommissionType(fd.commissionType);
     }
     
     // Set franchise details

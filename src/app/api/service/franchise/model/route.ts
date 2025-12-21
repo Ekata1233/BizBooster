@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Franchise from "@/models/ExtraService";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,63 @@ export async function OPTIONS() {
 }
 
 // ✅ POST: Add or update model by size
+// export async function POST(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const body = await req.json();
+//     const { serviceId, model } = body;
+
+//   if (!serviceId || !Array.isArray(model) || model.length === 0) {
+//       return NextResponse.json(
+//         { success: false, message: "serviceId & model array required" },
+//         { status: 400, headers: corsHeaders }
+//       );
+//     }
+
+//     let franchise = await Franchise.findOne({ serviceId });
+
+//     if (!franchise) {
+//       // Create first entry
+//       franchise = await Franchise.create({
+//         serviceId,
+//         investment: [],
+//         model: model // directly save the full model array
+//       });
+
+//       return NextResponse.json(
+//         { success: true, message: "Models saved", data: franchise },
+//         { status: 201, headers: corsHeaders }
+//       );
+//     }
+
+//     // Update or add models by size
+//     model.forEach((newModel: any) => {
+//       const index = franchise.model.findIndex(
+//         (m: any) => m.franchiseSize === newModel.franchiseSize
+//       );
+
+//       if (index >= 0) {
+//         franchise.model[index] = newModel; // update existing
+//       } else {
+//         franchise.model.push(newModel); // add new
+//       }
+//     });
+
+//     await franchise.save();
+
+//     return NextResponse.json(
+//       { success: true, message: "Model saved/updated", data: franchise },
+//       { status: 200, headers: corsHeaders }
+//     );
+
+//   } catch (err: any) {
+//     return NextResponse.json(
+//       { success: false, message: err.message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
@@ -20,53 +78,100 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { serviceId, model } = body;
 
-  if (!serviceId || !Array.isArray(model) || model.length === 0) {
+    /* ---------------- VALIDATION ---------------- */
+    if (
+      !serviceId ||
+      !mongoose.Types.ObjectId.isValid(serviceId) ||
+      !Array.isArray(model) ||
+      model.length === 0
+    ) {
       return NextResponse.json(
-        { success: false, message: "serviceId & model array required" },
-        { status: 400, headers: corsHeaders }
+        { success: false, message: "Valid serviceId & model array required" },
+        { status: 400 }
       );
     }
 
+    /* ---------------- NORMALIZE ---------------- */
+    const normalizedModel = model.map(m => ({
+      ...m,
+      franchiseSize: m.franchiseSize.toLowerCase()
+    }));
+
+    /* ---------------- CREATE IF NOT EXISTS ---------------- */
     let franchise = await Franchise.findOne({ serviceId });
 
     if (!franchise) {
-      // Create first entry
       franchise = await Franchise.create({
         serviceId,
-        investment: [],
-        model: model // directly save the full model array
+        model: normalizedModel,
+        investment: []
       });
 
       return NextResponse.json(
-        { success: true, message: "Models saved", data: franchise },
-        { status: 201, headers: corsHeaders }
+        {
+          success: true,
+          message: "Franchise created & models saved",
+          data: franchise
+        },
+        { status: 201 }
       );
     }
 
-    // Update or add models by size
-    model.forEach((newModel: any) => {
-      const index = franchise.model.findIndex(
-        (m: any) => m.franchiseSize === newModel.franchiseSize
+    /* ---------------- UPDATE EXISTING SIZES ---------------- */
+    for (const m of normalizedModel) {
+      await Franchise.updateOne(
+        {
+          serviceId,
+          "model.franchiseSize": m.franchiseSize
+        },
+        {
+          $set: {
+            "model.$": m
+          }
+        }
       );
+    }
 
-      if (index >= 0) {
-        franchise.model[index] = newModel; // update existing
-      } else {
-        franchise.model.push(newModel); // add new
-      }
-    });
-
-    await franchise.save();
-
-    return NextResponse.json(
-      { success: true, message: "Model saved/updated", data: franchise },
-      { status: 200, headers: corsHeaders }
+    /* ---------------- INSERT ONLY NEW SIZES ---------------- */
+    const existingSizes = franchise.model.map(
+      (m: any) => m.franchiseSize
     );
 
-  } catch (err: any) {
+    const newModels = normalizedModel.filter(
+      m => !existingSizes.includes(m.franchiseSize)
+    );
+
+    if (newModels.length > 0) {
+      await Franchise.updateOne(
+        { serviceId },
+        {
+          $push: {
+            model: { $each: newModels }
+          }
+        }
+      );
+    }
+
+    /* ---------------- FETCH UPDATED ---------------- */
+    franchise = await Franchise.findOne({ serviceId });
+
     return NextResponse.json(
-      { success: false, message: err.message },
-      { status: 500, headers: corsHeaders }
+      {
+        success: true,
+        message: "Models saved / updated without duplicates",
+        data: franchise
+      },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Model API Error:", err);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: err.message || "Internal Server Error"
+      },
+      { status: 500 }
     );
   }
 }
