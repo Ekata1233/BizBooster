@@ -826,26 +826,59 @@ const [loading, setLoading] = useState(true);
       });
 
       /* ================= THUMBNAIL ================= */
-      if (formData.thumbnailImage instanceof File) {
-        fd.append("thumbnail", formData.thumbnailImage);
-      } else if (formData.thumbnailImage) {
-        fd.append("thumbnail", formData.thumbnailImage);
+if (formData.thumbnailFile instanceof File) {
+  // priority 1: new uploaded file
+  fd.append("thumbnail", formData.thumbnailFile);
+} 
+else if (typeof formData.thumbnailImage === "string") {
+  if (formData.thumbnailImage.startsWith("blob:")) {
+    // blob → file
+    const blob = await fetch(formData.thumbnailImage).then(res => res.blob());
+    const file = new File([blob], "thumbnail.png", { type: blob.type });
+    fd.append("thumbnail", file);
+  } else {
+    // existing image URL
+    fd.append("thumbnail", formData.thumbnailImage);
+  }
+}
+
+    /* ================= BANNER ================= */
+const existingBannerUrls: string[] = [];
+
+/* Priority 1: newly selected banner files */
+if (Array.isArray(formData.bannerFiles) && formData.bannerFiles.length > 0) {
+  formData.bannerFiles.forEach((file, i) => {
+    if (file instanceof File) {
+      fd.append(`bannerImages[${i}]`, file);
+    }
+  });
+} 
+/* Fallback: existing bannerImages */
+else {
+  await Promise.all(
+    (formData.bannerImages || []).map(async (img, i) => {
+      if (img instanceof File) {
+        fd.append(`bannerImages[${i}]`, img);
+      } 
+      else if (typeof img === "string" && img.startsWith("blob:")) {
+        const blob = await fetch(img).then(res => res.blob());
+        const file = new File([blob], `banner-${i}.png`, {
+          type: blob.type,
+        });
+        fd.append(`bannerImages[${i}]`, file);
+      } 
+      else if (typeof img === "string") {
+        existingBannerUrls.push(img);
       }
+    })
+  );
+}
 
-      /* ================= BANNER ================= */
-      const existingBannerUrls: string[] = [];
+/* Send existing banner URLs */
+if (existingBannerUrls.length > 0) {
+  fd.append("existingBannerImages", JSON.stringify(existingBannerUrls));
+}
 
-      formData.bannerImages?.forEach((img, i) => {
-        if (img instanceof File) {
-          fd.append(`bannerImages[${i}]`, img);
-        } else if (typeof img === "string") {
-          existingBannerUrls.push(img);
-        }
-      });
-
-      if (existingBannerUrls.length > 0) {
-        fd.append("existingBannerImages", JSON.stringify(existingBannerUrls));
-      }
 
       /* ================= SERVICE DETAILS ================= */
       fd.append("benefits", JSON.stringify(formData.serviceDetails.benefits || []));

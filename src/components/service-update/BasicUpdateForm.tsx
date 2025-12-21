@@ -221,37 +221,57 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
   }));
 }, [rows]);
 
-    const handleThumbnailUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    // const handleThumbnailUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    //   const file = e.target.files?.[0];
+    //   if (!file) return;
   
-      // Create blob URL for preview
-      const url = URL.createObjectURL(file);
+    //   // Create blob URL for preview
+    //   const url = URL.createObjectURL(file);
       
-      // Update parent data with blob URL
-      setData((prev: any) => ({
-        ...prev,
-        thumbnailImage: url,
-        thumbnailFile: file // Optionally store the file object for later upload
-      }));
-    }, [setData]);
+    //   // Update parent data with blob URL
+    //   setData((prev: any) => ({
+    //     ...prev,
+    //     thumbnailImage: url,
+    //     thumbnailFile: file // Optionally store the file object for later upload
+    //   }));
+    // }, [setData]);
+
+    const handleThumbnailUpload = useCallback(
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setData((prev: any) => ({
+      ...prev,
+      thumbnailFile: file,
+      thumbnailImage: previewUrl, // 👈 always use this for preview
+    }));
+  },
+  [setData]
+);
+
   
     // Handle banner images upload
-    const handleBannerImagesUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-  
-      // Create blob URLs for all selected files
-      const urls = Array.from(files).map(file => URL.createObjectURL(file));
-      const filesArray = Array.from(files);
-      
-      // Update parent data with blob URLs
-      setData((prev: any) => ({
-        ...prev,
-        bannerImages: [...(prev.bannerImages || []), ...urls],
-        bannerFiles: [...(prev.bannerFiles || []), ...filesArray] // Optionally store file objects
-      }));
-    }, [setData]);
+const handleBannerImagesUpload = useCallback(
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const previewUrls = Array.from(files).map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setData((prev: any) => ({
+      ...prev,
+      bannerFiles: [...(prev.bannerFiles || []), ...Array.from(files)],
+      bannerImages: [...(prev.bannerImages || []), ...previewUrls], // 👈 preview source
+    }));
+  },
+  [setData]
+);
+
 
     const removeBannerImage = useCallback((index: number) => {
       setData((prev: any) => {
