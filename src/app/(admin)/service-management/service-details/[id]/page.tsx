@@ -954,13 +954,13 @@ const ServiceDetailsPage = () => {
 
             {/* Extra Images */}
             {extraImages.length > 0 && (
-              <ComponentCard title="Gallery">
+              <ComponentCard title="Extra Images">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {extraImages.map((img, index) => (
                     <div key={index} className="relative h-48 rounded-xl overflow-hidden shadow-md">
                       <Image
                         src={img}
-                        alt={`Gallery image ${index + 1}`}
+                        alt={`Extra Images ${index + 1}`}
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-300"
                       />
@@ -1107,13 +1107,13 @@ const ServiceDetailsPage = () => {
 
             {/* Franchise Extra Images */}
             {franchiseExtraImages.length > 0 && (
-              <ComponentCard title="Franchise Gallery">
+              <ComponentCard title="Extra Images">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {franchiseExtraImages.map((img, index) => (
                     <div key={index} className="relative h-48 rounded-xl overflow-hidden shadow-md">
                       <Image
                         src={img}
-                        alt={`Franchise image ${index + 1}`}
+                        alt={`Extra Images ${index + 1}`}
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-300"
                       />
