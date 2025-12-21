@@ -214,6 +214,12 @@ const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData }) => {
         setRows(data.keyValues);
       }
     }, [data.keyValues]);
+    useEffect(() => {
+  setData((prev: any) => ({
+    ...prev,
+    keyValues: rows,
+  }));
+}, [rows]);
 
     const handleThumbnailUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];

@@ -1007,15 +1007,25 @@ if (extraImagesUpdated) {
         }
 
         // Process image array
-        for (let j = 0; j < 10; j++) {
-          const imageFile = formData.get(`serviceDetails[extraSections][${i}][image][${j}]`);
-          if (imageFile instanceof File && imageFile.size > 0) {
-            const url = await handleFileUpload(imageFile, "/services/extraSections");
-            extraSection.image.push(url);
-          } else {
-            break;
-          }
-        }
+for (let j = 0; j < 10; j++) {
+  const imageValue = formData.get(
+    `serviceDetails[extraSections][${i}][image][${j}]`
+  );
+
+  if (!imageValue) break;
+
+  // ✅ New upload
+  if (imageValue instanceof File && imageValue.size > 0) {
+    const url = await handleFileUpload(imageValue, "/services/extraSections");
+    extraSection.image.push(url);
+  }
+
+  // ✅ Existing image URL
+  else if (typeof imageValue === "string" && imageValue.trim() !== "") {
+    extraSection.image.push(imageValue.trim());
+  }
+}
+
 
         serviceDetails.extraSections.push(extraSection);
       }
@@ -1184,18 +1194,24 @@ for (let j = 0; j < 10; j++) {
 
 // --- images ---
 for (let j = 0; j < 10; j++) {
-  const imageFile = formData.get(
+  const imageVal = formData.get(
     `franchiseDetails[extraSections][${i}][image][${j}]`
   );
 
-  if (imageFile instanceof File && imageFile.size > 0) {
+  if (!imageVal) break;
+
+  // Case 1: New file upload
+  if (imageVal instanceof File && imageVal.size > 0) {
     const url = await handleFileUpload(
-      imageFile,
+      imageVal,
       "/services/franchise/extraSections"
     );
     extraSection.image.push(url);
-  } else {
-    break;
+  }
+
+  // Case 2: Existing image URL (string)
+  else if (typeof imageVal === "string") {
+    extraSection.image.push(imageVal);
   }
 }
 
