@@ -130,7 +130,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       setExtraSections(fd.extraSections);
       setShowExtraSections(true);
     }
-  }, []); // Empty dependency array - runs only on mount
+  }, [data]); // Empty dependency array - runs only on mount
 
   // Update parent data when local state changes
   const updateParentData = useCallback(() => {

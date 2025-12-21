@@ -132,25 +132,21 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---------------- INSERT ONLY NEW SIZES ---------------- */
-    await Franchise.updateOne(
-      {
-        serviceId,
-        "investment.franchiseSize": {
-          $nin: normalizedInvestment.map(i => i.franchiseSize)
-        }
-      },
-      {
-        $push: {
-          investment: {
-            $each: normalizedInvestment.filter(inv =>
-              !franchise.investment.some(
-                existing => existing.franchiseSize === inv.franchiseSize
-              )
-            )
-          }
-        }
+   await Franchise.updateOne(
+  { serviceId },
+  {
+    $push: {
+      investment: {
+        $each: normalizedInvestment.filter(inv =>
+          !franchise.investment.some(
+            existing => existing.franchiseSize === inv.franchiseSize
+          )
+        )
       }
-    );
+    }
+  }
+);
+
 
     /* ---------------- FETCH UPDATED ---------------- */
     franchise = await Franchise.findOne({ serviceId });

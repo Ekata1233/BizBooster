@@ -909,20 +909,33 @@ export async function PUT(req: NextRequest) {
     }
 
     // --- Extra Images ---
-    const extraImagesUpdated = Array.from(formData.keys()).some((key) =>
-      key.startsWith("serviceDetails[extraImages]")
-    );
-    if (extraImagesUpdated) {
-      serviceDetails.extraImages = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith("serviceDetails[extraImages]")) {
-          const file = formData.get(key);
-          if (file instanceof File && file.size > 0) {
-            serviceDetails.extraImages.push(await handleFileUpload(file, "/services/extraImages"));
-          }
-        }
+   const extraImagesUpdated = Array.from(formData.keys()).some((key) =>
+  key.startsWith("serviceDetails[extraSections]")
+);
+
+if (extraImagesUpdated) {
+  serviceDetails.extraSections = serviceDetails.extraSections || [];
+
+  for (const key of formData.keys()) {
+    if (key.startsWith("serviceDetails[extraSections]")) {
+      const value = formData.get(key);
+
+      // If it's a File upload
+      if (value instanceof File && value.size > 0) {
+        const uploadedUrl = await handleFileUpload(
+          value,
+          "/services/extraSections"
+        );
+        serviceDetails.extraSections.push(uploadedUrl);
+      }
+      // If it's an existing URL string
+      else if (typeof value === "string" && value.trim() !== "") {
+        serviceDetails.extraSections.push(value);
       }
     }
+  }
+}
+
 
     // --- Extra Sections ---
     const extraSectionsUpdated = formData.has("serviceDetails[extraSections][0][title]");
@@ -1058,20 +1071,34 @@ export async function PUT(req: NextRequest) {
     }
 
     // --- Extra Images in Franchise Details ---
-    const franchiseExtraImagesUpdated = Array.from(formData.keys()).some((key) =>
-      key.startsWith("franchiseDetails[extraImages]")
-    );
-    if (franchiseExtraImagesUpdated) {
-      franchiseDetails.extraImages = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith("franchiseDetails[extraImages]")) {
-          const file = formData.get(key);
-          if (file instanceof File && file.size > 0) {
-            franchiseDetails.extraImages.push(await handleFileUpload(file, "/services/franchise/extraImages"));
-          }
-        }
+const franchiseExtraImagesUpdated = Array.from(formData.keys()).some((key) =>
+  key.startsWith("franchiseDetails[extraImages]")
+);
+
+if (franchiseExtraImagesUpdated) {
+  franchiseDetails.extraImages = [];
+
+  for (const key of formData.keys()) {
+    if (key.startsWith("franchiseDetails[extraImages]")) {
+      const value = formData.get(key);
+
+      // ✅ Case 1: New file upload
+      if (value instanceof File && value.size > 0) {
+        const uploadedUrl = await handleFileUpload(
+          value,
+          "/services/franchise/extraImages"
+        );
+        franchiseDetails.extraImages.push(uploadedUrl);
+      }
+
+      // ✅ Case 2: Existing image URL
+      else if (typeof value === "string" && value.trim() !== "") {
+        franchiseDetails.extraImages.push(value);
       }
     }
+  }
+}
+
 
     // --- Extra Sections in Franchise Details ---
     const franchiseExtraSectionsUpdated = formData.has("franchiseDetails[extraSections][0][title]");
@@ -1140,6 +1167,24 @@ for (let j = 0; j < 10; j++) {
   if (!tag) break;
   extraSection.tags.push(tag.trim());
 }
+
+// --- images ---
+for (let j = 0; j < 10; j++) {
+  const imageFile = formData.get(
+    `franchiseDetails[extraSections][${i}][image][${j}]`
+  );
+
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const url = await handleFileUpload(
+      imageFile,
+      "/services/franchise/extraSections"
+    );
+    extraSection.image.push(url);
+  } else {
+    break;
+  }
+}
+
 
 
         franchiseDetails.extraSections.push(extraSection);
