@@ -909,33 +909,47 @@ export async function PUT(req: NextRequest) {
     }
 
     // --- Extra Images ---
-   const extraImagesUpdated = Array.from(formData.keys()).some((key) =>
+  const extraImagesUpdated = Array.from(formData.keys()).some(key =>
   key.startsWith("serviceDetails[extraSections]")
 );
 
 if (extraImagesUpdated) {
   serviceDetails.extraSections = serviceDetails.extraSections || [];
 
-  for (const key of formData.keys()) {
-    if (key.startsWith("serviceDetails[extraSections]")) {
-      const value = formData.get(key);
+  for (const [key, value] of formData.entries()) {
+    const match = key.match(
+      /serviceDetails\[extraSections]\[(\d+)]\[image]\[(\d+)]/
+    );
 
-      // If it's a File upload
-      if (value instanceof File && value.size > 0) {
-        const uploadedUrl = await handleFileUpload(
-          value,
-          "/services/extraSections"
-        );
-        serviceDetails.extraSections.push(uploadedUrl);
-      }
-      // If it's an existing URL string
-      else if (typeof value === "string" && value.trim() !== "") {
-        serviceDetails.extraSections.push(value);
-      }
+    if (!match) continue;
+
+    const sectionIndex = Number(match[1]);
+    const imageIndex = Number(match[2]);
+
+    // Ensure section exists
+    if (!serviceDetails.extraSections[sectionIndex]) {
+      serviceDetails.extraSections[sectionIndex] = { image: [] };
+    }
+
+    // Ensure image array exists
+    serviceDetails.extraSections[sectionIndex].image =
+      serviceDetails.extraSections[sectionIndex].image || [];
+
+    // Handle File upload
+    if (value instanceof File && value.size > 0) {
+      const uploadedUrl = await handleFileUpload(
+        value,
+        "/services/extraSections"
+      );
+      serviceDetails.extraSections[sectionIndex].image[imageIndex] = uploadedUrl;
+    }
+
+    // Handle existing URL
+    else if (typeof value === "string" && value.trim() !== "") {
+      serviceDetails.extraSections[sectionIndex].image[imageIndex] = value;
     }
   }
 }
-
 
     // --- Extra Sections ---
     const extraSectionsUpdated = formData.has("serviceDetails[extraSections][0][title]");
