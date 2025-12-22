@@ -56,6 +56,23 @@ async function parseFormAndUpload(
   // Handle text fields first
   for (const [key, value] of fd.entries()) {
     if (value instanceof Blob) continue; // Node-safe check
+     if (key === "tags") {
+      // handle tags safely
+      if (typeof value === "string") {
+        try {
+          storeInfo.tags = JSON.parse(value); // ["a","b"]
+        } catch {
+          storeInfo.tags = value.split(",").map(v => v.trim());
+        }
+      }
+      continue;
+    }
+
+    if (key === "totalProjects" || key === "totalExperience") {
+      storeInfo[key] = Number(value);
+      continue;
+    }
+
     try {
       storeInfo[key] = JSON.parse(value as string); // allow JSON strings
     } catch {
