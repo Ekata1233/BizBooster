@@ -15,11 +15,11 @@ import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
 interface BasicUpdateFormProps {
   data: any;
   setData: React.Dispatch<React.SetStateAction<any>>;
-   onModuleSelect?: (moduleName: string) => void;
+  //  onModuleSelect?: (moduleName: string) => void;
   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
 
-const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData, onModuleSelect, ,fieldsConfig }) => {
+const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData ,fieldsConfig }) => {
   if (!data) return null;
   
 
