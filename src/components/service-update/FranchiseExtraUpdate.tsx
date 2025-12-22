@@ -469,16 +469,12 @@ const router = useRouter();
 
       const investmentData = await investmentRes.json();
       const modelData = await modelRes.json();
-
-      console.log("Investment API Response:", investmentData);
-      console.log("Model API Response:", modelData);
+      
 
       // Handle case where APIs return empty or error
       const investmentList = investmentData.success ? investmentData.data?.investment || [] : [];
       const modelList = modelData.success ? modelData.data?.model || [] : [];
-
-      console.log("Investment List:", investmentList);
-      console.log("Model List:", modelList);
+      
 
       // Create a map to merge data by franchiseSize
       const franchiseMap = new Map<string, FranchiseData>();
@@ -545,8 +541,7 @@ const router = useRouter();
 
       // Convert map to array
       const mergedFranchises = Array.from(franchiseMap.values());
-
-      console.log("Merged Franchises:", mergedFranchises);
+      
 
       if (mergedFranchises.length > 0) {
         setFranchises(mergedFranchises);
@@ -641,9 +636,7 @@ const router = useRouter();
           gst: Number(item.gst) || 0,
           tokenAmount: Number(item.tokenAmount) || 0,
         }));
-
-      console.log("Sending Model Data:", modelData);
-      console.log("Sending Investment Data:", investmentData);
+        
 
       // Send data to both APIs
       const requests = [];
@@ -680,7 +673,7 @@ const router = useRouter();
       }
 
       const responses = await Promise.all(requests);
-      console.log("API Responses:", responses);
+      
 
       const allSuccessful = responses.every(res => res.success);
       

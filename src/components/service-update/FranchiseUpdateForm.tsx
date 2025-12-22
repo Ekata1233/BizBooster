@@ -57,8 +57,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
           fetchSingleService(id as string);
         }, [id]);
     const data = service;
-    console.log("servie update data ; ", data)
-  // console.log("franchise update data ; ", data)
+    
 
   // Extract price from form data
   const price = data?.price || 0;
@@ -546,6 +545,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       )}
 
       {/* Extra Images */}
+       {fieldsConfig?.extraImages && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Extra Images</Label>
         {extraImages.map((imageUrl, index) => (
@@ -582,6 +582,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
           + Add Extra Image
         </button>
       </div>
+       )}
 
       {/* Extra Sections */}
       {fieldsConfig?.extraSections && (

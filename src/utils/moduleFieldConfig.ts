@@ -20,10 +20,9 @@ export const moduleFieldConfig = {
       howItWork: false,
       assuredByFetchTrue: true,
        packages: true,
-      weRequired: true,
-      weDeliver: true,
+      weRequired: false,
+      weDeliver: false,
             moreInfo: true,
-
        termsAndCondition: true,
       faqs: true,
       connectWith: true,

@@ -37,15 +37,17 @@ export interface BasicDetailsData {
 interface BasicDetailsFormProps {
   data: BasicDetailsData;
   setData: (newData: Partial<BasicDetailsData>) => void;
+  selectedModuleId: string;
    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
 
-const BasicDetailsForm = ({ data, setData ,fieldsConfig }: BasicDetailsFormProps) => {
+const BasicDetailsForm = ({ data, setData, selectedModuleId ,fieldsConfig }: BasicDetailsFormProps) => {
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
+
 
   // Sync key-value rows with parent data
   useEffect(() => {
@@ -89,9 +91,14 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
   const handleRemoveTag = (index: number) => setData({ tags: tags.filter((_, i) => i !== index) });
 
   // Category & Subcategory options
-  const categoryOptions = categories.map(cat => ({ value: cat._id, label: cat.name, image: cat.image || "" }));
+const filteredCategories = categories.filter(
+  (cat) => cat.module?._id === selectedModuleId
+);
+  const categoryOptions = filteredCategories.map(cat => ({ value: cat._id, label: cat.name, image: cat.image || "" }));
   const filteredSubcategories = data.category ? subcategories.filter(s => s.category?._id === data.category) : [];
   const subcategoryOptions = filteredSubcategories.map(subcat => ({ value: subcat._id, label: subcat.name, image: subcat.image || "" }));
+
+  console.log("categoryes : ", categories);
 
   // File handling
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
