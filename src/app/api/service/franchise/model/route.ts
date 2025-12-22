@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { serviceId, model } = body;
 
-    /* ---------------- VALIDATION ---------------- */
     if (
       !serviceId ||
       !mongoose.Types.ObjectId.isValid(serviceId) ||
@@ -91,15 +90,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* ---------------- NORMALIZE ---------------- */
+    /* ---------- NORMALIZE ---------- */
     const normalizedModel = model.map(m => ({
       ...m,
       franchiseSize: m.franchiseSize.toLowerCase()
     }));
 
-    /* ---------------- CREATE IF NOT EXISTS ---------------- */
     let franchise = await Franchise.findOne({ serviceId });
 
+    /* ---------- CREATE ---------- */
     if (!franchise) {
       franchise = await Franchise.create({
         serviceId,
@@ -108,69 +107,34 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        {
-          success: true,
-          message: "Franchise created & models saved",
-          data: franchise
-        },
+        { success: true, message: "Franchise created", data: franchise },
         { status: 201 }
       );
     }
 
-    /* ---------------- UPDATE EXISTING SIZES ---------------- */
-    for (const m of normalizedModel) {
-      await Franchise.updateOne(
-        {
-          serviceId,
-          "model.franchiseSize": m.franchiseSize
-        },
-        {
-          $set: {
-            "model.$": m
-          }
+    /* ---------- 🔥 FIXED UPDATE ---------- */
+    await Franchise.updateOne(
+      { serviceId },
+      {
+        $set: {
+          model: normalizedModel // 👈 FULL REPLACE
         }
-      );
-    }
-
-    /* ---------------- INSERT ONLY NEW SIZES ---------------- */
-    const existingSizes = franchise.model.map(
-      (m: any) => m.franchiseSize
+      }
     );
 
-    const newModels = normalizedModel.filter(
-      m => !existingSizes.includes(m.franchiseSize)
-    );
-
-    if (newModels.length > 0) {
-      await Franchise.updateOne(
-        { serviceId },
-        {
-          $push: {
-            model: { $each: newModels }
-          }
-        }
-      );
-    }
-
-    /* ---------------- FETCH UPDATED ---------------- */
     franchise = await Franchise.findOne({ serviceId });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Models saved / updated without duplicates",
+        message: "Models updated correctly",
         data: franchise
       },
       { status: 200 }
     );
   } catch (err: any) {
-    console.error("Model API Error:", err);
-
     return NextResponse.json(
-      {
-        success: false,
-        message: err.message || "Internal Server Error"
-      },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }

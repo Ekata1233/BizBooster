@@ -110,15 +110,15 @@ type FormDataType = {
 };
 
 const modules = [
-  { name: "Franchise", icon: <FaStore size={36} /> },
-  { name: "Business", icon: <FaBusinessTime size={36} /> },
-  { name: "Marketing", icon: <FaBullhorn size={36} /> },
-  { name: "LegalServices", icon: <FaBalanceScale size={36} /> },
-  { name: "Finance", icon: <FaMoneyBillWave size={36} /> },
-  { name: "ItServices", icon: <FaLaptopCode size={36} /> },
-  { name: "Education", icon: <FaBook size={36} /> },
-  { name: "OnDemand", icon: <FaTruck size={36} /> },
-  { name: "AIHub", icon: <FaRobot size={36} /> },
+  { _id: "68b2caf72ff3f8a31bf7bb8f", name: "Franchise", icon: <FaStore size={36} /> },
+  { _id: "6822dfbce8235364b35df19f", name: "Business", icon: <FaBusinessTime size={36} /> },
+  { _id: "6822dfd5e8235364b35df1a2", name: "Marketing", icon: <FaBullhorn size={36} /> },
+  { _id: "6822dfefe8235364b35df1a5", name: "LegalServices", icon: <FaBalanceScale size={36} /> },
+  { _id: "6822e003e8235364b35df1a8", name: "Finance", icon: <FaMoneyBillWave size={36} /> },
+  { _id: "6822e018e8235364b35df1ab", name: "ItServices", icon: <FaLaptopCode size={36} /> },
+  { _id: "6822e02de8235364b35df1ae", name: "Education", icon: <FaBook size={36} /> },
+  { _id: "6822e05ee8235364b35df1b1", name: "OnDemand", icon: <FaTruck size={36} /> },
+  { _id: "6822e075e8235364b35df1b4", name: "AIHub", icon: <FaRobot size={36} /> },
 ];
 
 // ---------------- COMPONENT ----------------
@@ -131,6 +131,8 @@ const [createdServiceId, setCreatedServiceId] = useState(null);
 const [formKey, setFormKey] = useState(0);
 const [franchiseExtraKey, setFranchiseExtraKey] = useState(0);
 const [franchiseFormKey, setFranchiseFormKey] = useState(0);
+const [selectedModuleId, setSelectedModuleId] = useState<string | null>("68b2caf72ff3f8a31bf7bb8f");
+
 
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
@@ -267,7 +269,9 @@ const resetForm = () => {
 
 
     const config = moduleFieldConfig[selectedModule] || {};
-  const isFranchiseSelected = selectedModule === 'Franchise';
+  // const isFranchiseSelected = selectedModule === 'Franchise';
+  const isFranchiseSelected = selectedModule === "Franchise" || selectedModule === "Business";
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
   if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
@@ -275,7 +279,6 @@ const resetForm = () => {
   }
 };
 
-console.log("formdata service add : ", formData)
   // ---------------- Handle Submit ----------------
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -727,7 +730,7 @@ setFormKey(prev => prev + 1);
                 : "bg-white text-gray-700 hover:bg-gray-100"}`}
               onClick={() => {
                 setSelectedModule(mod.name);
-                // reset stepper to step 1 whenever Franchise module is selected
+                setSelectedModuleId(mod._id);
                 if (mod.name === 'Franchise') setFranchiseStep(1);
               }}
             >
@@ -805,6 +808,7 @@ setFormKey(prev => prev + 1);
           <BasicDetailsForm
             data={formData.basic}
             setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+              selectedModuleId={selectedModuleId}
              fieldsConfig={config.basicDetails}
           />
           <hr className="border-gray-300" />
@@ -856,6 +860,8 @@ setFormKey(prev => prev + 1);
           <BasicDetailsForm
             data={formData.basic}
             setData={(newData) => setFormData((prev) => ({ ...prev, basic: { ...prev.basic, ...newData } }))}
+                          selectedModuleId={selectedModuleId}
+
              fieldsConfig={config.basicDetails}
           />
           <hr className="border-gray-300" />

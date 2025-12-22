@@ -77,7 +77,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { serviceId, investment } = body;
 
-    /* ---------------- VALIDATION ---------------- */
     if (
       !serviceId ||
       !mongoose.Types.ObjectId.isValid(serviceId) ||
@@ -90,15 +89,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* ---------------- NORMALIZE DATA ---------------- */
+    /* ---------- NORMALIZE ---------- */
     const normalizedInvestment = investment.map(inv => ({
       ...inv,
       franchiseSize: inv.franchiseSize.toLowerCase()
     }));
 
-    /* ---------------- CREATE IF NOT EXISTS ---------------- */
     let franchise = await Franchise.findOne({ serviceId });
 
+    /* ---------- CREATE ---------- */
     if (!franchise) {
       franchise = await Franchise.create({
         serviceId,
@@ -107,70 +106,39 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json(
-        {
-          success: true,
-          message: "Franchise created & investments saved",
-          data: franchise
-        },
+        { success: true, message: "Franchise created", data: franchise },
         { status: 201 }
       );
     }
 
-    /* ---------------- UPDATE EXISTING SIZES ---------------- */
-    for (const inv of normalizedInvestment) {
-      await Franchise.updateOne(
-        {
-          serviceId,
-          "investment.franchiseSize": inv.franchiseSize
-        },
-        {
-          $set: {
-            "investment.$": inv
-          }
+    /* ---------- 🔥 FIXED UPDATE ---------- */
+    await Franchise.updateOne(
+      { serviceId },
+      {
+        $set: {
+          investment: normalizedInvestment // 👈 FULL REPLACE
         }
-      );
-    }
-
-    /* ---------------- INSERT ONLY NEW SIZES ---------------- */
-   await Franchise.updateOne(
-  { serviceId },
-  {
-    $push: {
-      investment: {
-        $each: normalizedInvestment.filter(inv =>
-          !franchise.investment.some(
-            existing => existing.franchiseSize === inv.franchiseSize
-          )
-        )
       }
-    }
-  }
-);
+    );
 
-
-    /* ---------------- FETCH UPDATED ---------------- */
     franchise = await Franchise.findOne({ serviceId });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Investments saved / updated without duplicates",
+        message: "Investments updated correctly",
         data: franchise
       },
       { status: 200 }
     );
   } catch (err: any) {
-    console.error("Investment API Error:", err);
-
     return NextResponse.json(
-      {
-        success: false,
-        message: err.message || "Internal Server Error"
-      },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }
 }
+
 
 // GET all investments
 export async function GET(req: NextRequest) {

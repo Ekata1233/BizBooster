@@ -43,10 +43,11 @@ type ExtraSection = {
 interface ServiceUpdateFromProps {
   datas: any;
   setData: React.Dispatch<React.SetStateAction<any>>;
+   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
 
 // ---------------- COMPONENT ----------------
-const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData }) => {
+const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, fieldsConfig }) => {
   // ---------- BASIC STATES ----------
     const { id } = useParams();
     const { fetchSingleService, singleService: service } = useService();
@@ -55,7 +56,7 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData })
         fetchSingleService(id as string);
       }, [id]);
   const data = service;
-  // console.log("servie update data ; ", data)
+  
   const [editorReady, setEditorReady] = useState(false);
 
   const [benefits, setBenefits] = useState<string[]>(['']);
@@ -192,7 +193,7 @@ useEffect(() => {
   // setServiceName(service.serviceName || '');
   // setCategory(service.category || null);
   
-  console.log("Form initialized with data:", details);
+  
 }, [service]);
 
   const benefitsValue = benefits[0] || "";
@@ -258,6 +259,7 @@ useEffect(() => {
       <h4 className="text-2xl font-bold text-center text-gray-800">Service Details</h4>
 
       {/* Benefits */}
+       {fieldsConfig?.benefits && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Benefits</Label>
         {editorReady && (
@@ -269,8 +271,10 @@ useEffect(() => {
           </div>
         )}
       </div>
+       )}
 
       {/* About Us */}
+       {fieldsConfig?.aboutUs && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">About Us</Label>
         {editorReady && (
@@ -282,8 +286,10 @@ useEffect(() => {
           </div>
         )}
       </div>
+       )}
 
       {/* Highlight Images */}
+       {fieldsConfig?.highlight && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Highlight Images</Label>
         <FileInput
@@ -314,8 +320,10 @@ useEffect(() => {
           ))}
         </div>
       </div>
+       )}
 
       {/* Why Choose Us */}
+       {fieldsConfig?.whyChooseUs && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Why Choose Us</Label>
         {renderArrayField(
@@ -351,8 +359,10 @@ useEffect(() => {
           { title: '', description: '', icon: '' }
         )}
       </div>
+       )}
 
       {/* How It Works */}
+      {fieldsConfig?.howItWork && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">How It Works</Label>
         {renderArrayField(
@@ -388,8 +398,10 @@ useEffect(() => {
           { title: '', description: '', icon: '' }
         )}
       </div>
+      )}
 
       {/* Assured By */}
+       {fieldsConfig?.assuredByFetchTrue && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Assured By FetchTrue</Label>
         {renderArrayField(
@@ -425,8 +437,10 @@ useEffect(() => {
           { title: '', description: '', icon: '' }
         )}
       </div>
+       )}
 
       {/* Packages */}
+      {fieldsConfig?.packages && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">
           Packages <span className="text-red-500 text-sm">(All Services)</span>
@@ -528,8 +542,10 @@ useEffect(() => {
           }
         )}
       </div>
+      )}
 
       {/* We Required */}
+      {fieldsConfig?.weRequired && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">We Required</Label>
         {renderArrayField(
@@ -553,8 +569,10 @@ useEffect(() => {
           { title: '', description: '' }
         )}
       </div>
+      )}
 
       {/* We Deliver */}
+      {fieldsConfig?.weDeliver && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">We Deliver</Label>
         {renderArrayField(
@@ -578,8 +596,10 @@ useEffect(() => {
           { title: '', description: '' }
         )}
       </div>
+      )}
 
       {/* More Info */}
+       {fieldsConfig?.moreInfo && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">More Info</Label>
         {renderArrayField(
@@ -617,8 +637,10 @@ useEffect(() => {
           { title: '', image: '', description: '' }
         )}
       </div>
+       )}
 
       {/* Terms & Conditions */}
+       {fieldsConfig?.termsAndCondition && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Terms & Conditions</Label>
         {editorReady && (
@@ -630,8 +652,10 @@ useEffect(() => {
           </div>
         )}
       </div>
+       )}
 
       {/* FAQs */}
+      {fieldsConfig?.faqs && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">FAQs</Label>
         {renderArrayField(
@@ -655,8 +679,10 @@ useEffect(() => {
           { question: '', answer: '' }
         )}
       </div>
+      )}
 
       {/* Connect With */}
+      {fieldsConfig?.connectWith && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Connect With</Label>
         {renderArrayField(
@@ -685,8 +711,10 @@ useEffect(() => {
           { name: '', mobileNo: '', email: '' }
         )}
       </div>
+      )}
 
       {/* Document */}
+      {fieldsConfig?.document && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Document</Label>
         {editorReady && (
@@ -698,8 +726,10 @@ useEffect(() => {
           </div>
         )}
       </div>
+      )}
 
       {/* Time Required */}
+       {fieldsConfig?.timeRequired && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Time Required</Label>
         {renderArrayField(
@@ -736,8 +766,10 @@ useEffect(() => {
           { minDays: null, maxDays: null }
         )}
       </div>
+       )}
 
       {/* Extra Images */}
+      {fieldsConfig?.extraImage && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Extra Images</Label>
         {renderArrayField(
@@ -759,8 +791,10 @@ useEffect(() => {
           { icon: '' }
         )}
       </div>
+      )}
 
       {/* EXTRA SECTIONS */}
+       {fieldsConfig?.extraSection && (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label className="text-lg font-semibold">Extra Sections</Label>
@@ -976,6 +1010,7 @@ useEffect(() => {
           </div>
         )}
       </div>
+       )}
     </div>
   );
 };

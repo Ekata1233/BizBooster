@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
@@ -581,7 +583,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    console.log("------------- Update formdata:", formData);
+    
 
     // --- Basic Fields ---
     const serviceName = (formData.get("serviceName") as string)?.trim();
