@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 export interface Location {
   type: "home" | "office" | "other";
-  coordinates: [number, number]; // [longitude, latitude]
+  coordinates: [number, number];
 }
 
 export interface StoreInfo {
@@ -23,8 +23,10 @@ export interface StoreInfo {
   city?: string;
   state?: string;
   country?: string;
-  postalCode?: string;
   aboutUs?: string;
+  tags?: string[];
+  totalProjects?: number;
+  totalExperience?: number;
 }
 
 export interface KYC {
@@ -47,7 +49,7 @@ export interface ProviderDocument extends Document {
   referralCode?: string;
   referredBy?: mongoose.Schema.Types.ObjectId;
   galleryImages?: string[];
-
+  
   /* step-2 */
   storeInfo?: StoreInfo;
 
@@ -110,6 +112,9 @@ const storeInfoSchema = new Schema<StoreInfo>(
     state: String,
     country: String,
     aboutUs: String,
+    tags: { type: [String], default: [] },
+    totalProjects : Number,
+    totalExperience : Number,
   },
   { _id: false }
 );
