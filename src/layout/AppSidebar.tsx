@@ -88,6 +88,24 @@ const moduleItems: NavItem[] = [
       { name: "Banner-list", path: "/banner-management/banners", pro: false },
     ],
   },
+  {
+  icon: <PaperPlaneIcon />,
+  name: "Why This Service",
+  subItems: [
+    {
+      name: "Add",
+      path: "/why-just-our-service/add",
+      pro: false,
+    },
+    {
+      name: "List",
+      path: "/why-just-our-service/",
+      pro: false,
+    },
+    
+  ],
+},
+
 ];
 
 const customerItems: NavItem[] = [

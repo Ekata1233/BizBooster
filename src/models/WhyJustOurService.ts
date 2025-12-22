@@ -1,16 +1,19 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import Module from "./Module"; // import your Module model
 
-export interface IWhyJustOurService extends Document {
+export interface IServiceItem {
   title: string;
   description: string;
   icon: string;
-  module: mongoose.Types.ObjectId; // reference to Module
+}
+
+export interface IWhyJustOurService extends Document {
+  items: IServiceItem[];          // 🔥 multiple title/desc/icon
+  module: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const WhyJustOurServiceSchema: Schema<IWhyJustOurService> = new Schema(
+const ServiceItemSchema = new Schema<IServiceItem>(
   {
     title: {
       type: String,
@@ -26,9 +29,19 @@ const WhyJustOurServiceSchema: Schema<IWhyJustOurService> = new Schema(
       type: String,
       required: true,
     },
+  },
+  { _id: false } // prevents extra _id inside array
+);
+
+const WhyJustOurServiceSchema: Schema<IWhyJustOurService> = new Schema(
+  {
+    items: {
+      type: [ServiceItemSchema], // ✅ array of items
+      required: true,
+    },
     module: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Module", // references Module collection
+      ref: "Module",
       required: [true, "Module is required"],
     },
   },

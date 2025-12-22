@@ -48,14 +48,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // --- Key Values ---
-    const keyValues: any[] = [];
-    for (let i = 0; i < 20; i++) {
-      const key = formData.get(`keyValues[${i}][key]`);
-      const value = formData.get(`keyValues[${i}][value]`);
-      if (!key || !value) break;
-      keyValues.push({ key, value });
-    }
+ 
+  // --- Key Values ---
+const keyValues: any[] = [];
+for (let i = 0; i < 20; i++) {
+  const key = formData.get(`keyValues[${i}][key]`) as string | null;
+  const value = formData.get(`keyValues[${i}][value]`) as string | null;
+
+  // stop only if BOTH are empty
+  if (!key && !value) break;
+
+  // push if at least one exists
+  if (key || value) {
+    keyValues.push({
+      key: key || "",
+      value: value || "",
+    });
+  }
+}
+
 
     // --- Thumbnail ---
     let thumbnailImage = "";

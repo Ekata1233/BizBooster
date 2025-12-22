@@ -15,39 +15,56 @@ export async function OPTIONS() {
 }
 
 // CREATE
+// CREATE
 export async function POST(req: Request) {
   await connectToDatabase();
 
   try {
     const formData = await req.formData();
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const moduleId = formData.get("module") as string; // new
+    const moduleId = formData.get("module") as string;
 
-    if (!title || !description || !moduleId) {
+    if (!moduleId) {
       return NextResponse.json(
-        { success: false, message: "Title, description, and module are required." },
+        { success: false, message: "Module is required." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let iconUrl = "";
-    const iconFile = formData.get("icon") as File;
-    if (iconFile) {
+    // 🔹 COLLECT MULTIPLE ITEMS
+    const items: any[] = [];
+    let index = 0;
+
+    while (formData.get(`items[${index}][title]`)) {
+      const title = formData.get(`items[${index}][title]`) as string;
+      const description = formData.get(`items[${index}][description]`) as string;
+      const iconFile = formData.get(`items[${index}][icon]`) as File;
+
+      if (!title || !description || !iconFile) {
+        return NextResponse.json(
+          { success: false, message: "Each item must have title, description and icon." },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
       const buffer = Buffer.from(await iconFile.arrayBuffer());
       const uploadResponse = await imagekit.upload({
         file: buffer,
         fileName: `${uuidv4()}-${iconFile.name}`,
         folder: "/whyjustourservice",
       });
-      iconUrl = uploadResponse.url;
+
+      items.push({
+        title,
+        description,
+        icon: uploadResponse.url,
+      });
+
+      index++;
     }
 
     const service = await WhyJustOurService.create({
-      title,
-      description,
-      icon: iconUrl,
-      module: moduleId, // save module reference
+      items,
+      module: moduleId,
     });
 
     return NextResponse.json(
@@ -62,13 +79,14 @@ export async function POST(req: Request) {
   }
 }
 
+
 // GET ALL
 export async function GET() {
   await connectToDatabase();
 
   try {
     const services = await WhyJustOurService.find()
-      .populate("module", "name") // populate module name
+      .populate("module", "name")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(
@@ -82,3 +100,4 @@ export async function GET() {
     );
   }
 }
+

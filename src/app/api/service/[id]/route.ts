@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
+import mongoose from "mongoose";
+
 import "@/models/Category";
 import "@/models/Subcategory";
 import "@/models/Provider";
@@ -20,14 +22,62 @@ function extractId(req: Request | NextRequest) {
   return url.pathname.split("/").pop();
 }
 
+export const removeEmpty = (value: any): any => {
+  // keep ObjectId & Date untouched
+  if (
+    value instanceof mongoose.Types.ObjectId ||
+    value instanceof Date
+  ) {
+    return value;
+  }
+
+  // remove empty string
+  if (value === "") return undefined;
+
+  // handle arrays
+  if (Array.isArray(value)) {
+    const cleanedArray = value
+      .map(removeEmpty)
+      .filter(v => v !== undefined);
+
+    return cleanedArray.length > 0 ? cleanedArray : undefined;
+  }
+
+  // handle objects
+  if (typeof value === "object" && value !== null) {
+    const cleanedObject: any = {};
+
+    for (const key in value) {
+      const cleanedValue = removeEmpty(value[key]);
+
+      if (cleanedValue !== undefined) {
+        cleanedObject[key] = cleanedValue;
+      }
+    }
+
+    return Object.keys(cleanedObject).length > 0
+      ? cleanedObject
+      : undefined;
+  }
+
+  // keep numbers, booleans, valid strings
+  return value;
+};
+
 /* =============================
    GET SERVICE BY ID
 ============================= */
 export async function GET(req: Request) {
   await connectToDatabase();
+
   try {
     const id = extractId(req);
-    if (!id) return NextResponse.json({ success: false, message: "ID missing" }, { status: 400, headers: corsHeaders });
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID missing" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     const service = await Service.findById(id)
       .populate("category")
@@ -36,15 +86,31 @@ export async function GET(req: Request) {
         path: "providerPrices.provider",
         model: "Provider",
         select: "fullName storeInfo.storeName storeInfo.logo",
-      });
+      })
+      .lean(); // ✅ IMPORTANT
 
-    if (!service) return NextResponse.json({ success: false, message: "Service not found" }, { status: 404, headers: corsHeaders });
+    if (!service) {
+      return NextResponse.json(
+        { success: false, message: "Service not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
 
-    return NextResponse.json({ success: true, data: service }, { status: 200, headers: corsHeaders });
+    // ✅ CLEAN EMPTY STRINGS & ARRAYS
+    const cleanedService = removeEmpty(service);
+
+    return NextResponse.json(
+      { success: true, data: cleanedService },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
+
 
 /* =============================
    UPDATE SERVICE BY ID
