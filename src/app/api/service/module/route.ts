@@ -164,6 +164,37 @@ export async function GET(req: NextRequest) {
         { $sort: { sortOrder: 1, ...sortOption } },
         ...(limit ? [{ $skip: skip }, { $limit: limit }] : [])
       );
+
+      pipeline.push(
+  {
+    $project: {
+      serviceName: 1,
+      thumbnailImage: 1,
+      averageRating: 1,
+      totalReviews: 1,
+      keyValues: 1,
+
+      /* CATEGORY */
+      category: {
+        _id: 1,
+        name: 1,
+        image: 1,
+      },
+serviceDetails:{
+      packages: "$serviceDetails.packages",
+},
+      /* FRANCHISE DETAILS */
+      franchiseDetails: {
+        commission: 1,
+        investmentRange: 1,
+        monthlyEarnPotential: 1,
+      },
+
+
+    },
+  }
+);
+
   
       const services = await Service.aggregate(pipeline);
   
