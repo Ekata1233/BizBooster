@@ -10,11 +10,13 @@ import { TrashBinIcon } from "@/icons";
 import { useCategory } from "@/context/CategoryContext";
 import { useSubcategory } from "@/context/SubcategoryContext";
 import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
-
 interface KeyValue {
   key: string;
   value: string;
+  icon?: File | null; // ✅ store file instead of string
 }
+
+
 
 export interface BasicDetailsData {
   serviceName?: string | null;
@@ -50,11 +52,21 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
 
 
   // Sync key-value rows with parent data
-  useEffect(() => {
-    if (data.keyValues && JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
-      setRows(data.keyValues);
-    }
-  }, [data.keyValues]);
+ useEffect(() => {
+  if (
+    data.keyValues &&
+    (data.keyValues.length !== rows.length ||
+      data.keyValues.some(
+        (row, i) =>
+          row.key !== rows[i]?.key ||
+          row.value !== rows[i]?.value
+      ))
+  ) {
+    setRows(data.keyValues);
+  }
+}, [data.keyValues]);
+
+
   
 
   // Calculate discountedPrice, gstInRupees, totalWithGst
@@ -71,13 +83,32 @@ const [errors, setErrors] = useState<{ serviceName?: string; category?: string }
   }, [data.price, data.discount, data.gst]);
 
   // Add / Remove rows
-  const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
-  const handleRemoveRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
-  const handleRowChange = (index: number, field: keyof KeyValue, value: string) => {
-    const updated = [...rows];
-    updated[index][field] = value;
-    setRows(updated);
-  };
+const handleAddRow = () => {
+  const updated = [...rows, { key: "", value: "", icon: null }];
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+
+const handleRemoveRow = (index: number) => {
+  const updated = rows.filter((_, i) => i !== index);
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+const handleRowChange = (
+  index: number,
+  field: keyof KeyValue,
+  value: string | File | null
+) => {
+  const updated = [...rows];
+  updated[index][field] = value;
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+
+
+
+
+
 
   // Tags handling
   const tags = data.tags || [];
@@ -284,17 +315,31 @@ const filteredCategories = categories.filter(
                   </button>
                 </div>
                 <div className="flex gap-4 mt-3">
-                  <Input
-                    placeholder="Key"
-                    value={row.key}
-                    onChange={(e) => handleRowChange(index, "key", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={row.value}
-                    onChange={(e) => handleRowChange(index, "value", e.target.value)}
-                  />
-                </div>
+  <Input
+    placeholder="Key"
+    value={row.key}
+    onChange={(e) => handleRowChange(index, "key", e.target.value)}
+  />
+  <Input
+    placeholder="Value"
+    value={row.value}
+    onChange={(e) => handleRowChange(index, "value", e.target.value)}
+  />
+ <div className="flex-1">
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] || null;
+      console.log("Direct file input - File:", file);
+      console.log("Is File?", file instanceof File);
+      handleRowChange(index, "icon", file);
+    }}
+    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  />
+</div>
+</div>
+
               </div>
             ))}
             <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">

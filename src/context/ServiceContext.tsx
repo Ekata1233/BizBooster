@@ -118,7 +118,7 @@ export interface Service {
   bannerImages: string[];
 
   tags: string[];
-  keyValues: { key: string; value: string }[];
+keyValues: { key: string; value: string; icon?: string }[];
 
   providerPrices: ProviderPrice[];
 
