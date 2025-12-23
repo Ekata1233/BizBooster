@@ -33,22 +33,53 @@ export async function PATCH(req: Request) {
     const formData = await req.formData();
     const updateData: Record<string, any> = {};
 
+
+    // ✅ Handle storeInfo.tags as full array (REPLACE strategy)
+const incomingTags = formData.getAll("storeInfo.tags");
+
+if (incomingTags.length > 0) {
+  updateData.storeInfo = updateData.storeInfo || {};
+  updateData.storeInfo.tags = incomingTags;
+}
+
+
     // ── Extract text fields (dot notation for nested)
+    // formData.forEach((value, key) => {
+    //   if (typeof value === "string") {
+    //     if (key.includes(".")) {
+    //       const parts = key.split(".");
+    //       let ref = updateData;
+    //       for (let i = 0; i < parts.length - 1; i++) {
+    //         if (!ref[parts[i]]) ref[parts[i]] = {};
+    //         ref = ref[parts[i]];
+    //       }
+    //       ref[parts[parts.length - 1]] = value;
+    //     } else {
+    //       updateData[key] = value;
+    //     }
+    //   }
+    // });
+    
     formData.forEach((value, key) => {
-      if (typeof value === "string") {
-        if (key.includes(".")) {
-          const parts = key.split(".");
-          let ref = updateData;
-          for (let i = 0; i < parts.length - 1; i++) {
-            if (!ref[parts[i]]) ref[parts[i]] = {};
-            ref = ref[parts[i]];
-          }
-          ref[parts[parts.length - 1]] = value;
-        } else {
-          updateData[key] = value;
-        }
+  if (typeof value === "string") {
+
+    // 🔥 Skip tags here (handled separately as array)
+    if (key === "storeInfo.tags") return;
+
+    if (key.includes(".")) {
+      const parts = key.split(".");
+      let ref = updateData;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!ref[parts[i]]) ref[parts[i]] = {};
+        ref = ref[parts[i]];
       }
-    });
+      ref[parts[parts.length - 1]] = value;
+    } else {
+      updateData[key] = value;
+    }
+  }
+});
+
 
     // ── File upload keys
     const fileKeys = ["logo", "cover", "galleryImages", "aadhaarCard", "panCard", "storeDocument", "GST", "other"];
