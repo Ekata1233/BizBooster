@@ -14,6 +14,7 @@ import Link from "next/link";
 import axios from "axios";
 import { debounce } from "lodash";
 import Image from "next/image";
+import Switch from "@/components/form/switch/Switch";
 
 interface ProviderTableData {
   id: string;
@@ -31,6 +32,8 @@ interface ProviderTableData {
   step1Completed: boolean;
   storeInfoCompleted: boolean;
   kycCompleted: boolean;
+   isRecommended: boolean;
+  isTrending: boolean;
 }
 
 const ProviderList = () => {
@@ -90,6 +93,8 @@ const ProviderList = () => {
           step1Completed: provider.step1Completed || false,
           storeInfoCompleted: provider.storeInfoCompleted || false,
           kycCompleted: provider.kycCompleted || false,
+          isRecommended: provider.isRecommended || false,
+  isTrending: provider.isTrending || false,
         };
       });
       console.log("✅ Provider List (Processed):", updatedProviders);
@@ -173,6 +178,44 @@ const ProviderList = () => {
   const handleSearchChange = debounce((value: string) => {
     setSearchQuery(value);
   }, 300);
+
+const handleToggleChange = async (
+  id: string,
+  field: "isRecommended" | "isTrending",
+  checked: boolean
+) => {
+  try {
+    // Optimistic UI update
+    setProviders((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, [field]: checked } : p
+      )
+    );
+
+    const formData = new FormData();
+
+    // 👇 IF THESE FIELDS ARE TOP-LEVEL
+    formData.append(field, String(checked));
+
+    // 👇 IF THESE FIELDS ARE INSIDE storeInfo (MOST LIKELY)
+    // formData.append(`storeInfo.${field}`, String(checked));
+
+    await axios.patch(
+      `/api/provider/edit-profile/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Toggle update failed:", error);
+  }
+};
+
+
+
 
   const columns = [
     {
@@ -277,6 +320,38 @@ const ProviderList = () => {
         </div>
       ),
     },
+{
+  header: "Recommended",
+  accessor: "recommended",
+  render: (row: ProviderTableData) => (
+    <div className="flex justify-center">
+     <Switch
+  checked={row.isRecommended}
+  onChange={(checked) =>
+    handleToggleChange(row.id, "isRecommended", checked)
+  }
+  color="gray"
+/>
+
+    </div>
+  ),
+},
+{
+  header: "Top Trending",
+  accessor: "trending",
+  render: (row: ProviderTableData) => (
+    <div className="flex justify-center">
+    <Switch
+  checked={row.isTrending}
+  onChange={(checked) =>
+    handleToggleChange(row.id, "isTrending", checked)
+  }
+  color="gray"
+/>
+
+    </div>
+  ),
+},
   ];
 
   return (

@@ -25,20 +25,6 @@ function isPointInPolygon(
   return inside;
 }
 
-// export async function GET() {
-//   await connectToDatabase();
-//   const providers = await Provider.find().sort().populate({
-//       path: 'subscribedServices',
-//       select: 'serviceName price discountedPrice category isDeleted providerCommission',
-//       populate: {
-//         path: 'category',
-//         select: 'name' // Only get the category name
-//       }
-//     });
-//   return NextResponse.json(providers);
-// }
-
-
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
