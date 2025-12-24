@@ -40,7 +40,25 @@ category: {
     bannerImages: [{ type: String }],
     tags: { type: [String], default: [] },
 
-    keyValues: [{ key: String, value: String }],
+keyValues: [
+  {
+    key: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    value: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    icon: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+],
 
     // --------------------------------------------------
     // SERVICE DETAILS

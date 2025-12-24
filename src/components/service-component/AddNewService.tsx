@@ -11,7 +11,12 @@ import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 import FranchiseExtraDetails from './FranchiseExtraDetails';
 
 // ---------------- TYPES ----------------
-type KeyValue = { key: string; value: string };
+type KeyValue = { 
+  key: string; 
+  value: string; 
+  icon?: File | string | null;
+};
+
 type RowData = { title: string; description: string[] };
 type InvestmentRangeItem = {
   minRange: number | string;
@@ -147,7 +152,8 @@ const [selectedModuleId, setSelectedModuleId] = useState<string | null>("68b2caf
       thumbnail: null,
       covers: [],
       tags: [],
-      keyValues: [{ key: '', value: '' }],
+      keyValues: [{ key: '', value: '', icon: null }],
+
       recommendedServices: false,
     },
     service: {
@@ -196,7 +202,7 @@ const initialFormData: FormDataType = {
     thumbnail: null,
     covers: [],
     tags: [],
-    keyValues: [{ key: '', value: '' }],
+    keyValues: [{ key: '', value: '', icon: null }],
     recommendedServices: false,
   },
   service: {
@@ -329,11 +335,30 @@ if (Array.isArray(formData.basic.tags)) {
 }
 
 
-    // KeyValues
-    formData.basic.keyValues?.forEach((kv, i) => {
-      fd.append(`keyValues[${i}][key]`, kv.key || "");
-      fd.append(`keyValues[${i}][value]`, kv.value || "");
-    });
+// KeyValues - UPDATED FIX
+if (formData.basic.keyValues) {
+  for (let i = 0; i < formData.basic.keyValues.length; i++) {
+    const kv = formData.basic.keyValues[i];
+
+    fd.append(`keyValues[${i}][key]`, kv.key || "");
+    fd.append(`keyValues[${i}][value]`, kv.value || "");
+    
+    // Just append the File object - backend will handle upload
+    if (kv.icon instanceof File) {
+      fd.append(`keyValues[${i}][icon]`, kv.icon);
+    } else {
+      // Send empty string for null/undefined
+      fd.append(`keyValues[${i}][icon]`, "");
+    }
+  }
+}
+
+
+// Add this debug line BEFORE processing keyValues
+console.log("DEBUG - formData.basic.keyValues:", formData.basic.keyValues);
+console.log("DEBUG - First item icon:", formData.basic.keyValues?.[0]?.icon);
+console.log("DEBUG - Icon type:", typeof formData.basic.keyValues?.[0]?.icon);
+console.log("DEBUG - Is File?", formData.basic.keyValues?.[0]?.icon instanceof File);
 
 
 

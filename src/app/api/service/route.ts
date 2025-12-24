@@ -49,24 +49,44 @@ export async function POST(req: NextRequest) {
     }
 
  
-  // --- Key Values ---
+// --- Key Values ---
+// --- Key Values (key + value + icon, ALL OPTIONAL) ---
 const keyValues: any[] = [];
 for (let i = 0; i < 20; i++) {
   const key = formData.get(`keyValues[${i}][key]`) as string | null;
   const value = formData.get(`keyValues[${i}][value]`) as string | null;
+  const iconFile = formData.get(`keyValues[${i}][icon]`);
 
-  // stop only if BOTH are empty
-  if (!key && !value) break;
+  // ⛔ stop only if ALL are empty
+  if (!key && !value && !iconFile) break;
 
-  // push if at least one exists
-  if (key || value) {
-    keyValues.push({
-      key: key || "",
-      value: value || "",
-    });
+  // Handle icon upload (just like other files)
+  let iconUrl = "";
+  if (iconFile instanceof File) {
+    try {
+      const buffer = Buffer.from(await iconFile.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${iconFile.name}`,
+        folder: "/services/keyValueIcons",
+      });
+      iconUrl = upload.url;
+    } catch (error) {
+      console.error(`Failed to upload keyValues[${i}] icon:`, error);
+      iconUrl = "";
+    }
+  } else if (typeof iconFile === "string") {
+    // If it's already a string (URL or empty)
+    iconUrl = iconFile || "";
   }
-}
 
+  // ✅ push if ANY exists
+  keyValues.push({
+    key: key || "",
+    value: value || "",
+    icon: iconUrl,
+  });
+}
 
     // --- Thumbnail ---
     let thumbnailImage = "";
