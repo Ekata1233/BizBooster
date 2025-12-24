@@ -88,17 +88,21 @@ if (incomingTags.length > 0) {
       const files = formData.getAll(key) as File[];
       if (files && files.length > 0) {
         const uploadedUrls: string[] = [];
-        for (const file of files) {
-          if (file instanceof File) {
-            const buffer = Buffer.from(await file.arrayBuffer());
-            const uploadResponse = await imagekit.upload({
-              file: buffer,
-              fileName: `${uuidv4()}-${file.name}`,
-              folder: key === "galleryImages" || key === "logo" || key === "cover" ? "/provider" : "/provider/kyc",
-            });
-            uploadedUrls.push(uploadResponse.url);
-          }
-        }
+       for (const file of files) {
+  if (file && typeof file === "object" && "arrayBuffer" in file) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName: `${uuidv4()}`,
+      folder:
+        key === "galleryImages" || key === "logo" || key === "cover"
+          ? "/provider"
+          : "/provider/kyc",
+    });
+    uploadedUrls.push(uploadResponse.url);
+  }
+}
+
 
         if (["logo", "cover"].includes(key)) {
           updateData[`storeInfo.${key}`] = uploadedUrls[0];

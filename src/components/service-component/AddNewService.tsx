@@ -279,6 +279,10 @@ const resetForm = () => {
   }
 };
 
+console.log("formdata ad new service", formData);
+// console.log("data ad new service", data);
+
+
   // ---------------- Handle Submit ----------------
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
