@@ -254,7 +254,7 @@ keyValues: [
   notInclude: [{ type: String }],
 
   safetyAndAssurance: [{ type: String }],
-}
+},
 
 
     // --------------------------------------------------
