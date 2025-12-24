@@ -64,66 +64,198 @@ keyValues: [
     // SERVICE DETAILS
     // --------------------------------------------------
     serviceDetails: {
-      benefits: [{ type: String }],
-      aboutUs: [{ type: String }],
-      highlight: [{ type: String }],
-      document: [{ type: String }],
+  benefits: [{ type: String }],
+  aboutUs: [{ type: String }],
+  highlight: [{ type: String }],
+  document: [{ type: String }],
 
-      assuredByFetchTrue: [
-        { title: String, icon: String, description: String },
-      ],
+  assuredByFetchTrue: [
+    { title: String, icon: String, description: String },
+  ],
 
-      howItWorks: [
-        { title: String, icon: String, description: String },
-      ],
+  howItWorks: [
+    { title: String, icon: String, description: String },
+  ],
 
-      termsAndConditions: [{ type: String }],
-      faq: [{ question: String, answer: String }],
+  termsAndConditions: [{ type: String }],
+  faq: [{ question: String, answer: String }],
 
-      extraSections: [
+  extraSections: [
+    {
+      title: { type: String },
+      subtitle: [{ type: String }],
+      image: [{ type: String }],
+      description: [{ type: String }],
+      subDescription: [{ type: String }],
+      lists: [{ type: String }],
+      tags: [{ type: String }],
+    },
+  ],
+
+  whyChooseUs: [
+    { title: String, icon: String, description: String },
+  ],
+
+  packages: [
+    {
+      name: String,
+      price: { type: Number, default: null },
+      discount: { type: Number, default: null },
+      discountedPrice: { type: Number, default: null },
+      whatYouGet: [String],
+    },
+  ],
+
+  weRequired: [{ title: String, description: String }],
+  weDeliver: [{ title: String, description: String }],
+
+  moreInfo: [
+    { title: String, image: String, description: String },
+  ],
+
+  connectWith: [
+    { name: String, mobileNo: String, email: String },
+  ],
+
+  timeRequired: [
+    {
+      minDays: { type: Number, default: null },
+      maxDays: { type: Number, default: null },
+    },
+  ],
+
+  extraImages: [{ type: String }],
+
+  // --------------------------------------------------
+  // 🆕 EXTENDED SERVICE DETAILS
+  // --------------------------------------------------
+
+  operatingCities: [{ type: String }],
+
+  brochureImage: [{ type: String }],
+
+  empanelmentOption: [{ type: String }],
+
+  counter: [
+    {
+      number: { type: Number },
+      title: { type: String },
+    },
+  ],
+
+  franchiseOperatingModel: [
+    {
+      info: { type: String },
+      title: { type: String },
+      description: { type: String },
+
+      features: [
         {
-          title: { type: String },
-
-          subtitle: [{ type: String }],
-          image: [{ type: String }],
-          description: [{ type: String }],
-          subDescription: [{ type: String }],
-          lists: [{ type: String }],
-          tags: [{ type: String }],
-        }
-      ],
-
-      whyChooseUs: [
-        { title: String, icon: String, description: String },
-      ],
-
-      packages: [
-        {
-          name: String,
-          price: { type: Number, default: null },
-          discount: { type: Number, default: null },
-          discountedPrice: { type: Number, default: null },
-          whatYouGet: [String],
+          icon: { type: String },
+          subtitle: { type: String },
+          subDescription: { type: String },
         },
       ],
 
-      weRequired: [{ title: String, description: String }],
-      weDeliver: [{ title: String, description: String }],
-
-      moreInfo: [
-        { title: String, image: String, description: String },
-      ],
-
-      connectWith: [
-        { name: String, mobileNo: String, email: String },
-      ],
-
-      timeRequired: [
-        { minDays: { type: Number, default: null }, maxDays: { type: Number, default: null } },
-      ],
-
-      extraImages: [{ type: String }],
+      tags: [{ type: String }],
+      example: { type: String },
     },
+  ],
+
+  businessFundamental: {
+    description: { type: String },
+    points: [
+      {
+        subtitle: { type: String },
+        subDescription: { type: String },
+      },
+    ],
+  },
+
+  keyAdvantages: [
+    {
+      icon: { type: String },
+      title: { type: String },
+      description: { type: String },
+    },
+  ],
+
+  completeSupportSystem: [
+    {
+      icon: { type: String },
+      title: { type: String },
+      lists: [{ type: String }],
+    },
+  ],
+
+  trainingDetails: [{ type: String }],
+
+  agreementDetails: [{ type: String }],
+
+  goodThings: [{ type: String }],
+
+  compareAndChoose: [{ type: String }],
+
+  companyDetails: [
+    {
+      name: { type: String },
+      location: { type: String },
+      details: [
+        {
+          title: { type: String },
+          description: { type: String },
+        },
+      ],
+    },
+  ],
+
+  roi: [{ type: String }],
+
+  level: {
+    type: String,
+    enum: ["beginner", "medium", "advanced"],
+    default: "beginner",
+  },
+
+  lessonCount: { type: Number, default: null },
+
+  duration: {
+    weeks: { type: Number, default: null },
+    hours: { type: Number, default: null },
+  },
+
+  whatYouWillLearn: [{ type: String }],
+
+  eligibleFor: [{ type: String }],
+
+  courseCurriculum: [
+    {
+      title: { type: String },
+      lists: [{ type: String }],
+      model: [{ type: String }],
+    },
+  ],
+
+  // ✅ NEW FIELD ADDED (as requested)
+  courseIncludes: [{ type: String }],
+
+  certificateImage: [{ type: String }],
+
+  // ✅ UPDATED STRUCTURE (lists is STRING now)
+  whomToSell: [
+    {
+      icon: { type: String },
+      lists: { type: String },
+    },
+  ],
+
+  include: [{ type: String }],
+
+  notInclude: [{ type: String }],
+
+  safetyAndAssurance: [{ type: String }],
+}
+
 
     // --------------------------------------------------
     // FRANCHISE DETAILS
