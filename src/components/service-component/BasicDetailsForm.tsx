@@ -49,7 +49,7 @@ const BasicDetailsForm = ({ data, setData, selectedModuleId ,fieldsConfig }: Bas
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
-
+console.log('data of basic details : ', data)
 
   // Sync key-value rows with parent data
  useEffect(() => {
