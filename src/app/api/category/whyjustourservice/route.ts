@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import WhyJustOurService from "@/models/WhyJustOurService";
-import "@/models/Module"
+import "@/models/Module";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -15,8 +16,7 @@ export async function OPTIONS() {
 }
 
 // CREATE
-// CREATE
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
@@ -30,16 +30,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔹 COLLECT MULTIPLE ITEMS
+    // 🔹 Collect multiple items
     const items: any[] = [];
     let index = 0;
 
     while (formData.get(`items[${index}][title]`)) {
       const title = formData.get(`items[${index}][title]`) as string;
       const description = formData.get(`items[${index}][description]`) as string;
-      const iconFile = formData.get(`items[${index}][icon]`) as File;
+      const iconFile = formData.get(`items[${index}][icon]`) as File | null;
       const list = formData.get(`items[${index}][list]`) as string | null;
-
 
       if (!title || !description || !iconFile) {
         return NextResponse.json(
@@ -56,18 +55,18 @@ export async function POST(req: Request) {
       });
 
       items.push({
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         icon: uploadResponse.url,
-        ...(list && { list }),
+        ...(list ? { list: list.trim() } : {}),
       });
 
       index++;
     }
 
     const service = await WhyJustOurService.create({
-      items,
       module: moduleId,
+      items,
     });
 
     return NextResponse.json(
@@ -77,11 +76,10 @@ export async function POST(req: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 400, headers: corsHeaders }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
-
 
 // GET ALL
 export async function GET() {
@@ -103,4 +101,3 @@ export async function GET() {
     );
   }
 }
-

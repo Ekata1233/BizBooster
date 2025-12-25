@@ -35,6 +35,7 @@ interface ServiceItem {
   description: string;
   icon: string;
   list?: string; 
+
 }
 
 interface ServiceType {
@@ -193,7 +194,7 @@ const WhyJustOurServiceList = () => {
               <p className="font-semibold">{item.title}</p>
               <p className="text-gray-500 text-sm">{item.description}</p>
               {item.list && (
-                <p className="text-xs text-gray-400">{item.list}</p> {/* ✅ LIST DISPLAY */}
+                <p className="text-xs text-gray-400">{item.list}</p>
               )}
             </div>
           </div>
