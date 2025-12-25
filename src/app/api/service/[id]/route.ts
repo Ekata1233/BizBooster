@@ -17,6 +17,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+// Also add an OPTIONS handler for CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 function extractId(req: Request | NextRequest) {
   const url = new URL(req.url);
   return url.pathname.split("/").pop();
@@ -101,6 +106,127 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       { success: true, data: cleanedService },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+/* =============================
+   DELETE SERVICE BY ID
+============================= */
+export async function DELETE(req: Request) {
+  await connectToDatabase();
+  try {
+    const id = extractId(req);
+    if (!id) return NextResponse.json({ success: false, message: "ID missing" }, { status: 400, headers: corsHeaders });
+
+    const service = await Service.findByIdAndDelete(id);
+    if (!service) return NextResponse.json({ success: false, message: "Service not found" }, { status: 404, headers: corsHeaders });
+
+    return NextResponse.json({ success: true, message: "Service deleted successfully" }, { status: 200, headers: corsHeaders });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500, headers: corsHeaders });
+  }
+}
+
+/* =============================
+   PATCH SERVICE BY ID
+============================= */
+export async function PATCH(req: NextRequest) {
+  await connectToDatabase();
+
+  try {
+    const id = extractId(req);
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID missing" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const service = await Service.findById(id);
+    if (!service) {
+      return NextResponse.json(
+        { success: false, message: "Service not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    const formData = await req.formData();
+    const updateData: any = {};
+
+    /* -----------------------------
+       HANDLE NORMAL FIELDS
+    ----------------------------- */
+    for (const [key, value] of formData.entries()) {
+      if (value === "" || value === null) continue;
+
+      // Boolean handling
+      if (value === "true") {
+        updateData[key] = true;
+      } else if (value === "false") {
+        updateData[key] = false;
+      }
+      // JSON fields (arrays / objects)
+      else if (typeof value === "string" && value.startsWith("{") || value.startsWith("[")) {
+        try {
+          updateData[key] = JSON.parse(value);
+        } catch {
+          updateData[key] = value;
+        }
+      }
+      // Normal strings / numbers
+      else {
+        updateData[key] = value;
+      }
+    }
+
+    /* -----------------------------
+       HANDLE IMAGE UPLOAD (ImageKit)
+    ----------------------------- */
+    const imageFile = formData.get("image") as File | null;
+
+    if (imageFile && imageFile instanceof File) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+      const uploadRes = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${imageFile.name}`,
+        folder: "/services",
+      });
+
+      updateData.image = uploadRes.url;
+    }
+
+    /* -----------------------------
+       CLEAN EMPTY VALUES
+    ----------------------------- */
+    const cleanedData = removeEmpty(updateData);
+
+    /* -----------------------------
+       UPDATE SERVICE
+    ----------------------------- */
+    const updatedService = await Service.findByIdAndUpdate(
+      id,
+      { $set: cleanedData },
+      { new: true }
+    )
+      .populate("category")
+      .populate("subcategory")
+      .populate({
+        path: "providerPrices.provider",
+        model: "Provider",
+        select: "fullName storeInfo.storeName storeInfo.logo",
+      })
+      .lean();
+
+    return NextResponse.json(
+      { success: true, data: updatedService },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: any) {
@@ -1334,25 +1460,4 @@ for (let j = 0; j < 10; j++) {
   }
 }
 
-// Also add an OPTIONS handler for CORS preflight
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
 
-/* =============================
-   DELETE SERVICE BY ID
-============================= */
-export async function DELETE(req: Request) {
-  await connectToDatabase();
-  try {
-    const id = extractId(req);
-    if (!id) return NextResponse.json({ success: false, message: "ID missing" }, { status: 400, headers: corsHeaders });
-
-    const service = await Service.findByIdAndDelete(id);
-    if (!service) return NextResponse.json({ success: false, message: "Service not found" }, { status: 404, headers: corsHeaders });
-
-    return NextResponse.json({ success: true, message: "Service deleted successfully" }, { status: 200, headers: corsHeaders });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500, headers: corsHeaders });
-  }
-}

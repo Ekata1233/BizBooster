@@ -308,6 +308,7 @@ keyValues: [
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
     recommendedServices: { type: Boolean, default: false },
+    isTrending: { type: Boolean, default: false },
     isDeleted: { type: Boolean },
     sortOrder: { type: Number, default: 0 },
   },
