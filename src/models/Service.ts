@@ -134,7 +134,7 @@ keyValues: [
 
   brochureImage: [{ type: String }],
 
-  empanelmentOption: [{ type: String }],
+  emiavalable: [{ type: String }],
 
   counter: [
     {

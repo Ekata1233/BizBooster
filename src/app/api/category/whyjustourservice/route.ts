@@ -38,6 +38,8 @@ export async function POST(req: Request) {
       const title = formData.get(`items[${index}][title]`) as string;
       const description = formData.get(`items[${index}][description]`) as string;
       const iconFile = formData.get(`items[${index}][icon]`) as File;
+      const list = formData.get(`items[${index}][list]`) as string | null;
+
 
       if (!title || !description || !iconFile) {
         return NextResponse.json(
@@ -57,6 +59,7 @@ export async function POST(req: Request) {
         title,
         description,
         icon: uploadResponse.url,
+        ...(list && { list }),
       });
 
       index++;

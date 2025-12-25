@@ -34,6 +34,7 @@ interface ServiceItem {
   title: string;
   description: string;
   icon: string;
+  list?: string; 
 }
 
 interface ServiceType {
@@ -112,6 +113,7 @@ const WhyJustOurServiceList = () => {
     description: string;
     iconFile: File | null;
     oldIcon: string;
+    list?: string; 
     key: number;
   }
 
@@ -125,6 +127,7 @@ const WhyJustOurServiceList = () => {
       description: item.description,
       iconFile: null,
       oldIcon: item.icon,
+      list: item.list || "",
       key: Date.now() + Math.random(),
     }));
 
@@ -134,7 +137,7 @@ const WhyJustOurServiceList = () => {
 
   const handleEditItemChange = (
     key: number,
-    field: "title" | "description" | "iconFile",
+    field: "title" | "description" | "iconFile" | "list",
     value: string | File | null
   ) => {
     setEditItems((prev) =>
@@ -145,7 +148,7 @@ const WhyJustOurServiceList = () => {
   const handleAddEditItem = () => {
     setEditItems((prev) => [
       ...prev,
-      { title: "", description: "", iconFile: null, oldIcon: "", key: Date.now() },
+      { title: "", description: "", iconFile: null, oldIcon: "", list: "", key: Date.now() },
     ]);
   };
 
@@ -162,6 +165,7 @@ const WhyJustOurServiceList = () => {
     editItems.forEach((item, index) => {
       formData.append(`items[${index}][title]`, item.title);
       formData.append(`items[${index}][description]`, item.description);
+      if (item.list) formData.append(`items[${index}][list]`, item.list);
       if (item.iconFile) formData.append(`items[${index}][icon]`, item.iconFile);
       else formData.append(`items[${index}][oldIcon]`, item.oldIcon);
     });
@@ -172,6 +176,40 @@ const WhyJustOurServiceList = () => {
   };
 
   /* ───────── TABLE ───────── */
+
+  const DetailsColumn = ({ row }: { row: ServiceType }) => {
+    const [showAll, setShowAll] = useState(false);
+    const itemsToShow = showAll ? row.items : row.items.slice(0, 2);
+    const remainingCount = row.items.length - 2;
+
+    return (
+      <div className="flex flex-col gap-2">
+        {itemsToShow.map((item, idx) => (
+          <div key={idx} className="flex gap-2 items-start">
+            <div className="relative w-12 h-12 border rounded overflow-hidden">
+              <Image src={item.icon} alt={item.title} fill className="object-cover" />
+            </div>
+            <div>
+              <p className="font-semibold">{item.title}</p>
+              <p className="text-gray-500 text-sm">{item.description}</p>
+              {item.list && (
+                <p className="text-xs text-gray-400">{item.list}</p> {/* ✅ LIST DISPLAY */}
+              )}
+            </div>
+          </div>
+        ))}
+
+        {row.items.length > 2 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="text-blue-500 text-sm mt-1"
+          >
+            {showAll ? "Hide" : `+${remainingCount} more`}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   const columns = [
     {
@@ -186,42 +224,11 @@ const WhyJustOurServiceList = () => {
       render: (row: ServiceType) =>
         typeof row.module === "object" ? row.module.name : "-",
     },
-   {
-  header: "Details",
-  accessor: "items",
-  render: (row: ServiceType) => {
-    const [showAll, setShowAll] = useState(false);
-    const itemsToShow = showAll ? row.items : row.items.slice(0, 2);
-    const remainingCount = row.items.length - 2;
-
-    return (
-      <div className="flex flex-col gap-2">
-        {itemsToShow.map((item, idx) => (
-          <div key={idx} className="flex gap-2 items-center">
-            <div className="relative w-12 h-12 border rounded overflow-hidden">
-              <Image src={item.icon} alt={item.title} fill className="object-cover" />
-            </div>
-            <div>
-              <p className="font-semibold">{item.title}</p>
-              <p className="text-gray-500 text-sm">{item.description}</p>
-            </div>
-          </div>
-        ))}
-
-        {/* Toggle Link */}
-        {row.items.length > 2 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-blue-500 text-sm mt-1"
-          >
-            {showAll ? "Hide" : `+${remainingCount} more`}
-          </button>
-        )}
-      </div>
-    );
-  },
-},
-
+    {
+      header: "Details",
+      accessor: "items",
+      render: (row: ServiceType) => <DetailsColumn row={row} />, // ✅ using component
+    },
     {
       header: "Action",
       accessor: "action",
@@ -342,6 +349,19 @@ const WhyJustOurServiceList = () => {
                   onChange={(e) =>
                     handleEditItemChange(item.key, "description", e.target.value)
                   }
+                />
+              </div>
+
+              {/* LIST */}
+              <div className="flex-1">
+                <Label>List</Label>
+                <Input
+                  type="text"
+                  value={item.list || ""}
+                  onChange={(e) =>
+                    handleEditItemChange(item.key, "list", e.target.value)
+                  }
+                  placeholder="Optional list text"
                 />
               </div>
 

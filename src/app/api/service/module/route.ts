@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
       averageRating: 1,
       totalReviews: 1,
       keyValues: 1,
-
+      recommendedServices: 1,
       /* CATEGORY */
       category: {
         _id: 1,

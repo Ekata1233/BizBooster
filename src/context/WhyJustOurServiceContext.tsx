@@ -15,6 +15,7 @@ export interface IService {
   title: string;
   description: string;
   icon: string;
+   list?: string; 
   module: {
     _id: string;
     name: string;

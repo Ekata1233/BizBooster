@@ -4,6 +4,7 @@ export interface IServiceItem {
   title: string;
   description: string;
   icon: string;
+    list?: string;
 }
 
 export interface IWhyJustOurService extends Document {
@@ -28,6 +29,10 @@ const ServiceItemSchema = new Schema<IServiceItem>(
     icon: {
       type: String,
       required: true,
+    },
+    list: {
+      type: String, // ✅ optional field
+      trim: true,
     },
   },
   { _id: false } // prevents extra _id inside array

@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
@@ -9,6 +8,7 @@ import mongoose from "mongoose";
 import "@/models/Category"
 import "@/models/Subcategory"
 import "@/models/Provider"
+
 export const runtime = "nodejs";
 
 const corsHeaders = {
@@ -17,13 +17,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-
 export async function POST(req: NextRequest) {
   await connectToDatabase();
 
   try {
     const formData = await req.formData();
-
     console.log("-------------formdata : ", formData);
 
     // --- Basic Fields ---
@@ -48,45 +46,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
- 
-// --- Key Values ---
-// --- Key Values (key + value + icon, ALL OPTIONAL) ---
-const keyValues: any[] = [];
-for (let i = 0; i < 20; i++) {
-  const key = formData.get(`keyValues[${i}][key]`) as string | null;
-  const value = formData.get(`keyValues[${i}][value]`) as string | null;
-  const iconFile = formData.get(`keyValues[${i}][icon]`);
+    // --- Key Values ---
+    const keyValues: any[] = [];
+    for (let i = 0; i < 20; i++) {
+      const key = formData.get(`keyValues[${i}][key]`) as string | null;
+      const value = formData.get(`keyValues[${i}][value]`) as string | null;
+      const iconFile = formData.get(`keyValues[${i}][icon]`);
 
-  // ⛔ stop only if ALL are empty
-  if (!key && !value && !iconFile) break;
+      if (!key && !value && !iconFile) break;
 
-  // Handle icon upload (just like other files)
-  let iconUrl = "";
-  if (iconFile instanceof File) {
-    try {
-      const buffer = Buffer.from(await iconFile.arrayBuffer());
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${iconFile.name}`,
-        folder: "/services/keyValueIcons",
+      let iconUrl = "";
+      if (iconFile instanceof File) {
+        try {
+          const buffer = Buffer.from(await iconFile.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${iconFile.name}`,
+            folder: "/services/keyValueIcons",
+          });
+          iconUrl = upload.url;
+        } catch (error) {
+          console.error(`Failed to upload keyValues[${i}] icon:`, error);
+          iconUrl = "";
+        }
+      } else if (typeof iconFile === "string") {
+        iconUrl = iconFile || "";
+      }
+
+      keyValues.push({
+        key: key || "",
+        value: value || "",
+        icon: iconUrl,
       });
-      iconUrl = upload.url;
-    } catch (error) {
-      console.error(`Failed to upload keyValues[${i}] icon:`, error);
-      iconUrl = "";
     }
-  } else if (typeof iconFile === "string") {
-    // If it's already a string (URL or empty)
-    iconUrl = iconFile || "";
-  }
-
-  // ✅ push if ANY exists
-  keyValues.push({
-    key: key || "",
-    value: value || "",
-    icon: iconUrl,
-  });
-}
 
     // --- Thumbnail ---
     let thumbnailImage = "";
@@ -144,7 +136,7 @@ for (let i = 0; i < 20; i++) {
       return upload.url;
     }
 
-    // --- Service Details ---
+    // --- Service Details (with new extended fields) ---
     const serviceDetails: any = {
       benefits: JSON.parse(formData.get("benefits") as string || "[]"),
       aboutUs: JSON.parse(formData.get("aboutUs") as string || "[]"),
@@ -163,6 +155,40 @@ for (let i = 0; i < 20; i++) {
       packages: [],
       extraSections: [],
       extraImages: [],
+      
+      // --- NEW EXTENDED FIELDS ---
+      operatingCities: [],
+      brochureImage: [],
+      emiavailable: [],
+      counter: [],
+      franchiseOperatingModel: [],
+      businessFundamental: {
+        description: "",
+        points: []
+      },
+      keyAdvantages: [],
+      completeSupportSystem: [],
+      trainingDetails: [],
+      agreementDetails: [],
+      goodThings: [],
+      compareAndChoose: [],
+      companyDetails: [],
+      roi: [],
+      level: "beginner",
+      lessonCount: null,
+      duration: {
+        weeks: null,
+        hours: null
+      },
+      whatYouWillLearn: [],
+      eligibleFor: [],
+      courseCurriculum: [],
+      courseIncludes: [],
+      certificateImage: [],
+      whomToSell: [],
+      include: [],
+      notInclude: [],
+      safetyAndAssurance: []
     };
 
     // --- Highlights ---
@@ -191,36 +217,29 @@ for (let i = 0; i < 20; i++) {
     serviceDetails.assuredByFetchTrue = await processSection("assuredByFetchTrue", "/services/assuredIcons", "icon");
     serviceDetails.howItWorks = await processSection("howItWorks", "/services/howItWorks", "icon");
     serviceDetails.whyChooseUs = await processSection("whyChooseUs", "/services/whyChooseUs", "icon");
-    // serviceDetails.weRequired = await processSection("weRequired", "/services/weRequired", "icon");
-    // serviceDetails.weDeliver = await processSection("weDeliver", "/services/weDeliver", "icon");
     serviceDetails.moreInfo = await processSection("moreInfo", "/services/moreInfo", "image");
 
-// --- We Required ---
-for (let i = 0; i < 20; i++) {
-  const title = formData.get(`serviceDetails[weRequired][${i}][title]`);
-  const description = formData.get(`serviceDetails[weRequired][${i}][description]`);
+    // --- We Required ---
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[weRequired][${i}][title]`);
+      const description = formData.get(`serviceDetails[weRequired][${i}][description]`);
+      if (!title && !description) break;
+      serviceDetails.weRequired.push({
+        title: title || "",
+        description: description || "",
+      });
+    }
 
-  if (!title && !description) break;
-
-  serviceDetails.weRequired.push({
-    title: title || "",
-    description: description || "",
-  });
-}
-
-// --- We Deliver ---
-for (let i = 0; i < 20; i++) {
-  const title = formData.get(`serviceDetails[weDeliver][${i}][title]`);
-  const description = formData.get(`serviceDetails[weDeliver][${i}][description]`);
-
-  if (!title && !description) break;
-
-  serviceDetails.weDeliver.push({
-    title: title || "",
-    description: description || "",
-  });
-}
-
+    // --- We Deliver ---
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[weDeliver][${i}][title]`);
+      const description = formData.get(`serviceDetails[weDeliver][${i}][description]`);
+      if (!title && !description) break;
+      serviceDetails.weDeliver.push({
+        title: title || "",
+        description: description || "",
+      });
+    }
 
     // --- Connect With ---
     for (let i = 0; i < 20; i++) {
@@ -271,89 +290,412 @@ for (let i = 0; i < 20; i++) {
     }
     
     // --- Extra Images ---
-serviceDetails.extraImages = [];
-for (const key of formData.keys()) {
-  if (key.startsWith("serviceDetails[extraImages]")) {
-    const file = formData.get(key);
-    if (file instanceof File) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/services/extraImages",
-      });
-      serviceDetails.extraImages.push(upload.url);
+    serviceDetails.extraImages = [];
+    for (const key of formData.keys()) {
+      if (key.startsWith("serviceDetails[extraImages]")) {
+        const file = formData.get(key);
+        if (file instanceof File) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${file.name}`,
+            folder: "/services/extraImages",
+          });
+          serviceDetails.extraImages.push(upload.url);
+        }
+      }
     }
-  }
-}
-
 
     // --- Extra Sections ---
-for (let i = 0; i < 20; i++) {
-  const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
-  if (!title) break;
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
+      if (!title) break;
 
-  const extraSection: any = {
-    title,
-    subtitle: [],
-    description: [],
-    subDescription: [],
-    lists: [],
-    tags: [],
-    image: [],
-  };
+      const extraSection: any = {
+        title,
+        subtitle: [],
+        description: [],
+        subDescription: [],
+        lists: [],
+        tags: [],
+        image: [],
+      };
 
-  for (let j = 0; j < 20; j++) {
-    const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
-    if (!subtitle) break;
-    extraSection.subtitle.push(subtitle);
-  }
+      for (let j = 0; j < 20; j++) {
+        const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
+        if (!subtitle) break;
+        extraSection.subtitle.push(subtitle);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
-    if (!description) break;
-    extraSection.description.push(description);
-  }
+      for (let j = 0; j < 20; j++) {
+        const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
+        if (!description) break;
+        extraSection.description.push(description);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
-    if (!subDescription) break;
-    extraSection.subDescription.push(subDescription);
-  }
+      for (let j = 0; j < 20; j++) {
+        const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
+        if (!subDescription) break;
+        extraSection.subDescription.push(subDescription);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
-    if (!list) break;
-    extraSection.lists.push(list);
-  }
+      for (let j = 0; j < 20; j++) {
+        const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
+        if (!list) break;
+        extraSection.lists.push(list);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
-    if (!tag) break;
-    extraSection.tags.push(tag);
-  }
+      for (let j = 0; j < 20; j++) {
+        const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
+        if (!tag) break;
+        extraSection.tags.push(tag);
+      }
 
-   for (let j = 0; j < 20; j++) {
-    const imageFile = formData.get(
-      `serviceDetails[extraSections][${i}][image][${j}]`
-    );
+      for (let j = 0; j < 20; j++) {
+        const imageFile = formData.get(
+          `serviceDetails[extraSections][${i}][image][${j}]`
+        );
 
-    if (!(imageFile instanceof File)) break;
+        if (!(imageFile instanceof File)) break;
 
-    const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${imageFile.name}`,
+          folder: "/services/extraSections",
+        });
+        extraSection.image.push(upload.url);
+      }
 
-    const upload = await imagekit.upload({
-      file: buffer,
-      fileName: `${uuidv4()}-${imageFile.name}`,
-      folder: "/services/extraSections",
-    });
+      serviceDetails.extraSections.push(extraSection);
+    }
 
-    extraSection.image.push(upload.url);
-  }
+    // --- NEW EXTENDED FIELDS PROCESSING ---
+    
+    // 1. operatingCities
+    for (let i = 0; i < 20; i++) {
+      const city = formData.get(`serviceDetails[operatingCities][${i}]`);
+      if (!city) break;
+      serviceDetails.operatingCities.push(city);
+    }
 
-  serviceDetails.extraSections.push(extraSection);
-}
+    // 2. brochureImage
+    for (const key of formData.keys()) {
+      if (key.startsWith("serviceDetails[brochureImage]")) {
+        const file = formData.get(key);
+        if (file instanceof File) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${file.name}`,
+            folder: "/services/brochure",
+          });
+          serviceDetails.brochureImage.push(upload.url);
+        }
+      }
+    }
 
+    // 3. emiavailable
+    for (let i = 0; i < 20; i++) {
+      const emi = formData.get(`serviceDetails[emiavailable][${i}]`);
+      if (!emi) break;
+      serviceDetails.emiavailable.push(emi);
+    }
+
+    // 4. counter
+    for (let i = 0; i < 20; i++) {
+      const number = formData.get(`serviceDetails[counter][${i}][number]`);
+      if (!number) break;
+      serviceDetails.counter.push({
+        number: Number(number),
+        title: formData.get(`serviceDetails[counter][${i}][title]`) || ""
+      });
+    }
+
+    // 5. franchiseOperatingModel
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`);
+      if (!title) break;
+
+      const franchiseModel: any = {
+        info: formData.get(`serviceDetails[franchiseOperatingModel][${i}][info]`) || "",
+        title: title,
+        description: formData.get(`serviceDetails[franchiseOperatingModel][${i}][description]`) || "",
+        features: [],
+        tags: [],
+        example: formData.get(`serviceDetails[franchiseOperatingModel][${i}][example]`) || ""
+      };
+
+      // Process features
+      for (let j = 0; j < 20; j++) {
+        const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`);
+        if (!subtitle) break;
+        
+        const iconFile = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
+        let iconUrl = "";
+        if (iconFile instanceof File) {
+          iconUrl = await handleFileUpload(iconFile, "/services/franchiseFeatures");
+        } else if (typeof iconFile === "string") {
+          iconUrl = iconFile;
+        }
+
+        franchiseModel.features.push({
+          icon: iconUrl,
+          subtitle: subtitle,
+          subDescription: formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) || ""
+        });
+      }
+
+      // Process tags
+      for (let j = 0; j < 20; j++) {
+        const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`);
+        if (!tag) break;
+        franchiseModel.tags.push(tag);
+      }
+
+      serviceDetails.franchiseOperatingModel.push(franchiseModel);
+    }
+
+    // 6. businessFundamental
+    serviceDetails.businessFundamental.description = formData.get("serviceDetails[businessFundamental][description]") || "";
+    
+    for (let i = 0; i < 20; i++) {
+      const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`);
+      if (!subtitle) break;
+      serviceDetails.businessFundamental.points.push({
+        subtitle: subtitle,
+        subDescription: formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) || ""
+      });
+    }
+
+    // 7. keyAdvantages
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`);
+      if (!title) break;
+
+      const iconFile = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
+      let iconUrl = "";
+      if (iconFile instanceof File) {
+        iconUrl = await handleFileUpload(iconFile, "/services/keyAdvantages");
+      } else if (typeof iconFile === "string") {
+        iconUrl = iconFile;
+      }
+
+      serviceDetails.keyAdvantages.push({
+        icon: iconUrl,
+        title: title,
+        description: formData.get(`serviceDetails[keyAdvantages][${i}][description]`) || ""
+      });
+    }
+
+    // 8. completeSupportSystem
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`);
+      if (!title) break;
+
+      const iconFile = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
+      let iconUrl = "";
+      if (iconFile instanceof File) {
+        iconUrl = await handleFileUpload(iconFile, "/services/supportSystem");
+      } else if (typeof iconFile === "string") {
+        iconUrl = iconFile;
+      }
+
+      const supportSystem: any = {
+        icon: iconUrl,
+        title: title,
+        lists: []
+      };
+
+      // Process lists
+      for (let j = 0; j < 20; j++) {
+        const listItem = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`);
+        if (!listItem) break;
+        supportSystem.lists.push(listItem);
+      }
+
+      serviceDetails.completeSupportSystem.push(supportSystem);
+    }
+
+    // 9. trainingDetails
+    for (let i = 0; i < 20; i++) {
+      const detail = formData.get(`serviceDetails[trainingDetails][${i}]`);
+      if (!detail) break;
+      serviceDetails.trainingDetails.push(detail);
+    }
+
+    // 10. agreementDetails
+    for (let i = 0; i < 20; i++) {
+      const detail = formData.get(`serviceDetails[agreementDetails][${i}]`);
+      if (!detail) break;
+      serviceDetails.agreementDetails.push(detail);
+    }
+
+    // 11. goodThings
+    for (let i = 0; i < 20; i++) {
+      const thing = formData.get(`serviceDetails[goodThings][${i}]`);
+      if (!thing) break;
+      serviceDetails.goodThings.push(thing);
+    }
+
+    // 12. compareAndChoose
+    for (let i = 0; i < 20; i++) {
+      const compare = formData.get(`serviceDetails[compareAndChoose][${i}]`);
+      if (!compare) break;
+      serviceDetails.compareAndChoose.push(compare);
+    }
+
+    // 13. companyDetails
+    for (let i = 0; i < 20; i++) {
+      const name = formData.get(`serviceDetails[companyDetails][${i}][name]`);
+      if (!name) break;
+
+      const company: any = {
+        name: name,
+        location: formData.get(`serviceDetails[companyDetails][${i}][location]`) || "",
+        details: []
+      };
+
+      // Process details
+      for (let j = 0; j < 20; j++) {
+        const title = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][title]`);
+        if (!title) break;
+        company.details.push({
+          title: title,
+          description: formData.get(`serviceDetails[companyDetails][${i}][details][${j}][description]`) || ""
+        });
+      }
+
+      serviceDetails.companyDetails.push(company);
+    }
+
+    // 14. roi
+    for (let i = 0; i < 20; i++) {
+      const roiItem = formData.get(`serviceDetails[roi][${i}]`);
+      if (!roiItem) break;
+      serviceDetails.roi.push(roiItem);
+    }
+
+    // 15. level
+    const level = formData.get("serviceDetails[level]");
+    if (level && ["beginner", "medium", "advanced"].includes(level.toString())) {
+      serviceDetails.level = level;
+    }
+
+    // 16. lessonCount
+    const lessonCount = formData.get("serviceDetails[lessonCount]");
+    if (lessonCount) serviceDetails.lessonCount = Number(lessonCount);
+
+    // 17. duration
+    const weeks = formData.get("serviceDetails[duration][weeks]");
+    const hours = formData.get("serviceDetails[duration][hours]");
+    if (weeks) serviceDetails.duration.weeks = Number(weeks);
+    if (hours) serviceDetails.duration.hours = Number(hours);
+
+    // 18. whatYouWillLearn
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[whatYouWillLearn][${i}]`);
+      if (!item) break;
+      serviceDetails.whatYouWillLearn.push(item);
+    }
+
+    // 19. eligibleFor
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[eligibleFor][${i}]`);
+      if (!item) break;
+      serviceDetails.eligibleFor.push(item);
+    }
+
+    // 20. courseCurriculum
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`serviceDetails[courseCurriculum][${i}][title]`);
+      if (!title) break;
+
+      const curriculum: any = {
+        title: title,
+        lists: [],
+        model: []
+      };
+
+      // Process lists
+      for (let j = 0; j < 20; j++) {
+        const listItem = formData.get(`serviceDetails[courseCurriculum][${i}][lists][${j}]`);
+        if (!listItem) break;
+        curriculum.lists.push(listItem);
+      }
+
+      // Process model
+      for (let j = 0; j < 20; j++) {
+        const modelItem = formData.get(`serviceDetails[courseCurriculum][${i}][model][${j}]`);
+        if (!modelItem) break;
+        curriculum.model.push(modelItem);
+      }
+
+      serviceDetails.courseCurriculum.push(curriculum);
+    }
+
+    // 21. courseIncludes
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[courseIncludes][${i}]`);
+      if (!item) break;
+      serviceDetails.courseIncludes.push(item);
+    }
+
+    // 22. certificateImage
+    for (const key of formData.keys()) {
+      if (key.startsWith("serviceDetails[certificateImage]")) {
+        const file = formData.get(key);
+        if (file instanceof File) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${file.name}`,
+            folder: "/services/certificates",
+          });
+          serviceDetails.certificateImage.push(upload.url);
+        }
+      }
+    }
+
+    // 23. whomToSell
+    for (let i = 0; i < 20; i++) {
+      const lists = formData.get(`serviceDetails[whomToSell][${i}][lists]`);
+      if (!lists) break;
+
+      const iconFile = formData.get(`serviceDetails[whomToSell][${i}][icon]`);
+      let iconUrl = "";
+      if (iconFile instanceof File) {
+        iconUrl = await handleFileUpload(iconFile, "/services/whomToSell");
+      } else if (typeof iconFile === "string") {
+        iconUrl = iconFile;
+      }
+
+      serviceDetails.whomToSell.push({
+        icon: iconUrl,
+        lists: lists.toString()
+      });
+    }
+
+    // 24. include
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[include][${i}]`);
+      if (!item) break;
+      serviceDetails.include.push(item);
+    }
+
+    // 25. notInclude
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[notInclude][${i}]`);
+      if (!item) break;
+      serviceDetails.notInclude.push(item);
+    }
+
+    // 26. safetyAndAssurance
+    for (let i = 0; i < 20; i++) {
+      const item = formData.get(`serviceDetails[safetyAndAssurance][${i}]`);
+      if (!item) break;
+      serviceDetails.safetyAndAssurance.push(item);
+    }
 
     // --- Franchise Details ---
     const franchiseDetails: any = {
@@ -393,76 +735,68 @@ for (let i = 0; i < 20; i++) {
       });
     }
 
-    // --- Extra Sections ---
-for (let i = 0; i < 20; i++) {
-  const title = formData.get(`serviceDetails[franchiseDetails][${i}][title]`);
-  if (!title) break;
+    // --- Franchise Extra Sections ---
+    for (let i = 0; i < 20; i++) {
+      const title = formData.get(`franchiseDetails[extraSections][${i}][title]`);
+      if (!title) break;
 
-  const extraSection: any = {
-    title,
-    subtitle: [],
-    description: [],
-    subDescription: [],
-    lists: [],
-    tags: [],
-    image: [],
-  };
+      const extraSection: any = {
+        title,
+        subtitle: [],
+        description: [],
+        subDescription: [],
+        lists: [],
+        tags: [],
+        image: [],
+      };
 
-  for (let j = 0; j < 20; j++) {
-    const subtitle = formData.get(`serviceDetails[franchiseDetails][${i}][subtitle][${j}]`);
-    if (!subtitle) break;
-    extraSection.subtitle.push(subtitle);
-  }
+      for (let j = 0; j < 20; j++) {
+        const subtitle = formData.get(`franchiseDetails[extraSections][${i}][subtitle][${j}]`);
+        if (!subtitle) break;
+        extraSection.subtitle.push(subtitle);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const description = formData.get(`serviceDetails[franchiseDetails][${i}][description][${j}]`);
-    if (!description) break;
-    extraSection.description.push(description);
-  }
+      for (let j = 0; j < 20; j++) {
+        const description = formData.get(`franchiseDetails[extraSections][${i}][description][${j}]`);
+        if (!description) break;
+        extraSection.description.push(description);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const subDescription = formData.get(`serviceDetails[franchiseDetails][${i}][subDescription][${j}]`);
-    if (!subDescription) break;
-    extraSection.subDescription.push(subDescription);
-  }
+      for (let j = 0; j < 20; j++) {
+        const subDescription = formData.get(`franchiseDetails[extraSections][${i}][subDescription][${j}]`);
+        if (!subDescription) break;
+        extraSection.subDescription.push(subDescription);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const list = formData.get(`serviceDetails[franchiseDetails][${i}][lists][${j}]`);
-    if (!list) break;
-    extraSection.lists.push(list);
-  }
+      for (let j = 0; j < 20; j++) {
+        const list = formData.get(`franchiseDetails[extraSections][${i}][lists][${j}]`);
+        if (!list) break;
+        extraSection.lists.push(list);
+      }
 
-  for (let j = 0; j < 20; j++) {
-    const tag = formData.get(`serviceDetails[franchiseDetails][${i}][tags][${j}]`);
-    if (!tag) break;
-    extraSection.tags.push(tag);
-  }
+      for (let j = 0; j < 20; j++) {
+        const tag = formData.get(`franchiseDetails[extraSections][${i}][tags][${j}]`);
+        if (!tag) break;
+        extraSection.tags.push(tag);
+      }
 
-for (let j = 0; j < 20; j++) {
-    const imageFile = formData.get(`serviceDetails[extraSections][${i}][image][${j}]`);
+      for (let j = 0; j < 20; j++) {
+        const imageFile = formData.get(`franchiseDetails[extraSections][${i}][image][${j}]`);
+        if (imageFile instanceof File) {
+          const buffer = Buffer.from(await imageFile.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${imageFile.name || "extra-section.png"}`,
+            folder: "/services/franchiseExtraSections",
+          });
+          extraSection.image.push(upload.url);
+        } else {
+          break;
+        }
+      }
 
-    if (
-      imageFile &&
-      typeof imageFile === "object" &&
-      "arrayBuffer" in imageFile
-    ) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${imageFile.name || "extra-section.png"}`,
-        folder: "/services/extraSections",
-      });
-
-      extraSection.image.push(upload.url);
-    } else {
-      break;
+      franchiseDetails.extraSections.push(extraSection);
     }
-  }
-
-  serviceDetails.extraSections.push(extraSection);
-}
-
 
     // --- Final Price Calculations ---
     const discountedPrice = discount ? Math.floor(price - price * (discount / 100)) : price;
