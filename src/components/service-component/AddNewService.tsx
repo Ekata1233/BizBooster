@@ -703,9 +703,9 @@ const AddNewService = () => {
       });
 
       // 3. emiavailable
-      formData.service.emiavailable?.forEach((emi, i) => {
-        fd.append(`serviceDetails[emiavailable][${i}]`, emi || "");
-      });
+     formData.service.emiavailable?.forEach((emi, i) => {
+  fd.append(`serviceDetails[emiavalable][${i}]`, emi || "");  // Note: emiavalable
+});
 
       // 4. counter
       formData.service.counter?.forEach((item, i) => {
