@@ -1,261 +1,358 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import Select from '@/components/form/Select'
-import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import ComponentCard from '@/components/common/ComponentCard'
-import BasicTableOne from '@/components/tables/BasicTableOne'
-import { useModule } from '@/context/ModuleContext'
-import { useCategory } from '@/context/CategoryContext'
-import { useSubcategory } from '@/context/SubcategoryContext'
-import { useService } from '@/context/ServiceContext'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import BasicTableOne from '@/components/tables/BasicTableOne';
+import Link from 'next/link';
+import ComponentCard from '@/components/common/ComponentCard';
+import ModuleStatCard from '@/components/module-component/ModuleStatCard';
+import Label from '@/components/form/Label';
+import Select from '@/components/form/Select';
+import Input from '@/components/form/input/InputField';
+import { Category, useCategory } from '@/context/CategoryContext';
+import { useSubcategory } from '@/context/SubcategoryContext';
+import axios from 'axios';
+import { useService } from '@/context/ServiceContext';
+import { EyeIcon, ChevronDownIcon } from '@/icons';
+import { useRouter } from 'next/navigation';
+import Pagination from '@/components/tables/Pagination';
+import Switch from '@/components/form/switch/Switch';
 
-interface Module {
-  _id: string
-  name: string
-}
-interface Trending {
-  serviceId: string
-  moduleId: string
-  isTrending: boolean
-}
-interface Category {
-  _id: string
-  name: string
-  module: Module | null
-}
+/* -------------------- Types -------------------- */
+export interface ServiceData {
+  _id: string;
+  id: string;
+  name: string;
+  category: { _id: string; name: string };
+  subcategory: { _id: string; name: string };
+  price: number;
+  status: 'Active' | 'Inactive';
+    recommendedServices?: boolean;
+  isTrending?: boolean;
 
-interface SubCategory {
-  _id: string
-  name: string
-  categoryId: string
-}
-
-interface Service {
-  _id: string
-  serviceName: string
-  status: boolean // represents isTrending
-  categoryId?: string
-  subcategoryId?: string
 }
 
-const TrendingModules = () => {
-  const { modules } = useModule()
-  const { categories } = useCategory()
-  const { subcategories } = useSubcategory()
-  const { services: allServices } = useService()
+/* -------------------- Sort Options -------------------- */
+const options = [
+  { value: 'latest', label: 'Latest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'ascending', label: 'Ascending' },
+  { value: 'descending', label: 'Descending' },
+];
 
-  const [selectedModule, setSelectedModule] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [selectedSubCategory, setSelectedSubCategory] = useState('')
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
-  const [services, setServices] = useState<Service[]>([])
+/* -------------------- Component -------------------- */
+const ServiceList = () => {
+  const router = useRouter();
+  const { deleteService } = useService();
+  const { categories } = useCategory();
+  const { subcategories } = useSubcategory();
+  const [services, setServices] = useState<ServiceData[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [modules, setModules] = useState<any[]>([]);
+const [selectedModule, setSelectedModule] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+const [loadingToggle, setLoadingToggle] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [message, setMessage] = useState('');
 
-  const moduleOptions = modules.map(m => ({ value: m._id, label: m.name }))
-
-  const categoryOptions = categories
-    .filter(c => !selectedModule || c.module?._id === selectedModule)
-    .map(c => ({ value: c._id, label: c.name }))
-
-  const subCategoryOptions = subCategories.map(sc => ({ value: sc._id, label: sc.name }))
-
-  // Load services with trending info
-  useEffect(() => {
-    if (!selectedCategory) {
-      setSubCategories([])
-      setServices([])
-      setSelectedSubCategory('')
-      return
-    }
-
-    const filteredSub: SubCategory[] = subcategories
-      .filter(sc => {
-        const cat = sc.category as string | { _id: string }
-        if (typeof cat === "string") return cat === selectedCategory
-        if (cat && typeof cat === "object") return cat._id === selectedCategory
-        return false
-      })
-      .map(sc => ({
-        _id: sc._id,
-        name: sc.name,
-        categoryId: typeof sc.category === "string" ? sc.category : sc.category?._id || ""
-      }))
-
-    setSubCategories(filteredSub)
-
-    const fetchTrending = async () => {
-      try {
-        const trendingRes = await axios.get('/api/trending-modules')
-        const trendingData: Trending[] = trendingRes.data as Trending[]
-
-        let filteredServices: Service[] = []
-
-        if (filteredSub.length === 0) {
-          filteredServices = allServices
-            .filter(s => {
-              if (!s.category) return false
-              if (typeof s.category === 'string') return s.category === selectedCategory
-              if (typeof s.category === 'object') return s.category._id === selectedCategory
-              return false
-            })
-            .map(s => ({
-              ...s,
-              status: trendingData.some(t => t.serviceId === s._id && t.isTrending),
-            }))
-        }
-
-        setServices(filteredServices)
-      } catch (err) {
-        console.error('Error fetching trending data:', err)
-      }
-    }
-
-    fetchTrending()
-  }, [selectedCategory, subcategories, allServices])
-
-  // Update services when selectedSubCategory changes
-  useEffect(() => {
-    if (!selectedSubCategory) return
-
-    const fetchTrending = async () => {
-      try {
-        const trendingRes = await axios.get('/api/trending-modules')
-        const trendingData: Trending[] = trendingRes.data as Trending[]
-
-        const filteredServices = allServices
-          .filter(s => {
-            if (!s.subcategory) return false
-
-            if (typeof s.subcategory === "string") return s.subcategory === selectedSubCategory
-            if (typeof s.subcategory === "object") return s.subcategory._id === selectedSubCategory
-
-            return false
-          })
-          .map(s => ({
-            ...s,
-            status: trendingData.some(t => t.serviceId === s._id && t.isTrending),
-          }))
-
-        setServices(filteredServices)
-      } catch (err) {
-        console.error('Error fetching trending data:', err)
-      }
-    }
-
-    fetchTrending()
-  }, [selectedSubCategory, allServices])
-
-  const toggleServiceStatus = async (service: Service) => {
-    if (!selectedModule) {
-      alert('Please select a module first.')
-      return
-    }
-
-    const newStatus = !service.status
-    const action = newStatus ? 'add as trending' : 'remove from trending'
-    const confirmMsg = `Are you sure you want to ${action} this service?`
-
-    if (!confirm(confirmMsg)) return
-
-    try {
-      await axios.patch('/api/trending-modules', {
-        moduleId: selectedModule,
-        serviceId: service._id,
-        isTrending: newStatus,
-      })
-
-      setServices(prev =>
-        prev.map(s => (s._id === service._id ? { ...s, status: newStatus } : s))
-      )
-
-      alert(`Service has been ${newStatus ? 'added to' : 'removed from'} trending.`)
-    } catch (err: any) {
-      console.error('Error updating trending service:', err)
-      alert('Something went wrong. Please try again.')
-    }
+  const fetchModules = async () => {
+  try {
+    const res = await axios.get('/api/modules');
+    setModules(res.data.data || []);
+  } catch (error) {
+    console.error('Error fetching modules', error);
   }
+};
 
+useEffect(() => {
+  fetchModules();
+}, []);
+
+
+  /* -------------------- Fetch Services -------------------- */
+  const fetchServices = async (page = 1) => {
+    try {
+      const params = {
+        page,
+        limit: rowsPerPage,
+        ...(searchQuery && { search: searchQuery }),
+         ...(selectedModule && { module: selectedModule }),
+        ...(selectedCategory && { category: selectedCategory }),
+        ...(selectedSubcategory && { subcategory: selectedSubcategory }),
+      };
+
+      const res = await axios.get('/api/service', { params });
+      const data = res.data;
+
+      if (!data.data || data.data.length === 0) {
+        setServices([]);
+        setMessage(data.message || 'No services found');
+        setTotalPages(0);
+        return;
+      }
+
+      const mapped = data.data.map((service: any) => ({
+        id: service._id,
+        name: service.serviceName.replace(/"/g, ''),
+        category: service.category || { _id: '', name: 'N/A' },
+        subcategory: service.subcategory || { _id: '', name: 'N/A' },
+        price: service.price,
+        status: service.isDeleted ? 'Inactive' : 'Active',
+        recommendedServices: service.recommendedServices ?? false,
+  isTrending: service.isTrending ?? false,
+      }));
+
+      setServices(mapped);
+      setTotalPages(data.totalPages || 1);
+      setMessage('');
+    } catch (err) {
+      console.error(err);
+      setServices([]);
+      setMessage('Something went wrong while fetching services');
+    }
+  };
+
+// useEffect(() => {
+//   setCurrentPage(1); // optional but recommended
+//   fetchServices(1);
+// }, [searchQuery, selectedModule, selectedCategory, selectedSubcategory]);
+
+  useEffect(() => {
+    fetchServices(currentPage);
+  }, [searchQuery,selectedModule, selectedCategory, selectedSubcategory, currentPage]);
+
+
+  const moduleOptions = modules.map((mod) => ({
+  value: mod._id,
+  label: mod.name,
+}));
+
+const filteredCategories = categories.filter(
+  (cat) => cat.module?._id === selectedModule
+);
+
+const categoryOptions = filteredCategories.map((cat: Category) => ({
+  value: cat._id,
+  label: cat.name,
+}));
+
+const filteredSubcategories = subcategories.filter(
+  (sub) => sub.category?._id === selectedCategory
+);
+
+const subcategoryOptions = filteredSubcategories.map((sub) => ({
+  value: sub._id,
+  label: sub.name,
+}));
+
+
+const handleModuleChange = (value: string) => {
+  setSelectedModule(value);
+  setSelectedCategory('');
+  setSelectedSubcategory('');
+};
+
+const handleToggleChange = async (
+  id: string,
+  field: "recommendedServices" | "isTrending",
+  checked: boolean
+) => {
+  try {
+    setLoadingToggle(id);
+    // Optimistic UI update
+    setServices((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, [field]: checked } : p
+      )
+    );
+
+    const formData = new FormData();
+    formData.append(field, String(checked));
+
+    await axios.patch(
+      `/api/service/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    setLoadingToggle(null);
+  } catch (error) {
+    console.error("Toggle update failed:", error);
+  }
+};
+
+  /* -------------------- Table Columns -------------------- */
   const columns = [
-    { header: 'Service Name', accessor: 'serviceName' },
+    {
+      header: 'S.No',
+      accessor: 'serial',
+      render: (_: any, index: number) =>
+        (currentPage - 1) * rowsPerPage + index + 1,
+    },
+    {
+      header: 'Service Name',
+      accessor: 'name',
+      render: (row: ServiceData) => (
+        <span className="font-semibold text-blue-600">{row.name}</span>
+      ),
+    },
+    {
+      header: 'Category',
+      accessor: 'category',
+      render: (row: ServiceData) => row.category?.name || 'N/A',
+    },
     {
       header: 'Status',
       accessor: 'status',
-      render: (row: Service) => (
-        <div className="flex flex-col items-end gap-1">
-          {/* <label className="text-sm font-semibold text-blue-600 dark:text-blue-600 tracking-wide uppercase">
-            Trending
-          </label> */}
-          <button
-            onClick={() => toggleServiceStatus(row)}
-            className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-300 border-2 ${row.status
-                ? "bg-gradient-to-r from-green-400 to-green-600 border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"
-                : "bg-gray-300 border-gray-400"
-              }`}
-          >
-            <span
-              className={`absolute left-0 top-0 w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${row.status ? "translate-x-8" : ""
-                }`}
-            ></span>
+      render: (row: ServiceData) => (
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            row.status === 'Active'
+              ? 'text-green-600 bg-green-100 border border-green-300'
+              : 'text-red-500 bg-red-100 border border-red-300'
+          }`}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+    {
+      header: 'Action',
+      accessor: 'action',
+      render: (row: ServiceData) => (
+        <Link href={`/service-management/service-details/${row.id}`}>
+          <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
+            <EyeIcon />
           </button>
+        </Link>
+      ),
+    },
+    {
+      header: "Recommended",
+      accessor: "recommended",
+      render: (row) => (
+        <div className="flex justify-center">
+         <Switch
+      checked={row.recommendedServices}
+      disabled={loadingToggle === row.id}
+      onChange={(checked) =>
+        handleToggleChange(row.id, "recommendedServices", checked)
+      }
+      color="gray"
+    />
+    
         </div>
       ),
     },
-  ]
+    {
+      header: "Top Trending",
+      accessor: "trending",
+      render: (row) => (
+        <div className="flex justify-center">
+        <Switch
+      checked={row.isTrending}
+      disabled={loadingToggle === row.id}
+      onChange={(checked) =>
+        handleToggleChange(row.id, "isTrending", checked)
+      }
+      color="gray"
+    />
+    
+        </div>
+      ),
+    },
+  ];
 
+
+
+
+  /* -------------------- UI -------------------- */
   return (
     <div>
-      <PageBreadcrumb pageTitle="Trending Modules" />
+      <PageBreadcrumb pageTitle="Service List" />
+      <ModuleStatCard />
 
+      {/* Filters */}
       <div className="my-5">
-        <ComponentCard title="Filter Services">
-          <p className="text-red-600 text-sm">
-            Trending services are available in the Franchise, Education, and Marketing modules.
-          </p>
+        <ComponentCard title="Search Filter">
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block mb-1">Select Module</label>
-              <Select
-                options={moduleOptions}
-                placeholder="Module"
-                onChange={(val: string) => {
-                  setSelectedModule(val)
-                  setSelectedCategory('')
-                  setSelectedSubCategory('')
-                  setServices([])
-                }}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Select Category</label>
-              <Select
-                options={categoryOptions}
-                placeholder="Category"
-                onChange={(val: string) => setSelectedCategory(val)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Select SubCategory</label>
-              <Select
-                options={subCategoryOptions}
-                placeholder="SubCategory"
-                onChange={val => setSelectedSubCategory(val)}
-              />
-            </div>
-          </div>
-        </ComponentCard>
-      </div>
-
-      <div className="my-5">
-        <ComponentCard title="Services List">
-          <BasicTableOne columns={columns} data={services} />
-        </ComponentCard>
-      </div>
+    {/* Module */}
+    <div>
+      <Label>Select Module</Label>
+      <Select
+        options={moduleOptions}
+        placeholder="Select Module"
+        onChange={handleModuleChange}
+      />
     </div>
-  )
-}
 
-export default TrendingModules
+    {/* Category */}
+    <div>
+      <Label>Select Category</Label>
+      <Select
+        options={categoryOptions}
+        placeholder="Select Category"
+        onChange={setSelectedCategory}
+        isDisabled={!selectedModule}
+      />
+    </div>
+
+    {/* Subcategory */}
+    <div>
+      <Label>Select Subcategory</Label>
+      <Select
+        options={subcategoryOptions}
+        placeholder="Select Subcategory"
+        onChange={setSelectedSubcategory}
+        isDisabled={!selectedCategory}
+      />
+    </div>
+
+    {/* Search */}
+    <div>
+      <Label>Search</Label>
+      <Input
+        placeholder="Search by service name"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+
+  </div>
+</ComponentCard>
+
+      </div>
+
+      {/* Table */}
+      <ComponentCard title="Service List">
+        {message ? (
+          <p className="text-center text-red-500">{message}</p>
+        ) : (
+          <>
+            <BasicTableOne columns={columns} data={services} />
+
+            {services.length > 0 && (
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalPages * rowsPerPage}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </ComponentCard>
+    </div>
+  );
+};
+
+export default ServiceList;

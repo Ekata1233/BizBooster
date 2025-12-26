@@ -1,5 +1,3 @@
-
-
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
@@ -77,7 +75,7 @@ export async function GET(req: NextRequest) {
       const skip = limit ? (page - 1) * limit : 0;
   
       /* ---------------- MATCH FILTER ---------------- */
-      const matchStage: any = { isDeleted: false,  isTrending: true, };
+      const matchStage: any = { isDeleted: false,  recommendedServices: true, };
   
       if (search) {
         matchStage.serviceName = {
@@ -173,7 +171,7 @@ export async function GET(req: NextRequest) {
       averageRating: 1,
       totalReviews: 1,
       keyValues: 1,
-      isTrending: 1,
+      recommendedServices: 1,
       /* CATEGORY */
       category: {
         _id: 1,

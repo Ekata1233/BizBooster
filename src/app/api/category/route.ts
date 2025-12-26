@@ -100,50 +100,129 @@ export async function POST(req: Request) {
 }
 
 
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   const { searchParams } = new URL(req.url);
+//   const search = searchParams.get("search") || "";
+//   const selectedModule = searchParams.get("selectedModule") || "";
+
+//   const moduleId = searchParams.get("moduleId") || "";
+
+
+//   try {
+//     const query: any = {};
+
+//     // 🔹 Priority: moduleId > selectedModule
+//     if (moduleId) {
+//       query.module = moduleId;
+//     } else if (selectedModule) {
+//       query.module = selectedModule;
+//     }
+
+//     // 🔹 Search by category name (DB level)
+//     if (search) {
+//       query.name = { $regex: search, $options: "i" };
+//     }
+// const categories = await Category.find(query)
+//   .populate("module")
+//   .sort({ sortOrder: 1, createdAt: 1 }); // ✅ SORT BY order
+
+//     // Filter in-memory for `name` and `module.name`
+//     let filteredCategories = categories;
+
+  
+
+//     if (search || selectedModule) {
+//       const regex = search ? new RegExp(search, "i") : null;
+
+//       filteredCategories = categories.filter((cat) => {
+//         const matchesSearch = regex
+//           ? regex.test(cat.name) || regex.test(cat.module?.name)
+//           : true;
+
+//         const matchesModule = selectedModule
+//           ? cat.module?._id?.toString() === selectedModule
+//           : true;
+
+//         return matchesSearch && matchesModule;
+//       });
+//     }
+
+
+//     const categoriesWithSubcategoryCount = await Promise.all(
+//       filteredCategories.map(async (category) => {
+//         // Count the number of subcategories related to this category
+//         const subcategoryCount = await Subcategory.countDocuments({
+//           category: category._id,
+//             isDeleted: false,
+//         });
+
+//         // Return category with subcategory count
+//         return {
+//           ...category.toObject(),
+//           subcategoryCount,
+//         };
+//       })
+//     );
+
+//     return NextResponse.json(
+//       { success: true, data: categoriesWithSubcategoryCount },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
+//     const err = error as Error;
+//     return NextResponse.json(
+//       { success: false, message: err.message },
+//       { status: 500, headers: corsHeaders }
+//     );
+//   }
+// }
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   const { searchParams } = new URL(req.url);
+
   const search = searchParams.get("search") || "";
   const selectedModule = searchParams.get("selectedModule") || "";
+  const moduleId = searchParams.get("moduleId") || "";
 
   try {
-    // Always fetch all with populate
-const categories = await Category.find({})
-  .populate("module")
-  .sort({ sortOrder: 1, createdAt: 1 }); // ✅ SORT BY order
+    const query: any = {};
 
-    // Filter in-memory for `name` and `module.name`
-    let filteredCategories = categories;
-
-  
-
-    if (search || selectedModule) {
-      const regex = search ? new RegExp(search, "i") : null;
-
-      filteredCategories = categories.filter((cat) => {
-        const matchesSearch = regex
-          ? regex.test(cat.name) || regex.test(cat.module?.name)
-          : true;
-
-        const matchesModule = selectedModule
-          ? cat.module?._id?.toString() === selectedModule
-          : true;
-
-        return matchesSearch && matchesModule;
-      });
+    // 🔹 Priority: moduleId > selectedModule
+    if (moduleId) {
+      query.module = moduleId;
+    } else if (selectedModule) {
+      query.module = selectedModule;
     }
 
+    // 🔹 Search by category name (DB level)
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    const categories = await Category.find(query)
+      .populate("module")
+      .sort({ sortOrder: 1, createdAt: 1 });
+
+    // 🔹 Keep old behaviour: search on populated module.name
+    const filteredCategories = search
+      ? categories.filter(
+          (cat) =>
+            cat.name.toLowerCase().includes(search.toLowerCase()) ||
+            cat.module?.name?.toLowerCase().includes(search.toLowerCase())
+        )
+      : categories;
 
     const categoriesWithSubcategoryCount = await Promise.all(
       filteredCategories.map(async (category) => {
-        // Count the number of subcategories related to this category
         const subcategoryCount = await Subcategory.countDocuments({
           category: category._id,
-            isDeleted: false,
+          isDeleted: false,
         });
 
-        // Return category with subcategory count
         return {
           ...category.toObject(),
           subcategoryCount,
