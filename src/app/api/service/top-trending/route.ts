@@ -1,114 +1,15 @@
-// import { NextRequest, NextResponse } from "next/server";
-// import mongoose from "mongoose";
-// import Service from "@/models/Service";
-// import Review from "@/models/Review";
-// import { connectToDatabase } from "@/utils/db";
-
-// import "@/models/Category";
-// import "@/models/Subcategory";
-// import "@/models/Provider";
-
-// export const runtime = "nodejs";
-
-// const corsHeaders = {
-//   "Access-Control-Allow-Origin": "*",
-//   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-//   "Access-Control-Allow-Headers": "Content-Type, Authorization",
-// };
-
-// export async function GET(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const topRatedServices = await Review.aggregate([
-//       // Group reviews by service
-//       {
-//         $group: {
-//           _id: "$service",
-//           avgRating: { $avg: "$rating" },
-//           totalReviews: { $sum: 1 },
-//         },
-//       },
-
-//       // Sort by rating & reviews
-//       {
-//         $sort: {
-//           avgRating: -1,
-//           totalReviews: -1,
-//         },
-//       },
-
-//       // Limit to top 10
-//       {
-//         $limit: 10,
-//       },
-
-//       // Join with Service collection
-//       {
-//         $lookup: {
-//           from: "services",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "service",
-//         },
-//       },
-
-//       // Convert array → object
-//       { $unwind: "$service" },
-
-//       // Optional: exclude deleted services
-//       {
-//         $match: {
-//           "service.isDeleted": false,
-//         },
-//       },
-
-//       // Shape final response
-//       {
-//         $project: {
-//           _id: 0,
-//           serviceId: "$service._id",
-//           serviceName: "$service.serviceName",
-//           thumbnailImage: "$service.thumbnailImage",
-//           bannerImages: "$service.bannerImages",
-//           price: "$service.price",
-//           category: "$service.category",
-//           subcategory: "$service.subcategory",
-//           avgRating: { $round: ["$avgRating", 1] },
-//           totalReviews: 1,
-//         },
-//       },
-//     ]);
-
-//     return NextResponse.json(
-//       {
-//         success: true,
-//         count: topRatedServices.length,
-//         data: topRatedServices,
-//       },
-//       { status: 200, headers: corsHeaders }
-//     );
-//   } catch (error: any) {
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: error.message || "Failed to fetch top rated services",
-//       },
-//       { status: 500, headers: corsHeaders }
-//     );
-//   }
-// }
 
 
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
-import Review from "@/models/Review";
+import { v4 as uuidv4 } from "uuid";
+import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
-
-import "@/models/Service";
-import "@/models/Category";
-import "@/models/Module";
-
+import imagekit from "@/utils/imagekit";
+import { File } from "buffer";
+import mongoose from "mongoose";
+import "@/models/Category"
+import "@/models/Subcategory"
+import "@/models/Provider"
 export const runtime = "nodejs";
 
 const corsHeaders = {
@@ -117,154 +18,208 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-export async function GET(req: NextRequest) {
-  await connectToDatabase();
+const removeEmpty = (value: any): any => {
+  // ✅ keep ObjectId & Date untouched
+  if (
+    value instanceof mongoose.Types.ObjectId ||
+    value instanceof Date
+  ) {
+    return value;
+  }
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const moduleName = searchParams.get("modulename");
+  // remove empty string
+  if (value === "") return undefined;
 
-    if (!moduleName) {
-      return NextResponse.json(
-        { success: false, message: "modulename is required" },
-        { status: 400, headers: corsHeaders }
-      );
+  // handle arrays
+  if (Array.isArray(value)) {
+    const cleanedArray = value
+      .map(removeEmpty)
+      .filter(v => v !== undefined);
+
+    return cleanedArray.length > 0 ? cleanedArray : undefined;
+  }
+
+  // handle objects
+  if (typeof value === "object" && value !== null) {
+    const cleanedObject: any = {};
+
+    for (const key in value) {
+      const cleanedValue = removeEmpty(value[key]);
+
+      if (cleanedValue !== undefined) {
+        cleanedObject[key] = cleanedValue;
+      }
     }
 
-    const data = await Review.aggregate([
-      /* -------------------------------------------
-         Join Service
-      -------------------------------------------- */
-      {
-        $lookup: {
-          from: "services",
-          localField: "service",
-          foreignField: "_id",
-          as: "service",
-        },
-      },
-      { $unwind: "$service" },
-
-      /* -------------------------------------------
-         Join Category
-      -------------------------------------------- */
-      {
-        $lookup: {
-          from: "categories",
-          localField: "service.category",
-          foreignField: "_id",
-          as: "category",
-        },
-      },
-      { $unwind: "$category" },
-
-      /* -------------------------------------------
-         Join Module
-      -------------------------------------------- */
-      {
-        $lookup: {
-          from: "modules",
-          localField: "category.module",
-          foreignField: "_id",
-          as: "module",
-        },
-      },
-      { $unwind: "$module" },
-
-      /* -------------------------------------------
-         Filter by module name
-      -------------------------------------------- */
-     {
-  $match: {
-    $expr: {
-      $eq: [
-        {
-          $toLower: {
-            $replaceAll: {
-              input: "$module.name",
-              find: " ",
-              replacement: "",
-            },
-          },
-        },
-        {
-          $toLower: {
-            $replaceAll: {
-              input: moduleName,
-              find: " ",
-              replacement: "",
-            },
-          },
-        },
-      ],
-    },
-    "service.isDeleted": false,
-    "category.isDeleted": false,
-  },
-}
-,
-
-      /* -------------------------------------------
-         Group by service
-      -------------------------------------------- */
-      {
-        $group: {
-          _id: "$service._id",
-          serviceName: { $first: "$service.serviceName" },
-          thumbnailImage: { $first: "$service.thumbnailImage" },
-          price: { $first: "$service.price" },
-          category: { $first: "$category" },
-          avgRating: { $avg: "$rating" },
-          totalReviews: { $sum: 1 },
-        },
-      },
-
-      /* -------------------------------------------
-         Sort & Limit
-      -------------------------------------------- */
-      {
-        $sort: {
-          avgRating: -1,
-          totalReviews: -1,
-        },
-      },
-      { $limit: 10 },
-
-      /* -------------------------------------------
-         Final Shape
-      -------------------------------------------- */
-      {
-        $project: {
-          _id: 0,
-          serviceId: "$_id",
-          serviceName: 1,
-          thumbnailImage: 1,
-          price: 1,
-          avgRating: { $round: ["$avgRating", 1] },
-          totalReviews: 1,
-          category: {
-            _id: "$category._id",
-            name: "$category.name",
-          },
-        },
-      },
-    ]);
-
-    return NextResponse.json(
-      {
-        success: true,
-        count: data.length,
-        data,
-      },
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message || "Failed to fetch popular services",
-      },
-      { status: 500, headers: corsHeaders }
-    );
+    return Object.keys(cleanedObject).length > 0 ? cleanedObject : undefined;
   }
-}
+
+  // keep numbers, booleans, valid strings
+  return value;
+};
+
+
+export async function GET(req: NextRequest) {
+    await connectToDatabase();
+  
+    try {
+      const { searchParams } = new URL(req.url);
+  
+      const search = searchParams.get("search");
+      const category = searchParams.get("category");
+      const subcategory = searchParams.get("subcategory");
+      const moduleId = searchParams.get("moduleId"); 
+      const sort = searchParams.get("sort");
+  
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limitParam = searchParams.get("limit");
+      const limit = limitParam ? parseInt(limitParam, 10) : null;
+      const skip = limit ? (page - 1) * limit : 0;
+  
+      /* ---------------- MATCH FILTER ---------------- */
+      const matchStage: any = { isDeleted: false,  isTrending: true, };
+  
+      if (search) {
+        matchStage.serviceName = {
+          $regex: `\\b${search}[a-zA-Z]*`,
+          $options: "i",
+        };
+      }
+  
+      if (category) {
+        matchStage.category = new mongoose.Types.ObjectId(category);
+      }
+  
+      if (subcategory) {
+        matchStage.subcategory = new mongoose.Types.ObjectId(subcategory);
+      }
+  
+      /* ---------------- SORT ---------------- */
+      let sortOption: Record<string, 1 | -1> = {};
+  
+      switch (sort) {
+        case "latest": sortOption = { createdAt: -1 }; break;
+        case "oldest": sortOption = { createdAt: 1 }; break;
+        case "ascending": sortOption = { serviceName: 1 }; break;
+        case "descending": sortOption = { serviceName: -1 }; break;
+        case "asc": sortOption = { price: 1 }; break;
+        case "desc": sortOption = { price: -1 }; break;
+        default: sortOption = { createdAt: -1 };
+      }
+  
+      /* ---------------- AGGREGATION PIPELINE ---------------- */
+      const pipeline: any[] = [
+        { $match: matchStage },
+  
+        /* 🔗 Category */
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+        { $unwind: "$category" },
+  
+        /* 🔗 Subcategory */
+        {
+          $lookup: {
+            from: "subcategories",
+            localField: "subcategory",
+            foreignField: "_id",
+            as: "subcategory",
+          },
+        },
+        { $unwind: { path: "$subcategory", preserveNullAndEmptyArrays: true } },
+  
+        /* 🔗 Module */
+        {
+          $lookup: {
+            from: "modules",
+            localField: "category.module",
+            foreignField: "_id",
+            as: "module",
+          },
+        },
+        { $unwind: "$module" },
+      ];
+  
+      /* ✅ MODULE FILTER */
+      if (moduleId) {
+        pipeline.push({
+          $match: {
+            "module._id": new mongoose.Types.ObjectId(moduleId),
+          },
+        });
+      }
+  
+      /* ---------------- COUNT ---------------- */
+      const totalPipeline = [...pipeline, { $count: "total" }];
+      const totalResult = await Service.aggregate(totalPipeline);
+      const total = totalResult[0]?.total || 0;
+  
+      /* ---------------- DATA ---------------- */
+      pipeline.push(
+        { $sort: { sortOrder: 1, ...sortOption } },
+        ...(limit ? [{ $skip: skip }, { $limit: limit }] : [])
+      );
+
+      pipeline.push(
+  {
+    $project: {
+      serviceName: 1,
+      thumbnailImage: 1,
+      averageRating: 1,
+      totalReviews: 1,
+      keyValues: 1,
+      isTrending: 1,
+      /* CATEGORY */
+      category: {
+        _id: 1,
+        name: 1,
+        image: 1,
+      },
+serviceDetails:{
+      packages: "$serviceDetails.packages",
+},
+      /* FRANCHISE DETAILS */
+      franchiseDetails: {
+        commission: 1,
+        investmentRange: 1,
+        monthlyEarnPotential: 1,
+      },
+
+
+    },
+  }
+);
+
+  
+      const services = await Service.aggregate(pipeline);
+  
+      /* ---------------- CLEAN RESPONSE ---------------- */
+      const cleanedServices = services
+        .map(service => removeEmpty(service))
+        .filter(Boolean);
+  
+      return NextResponse.json(
+        {
+          success: true,
+          page: limit ? page : 1,
+          limit: limit ?? total,
+          total,
+          totalPages: limit ? Math.ceil(total / limit) : 1,
+          data: cleanedServices,
+        },
+        { status: 200, headers: corsHeaders }
+      );
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, message: error.message || "Unknown error" },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+  }
+  
+  
