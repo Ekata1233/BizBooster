@@ -81,12 +81,21 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET ALL
-export async function GET() {
+
+// GET ALL or BY MODULE (using moduleid)
+export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   try {
-    const services = await WhyJustOurService.find()
+    const { searchParams } = new URL(req.url);
+    const moduleId = searchParams.get("moduleid"); // 👈 EXACT key
+
+    const filter: any = {};
+    if (moduleId) {
+      filter.module = moduleId;
+    }
+
+    const services = await WhyJustOurService.find(filter)
       .populate("module", "name")
       .sort({ createdAt: -1 });
 

@@ -20,6 +20,7 @@ interface ServiceItem {
   title: string;
   description: string;
   iconFile: File | null;
+   list?: string;  
   key: number;
 }
 
@@ -29,9 +30,10 @@ const AddWhyJustOurService = () => {
   const { createService, fetchServices } = useWhyJustOurService();
 
   const [selectedModule, setSelectedModule] = useState("");
-  const [items, setItems] = useState<ServiceItem[]>([
-    { title: "", description: "", iconFile: null, key: Date.now() },
-  ]);
+ const [items, setItems] = useState<ServiceItem[]>([
+  { title: "", description: "", iconFile: null, list: "", key: Date.now() },
+]);
+
 
   /* ───────── HANDLERS ───────── */
   const handleAddItem = () => {
@@ -47,7 +49,7 @@ const AddWhyJustOurService = () => {
 
   const handleItemChange = (
     key: number,
-    field: "title" | "description" | "iconFile",
+    field: "title" | "description" | "iconFile" | "list",
     value: string | File | null
   ) => {
     setItems((prev) =>
@@ -67,10 +69,17 @@ const AddWhyJustOurService = () => {
     formData.append("module", selectedModule);
 
     items.forEach((item, index) => {
-      formData.append(`items[${index}][title]`, item.title);
-      formData.append(`items[${index}][description]`, item.description);
-      if (item.iconFile) formData.append(`items[${index}][icon]`, item.iconFile);
-    });
+    formData.append(`items[${index}][title]`, item.title);
+    formData.append(`items[${index}][description]`, item.description);
+    if (item.iconFile) {
+      formData.append(`items[${index}][icon]`, item.iconFile);
+    }
+
+    // ✅ ADD list RIGHT HERE
+    if (item.list?.trim()) {
+      formData.append(`items[${index}][list]`, item.list);
+    }
+  });
 
     const result = await createService(formData);
     if (result) {
@@ -136,6 +145,21 @@ const AddWhyJustOurService = () => {
         }
       />
     </div>
+{/* LIST (OPTIONAL) */}
+<div className="flex-1">
+  <Label>
+  List <span className="text-red-500 text-xs">(Only For Legal)</span>
+</Label>
+
+  <Input
+    type="text"
+    placeholder="Enter list text"
+    value={item.list || ""}
+    onChange={(e) =>
+      handleItemChange(item.key, "list", e.target.value)
+    }
+  />
+</div>
 
     {/* ICON */}
     <div className="flex-1">

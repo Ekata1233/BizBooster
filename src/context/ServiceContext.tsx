@@ -60,7 +60,100 @@ export interface PackageItem {
   whatYouGet: string[];
 }
 
+export interface WhyChooseUsItem {
+  title: string;
+  icon: string;
+  description: string;
+}
+
+export interface MoreInfoItem {
+  title: string;
+  image: string;
+  description: string;
+}
+
+export interface ConnectWithItem {
+  name: string;
+  mobileNo: string;
+  email: string;
+}
+
+export interface TimeRequiredItem {
+  minDays: number | null;
+  maxDays: number | null;
+}
+
+export interface CounterItem {
+  number: number;
+  title: string;
+}
+
+export interface FranchiseFeatureItem {
+  icon: string;
+  subtitle: string;
+  subDescription: string;
+}
+
+export interface FranchiseOperatingModelItem {
+  info: string;
+  title: string;
+  description: string;
+  features: FranchiseFeatureItem[];
+  tags: string[];
+  example: string;
+}
+
+export interface BusinessFundamentalPoint {
+  subtitle: string;
+  subDescription: string;
+}
+
+export interface BusinessFundamental {
+  description: string;
+  points: BusinessFundamentalPoint[];
+}
+
+export interface KeyAdvantageItem {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface CompleteSupportSystemItem {
+  icon: string;
+  title: string;
+  lists: string[];
+}
+
+export interface CompanyDetailItem {
+  title: string;
+  description: string;
+}
+
+export interface CompanyDetails {
+  name: string;
+  location: string;
+  details: CompanyDetailItem[];
+}
+
+export interface CourseCurriculumItem {
+  title: string;
+  lists: string[];
+  model: string[];
+}
+
+export interface WhomToSellItem {
+  icon: string;
+  lists: string;
+}
+
+export interface Duration {
+  weeks: number | null;
+  hours: number | null;
+}
+
 export interface ServiceDetails {
+  // Original fields
   benefits: string[];
   aboutUs: string[];
   highlight: string[];
@@ -70,14 +163,42 @@ export interface ServiceDetails {
   termsAndConditions: string[];
   faq: FAQ[];
   extraSections: ExtraSection[];
-  whyChooseUs: AssuredByFetchTrueItem[];
+  whyChooseUs: WhyChooseUsItem[];
   packages: PackageItem[];
   weRequired: { title: string; description: string }[];
   weDeliver: { title: string; description: string }[];
-  moreInfo: { title: string; image: string; description: string }[];
-  connectWith: { name: string; mobileNo: string; email: string }[];
-  timeRequired: { minDays: number | null; maxDays: number | null }[];
+  moreInfo: MoreInfoItem[];
+  connectWith: ConnectWithItem[];
+  timeRequired: TimeRequiredItem[];
   extraImages: string[];
+  
+  // 🆕 NEW EXTENDED FIELDS (26 fields)
+  operatingCities: string[];
+  brochureImage: string[];
+  emiavalable: string[];
+  counter: CounterItem[];
+  franchiseOperatingModel: FranchiseOperatingModelItem[];
+  businessFundamental: BusinessFundamental;
+  keyAdvantages: KeyAdvantageItem[];
+  completeSupportSystem: CompleteSupportSystemItem[];
+  trainingDetails: string[];
+  agreementDetails: string[];
+  goodThings: string[];
+  compareAndChoose: string[];
+  companyDetails: CompanyDetails[];
+  roi: string[];
+  level: "beginner" | "medium" | "advanced";
+  lessonCount: number | null;
+  duration: Duration;
+  whatYouWillLearn: string[];
+  eligibleFor: string[];
+  courseCurriculum: CourseCurriculumItem[];
+  courseIncludes: string[];
+  certificateImage: string[];
+  whomToSell: WhomToSellItem[];
+  include: string[];
+  notInclude: string[];
+  safetyAndAssurance: string[];
 }
 
 // -------- FRANCHISE DETAILS ----------
@@ -118,7 +239,7 @@ export interface Service {
   bannerImages: string[];
 
   tags: string[];
-keyValues: { key: string; value: string; icon?: string }[];
+  keyValues: { key: string; value: string; icon?: string }[];
 
   providerPrices: ProviderPrice[];
 
@@ -131,6 +252,7 @@ keyValues: { key: string; value: string; icon?: string }[];
 
   isDeleted: boolean;
   recommendedServices: boolean;
+  isTrending: boolean; // Added missing field from schema
 
   createdAt?: string;
   updatedAt?: string;
@@ -193,13 +315,125 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const BASE_URL = "/api/service";
 
   // ---------------------------------------------
+  // DEFAULT VALUES FOR NEW FIELDS
+  // ---------------------------------------------
+  const getDefaultServiceDetails = (): ServiceDetails => ({
+    // Original fields
+    benefits: [],
+    aboutUs: [],
+    highlight: [],
+    document: [],
+    assuredByFetchTrue: [],
+    howItWorks: [],
+    termsAndConditions: [],
+    faq: [],
+    extraSections: [],
+    whyChooseUs: [],
+    packages: [],
+    weRequired: [],
+    weDeliver: [],
+    moreInfo: [],
+    connectWith: [],
+    timeRequired: [],
+    extraImages: [],
+    
+    // 🆕 NEW EXTENDED FIELDS with defaults
+    operatingCities: [],
+    brochureImage: [],
+    emiavalable: [],
+    counter: [],
+    franchiseOperatingModel: [],
+    businessFundamental: {
+      description: "",
+      points: []
+    },
+    keyAdvantages: [],
+    completeSupportSystem: [],
+    trainingDetails: [],
+    agreementDetails: [],
+    goodThings: [],
+    compareAndChoose: [],
+    companyDetails: [],
+    roi: [],
+    level: "beginner",
+    lessonCount: null,
+    duration: {
+      weeks: null,
+      hours: null
+    },
+    whatYouWillLearn: [],
+    eligibleFor: [],
+    courseCurriculum: [],
+    courseIncludes: [],
+    certificateImage: [],
+    whomToSell: [],
+    include: [],
+    notInclude: [],
+    safetyAndAssurance: []
+  });
+
+  const getDefaultService = (): Omit<Service, '_id'> => ({
+    serviceName: null,
+    category: null,
+    subcategory: null,
+    price: 0,
+    discount: 0,
+    discountedPrice: 0,
+    gst: 0,
+    includeGst: false,
+    gstInRupees: 0,
+    totalWithGst: 0,
+    thumbnailImage: '',
+    bannerImages: [],
+    tags: [],
+    keyValues: [],
+    providerPrices: [],
+    serviceDetails: getDefaultServiceDetails(),
+    franchiseDetails: {
+      commission: null,
+      termsAndConditions: null,
+      investmentRange: [],
+      monthlyEarnPotential: [],
+      franchiseModel: [],
+      extraSections: [],
+      extraImages: []
+    },
+    averageRating: 0,
+    totalReviews: 0,
+    sortOrder: 0,
+    isDeleted: false,
+    recommendedServices: false,
+    isTrending: false
+  });
+
+  // ---------------------------------------------
   // FETCH ALL SERVICES
   // ---------------------------------------------
   const fetchServices = useCallback(async () => {
     try {
       const res = await axios.get(`${BASE_URL}`);
       if (res.data.success) {
-        setServices(res.data.data);
+        // Ensure all services have the new fields with defaults
+        const servicesWithDefaults = res.data.data.map((service: Service) => ({
+          ...getDefaultService(),
+          ...service,
+          serviceDetails: {
+            ...getDefaultServiceDetails(),
+            ...service.serviceDetails,
+            // Ensure nested objects have defaults
+            businessFundamental: {
+              description: "",
+              points: [],
+              ...service.serviceDetails?.businessFundamental
+            },
+            duration: {
+              weeks: null,
+              hours: null,
+              ...service.serviceDetails?.duration
+            }
+          }
+        }));
+        setServices(servicesWithDefaults);
       }
     } catch (err) {
       console.error("Fetch services error:", err);
@@ -217,15 +451,39 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   const fetchSingleService = async (id: string) => {
     try {
       setSingleServiceLoading(true);
+      setSingleServiceError(null);
+      
       const res = await axios.get(`${BASE_URL}/${id}`);
 
       if (res.data.success) {
-        setSingleService(res.data.data);
+        const serviceData = res.data.data;
+        // Ensure the single service has all new fields with defaults
+        const serviceWithDefaults: Service = {
+          ...getDefaultService(),
+          ...serviceData,
+          serviceDetails: {
+            ...getDefaultServiceDetails(),
+            ...serviceData.serviceDetails,
+            // Ensure nested objects have defaults
+            businessFundamental: {
+              description: "",
+              points: [],
+              ...serviceData.serviceDetails?.businessFundamental
+            },
+            duration: {
+              weeks: null,
+              hours: null,
+              ...serviceData.serviceDetails?.duration
+            }
+          }
+        };
+        setSingleService(serviceWithDefaults);
       } else {
         setSingleServiceError("Failed to load service");
       }
-    } catch (err) {
-      setSingleServiceError("Error fetching service");
+    } catch (err: any) {
+      console.error("Fetch single service error:", err);
+      setSingleServiceError(err.response?.data?.message || "Error fetching service");
     } finally {
       setSingleServiceLoading(false);
     }
@@ -234,61 +492,75 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
   // ---------------------------------------------
   // CREATE SERVICE
   // ---------------------------------------------
-const createService = async (formData: FormData) => {
-  try {
-    const res = await axios.post(`${BASE_URL}`, formData);
+  const createService = async (formData: FormData) => {
+    try {
+      const res = await axios.post(`${BASE_URL}`, formData);
 
-    // Return the whole backend response (success or error)
-    return res.data; 
-  } catch (err: any) {
-    console.error("Create service error:", err);
+      if (res.data.success) {
+        // Add the new service to the list with defaults
+        const newService: Service = {
+          ...getDefaultService(),
+          ...res.data.data,
+          _id: res.data.data._id
+        };
+        setServices(prev => [...prev, newService]);
+        return newService;
+      }
+      
+      // Return the whole backend response (success or error)
+      return res.data; 
+    } catch (err: any) {
+      console.error("Create service error:", err);
 
-    // If backend returned a response with error message
-    if (err.response && err.response.data) {
-      return err.response.data; // e.g., { success: false, message: "Service name is required" }
+      // If backend returned a response with error message
+      if (err.response && err.response.data) {
+        return err.response.data; // e.g., { success: false, message: "Service name is required" }
+      }
+
+      // Fallback generic error
+      return { success: false, message: "Unknown error occurred" };
     }
-
-    // Fallback generic error
-    return { success: false, message: "Unknown error occurred" };
-  }
-};
-
+  };
 
   // ---------------------------------------------
   // UPDATE SERVICE
   // ---------------------------------------------
- const updateService = async (
-  id: string,
-  data: Partial<Service> | FormData
-): Promise<UpdateServiceResponse | undefined> => {
-  try {
-    const res = await axios.put(`${BASE_URL}/${id}`, data);
+  const updateService = async (
+    id: string,
+    data: Partial<Service> | FormData
+  ): Promise<UpdateServiceResponse | undefined> => {
+    try {
+      const res = await axios.put(`${BASE_URL}/${id}`, data);
 
-    if (res.data.success) {
-      const updated = res.data.data;
+      if (res.data.success) {
+        const updated = res.data.data;
 
-      setServices((prev) =>
-        prev.map((item) => (item._id === id ? updated : item))
-      );
+        setServices((prev) =>
+          prev.map((item) => (item._id === id ? updated : item))
+        );
+
+        // Update single service if it's the one being updated
+        if (singleService && singleService._id === id) {
+          setSingleService(updated);
+        }
+
+        return {
+          success: res.data.success,
+          data: updated,
+          message: res.data.message,
+        };
+      }
 
       return {
-        success: res.data.success,
-        data: updated,
-        message: res.data.message,
+        success: false,
+        data: res.data.data,
+        message: res.data.message || "Update failed",
       };
+    } catch (err) {
+      console.error("Update service error:", err);
+      return undefined; // ← ensures type safety
     }
-
-    return {
-      success: false,
-      data: res.data.data,
-      message: res.data.message || "Update failed",
-    };
-  } catch (err) {
-    console.error("Update service error:", err);
-    return undefined; // ← ensures type safety
-  }
-};
-
+  };
 
   // ---------------------------------------------
   // DELETE SERVICE (SOFT DELETE)
@@ -299,6 +571,11 @@ const createService = async (formData: FormData) => {
 
       if (res.data.success) {
         setServices((prev) => prev.filter((item) => item._id !== id));
+        
+        // Clear single service if it's the one being deleted
+        if (singleService && singleService._id === id) {
+          setSingleService(null);
+        }
       }
     } catch (err) {
       console.error("Delete service error:", err);

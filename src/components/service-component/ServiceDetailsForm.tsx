@@ -31,7 +31,72 @@ type MoreInfo = { title: string; image: string | File; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type ExtraImageItem = { icon: string; file?: File };
+type CounterItem = {
+  number: number | string;
+  title: string;
+};
 
+type FranchiseFeatureItem = {
+  icon: string | File;
+  subtitle: string;
+  subDescription: string;
+};
+
+type FranchiseOperatingModelItem = {
+  info: string;
+  title: string;
+  description: string;
+  features: FranchiseFeatureItem[];
+  tags: string[];
+  example: string;
+};
+
+type BusinessFundamental = {
+  description: string;
+  points: {
+    subtitle: string;
+    subDescription: string;
+  }[];
+};
+
+type KeyAdvantageItem = {
+  icon: string | File;
+  title: string;
+  description: string;
+};
+
+type CompleteSupportSystemItem = {
+  icon: string | File;
+  title: string;
+  lists: string[];
+};
+
+type CompanyDetailItem = {
+  title: string;
+  description: string;
+};
+
+type CompanyDetails = {
+  name: string;
+  location: string;
+  details: CompanyDetailItem[];
+};
+
+type CourseCurriculumItem = {
+  title: string;
+  lists: string[];
+  model: string[];
+};
+
+type WhomToSellItem = {
+  icon: string | File;
+  lists: string;
+};
+
+type Duration = {
+  weeks: number | null;
+  hours: number | null;
+};
 // ------------------- SERVICE DETAILS -------------------
 export type ServiceDetails = {
   benefits: string[];
@@ -51,6 +116,33 @@ export type ServiceDetails = {
   connectWith: ConnectWith[];
   timeRequired: TimeRequired[];
   extraImages: (string | File)[];
+
+  operatingCities: string[];
+  brochureImage: (string | File)[];
+  emiavalable: string[];
+  counter: CounterItem[];
+  franchiseOperatingModel: FranchiseOperatingModelItem[];
+  businessFundamental: BusinessFundamental;
+  keyAdvantages: KeyAdvantageItem[];
+  completeSupportSystem: CompleteSupportSystemItem[];
+  trainingDetails: string[];
+  agreementDetails: string[];
+  goodThings: string[];
+  compareAndChoose: string[];
+  companyDetails: CompanyDetails[];
+  roi: string[];
+  level: "beginner" | "medium" | "advanced";
+  lessonCount: number | null;
+  duration: Duration;
+  whatYouWillLearn: string[];
+  eligibleFor: string[];
+  courseCurriculum: CourseCurriculumItem[];
+  courseIncludes: string[];
+  certificateImage: (string | File)[];
+  whomToSell: WhomToSellItem[];
+  include: string[];
+  notInclude: string[];
+  safetyAndAssurance: string[];
 };
 
 interface Props {
@@ -97,6 +189,54 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ minDays: null, maxDays: null }]);
   const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: "" }]);
   const [showExtraSections, setShowExtraSections] = useState(false);
+
+  
+
+// NEW EXTENDED FIELDS STATES
+const [operatingCities, setOperatingCities] = useState<string[]>(['']);
+const [brochureImage, setBrochureImage] = useState<(string | File)[]>([]);
+const [emiavalable, setEmiavalable] = useState<string[]>(['']);
+const [counter, setCounter] = useState<CounterItem[]>([{ number: '', title: '' }]);
+const [franchiseOperatingModel, setFranchiseOperatingModel] = useState<FranchiseOperatingModelItem[]>([{
+  info: '',
+  title: '',
+  description: '',
+  features: [{ icon: '', subtitle: '', subDescription: '' }],
+  tags: [''],
+  example: ''
+}]);
+const [businessFundamental, setBusinessFundamental] = useState<BusinessFundamental>({
+  description: '',
+  points: [{ subtitle: '', subDescription: '' }]
+});
+const [keyAdvantages, setKeyAdvantages] = useState<KeyAdvantageItem[]>([{ icon: '', title: '', description: '' }]);
+const [completeSupportSystem, setCompleteSupportSystem] = useState<CompleteSupportSystemItem[]>([{ icon: '', title: '', lists: [''] }]);
+const [trainingDetails, setTrainingDetails] = useState<string[]>(['']);
+const [agreementDetails, setAgreementDetails] = useState<string[]>(['']);
+const [goodThings, setGoodThings] = useState<string[]>(['']);
+const [compareAndChoose, setCompareAndChoose] = useState<string[]>(['']);
+const [companyDetails, setCompanyDetails] = useState<CompanyDetails[]>([{ 
+  name: '', 
+  location: '', 
+  details: [{ title: '', description: '' }] 
+}]);
+const [roi, setRoi] = useState<string[]>(['']);
+const [level, setLevel] = useState<"beginner" | "medium" | "advanced">("beginner");
+const [lessonCount, setLessonCount] = useState<number | null>(null);
+const [duration, setDuration] = useState<Duration>({ weeks: null, hours: null });
+const [whatYouWillLearn, setWhatYouWillLearn] = useState<string[]>(['']);
+const [eligibleFor, setEligibleFor] = useState<string[]>(['']);
+const [courseCurriculum, setCourseCurriculum] = useState<CourseCurriculumItem[]>([{ 
+  title: '', 
+  lists: [''], 
+  model: [''] 
+}]);
+const [courseIncludes, setCourseIncludes] = useState<string[]>(['']);
+const [certificateImage, setCertificateImage] = useState<(string | File)[]>([]);
+const [whomToSell, setWhomToSell] = useState<WhomToSellItem[]>([{ icon: '', lists: '' }]);
+const [include, setInclude] = useState<string[]>(['']);
+const [notInclude, setNotInclude] = useState<string[]>(['']);
+const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
   
   const didInit = useRef(false);
 
@@ -145,6 +285,54 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
       typeof img === 'string' ? { icon: img } : { icon: '', file: img }
     ) || [{ icon: "" }];
     setExtraImages(extraImagesData);
+
+
+// NEW EXTENDED FIELDS INITIALIZATION
+setOperatingCities(data.operatingCities?.length ? data.operatingCities : ['']);
+setBrochureImage(data.brochureImage || []);
+setEmiavalable(data.emiavalable?.length ? data.emiavalable : ['']);
+setCounter(data.counter?.length ? data.counter : [{ number: '', title: '' }]);
+setFranchiseOperatingModel(data.franchiseOperatingModel?.length ? data.franchiseOperatingModel : [{
+  info: '',
+  title: '',
+  description: '',
+  features: [{ icon: '', subtitle: '', subDescription: '' }],
+  tags: [''],
+  example: ''
+}]);
+setBusinessFundamental(data.businessFundamental || {
+  description: '',
+  points: [{ subtitle: '', subDescription: '' }]
+});
+setKeyAdvantages(data.keyAdvantages?.length ? data.keyAdvantages : [{ icon: '', title: '', description: '' }]);
+setCompleteSupportSystem(data.completeSupportSystem?.length ? data.completeSupportSystem : [{ icon: '', title: '', lists: [''] }]);
+setTrainingDetails(data.trainingDetails?.length ? data.trainingDetails : ['']);
+setAgreementDetails(data.agreementDetails?.length ? data.agreementDetails : ['']);
+setGoodThings(data.goodThings?.length ? data.goodThings : ['']);
+setCompareAndChoose(data.compareAndChoose?.length ? data.compareAndChoose : ['']);
+setCompanyDetails(data.companyDetails?.length ? data.companyDetails : [{ 
+  name: '', 
+  location: '', 
+  details: [{ title: '', description: '' }] 
+}]);
+setRoi(data.roi?.length ? data.roi : ['']);
+setLevel(data.level || "beginner");
+setLessonCount(data.lessonCount || null);
+setDuration(data.duration || { weeks: null, hours: null });
+setWhatYouWillLearn(data.whatYouWillLearn?.length ? data.whatYouWillLearn : ['']);
+setEligibleFor(data.eligibleFor?.length ? data.eligibleFor : ['']);
+setCourseCurriculum(data.courseCurriculum?.length ? data.courseCurriculum : [{ 
+  title: '', 
+  lists: [''], 
+  model: [''] 
+}]);
+setCourseIncludes(data.courseIncludes?.length ? data.courseIncludes : ['']);
+setCertificateImage(data.certificateImage || []);
+setWhomToSell(data.whomToSell?.length ? data.whomToSell : [{ icon: '', lists: '' }]);
+setInclude(data.include?.length ? data.include : ['']);
+setNotInclude(data.notInclude?.length ? data.notInclude : ['']);
+setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance : ['']);
+
   }, [data]);
 
   // Update parent when any field changes
@@ -169,7 +357,36 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
       connectWith,
       timeRequired,
       extraImages: extraImages.map(item => item.file || item.icon), // Convert back to string/File array
-      highlightPreviews // Keep previews separate
+      highlightPreviews, // Keep previews separate
+
+       // NEW EXTENDED FIELDS
+  operatingCities,
+  brochureImage,
+  emiavalable,
+  counter,
+  franchiseOperatingModel,
+  businessFundamental,
+  keyAdvantages,
+  completeSupportSystem,
+  trainingDetails,
+  agreementDetails,
+  goodThings,
+  compareAndChoose,
+  companyDetails,
+  roi,
+  level,
+  lessonCount,
+  duration,
+  whatYouWillLearn,
+  eligibleFor,
+  courseCurriculum,
+  courseIncludes,
+  certificateImage,
+  whomToSell,
+  include,
+  notInclude,
+  safetyAndAssurance
+
     };
 
     setData(updatedData);
@@ -190,7 +407,35 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
     moreInfo,
     connectWith,
     timeRequired,
-    extraImages
+    extraImages,
+
+
+    operatingCities,
+  brochureImage,
+  emiavalable,
+  counter,
+  franchiseOperatingModel,
+  businessFundamental,
+  keyAdvantages,
+  completeSupportSystem,
+  trainingDetails,
+  agreementDetails,
+  goodThings,
+  compareAndChoose,
+  companyDetails,
+  roi,
+  level,
+  lessonCount,
+  duration,
+  whatYouWillLearn,
+  eligibleFor,
+  courseCurriculum,
+  courseIncludes,
+  certificateImage,
+  whomToSell,
+  include,
+  notInclude,
+  safetyAndAssurance
   ]);
 
   useEffect(() => setEditorReady(true), []);
@@ -281,7 +526,21 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
       updateItem({ ...currentItem, [fieldName]: url });
     }
   };
+// Helper function for file upload handling
+const handleFileChange = (
+  e: React.ChangeEvent<HTMLInputElement>,
+  setter: React.Dispatch<React.SetStateAction<(string | File)[]>>
+) => {
+  const files = e.target.files;
+  if (files && files.length > 0) {
+    setter(prev => [...prev, ...Array.from(files)]);
+  }
+};
 
+// Helper to remove file from array
+const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(string | File)[]>>) => {
+  setter(prev => prev.filter((_, i) => i !== index));
+};
   // ------------------- RENDER -------------------
   return (
     <div>
@@ -536,6 +795,791 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
         </div>
         )}
 
+
+        {/* 🔥🆕 NEW EXTENDED FIELDS SECTION - Add this RIGHT AFTER PACKAGES SECTION */}
+<div className="border-t pt-6 mt-6">
+  <h4 className="text-lg font-bold text-gray-800 mb-4">🆕 Extended Service Details</h4>
+  
+  {/* ============= SECTION 1: BASIC FIELDS ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    
+    {/* Operating Cities */}
+    <div>
+      <Label className="mb-2">Operating Cities</Label>
+      {renderArrayField<string>(
+        operatingCities,
+        setOperatingCities,
+        (city, idx, updateCity) => (
+          <Input
+            value={city}
+            placeholder="City name"
+            onChange={(e) => updateCity(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+
+    {/* EMI Available */}
+    <div>
+      <Label className="mb-2">EMI Available</Label>
+      {renderArrayField<string>(
+        emiavalable,
+        setEmiavalable,
+        (emi, idx, updateEmi) => (
+          <Input
+            value={emi}
+            placeholder="EMI Option (e.g., 0% EMI for 6 months)"
+            onChange={(e) => updateEmi(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+
+  </div>
+
+  {/* ============= SECTION 2: COUNTER ============= */}
+  <div className="mb-6">
+    <Label className="mb-2">Counter Stats</Label>
+    {renderArrayField<CounterItem>(
+      counter,
+      setCounter,
+      (item, idx, updateItem) => (
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <Label className="text-sm mb-1">Number</Label>
+            <Input
+              type="number"
+              value={item.number}
+              placeholder="e.g., 100"
+              onChange={(e) => updateItem({ ...item, number: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label className="text-sm mb-1">Title</Label>
+            <Input
+              value={item.title}
+              placeholder="e.g., Happy Clients"
+              onChange={(e) => updateItem({ ...item, title: e.target.value })}
+            />
+          </div>
+        </div>
+      ),
+      { number: '', title: '' }
+    )}
+  </div>
+
+  {/* ============= SECTION 3: FRANCHISE OPERATING MODEL ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Franchise Operating Model</Label>
+    {renderArrayField<FranchiseOperatingModelItem>(
+      franchiseOperatingModel,
+      setFranchiseOperatingModel,
+      (model, modelIdx, updateModel) => (
+        <div className="border p-4 rounded mb-4">
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div>
+              <Label className="text-sm mb-1">Info</Label>
+              <Input
+                value={model.info}
+                placeholder="Model info"
+                onChange={(e) => updateModel({ ...model, info: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label className="text-sm mb-1">Title</Label>
+              <Input
+                value={model.title}
+                placeholder="Model title"
+                onChange={(e) => updateModel({ ...model, title: e.target.value })}
+              />
+            </div>
+          </div>
+          
+          <div className="mb-3">
+            <Label className="text-sm mb-1">Description</Label>
+            <textarea
+              value={model.description}
+              onChange={(e) => updateModel({ ...model, description: e.target.value })}
+              placeholder="Model description"
+              className="w-full p-2 border rounded"
+              rows={3}
+            />
+          </div>
+
+          {/* Features */}
+          <div className="mb-3">
+            <Label className="text-sm mb-1">Features</Label>
+            {renderArrayField<FranchiseFeatureItem>(
+              model.features,
+              (newFeatures) => {
+                updateModel({ 
+                  ...model, 
+                  features: typeof newFeatures === 'function' ? 
+                    newFeatures(model.features) : newFeatures 
+                });
+              },
+              (feature, featureIdx, updateFeature) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <Label className="text-xs mb-1">Icon</Label>
+                    <FileInput
+                      onChange={(e) => handleFileUpload(e, feature, updateFeature, 'icon')}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1">Subtitle</Label>
+                    <Input
+                      value={feature.subtitle}
+                      placeholder="Feature title"
+                      onChange={(e) => updateFeature({ ...feature, subtitle: e.target.value })}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs mb-1">Description</Label>
+                    <Input
+                      value={feature.subDescription}
+                      placeholder="Feature description"
+                      onChange={(e) => updateFeature({ ...feature, subDescription: e.target.value })}
+                    />
+                  </div>
+                </div>
+              ),
+              { icon: '', subtitle: '', subDescription: '' }
+            )}
+          </div>
+
+          {/* Tags */}
+          <div className="mb-3">
+            <Label className="text-sm mb-1">Tags</Label>
+            {renderArrayField<string>(
+              model.tags,
+              (newTags) => {
+                updateModel({ 
+                  ...model, 
+                  tags: typeof newTags === 'function' ? 
+                    newTags(model.tags) : newTags 
+                });
+              },
+              (tag, tagIdx, updateTag) => (
+                <Input
+                  value={tag}
+                  placeholder="Tag"
+                  onChange={(e) => updateTag(e.target.value)}
+                  className="mb-1"
+                />
+              ),
+              ''
+            )}
+          </div>
+
+          {/* Example */}
+          <div>
+            <Label className="text-sm mb-1">Example</Label>
+            <textarea
+              value={model.example}
+              onChange={(e) => updateModel({ ...model, example: e.target.value })}
+              placeholder="Example of this model"
+              className="w-full p-2 border rounded"
+              rows={2}
+            />
+          </div>
+        </div>
+      ),
+      {
+        info: '',
+        title: '',
+        description: '',
+        features: [{ icon: '', subtitle: '', subDescription: '' }],
+        tags: [''],
+        example: ''
+      }
+    )}
+  </div>
+
+  {/* ============= SECTION 4: BUSINESS FUNDAMENTAL ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Business Fundamental</Label>
+    <div className="mb-4">
+      <Label className="text-sm mb-1">Description</Label>
+      <textarea
+        value={businessFundamental.description}
+        onChange={(e) => setBusinessFundamental({...businessFundamental, description: e.target.value})}
+        placeholder="Business fundamental description"
+        className="w-full p-2 border rounded"
+        rows={3}
+      />
+    </div>
+    
+    <div className="mb-3">
+      <Label className="text-sm mb-1">Key Points</Label>
+      {renderArrayField<{subtitle: string; subDescription: string}>(
+        businessFundamental.points,
+        (newPoints) => {
+          setBusinessFundamental({
+            ...businessFundamental, 
+            points: typeof newPoints === 'function' ? 
+              newPoints(businessFundamental.points) : newPoints
+          });
+        },
+        (point, idx, updatePoint) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <Input
+              value={point.subtitle}
+              placeholder="Point title"
+              onChange={(e) => updatePoint({...point, subtitle: e.target.value})}
+            />
+            <Input
+              value={point.subDescription}
+              placeholder="Point description"
+              onChange={(e) => updatePoint({...point, subDescription: e.target.value})}
+            />
+          </div>
+        ),
+        { subtitle: '', subDescription: '' }
+      )}
+    </div>
+  </div>
+
+  {/* ============= SECTION 5: KEY ADVANTAGES ============= */}
+  <div className="mb-6">
+    <Label className="mb-2 font-semibold">Key Advantages</Label>
+    {renderArrayField<KeyAdvantageItem>(
+      keyAdvantages,
+      setKeyAdvantages,
+      (item, idx, updateItem) => (
+        <div className="border p-4 rounded mb-3">
+          <div className="grid gap-3">
+            <Input
+              value={item.title}
+              placeholder="Advantage Title"
+              onChange={(e) => updateItem({ ...item, title: e.target.value })}
+            />
+            <div>
+              <Label className="text-sm mb-1">Icon</Label>
+              <FileInput
+                onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+              />
+            </div>
+            <Input
+              value={item.description}
+              placeholder="Description"
+              onChange={(e) => updateItem({ ...item, description: e.target.value })}
+            />
+          </div>
+        </div>
+      ),
+      { icon: '', title: '', description: '' }
+    )}
+  </div>
+
+  {/* ============= SECTION 6: COMPLETE SUPPORT SYSTEM ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Complete Support System</Label>
+    {renderArrayField<CompleteSupportSystemItem>(
+      completeSupportSystem,
+      setCompleteSupportSystem,
+      (item, idx, updateItem) => (
+        <div className="border p-3 rounded mb-2">
+          <Input
+            value={item.title}
+            placeholder="Support Title"
+            onChange={(e) => updateItem({ ...item, title: e.target.value })}
+            className="mb-2"
+          />
+          <FileInput
+            onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+            className="mb-2"
+          />
+          <Label className="text-sm mb-1">Support Points</Label>
+          {renderArrayField<string>(
+            item.lists,
+            (newLists) => {
+              updateItem({ 
+                ...item, 
+                lists: typeof newLists === 'function' ? 
+                  newLists(item.lists) : newLists 
+              });
+            },
+            (listItem, listIdx, updateListItem) => (
+              <Input
+                value={listItem}
+                placeholder="Support point"
+                onChange={(e) => updateListItem(e.target.value)}
+                className="mb-1"
+              />
+            ),
+            ''
+          )}
+        </div>
+      ),
+      { icon: '', title: '', lists: [''] }
+    )}
+  </div>
+
+  {/* ============= SECTION 7: TRAINING & AGREEMENT DETAILS ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    {/* Training Details */}
+    <div>
+      <Label className="mb-2">Training Details</Label>
+      {renderArrayField<string>(
+        trainingDetails,
+        setTrainingDetails,
+        (detail, idx, updateDetail) => (
+          <Input
+            value={detail}
+            placeholder="Training detail (e.g., Online/Offline, Duration)"
+            onChange={(e) => updateDetail(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+
+    {/* Agreement Details */}
+    <div>
+      <Label className="mb-2">Agreement Details</Label>
+      {renderArrayField<string>(
+        agreementDetails,
+        setAgreementDetails,
+        (detail, idx, updateDetail) => (
+          <Input
+            value={detail}
+            placeholder="Agreement detail"
+            onChange={(e) => updateDetail(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+  </div>
+
+  {/* ============= SECTION 8: GOOD THINGS & COMPARE ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    {/* Good Things */}
+    <div>
+      <Label className="mb-2">Good Things</Label>
+      {renderArrayField<string>(
+        goodThings,
+        setGoodThings,
+        (thing, idx, updateThing) => (
+          <Input
+            value={thing}
+            placeholder="Positive point about the service"
+            onChange={(e) => updateThing(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+
+    {/* Compare and Choose */}
+    <div>
+      <Label className="mb-2">Compare and Choose</Label>
+      {renderArrayField<string>(
+        compareAndChoose,
+        setCompareAndChoose,
+        (item, idx, updateItem) => (
+          <Input
+            value={item}
+            placeholder="Comparison point (e.g., vs competitors)"
+            onChange={(e) => updateItem(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+  </div>
+
+  {/* ============= SECTION 9: COMPANY DETAILS ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Company Details</Label>
+    {renderArrayField<CompanyDetails>(
+      companyDetails,
+      setCompanyDetails,
+      (company, companyIdx, updateCompany) => (
+        <div className="border p-4 rounded mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <Input
+              value={company.name}
+              placeholder="Company Name"
+              onChange={(e) => updateCompany({ ...company, name: e.target.value })}
+            />
+            <Input
+              value={company.location}
+              placeholder="Location"
+              onChange={(e) => updateCompany({ ...company, location: e.target.value })}
+            />
+          </div>
+          
+          <div className="mb-2">
+            <Label className="text-sm mb-1">Details</Label>
+            {renderArrayField<CompanyDetailItem>(
+              company.details,
+              (newDetails) => {
+                updateCompany({ 
+                  ...company, 
+                  details: typeof newDetails === 'function' ? 
+                    newDetails(company.details) : newDetails 
+                });
+              },
+              (detail, detailIdx, updateDetail) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                  <Input
+                    value={detail.title}
+                    placeholder="Detail title"
+                    onChange={(e) => updateDetail({ ...detail, title: e.target.value })}
+                  />
+                  <Input
+                    value={detail.description}
+                    placeholder="Detail description"
+                    onChange={(e) => updateDetail({ ...detail, description: e.target.value })}
+                  />
+                </div>
+              ),
+              { title: '', description: '' }
+            )}
+          </div>
+        </div>
+      ),
+      { 
+        name: '', 
+        location: '', 
+        details: [{ title: '', description: '' }] 
+      }
+    )}
+  </div>
+
+  {/* ============= SECTION 10: ROI ============= */}
+  <div className="mb-6">
+    <Label className="mb-2">Return on Investment (ROI)</Label>
+    {renderArrayField<string>(
+      roi,
+      setRoi,
+      (item, idx, updateItem) => (
+        <Input
+          value={item}
+          placeholder="ROI detail (e.g., 30% ROI in 6 months)"
+          onChange={(e) => updateItem(e.target.value)}
+          className="mb-2"
+        />
+      ),
+      ''
+    )}
+  </div>
+
+  {/* ============= SECTION 11: COURSE CURRICULUM ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Course Curriculum</Label>
+    {renderArrayField<CourseCurriculumItem>(
+      courseCurriculum,
+      setCourseCurriculum,
+      (curriculum, curriculumIdx, updateCurriculum) => (
+        <div className="border p-4 rounded mb-3">
+          <Input
+            value={curriculum.title}
+            placeholder="Curriculum Title"
+            onChange={(e) => updateCurriculum({ ...curriculum, title: e.target.value })}
+            className="mb-3"
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Lists */}
+            <div>
+              <Label className="text-sm mb-1">Lists</Label>
+              {renderArrayField<string>(
+                curriculum.lists,
+                (newLists) => {
+                  updateCurriculum({ 
+                    ...curriculum, 
+                    lists: typeof newLists === 'function' ? 
+                      newLists(curriculum.lists) : newLists 
+                  });
+                },
+                (listItem, listIdx, updateListItem) => (
+                  <Input
+                    value={listItem}
+                    placeholder="List item"
+                    onChange={(e) => updateListItem(e.target.value)}
+                    className="mb-1"
+                  />
+                ),
+                ''
+              )}
+            </div>
+
+            {/* Model */}
+            <div>
+              <Label className="text-sm mb-1">Model</Label>
+              {renderArrayField<string>(
+                curriculum.model,
+                (newModel) => {
+                  updateCurriculum({ 
+                    ...curriculum, 
+                    model: typeof newModel === 'function' ? 
+                      newModel(curriculum.model) : newModel 
+                  });
+                },
+                (modelItem, modelIdx, updateModelItem) => (
+                  <Input
+                    value={modelItem}
+                    placeholder="Model item"
+                    onChange={(e) => updateModelItem(e.target.value)}
+                    className="mb-1"
+                  />
+                ),
+                ''
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+      { 
+        title: '', 
+        lists: [''], 
+        model: [''] 
+      }
+    )}
+  </div>
+
+  {/* ============= SECTION 12: COURSE DETAILS ROW ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div>
+      <Label className="mb-2">Level</Label>
+      <select
+        value={level}
+        onChange={(e) => setLevel(e.target.value as "beginner" | "medium" | "advanced")}
+        className="w-full p-2 border rounded"
+      >
+        <option value="beginner">Beginner</option>
+        <option value="medium">Medium</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+
+    <div>
+      <Label className="mb-2">Lesson Count</Label>
+      <Input
+        type="number"
+        value={lessonCount || ''}
+        onChange={(e) => setLessonCount(e.target.value ? Number(e.target.value) : null)}
+        placeholder="Number of lessons"
+      />
+    </div>
+
+    <div>
+      <Label className="mb-2">Duration (Weeks)</Label>
+      <Input
+        type="number"
+        value={duration.weeks || ''}
+        onChange={(e) => setDuration({ ...duration, weeks: e.target.value ? Number(e.target.value) : null })}
+        placeholder="Weeks"
+      />
+    </div>
+
+    <div>
+      <Label className="mb-2">Duration (Hours)</Label>
+      <Input
+        type="number"
+        value={duration.hours || ''}
+        onChange={(e) => setDuration({ ...duration, hours: e.target.value ? Number(e.target.value) : null })}
+        placeholder="Hours"
+      />
+    </div>
+  </div>
+
+  {/* ============= SECTION 13: LEARNING & ELIGIBILITY ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    {/* What You Will Learn */}
+    <div>
+      <Label className="mb-2">What You Will Learn</Label>
+      {renderArrayField<string>(
+        whatYouWillLearn,
+        setWhatYouWillLearn,
+        (item, idx, updateItem) => (
+          <Input
+            value={item}
+            placeholder="Learning outcome"
+            onChange={(e) => updateItem(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+
+    {/* Eligible For */}
+    <div>
+      <Label className="mb-2">Eligible For</Label>
+      {renderArrayField<string>(
+        eligibleFor,
+        setEligibleFor,
+        (item, idx, updateItem) => (
+          <Input
+            value={item}
+            placeholder="Eligibility criteria"
+            onChange={(e) => updateItem(e.target.value)}
+            className="mb-2"
+          />
+        ),
+        ''
+      )}
+    </div>
+  </div>
+
+  {/* ============= SECTION 14: COURSE INCLUDES ============= */}
+  <div className="mb-6">
+    <Label className="mb-2">Course Includes</Label>
+    {renderArrayField<string>(
+      courseIncludes,
+      setCourseIncludes,
+      (item, idx, updateItem) => (
+        <Input
+          value={item}
+          placeholder="What's included in course"
+          onChange={(e) => updateItem(e.target.value)}
+          className="mb-2"
+        />
+      ),
+      ''
+    )}
+  </div>
+
+  {/* ============= SECTION 15: WHOM TO SELL ============= */}
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Whom To Sell</Label>
+    {renderArrayField<WhomToSellItem>(
+      whomToSell,
+      setWhomToSell,
+      (item, idx, updateItem) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <div>
+            <Label className="text-sm mb-1">Icon</Label>
+            <FileInput
+              onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-sm mb-1">Lists (comma separated)</Label>
+            <textarea
+              value={item.lists}
+              onChange={(e) => updateItem({ ...item, lists: e.target.value })}
+              placeholder="Target audience, e.g., Students, Professionals, Business Owners"
+              className="w-full p-2 border rounded"
+              rows={3}
+            />
+            <p className="text-xs text-gray-500 mt-1">Enter as comma separated values</p>
+          </div>
+        </div>
+      ),
+      { icon: '', lists: '' }
+    )}
+  </div>
+
+  {/* ============= SECTION 16: FILE UPLOADS ============= */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    {/* Brochure Image */}
+    <div>
+      <Label className="mb-2">Brochure Images</Label>
+      <FileInput
+        multiple
+        onChange={(e) => handleFileChange(e, setBrochureImage)}
+      />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {brochureImage.map((img, idx) => (
+          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+            {typeof img === 'string' ? (
+              <Image src={img} alt="brochure" fill className="object-cover" />
+            ) : (
+              <Image src={URL.createObjectURL(img)} alt="brochure" fill className="object-cover" />
+            )}
+            <button
+              type="button"
+              onClick={() => removeFile(idx, setBrochureImage)}
+              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Certificate Image */}
+    <div>
+      <Label className="mb-2">Certificate Images</Label>
+      <FileInput
+        multiple
+        onChange={(e) => handleFileChange(e, setCertificateImage)}
+      />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {certificateImage.map((img, idx) => (
+          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+            {typeof img === 'string' ? (
+              <Image src={img} alt="certificate" fill className="object-cover" />
+            ) : (
+              <Image src={URL.createObjectURL(img)} alt="certificate" fill className="object-cover" />
+            )}
+            <button
+              type="button"
+              onClick={() => removeFile(idx, setCertificateImage)}
+              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* ============= SECTION 17: CKEDITOR FIELDS ============= */}
+  <div className="space-y-6">
+    {/* Include - CKEditor */}
+    <div>
+      <Label className="mb-2">Include (Rich Text)</Label>
+      {editorReady && (
+        <ClientSideCustomEditor
+          value={include[0] || ''}
+          onChange={(val) => handleEditorChange(setInclude, val)}
+        />
+      )}
+    </div>
+
+    {/* Not Include - CKEditor */}
+    <div>
+      <Label className="mb-2">Not Include (Rich Text)</Label>
+      {editorReady && (
+        <ClientSideCustomEditor
+          value={notInclude[0] || ''}
+          onChange={(val) => handleEditorChange(setNotInclude, val)}
+        />
+      )}
+    </div>
+
+    {/* Safety and Assurance - CKEditor */}
+    <div>
+      <Label className="mb-2">Safety and Assurance (Rich Text)</Label>
+      {editorReady && (
+        <ClientSideCustomEditor
+          value={safetyAndAssurance[0] || ''}
+          onChange={(val) => handleEditorChange(setSafetyAndAssurance, val)}
+        />
+      )}
+    </div>
+  </div>
+
+</div>
+
+
         {/* More Info */}
         {fieldsConfig?.moreInfo && (
         <div>
@@ -782,3 +1826,5 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
 };
 
 export default ServiceDetailsForm;
+
+
