@@ -185,9 +185,10 @@ const promotionItems: NavItem[] = [
   },
   {
     icon: <TrendingUp />,
-    name: "Trendings",
+    name: "Trending",
     subItems: [
-      { name: "Add Trend ", path: "/adds-management/trending-services", pro: false },
+      { name: "Trending Services ", path: "/adds-management/trending-services", pro: false },
+      { name: "Trending Provider ", path: "/adds-management/trending-providers", pro: false },
     ],
   },
   {
