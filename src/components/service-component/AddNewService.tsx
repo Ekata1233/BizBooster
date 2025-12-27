@@ -153,7 +153,7 @@ export type ServiceDetails = {
   // NEW EXTENDED FIELDS
   operatingCities: string[];
   brochureImage: (File | string)[];
-  emiavailable: string[];
+  emiavalable: string[];
   counter: CounterItem[];
   franchiseOperatingModel: FranchiseOperatingModelItem[];
   businessFundamental: BusinessFundamental;
@@ -263,7 +263,7 @@ const AddNewService = () => {
       // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
-      emiavailable: [''],
+      emiavalable: [''],
       counter: [{ number: '', title: '' }],
       franchiseOperatingModel: [{
         info: '',
@@ -353,7 +353,7 @@ const AddNewService = () => {
       // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
-      emiavailable: [''],
+      emiavalable: [''],
       counter: [{ number: '', title: '' }],
       franchiseOperatingModel: [{
         info: '',
@@ -702,8 +702,8 @@ const AddNewService = () => {
         }
       });
 
-      // 3. emiavailable
-     formData.service.emiavailable?.forEach((emi, i) => {
+      // 3. emiavalable
+     formData.service.emiavalable?.forEach((emi, i) => {
   fd.append(`serviceDetails[emiavalable][${i}]`, emi || "");  // Note: emiavalable
 });
 

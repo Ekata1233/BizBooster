@@ -119,7 +119,7 @@ export type ServiceDetails = {
 
   operatingCities: string[];
   brochureImage: (string | File)[];
-  emiavailable: string[];
+  emiavalable: string[];
   counter: CounterItem[];
   franchiseOperatingModel: FranchiseOperatingModelItem[];
   businessFundamental: BusinessFundamental;
@@ -195,7 +195,7 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
 // NEW EXTENDED FIELDS STATES
 const [operatingCities, setOperatingCities] = useState<string[]>(['']);
 const [brochureImage, setBrochureImage] = useState<(string | File)[]>([]);
-const [emiavailable, setEmiavailable] = useState<string[]>(['']);
+const [emiavalable, setEmiavalable] = useState<string[]>(['']);
 const [counter, setCounter] = useState<CounterItem[]>([{ number: '', title: '' }]);
 const [franchiseOperatingModel, setFranchiseOperatingModel] = useState<FranchiseOperatingModelItem[]>([{
   info: '',
@@ -290,7 +290,7 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
 // NEW EXTENDED FIELDS INITIALIZATION
 setOperatingCities(data.operatingCities?.length ? data.operatingCities : ['']);
 setBrochureImage(data.brochureImage || []);
-setEmiavailable(data.emiavailable?.length ? data.emiavailable : ['']);
+setEmiavalable(data.emiavalable?.length ? data.emiavalable : ['']);
 setCounter(data.counter?.length ? data.counter : [{ number: '', title: '' }]);
 setFranchiseOperatingModel(data.franchiseOperatingModel?.length ? data.franchiseOperatingModel : [{
   info: '',
@@ -362,7 +362,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
        // NEW EXTENDED FIELDS
   operatingCities,
   brochureImage,
-  emiavailable,
+  emiavalable,
   counter,
   franchiseOperatingModel,
   businessFundamental,
@@ -412,7 +412,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
 
     operatingCities,
   brochureImage,
-  emiavailable,
+  emiavalable,
   counter,
   franchiseOperatingModel,
   businessFundamental,
@@ -825,8 +825,8 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     <div>
       <Label className="mb-2">EMI Available</Label>
       {renderArrayField<string>(
-        emiavailable,
-        setEmiavailable,
+        emiavalable,
+        setEmiavalable,
         (emi, idx, updateEmi) => (
           <Input
             value={emi}

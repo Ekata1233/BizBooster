@@ -175,7 +175,7 @@ export interface ServiceDetails {
   // 🆕 NEW EXTENDED FIELDS (26 fields)
   operatingCities: string[];
   brochureImage: string[];
-  emiavailable: string[];
+  emiavalable: string[];
   counter: CounterItem[];
   franchiseOperatingModel: FranchiseOperatingModelItem[];
   businessFundamental: BusinessFundamental;
@@ -340,7 +340,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     // 🆕 NEW EXTENDED FIELDS with defaults
     operatingCities: [],
     brochureImage: [],
-    emiavailable: [],
+    emiavalable: [],
     counter: [],
     franchiseOperatingModel: [],
     businessFundamental: {
