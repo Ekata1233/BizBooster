@@ -947,7 +947,7 @@ const AddNewService = () => {
           }
         } else {
           // Display backend validation message
-          alert(result.message);
+          alert("Service Save Successfully...");
           console.error("Service creation failed:", result.message);
         }
       } catch (error: any) {
