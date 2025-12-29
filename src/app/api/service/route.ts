@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
       // --- NEW EXTENDED FIELDS ---
       operatingCities: [],
       brochureImage: [],
-      emiavailable: [],
+      emiavalable: [],
       counter: [],
       franchiseOperatingModel: [],
       businessFundamental: {
@@ -395,11 +395,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. emiavailable
+    // 3. emiavalable
     for (let i = 0; i < 20; i++) {
-      const emi = formData.get(`serviceDetails[emiavailable][${i}]`);
+      const emi = formData.get(`serviceDetails[emiavalable][${i}]`);
       if (!emi) break;
-      serviceDetails.emiavailable.push(emi);
+      serviceDetails.emiavalable.push(emi);
     }
 
     // 4. counter
@@ -826,7 +826,15 @@ export async function POST(req: NextRequest) {
       recommendedServices,
     });
 
-    return NextResponse.json({ success: true, data: newService }, { status: 201, headers: corsHeaders });
+    return NextResponse.json(
+  {
+    success: true,
+    message: "Service created successfully",
+    data: newService,
+  },
+  { status: 201, headers: corsHeaders }
+);
+
   } catch (err: any) {
     console.error("🔥 API ERROR:", err);
     return NextResponse.json({ success: false, message: err.message }, { status: 500, headers: corsHeaders });
