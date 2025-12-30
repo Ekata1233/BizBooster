@@ -5,7 +5,7 @@ export const moduleFieldConfig = {
       category: true,
       subcategory: true,
       price: false,
-      gst: false,
+      gst: true,
       bannerImage: true,
       thumbnail: true,
       tags: true,
