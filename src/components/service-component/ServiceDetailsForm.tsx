@@ -29,7 +29,7 @@ type ExtraSection = {
 type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
 type MoreInfo = { title: string; image: string | File; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
-type TimeRequired = { minDays: number | null; maxDays: number | null };
+type TimeRequired = { range: string; parameters: string };
 type ExtraImageItem = { icon: string; file?: File };
 type CounterItem = {
   number: number | string;
@@ -186,7 +186,7 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [weDeliver, setWeDeliver] = useState<TitleDescription[]>([{ title: '', description: '' }]);
   const [moreInfo, setMoreInfo] = useState<MoreInfo[]>([{ title: '', image: '', description: '' }]);
   const [connectWith, setConnectWith] = useState<ConnectWith[]>([{ name: '', mobileNo: '', email: '' }]);
-  const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ minDays: null, maxDays: null }]);
+  const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ range: '', parameters: '' }]);
   const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: "" }]);
   const [showExtraSections, setShowExtraSections] = useState(false);
 
@@ -278,7 +278,7 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
     setWeDeliver(data.weDeliver?.length ? data.weDeliver : [{ title: '', description: '' }]);
     setMoreInfo(data.moreInfo?.length ? data.moreInfo : [{ title: '', image: '', description: '' }]);
     setConnectWith(data.connectWith?.length ? data.connectWith : [{ name: '', mobileNo: '', email: '' }]);
-    setTimeRequired(data.timeRequired?.length ? data.timeRequired : [{ minDays: null, maxDays: null }]);
+    setTimeRequired(data.timeRequired?.length ? data.timeRequired : [{ range: '', parameters: '' }]);
     
     // Convert extraImages strings to objects
     const extraImagesData = data.extraImages?.map(img => 
@@ -1181,22 +1181,15 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     </div>
 
     {/* Compare and Choose */}
-    <div>
-      <Label className="mb-2">Compare and Choose</Label>
-      {renderArrayField<string>(
-        compareAndChoose,
-        setCompareAndChoose,
-        (item, idx, updateItem) => (
-          <Input
-            value={item}
-            placeholder="Comparison point (e.g., vs competitors)"
-            onChange={(e) => updateItem(e.target.value)}
-            className="mb-2"
-          />
-        ),
-        ''
-      )}
-    </div>
+     <div>
+    <Label className="mb-2">Compare and Choose</Label>
+    {editorReady && (
+      <ClientSideCustomEditor
+        value={compareAndChoose[0] || ''}
+        onChange={(val) => handleEditorChange(setCompareAndChoose, val)}
+      />
+    )}
+  </div>
   </div>
 
   {/* ============= SECTION 9: COMPANY DETAILS ============= */}
@@ -1317,28 +1310,20 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
             </div>
 
             {/* Model */}
-            <div>
-              <Label className="text-sm mb-1">Model</Label>
-              {renderArrayField<string>(
-                curriculum.model,
-                (newModel) => {
-                  updateCurriculum({ 
-                    ...curriculum, 
-                    model: typeof newModel === 'function' ? 
-                      newModel(curriculum.model) : newModel 
-                  });
-                },
-                (modelItem, modelIdx, updateModelItem) => (
-                  <Input
-                    value={modelItem}
-                    placeholder="Model item"
-                    onChange={(e) => updateModelItem(e.target.value)}
-                    className="mb-1"
-                  />
-                ),
-                ''
-              )}
-            </div>
+             <div>
+            <Label className="text-sm mb-1">Model</Label>
+            {editorReady && (
+              <ClientSideCustomEditor
+                value={curriculum.model[0] || ''}
+                onChange={(val) => {
+                  // Update the model array with the rich text content
+                  const updatedCurriculum = { ...curriculum };
+                  updatedCurriculum.model = [val];
+                  updateCurriculum(updatedCurriculum);
+                }}
+              />
+            )}
+          </div>
           </div>
         </div>
       ),
@@ -1668,27 +1653,25 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         )}
 
         {/* Time Required */}
-        {fieldsConfig?.timeRequired && (
-        <div>
-          <Label>Time Required</Label>
-          {renderArrayField<TimeRequired>(timeRequired, setTimeRequired, (item, idx, updateItem) => (
-            <div className="grid gap-2">
-              <Input 
-                type="number" 
-                value={item.minDays || ''} 
-                placeholder="Min Days" 
-                onChange={e => updateItem({ ...item, minDays: e.target.value ? Number(e.target.value) : null })} 
-              />
-              <Input 
-                type="number" 
-                value={item.maxDays || ''} 
-                placeholder="Max Days" 
-                onChange={e => updateItem({ ...item, maxDays: e.target.value ? Number(e.target.value) : null })} 
-              />
-            </div>
-          ), { minDays: null, maxDays: null })}
-        </div>
-        )}
+       {fieldsConfig?.timeRequired && (
+<div>
+  <Label>Time Required</Label>
+  {renderArrayField<TimeRequired>(timeRequired, setTimeRequired, (item, idx, updateItem) => (
+    <div className="grid gap-2">
+      <Input 
+        value={item.range || ''} 
+        placeholder="Range (e.g., 3-5)" 
+        onChange={e => updateItem({ ...item, range: e.target.value })} 
+      />
+      <Input 
+        value={item.parameters || ''} 
+        placeholder="Parameters (e.g., days, weeks)" 
+        onChange={e => updateItem({ ...item, parameters: e.target.value })} 
+      />
+    </div>
+  ), { range: '', parameters: '' })}
+</div>
+)}
 
         {/* Extra Images */}
         {fieldsConfig?.extraImage && (

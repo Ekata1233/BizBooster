@@ -19,12 +19,12 @@ type KeyValue = {
 
 type RowData = { title: string; description: string[] };
 type InvestmentRangeItem = {
-  minRange: number | string;
-  maxRange: number | string;
+  range: string;
+  parameters: string;
 };
 type MonthlyEarnItem = {
-  minEarn: string | number;
-  maxEarn: string | number;
+  range: string;
+  parameters: string;
 };
 
 type FranchiseModelItem = {
@@ -110,8 +110,7 @@ type Package = { name: string; price: number | null; discount: number | null; di
 type MoreInfo = { title: string; image: string; description: string };
 type ExtraImageItem = { file: File; previewUrl: string,  icon: string; };
 type ConnectWith = { name: string; mobileNo: string; email: string };
-type TimeRequired = { minDays: number | null; maxDays: number | null };
-
+type TimeRequired = { range: string; parameters: string };
 type BasicDetailsData = {
   serviceName ?: string;
   category?: string;
@@ -257,7 +256,7 @@ const AddNewService = () => {
       weDeliver: [{ title: '', description: '', icon: '' }],
       moreInfo: [{ title: '', image: '', description: '' }],
       connectWith: [{ name: '', mobileNo: '', email: '' }],
-      timeRequired: [{ minDays: null, maxDays: null }],
+      timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
       
       // NEW EXTENDED FIELDS INITIAL VALUES
@@ -347,7 +346,7 @@ const AddNewService = () => {
       weDeliver: [{ title: '', description: '', icon: '' }],
       moreInfo: [{ title: '', image: '', description: '' }],
       connectWith: [{ name: '', mobileNo: '', email: '' }],
-      timeRequired: [{ minDays: null, maxDays: null }],
+      timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
       
       // NEW EXTENDED FIELDS INITIAL VALUES
@@ -636,11 +635,12 @@ const AddNewService = () => {
         fd.append(`serviceDetails[connectWith][${i}][email]`, item.email || "");
       });
 
-      // TimeRequired
-      formData.service.timeRequired?.forEach((item, i) => {
-        fd.append(`serviceDetails[timeRequired][${i}][minDays]`, item.minDays?.toString() || "");
-        fd.append(`serviceDetails[timeRequired][${i}][maxDays]`, item.maxDays?.toString() || "");
-      });
+   
+  // TimeRequired
+formData.service.timeRequired?.forEach((item, i) => {
+  fd.append(`serviceDetails[timeRequired][${i}][range]`, item.range || "");
+  fd.append(`serviceDetails[timeRequired][${i}][parameters]`, item.parameters || "");
+});
 
       // ---------------- Extra Images in Service ----------------
       if (Array.isArray(formData.service.extraImages)) {
@@ -883,14 +883,14 @@ const AddNewService = () => {
       fd.append("franchiseDetails[termsAndConditions]", formData.franchise.termsAndConditions || "");
 
       formData.franchise.investmentRange?.forEach((item, i) => {
-        fd.append(`franchiseDetails[investmentRange][${i}][minRange]`, item.minRange?.toString() || "");
-        fd.append(`franchiseDetails[investmentRange][${i}][maxRange]`, item.maxRange?.toString() || "");
-      });
+  fd.append(`franchiseDetails[investmentRange][${i}][range]`, item.range || "");
+  fd.append(`franchiseDetails[investmentRange][${i}][parameters]`, item.parameters || "");
+});
 
-      formData.franchise.monthlyEarnPotential?.forEach((item, i) => {
-        fd.append(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`, item.minEarn?.toString() || "");
-        fd.append(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`, item.maxEarn?.toString() || "");
-      });
+     formData.franchise.monthlyEarnPotential?.forEach((item, i) => {
+  fd.append(`franchiseDetails[monthlyEarnPotential][${i}][range]`, item.range || "");
+  fd.append(`franchiseDetails[monthlyEarnPotential][${i}][parameters]`, item.parameters || "");
+});
 
       formData.franchise.franchiseModel?.forEach((model, i) => {
         fd.append(`franchiseDetails[franchiseModel][${i}][title]`, model.title || "");

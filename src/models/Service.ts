@@ -117,12 +117,12 @@ keyValues: [
     { name: String, mobileNo: String, email: String },
   ],
 
-  timeRequired: [
-    {
-      minDays: { type: Number, default: null },
-      maxDays: { type: Number, default: null },
-    },
-  ],
+ timeRequired: [
+  {
+    range: { type: String, default: "" },
+    parameters: { type: String, default: "" },
+  },
+],
 
   extraImages: [{ type: String }],
 
@@ -264,19 +264,19 @@ keyValues: [
       commission: { type: String },
       termsAndConditions: { type: String },
 
-      investmentRange: [
-        {
-          minRange: { type: Number, default: null },
-          maxRange: { type: Number, default: null },
-        },
-      ],
+     investmentRange: [
+  {
+    range: { type: String, default: "" },
+    parameters: { type: String, default: "" },
+  },
+],
 
       monthlyEarnPotential: [
-        {
-          minEarn: { type: Number, default: null },
-          maxEarn: { type: Number, default: null },
-        },
-      ],
+  {
+    range: { type: String, default: "" },
+    parameters: { type: String, default: "" },
+  },
+],
 
       franchiseModel: [
         {
