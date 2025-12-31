@@ -18,8 +18,8 @@ const ClientSideCustomEditor = dynamic(
 // Types
 // ---------------------------
 type RowData = { title: string; description: string };
-type InvestmentRange = { minRange: number | null; maxRange: number | null };
-type MonthlyEarnPotential = { minEarn: number | null; maxEarn: number | null };
+type InvestmentRange = { range: string; parameters: string };
+type MonthlyEarnPotential = { range: string; parameters: string };
 type FranchiseModel = {
   title: string;
   agreement?: string;
@@ -64,13 +64,12 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 const didInitFromData = useRef(false);
 
 
-  // Newly added schema-aligned fields
   const [investmentRange, setInvestmentRange] = useState<InvestmentRange[]>(
-    data?.investmentRange?.length ? data.investmentRange : [{ minRange: null, maxRange: null }]
-  );
-  const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>(
-    data?.monthlyEarnPotential?.length ? data.monthlyEarnPotential : [{ minEarn: null, maxEarn: null }]
-  );
+  data?.investmentRange?.length ? data.investmentRange : [{ range: '', parameters: '' }]
+);
+const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>(
+  data?.monthlyEarnPotential?.length ? data.monthlyEarnPotential : [{ range: '', parameters: '' }]
+);
   const [franchiseModel, setFranchiseModel] = useState<FranchiseModel[]>(
     data?.franchiseModel?.length
       ? data.franchiseModel
@@ -133,17 +132,17 @@ useEffect(() => {
 
   setCommissionType(data.commissionType || 'percentage');
 
-  setInvestmentRange(
-    Array.isArray(data.investmentRange) && data.investmentRange.length
-      ? data.investmentRange
-      : [{ minRange: null, maxRange: null }]
-  );
+ setInvestmentRange(
+  Array.isArray(data.investmentRange) && data.investmentRange.length
+    ? data.investmentRange
+    : [{ range: '', parameters: '' }]
+);
 
-  setMonthlyEarnPotential(
-    Array.isArray(data.monthlyEarnPotential) && data.monthlyEarnPotential.length
-      ? data.monthlyEarnPotential
-      : [{ minEarn: null, maxEarn: null }]
-  );
+setMonthlyEarnPotential(
+  Array.isArray(data.monthlyEarnPotential) && data.monthlyEarnPotential.length
+    ? data.monthlyEarnPotential
+    : [{ range: '', parameters: '' }]
+);
 
   setFranchiseModel(
     Array.isArray(data.franchiseModel) && data.franchiseModel.length
@@ -179,24 +178,24 @@ useEffect(() => {
   };
 
   
-  const addInvestmentRange = () => setInvestmentRange([...investmentRange, { minRange: null, maxRange: null }]);
-  const removeInvestmentRange = (i: number) => setInvestmentRange(investmentRange.filter((_, idx) => idx !== i));
-  const updateInvestmentRange = (i: number, key: 'minRange' | 'maxRange', value: number | null) => {
-    const v = [...investmentRange];
-    v[i] = { ...v[i], [key]: value };
-    setInvestmentRange(v);
-  };
+const addInvestmentRange = () => setInvestmentRange([...investmentRange, { range: '', parameters: '' }]);
+const removeInvestmentRange = (i: number) => setInvestmentRange(investmentRange.filter((_, idx) => idx !== i));
+const updateInvestmentRange = (i: number, key: 'range' | 'parameters', value: string) => {
+  const v = [...investmentRange];
+  v[i] = { ...v[i], [key]: value };
+  setInvestmentRange(v);
+};
 
   // -----------------------
   // MonthlyEarn handlers
   // -----------------------
-  const addMonthlyEarn = () => setMonthlyEarnPotential([...monthlyEarnPotential, { minEarn: null, maxEarn: null }]);
-  const removeMonthlyEarn = (i: number) => setMonthlyEarnPotential(monthlyEarnPotential.filter((_, idx) => idx !== i));
-  const updateMonthlyEarn = (i: number, key: 'minEarn' | 'maxEarn', value: number | null) => {
-    const v = [...monthlyEarnPotential];
-    v[i] = { ...v[i], [key]: value };
-    setMonthlyEarnPotential(v);
-  };
+  const addMonthlyEarn = () => setMonthlyEarnPotential([...monthlyEarnPotential, { range: '', parameters: '' }]);
+const removeMonthlyEarn = (i: number) => setMonthlyEarnPotential(monthlyEarnPotential.filter((_, idx) => idx !== i));
+const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string) => {
+  const v = [...monthlyEarnPotential];
+  v[i] = { ...v[i], [key]: value };
+  setMonthlyEarnPotential(v);
+};
 
   // -----------------------
   // FranchiseModel handlers
@@ -360,32 +359,28 @@ useEffect(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
-   {fieldsConfig?.investmentRange && (
-  <div>
-    <div className="my-4">
-        <div className="flex items-center gap-2">
-                
-          <Label>Investment Range</Label>
-            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
-          </div>
-      <div className='border p-4 rounded'>
+  {fieldsConfig?.investmentRange && (
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Investment Range</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
       {investmentRange.map((item, i) => (
-        
-        <div key={i} className="flex gap-4 mt-2 items-center  ">
+        <div key={i} className="flex gap-4 mt-2 items-center">
           <Input
-            type="number"
-            placeholder="Min Range"
-            value={item.minRange ?? ''}
+            placeholder="Range (e.g., 50000-100000)"
+            value={item.range ?? ''}
             onChange={(e) =>
-              updateInvestmentRange(i, 'minRange', e.target.value ? Number(e.target.value) : null)
+              updateInvestmentRange(i, 'range', e.target.value)
             }
           />
           <Input
-            type="number"
-            placeholder="Max Range"
-            value={item.maxRange ?? ''}
+            placeholder="Parameters (e.g., rupees, lakhs)"
+            value={item.parameters ?? ''}
             onChange={(e) =>
-              updateInvestmentRange(i, 'maxRange', e.target.value ? Number(e.target.value) : null)
+              updateInvestmentRange(i, 'parameters', e.target.value)
             }
           />
           <button
@@ -404,37 +399,34 @@ useEffect(() => {
       >
         + Add Investment Range
       </button>
-      </div>
     </div>
   </div>
-   )}
+</div>
+)}
 
   {/* Monthly Earn Potential */}
     {fieldsConfig?.monthlyEarnPotential && (
-  <div>
-    <div className="my-4">
-       <div className="flex items-center gap-2">
-                
-          <Label>Monthly Earn Potential</Label>
-            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
-          </div>
-      <div className='border p-4 rounded'>
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Monthly Earn Potential</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
       {monthlyEarnPotential.map((item, i) => (
         <div key={i} className="flex gap-4 mt-2 items-center">
           <Input
-            type="number"
-            placeholder="Min Earn"
-            value={item.minEarn ?? ''}
+            placeholder="Range (e.g., 20000-50000)"
+            value={item.range ?? ''}
             onChange={(e) =>
-              updateMonthlyEarn(i, 'minEarn', e.target.value ? Number(e.target.value) : null)
+              updateMonthlyEarn(i, 'range', e.target.value)
             }
           />
           <Input
-            type="number"
-            placeholder="Max Earn"
-            value={item.maxEarn ?? ''}
+            placeholder="Parameters (e.g., rupees, per month)"
+            value={item.parameters ?? ''}
             onChange={(e) =>
-              updateMonthlyEarn(i, 'maxEarn', e.target.value ? Number(e.target.value) : null)
+              updateMonthlyEarn(i, 'parameters', e.target.value)
             }
           />
           <button
@@ -453,10 +445,10 @@ useEffect(() => {
       >
         + Add Monthly Earn
       </button>
-      </div>
     </div>
   </div>
-    )}
+</div>
+)}
 </div>
 
 

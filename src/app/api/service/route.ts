@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    console.log("-------------formdata : ", formData);
+    console.log("-------------formdata-------------- : ", formData);
 
     // --- Basic Fields ---
     const serviceName = (formData.get("serviceName") as string)?.trim();
@@ -253,14 +253,14 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Time Required ---
-    for (let i = 0; i < 20; i++) {
-      const minDays = formData.get(`serviceDetails[timeRequired][${i}][minDays]`);
-      if (!minDays) break;
-      serviceDetails.timeRequired.push({
-        minDays,
-        maxDays: formData.get(`serviceDetails[timeRequired][${i}][maxDays]`),
-      });
-    }
+for (let i = 0; i < 20; i++) {
+  const range = formData.get(`serviceDetails[timeRequired][${i}][range]`);
+  if (!range) break;
+  serviceDetails.timeRequired.push({
+    range,
+    parameters: formData.get(`serviceDetails[timeRequired][${i}][parameters]`) || "",
+  });
+}
 
     // --- FAQ ---
     for (let i = 0; i < 20; i++) {
@@ -709,18 +709,22 @@ export async function POST(req: NextRequest) {
     };
 
     for (let i = 0; i < 20; i++) {
-      const min = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`);
-      const max = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`);
-      if (!min) break;
-      franchiseDetails.investmentRange.push({ minRange: min, maxRange: max });
-    }
+  const range = formData.get(`franchiseDetails[investmentRange][${i}][range]`);
+  if (!range) break;
+  franchiseDetails.investmentRange.push({
+    range,
+    parameters: formData.get(`franchiseDetails[investmentRange][${i}][parameters]`) || "",
+  });
+}
 
-    for (let i = 0; i < 20; i++) {
-      const min = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`);
-      const max = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`);
-      if (!min) break;
-      franchiseDetails.monthlyEarnPotential.push({ minEarn: min, maxEarn: max });
-    }
+   for (let i = 0; i < 20; i++) {
+  const range = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][range]`);
+  if (!range) break;
+  franchiseDetails.monthlyEarnPotential.push({
+    range,
+    parameters: formData.get(`franchiseDetails[monthlyEarnPotential][${i}][parameters]`) || "",
+  });
+}
 
     for (let i = 0; i < 20; i++) {
       const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`);

@@ -79,8 +79,8 @@ export interface ConnectWithItem {
 }
 
 export interface TimeRequiredItem {
-  minDays: number | null;
-  maxDays: number | null;
+  range: string;
+  parameters: string;
 }
 
 export interface CounterItem {
@@ -205,8 +205,8 @@ export interface ServiceDetails {
 export interface FranchiseDetails {
   commission: string | null;
   termsAndConditions: string | null;
-  investmentRange: { minRange: number | null; maxRange: number | null }[];
-  monthlyEarnPotential: { minEarn: number | null; maxEarn: number | null }[];
+  investmentRange: { range: string; parameters: string }[];
+  monthlyEarnPotential: { range: string; parameters: string }[];
   franchiseModel: {
     title: string;
     agreement: string;
