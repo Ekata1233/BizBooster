@@ -430,7 +430,7 @@ const AddNewService = () => {
     // Reset parent state
     setFormData(initialFormData);
     setSelectedModule(modules[0].name);
-    setFranchiseStep(1);
+    // setFranchiseStep(1);
     setCreatedServiceId(null);
     setIsSubmitting(false);
 

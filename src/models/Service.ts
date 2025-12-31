@@ -13,7 +13,6 @@ category: {
   required: [true, "Category is required"]
 },
     subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" },
-
     price: { type: Number, default: null },
     discount: { type: Number, default: null },
     gst: { type: Number, default: null },
@@ -68,15 +67,12 @@ keyValues: [
   aboutUs: [{ type: String }],
   highlight: [{ type: String }],
   document: [{ type: String }],
-
   assuredByFetchTrue: [
     { title: String, icon: String, description: String },
   ],
-
   howItWorks: [
     { title: String, icon: String, description: String },
   ],
-
   termsAndConditions: [{ type: String }],
   faq: [{ question: String, answer: String }],
 
@@ -91,11 +87,9 @@ keyValues: [
       tags: [{ type: String }],
     },
   ],
-
   whyChooseUs: [
     { title: String, icon: String, description: String },
   ],
-
   packages: [
     {
       name: String,
@@ -105,25 +99,20 @@ keyValues: [
       whatYouGet: [String],
     },
   ],
-
   weRequired: [{ title: String, description: String }],
   weDeliver: [{ title: String, description: String }],
-
   moreInfo: [
     { title: String, image: String, description: String },
   ],
-
   connectWith: [
     { name: String, mobileNo: String, email: String },
   ],
-
   timeRequired: [
     {
       minDays: { type: Number, default: null },
       maxDays: { type: Number, default: null },
     },
   ],
-
   extraImages: [{ type: String }],
 
   // --------------------------------------------------
