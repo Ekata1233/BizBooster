@@ -225,14 +225,26 @@ setCounter(
     ? details.counter
     : [{ number: 0, title: '' }]
 );
-//   setFranchiseOperatingModel(details.franchiseOperatingModel?.length ? details.franchiseOperatingModel : [{
-//     info: '',
-//     title: '',
-//     description: '',
-//     features: [{ icon: '', subtitle: '', subDescription: '' }],
-//     tags: [''],
-//     example: ''
-//   }]);
+setFranchiseOperatingModel(
+  details?.franchiseOperatingModel?.length
+    ? details.franchiseOperatingModel
+    : [
+        {
+          info: "",
+          title: "",
+          description: "",
+          features: [
+            {
+              icon: "",
+              subtitle: "",
+              subDescription: ""
+            }
+          ],
+          tags: [""],
+          example: ""
+        }
+      ]
+);
   setBusinessFundamental(details.businessFundamental || {
     description: '',
     points: [{ subtitle: '', subDescription: '' }]
@@ -267,6 +279,12 @@ setCounter(
   setInclude(details.include?.length ? details.include : ['']);
   setNotInclude(details.notInclude?.length ? details.notInclude : ['']);
   setSafetyAndAssurance(details.safetyAndAssurance?.length ? details.safetyAndAssurance : ['']);
+  setBrochureImage(details.brochureImage?.length ? details.brochureImage : []
+);
+setCertificateImage(
+  details.certificateImage?.length ? details.certificateImage : []
+);
+
 }, [service]);
 
   const benefitsValue = benefits[0] || "";
@@ -325,6 +343,7 @@ setCounter(
       </div>
     );
   }
+  
 
   // ---------------- RENDER ----------------
   return (
@@ -812,6 +831,11 @@ setCounter(
                           <FileInput
                             onChange={(e) => handleFileUpload(e, feature, updateFeature, 'icon')}
                           />
+                          {feature.icon && (
+                  <div className="w-16 h-16 relative mt-2">
+                    <Image src={feature.icon} alt="icon" fill className="rounded object-cover" />
+                  </div>
+                )}
                         </div>
                         <div>
                           <Label className="text-xs mb-1">Subtitle</Label>
@@ -1404,6 +1428,11 @@ setCounter(
                   <FileInput
                     onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
                   />
+                  {item.icon && (
+                  <div className="w-16 h-16 relative mt-2">
+                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
+                  </div>
+                )}
                   
                 </div>
                 <div className="md:col-span-2">
