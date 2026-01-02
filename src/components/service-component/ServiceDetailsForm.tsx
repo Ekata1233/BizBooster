@@ -804,7 +804,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     
     {/* Operating Cities */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.operatingCities && (
     <div>
       <Label className="mb-2">Operating Cities</Label>
       {renderArrayField<string>(
@@ -824,7 +824,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* EMI Available */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.emiavalable && (
     <div>
       <Label className="mb-2">EMI Available</Label>
       {renderArrayField<string>(
@@ -846,7 +846,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   </div>
 
   {/* ============= SECTION 2: COUNTER ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.counter && (
   <div className="mb-6">
     <Label className="mb-2">Counter Stats</Label>
     {renderArrayField<CounterItem>(
@@ -879,7 +879,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 3: FRANCHISE OPERATING MODEL ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.franchiseOperatingModel && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Franchise Operating Model</Label>
     {renderArrayField<FranchiseOperatingModelItem>(
@@ -1010,7 +1010,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 4: BUSINESS FUNDAMENTAL ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.businessFundamental && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Business Fundamental</Label>
     <div className="mb-4">
@@ -1056,7 +1056,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 5: KEY ADVANTAGES ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.keyAdvantages && (
   <div className="mb-6">
     <Label className="mb-2 font-semibold">Key Advantages</Label>
     {renderArrayField<KeyAdvantageItem>(
@@ -1090,7 +1090,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 6: COMPLETE SUPPORT SYSTEM ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.completeSupportSystem && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Complete Support System</Label>
     {renderArrayField<CompleteSupportSystemItem>(
@@ -1138,7 +1138,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   {/* ============= SECTION 7: TRAINING & AGREEMENT DETAILS ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     {/* Training Details */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.trainingDetails && (
     <div>
       <Label className="mb-2">Training Details</Label>
       {renderArrayField<string>(
@@ -1158,7 +1158,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Agreement Details */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.agreementDetails && (
     <div>
       <Label className="mb-2">Agreement Details</Label>
       {renderArrayField<string>(
@@ -1181,7 +1181,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   {/* ============= SECTION 8: GOOD THINGS & COMPARE ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     {/* Good Things */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.goodThings && (
     <div>
       <Label className="mb-2">Good Things</Label>
       {renderArrayField<string>(
@@ -1201,7 +1201,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Compare and Choose */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.compareAndChoose && (
      <div>
     <Label className="mb-2">Compare and Choose</Label>
     {editorReady && (
@@ -1215,7 +1215,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   </div>
 
   {/* ============= SECTION 9: COMPANY DETAILS ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.companyDetails && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Company Details</Label>
     {renderArrayField<CompanyDetails>(
@@ -1276,7 +1276,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 10: ROI ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.roi && (
   <div className="mb-6">
     <Label className="mb-2">Return on Investment (ROI)</Label>
     {renderArrayField<string>(
@@ -1296,7 +1296,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 11: COURSE CURRICULUM ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.courseCurriculum && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Course Curriculum</Label>
     {renderArrayField<CourseCurriculumItem>(
@@ -1401,7 +1401,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
 
   {/* ============= SECTION 12: COURSE DETAILS ROW ============= */}
   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.level && (
     <div>
       <Label className="mb-2">Level</Label>
       <select
@@ -1416,7 +1416,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     </div>
      )}
 
- {fieldsConfig?.weDeliver && (
+ {fieldsConfig?.lessonCount && (
     <div>
       <Label className="mb-2">Lesson Count</Label>
       <Input
@@ -1428,7 +1428,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     </div>
  )}
 
- {fieldsConfig?.weDeliver && (
+ {fieldsConfig?.duration && (
     <div>
       <Label className="mb-2">Duration (Weeks)</Label>
       <Input
@@ -1440,7 +1440,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     </div>
  )}
 
- {fieldsConfig?.weDeliver && (
+ {fieldsConfig?.duration && (
     <div>
       <Label className="mb-2">Duration (Hours)</Label>
       <Input
@@ -1456,7 +1456,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   {/* ============= SECTION 13: LEARNING & ELIGIBILITY ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     {/* What You Will Learn */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.whatYouWillLearn && (
     <div>
       <Label className="mb-2">What You Will Learn</Label>
       {renderArrayField<string>(
@@ -1476,7 +1476,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Eligible For */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.eligibleFor && (
     <div>
       <Label className="mb-2">Eligible For</Label>
       {renderArrayField<string>(
@@ -1497,7 +1497,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   </div>
 
   {/* ============= SECTION 14: COURSE INCLUDES ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.courseIncludes && (
   <div className="mb-6">
     <Label className="mb-2">Course Includes</Label>
     {renderArrayField<string>(
@@ -1517,7 +1517,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 15: WHOM TO SELL ============= */}
-   {fieldsConfig?.weDeliver && (
+   {fieldsConfig?.whomToSell && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Whom To Sell</Label>
     {renderArrayField<WhomToSellItem>(
@@ -1552,7 +1552,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   {/* ============= SECTION 16: FILE UPLOADS ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     {/* Brochure Image */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.brochureImage && (
     <div>
       <Label className="mb-2">Brochure Images</Label>
       <FileInput
@@ -1581,7 +1581,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Certificate Image */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.certificateImage && (
     <div>
       <Label className="mb-2">Certificate Images</Label>
       <FileInput
@@ -1613,7 +1613,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
   {/* ============= SECTION 17: CKEDITOR FIELDS ============= */}
   <div className="space-y-6">
     {/* Include - CKEditor */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.include && (
     <div>
       <Label className="mb-2">Include (Rich Text)</Label>
       {editorReady && (
@@ -1626,7 +1626,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Not Include - CKEditor */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.notInclude && (
     <div>
       <Label className="mb-2">Not Include (Rich Text)</Label>
       {editorReady && (
@@ -1639,7 +1639,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
      )}
 
     {/* Safety and Assurance - CKEditor */}
-     {fieldsConfig?.weDeliver && (
+     {fieldsConfig?.safetyAndAssurance && (
     <div>
       <Label className="mb-2">Safety and Assurance (Rich Text)</Label>
       {editorReady && (
