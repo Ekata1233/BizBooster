@@ -16,12 +16,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function PUT(req: Request) {
-  await connectToDatabase();
-
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+   
 
     const formData = await req.formData();
 
