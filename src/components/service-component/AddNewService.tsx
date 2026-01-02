@@ -224,6 +224,8 @@ const AddNewService = () => {
   const [franchiseFormKey, setFranchiseFormKey] = useState(0);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>("68b2caf72ff3f8a31bf7bb8f");
 
+  console.log("franchisestep : ", franchiseStep)
+
   const [formData, setFormData] = useState<FormDataType>({
     basic: {
       serviceName: '',
@@ -932,21 +934,18 @@ formData.service.timeRequired?.forEach((item, i) => {
       // ---------------- CREATE SERVICE ----------------
       try {
         const result = await createService(fd);
-        setCreatedServiceId(result?.data?._id);
-        if (result.success) {
+        console.log("result of service : " , result);
+        setCreatedServiceId(result?._id);
+       if (result && result._id) {
           if (isFranchiseSelected && franchiseStep === 1) {
-            // 👉 Only move to next step after successful save
             alert("Step-1 Saved Successfully...");
             setFranchiseStep(2);
           } else {
             alert("Service Saved Successfully...");
-            // reset parent state
             resetForm();
-            // force remount all child components
             setFormKey(prev => prev + 1);
           }
         } else {
-          // Display backend validation message
           alert("Service Save Successfully...");
           console.error("Service creation failed:", result.message);
         }
