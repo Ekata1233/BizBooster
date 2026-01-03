@@ -1310,20 +1310,54 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
             </div>
 
             {/* Model */}
-             <div>
-            <Label className="text-sm mb-1">Model</Label>
-            {editorReady && (
-              <ClientSideCustomEditor
-                value={curriculum.model[0] || ''}
-                onChange={(val) => {
-                  // Update the model array with the rich text content
-                  const updatedCurriculum = { ...curriculum };
-                  updatedCurriculum.model = [val];
-                  updateCurriculum(updatedCurriculum);
-                }}
-              />
-            )}
-          </div>
+            
+        {/* Model - Multiple CKEditors per curriculum item */}
+        <div>
+          <Label className="text-sm mb-1">Models (Rich Text)</Label>
+          {curriculum.model.map((modelItem, modelIdx) => (
+            <div key={modelIdx} className="mb-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500">Model #{modelIdx + 1}</span>
+                {curriculum.model.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...courseCurriculum];
+                      updated[curriculumIdx].model = updated[curriculumIdx].model.filter(
+                        (_, idx) => idx !== modelIdx
+                      );
+                      setCourseCurriculum(updated);
+                    }}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove Model
+                  </button>
+                )}
+              </div>
+              {editorReady && (
+                <ClientSideCustomEditor
+                  value={modelItem || ''}
+                  onChange={(val) => {
+                    const updated = [...courseCurriculum];
+                    updated[curriculumIdx].model[modelIdx] = val;
+                    setCourseCurriculum(updated);
+                  }}
+                />
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              const updated = [...courseCurriculum];
+              updated[curriculumIdx].model.push('');
+              setCourseCurriculum(updated);
+            }}
+            className="text-sm bg-blue-500 text-white px-3 py-1 rounded mt-1"
+          >
+            + Add Model
+          </button>
+        </div>
           </div>
         </div>
       ),
