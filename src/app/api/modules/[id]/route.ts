@@ -1,5 +1,4 @@
-
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import Module from "@/models/Module";
 import { connectToDatabase } from "@/utils/db";
@@ -16,15 +15,16 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function PUT(req: Request) {
-  await connectToDatabase();
-
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+    await connectToDatabase();
+
+    const { id } = params;
 
     const formData = await req.formData();
-
     console.log("update module : ", formData);
 
     const name = formData.get("name") as string;
@@ -56,6 +56,7 @@ export async function PUT(req: Request) {
       name,
       isDeleted: false,
     };
+
     if (imageUrl) updateData.image = imageUrl;
 
     const updatedModule = await Module.findByIdAndUpdate(id, updateData, {
@@ -69,12 +70,14 @@ export async function PUT(req: Request) {
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "An unknown error occurred";
+
     return NextResponse.json(
       { success: false, message },
       { status: 400, headers: corsHeaders }
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectToDatabase();

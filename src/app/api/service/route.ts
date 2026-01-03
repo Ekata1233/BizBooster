@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    console.log("-------------formdata : ", formData);
+    console.log("-------------formdata-------------- : ", formData);
 
     // --- Basic Fields ---
     const serviceName = (formData.get("serviceName") as string)?.trim();

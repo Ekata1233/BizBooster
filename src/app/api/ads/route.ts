@@ -29,16 +29,31 @@ export async function POST(req: Request) {
     const description = formData.get("description") as string;
      const file = formData.get("fileUrl") as File;
 
-    if (!addType || !category || !service || !startDate || !endDate || !title || !providerId) {
+   if (
+      !addType ||
+      !category ||
+      !service ||
+      !startDate ||
+      !endDate ||
+      !title ||
+      !providerId
+    ) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields" },
+        {
+          success: false,
+          message:
+            "Invalid request. Please ensure all mandatory fields are provided.",
+        },
         { status: 400, headers: corsHeaders }
       );
     }
 
  if (!file) {
       return NextResponse.json(
-        { success: false, message: "File is required" },
+        {
+          success: false,
+          message: "Advertisement media is required for submission.",
+        },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -66,13 +81,22 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { success: true, data: newAd },
+      { success: true, message: "Advertisement created successfully.", data: newAd },
       { status: 201, headers: corsHeaders }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "An unexpected error occurred.";
+
     return NextResponse.json(
-      { success: false, message },
+      {
+        success: false,
+        message:
+          "Unable to process your request at the moment. Please try again later.",
+        error: message, // useful for logs / dev mode
+      },
       { status: 500, headers: corsHeaders }
     );
   }
