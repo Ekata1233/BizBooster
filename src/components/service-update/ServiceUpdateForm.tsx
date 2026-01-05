@@ -152,7 +152,31 @@ useEffect(() => {
     connectWith,
     timeRequired,
     extraImages: extraImages.map(img => img.icon),
-    extraSections: showExtraSections ? extraSections : []
+    extraSections: showExtraSections ? extraSections : [] ,
+    operatingCities,
+    emiavalable,
+    counter,
+    franchiseOperatingModel,
+    businessFundamental,
+    keyAdvantages,
+    completeSupportSystem,
+    trainingDetails,
+    agreementDetails,
+    goodThings,
+    compareAndChoose,
+    companyDetails,
+    roi,
+    courseCurriculum,
+    level,
+    lessonCount,
+    duration,
+    whatYouWillLearn,
+    eligibleFor,
+    courseIncludes,
+    whomToSell,
+    include,
+    notInclude,
+    safetyAndAssurance
   };
 
   // Only update if the data has actually changed
@@ -167,6 +191,30 @@ useEffect(() => {
   whyChooseUs, howItWorks, assuredByFetchTrue, weRequired,
   weDeliver, packages, moreInfo, faqs, connectWith,
   timeRequired, extraImages, extraSections, showExtraSections,
+  operatingCities,
+  emiavalable,
+  counter,
+  franchiseOperatingModel,
+  businessFundamental,
+  keyAdvantages,
+  completeSupportSystem,
+  trainingDetails,
+  agreementDetails,
+  goodThings,
+  compareAndChoose,
+  companyDetails,
+  roi,
+  courseCurriculum,
+  level,
+  lessonCount,
+  duration,
+  whatYouWillLearn,
+  eligibleFor,
+  courseIncludes,
+  whomToSell,
+  include,
+  notInclude,
+  safetyAndAssurance,
   // Add data as a dependency to compare
   data?.serviceDetails
 ]);
@@ -186,8 +234,6 @@ useEffect(() => {
   if (!service?.serviceDetails) return;
 
   const details = service.serviceDetails;
-
-  console.log("service details for update : ", details)
   
   // Set array fields with proper fallbacks
   setBenefits(details.benefits || ['']);
@@ -306,6 +352,11 @@ setCertificateImage(
       callback(URL.createObjectURL(file));
     }
   };
+
+    const handleEditorChange = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+      // Store as array with single item for compatibility
+      setter([value]);
+    };
 
   function renderArrayField<T>(
     items: T[],

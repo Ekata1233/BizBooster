@@ -160,6 +160,7 @@ export async function PATCH(req: NextRequest) {
     const formData = await req.formData();
     const updateData: any = {};
 
+    console.log("formdata for the update : ", formData);
     /* -----------------------------
        HANDLE NORMAL FIELDS
     ----------------------------- */
@@ -776,6 +777,7 @@ export async function PUT(req: NextRequest) {
 
     const formData = await req.formData();
     
+    console.log("formdate for the update : ", formData);
 
     // --- Basic Fields ---
     const serviceName = (formData.get("serviceName") as string)?.trim();
@@ -941,6 +943,32 @@ export async function PUT(req: NextRequest) {
       packages: existingService.serviceDetails?.packages || [],
       extraSections: existingService.serviceDetails?.extraSections || [],
       extraImages: existingService.serviceDetails?.extraImages || [],
+       operatingCities: existingService.serviceDetails?.operatingCities || [],
+  brochureImage: existingService.serviceDetails?.brochureImage || [],
+  emiavalable: existingService.serviceDetails?.emiavalable || [],
+  counter: existingService.serviceDetails?.counter || [],
+  franchiseOperatingModel: existingService.serviceDetails?.franchiseOperatingModel || [],
+  businessFundamental: existingService.serviceDetails?.businessFundamental || {},
+  keyAdvantages: existingService.serviceDetails?.keyAdvantages || [],
+  completeSupportSystem: existingService.serviceDetails?.completeSupportSystem || [],
+  trainingDetails: existingService.serviceDetails?.trainingDetails || [],
+  agreementDetails: existingService.serviceDetails?.agreementDetails || [],
+  goodThings: existingService.serviceDetails?.goodThings || [],
+  compareAndChoose: existingService.serviceDetails?.compareAndChoose || [],
+  companyDetails: existingService.serviceDetails?.companyDetails || [],
+  roi: existingService.serviceDetails?.roi || [],
+  level: existingService.serviceDetails?.level || "beginner",
+  lessonCount: existingService.serviceDetails?.lessonCount || 0,
+  duration: existingService.serviceDetails?.duration || {},
+  whatYouWillLearn: existingService.serviceDetails?.whatYouWillLearn || [],
+  eligibleFor: existingService.serviceDetails?.eligibleFor || [],
+  courseCurriculum: existingService.serviceDetails?.courseCurriculum || [],
+  courseIncludes: existingService.serviceDetails?.courseIncludes || [],
+  certificateImage: existingService.serviceDetails?.certificateImage || [],
+  whomToSell: existingService.serviceDetails?.whomToSell || [],
+  include: existingService.serviceDetails?.include || [],
+  notInclude: existingService.serviceDetails?.notInclude || [],
+  safetyAndAssurance: existingService.serviceDetails?.safetyAndAssurance || [],
     };
 
     // --- Highlights ---
@@ -1101,6 +1129,353 @@ export async function PUT(req: NextRequest) {
         serviceDetails.packages.push(pkg);
       }
     }
+
+// operatingCities
+if (formData.has("serviceDetails[operatingCities][0]")) {
+  serviceDetails.operatingCities = [];
+  for (let i = 0; i < 50; i++) {
+    const city = formData.get(`serviceDetails[operatingCities][${i}]`) as string;
+    if (!city || city.trim() === "") break; // ✅ Add trim check
+    serviceDetails.operatingCities.push(city.trim());
+  }
+}
+
+// emiavalable
+if (formData.has("serviceDetails[emiavalable][0]")) {
+  serviceDetails.emiavalable = [];
+  for (let i = 0; i < 10; i++) {
+    const emi = formData.get(`serviceDetails[emiavalable][${i}]`) as string;
+    if (!emi || emi.trim() === "") break; // ✅ Add trim check
+    serviceDetails.emiavalable.push(emi.trim());
+  }
+}
+
+if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
+  serviceDetails.franchiseOperatingModel = [];
+
+  for (let i = 0; i < 10; i++) {
+    const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`) as string;
+    const description = formData.get(`serviceDetails[franchiseOperatingModel][${i}][description]`) as string;
+    const info = formData.get(`serviceDetails[franchiseOperatingModel][${i}][info]`) as string;
+    const example = formData.get(`serviceDetails[franchiseOperatingModel][${i}][example]`) as string;
+
+    if (!title || title.trim() === "") break;
+
+    const features: any[] = [];
+    for (let j = 0; j < 10; j++) {
+      const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`) as string;
+      const subDescription = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) as string;
+      const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
+
+      if (!subtitle || subtitle.trim() === "") break;
+
+      features.push({
+        subtitle: subtitle.trim(),
+        subDescription: subDescription?.trim() || "",
+        icon: icon instanceof File ? await handleFileUpload(icon, "/services/franchiseOperatingModel") : icon?.toString() || ""
+      });
+    }
+
+    const tags: string[] = [];
+    for (let j = 0; j < 10; j++) {
+      const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`) as string;
+      if (!tag || tag.trim() === "") break;
+      tags.push(tag.trim());
+    }
+
+    serviceDetails.franchiseOperatingModel.push({
+      title: title.trim(),
+      description: description?.trim() || "",
+      info: info?.trim() || "",
+      example: example?.trim() || "",
+      features,
+      tags
+    });
+  }
+}
+
+if (formData.has("serviceDetails[businessFundamental][description]")) {
+  serviceDetails.businessFundamental = {
+    description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
+    points: [],
+  };
+
+  for (let i = 0; i < 10; i++) {
+    const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
+    const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
+    if (!subtitle || subtitle.trim() === "") break;
+
+    serviceDetails.businessFundamental.points.push({
+      subtitle: subtitle.trim(),
+      subDescription: subDescription?.trim() || "",
+    });
+  }
+}
+
+if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
+  serviceDetails.keyAdvantages = [];
+
+  for (let i = 0; i < 10; i++) {
+    const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`) as string;
+    const description = formData.get(`serviceDetails[keyAdvantages][${i}][description]`) as string;
+    const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
+
+    if (!title || title.trim() === "") break;
+
+    serviceDetails.keyAdvantages.push({
+      title: title.trim(),
+      description: description?.trim() || "",
+      icon: icon instanceof File ? await handleFileUpload(icon, "/services/keyAdvantages") : icon?.toString() || "",
+    });
+  }
+}
+
+if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
+  serviceDetails.completeSupportSystem = [];
+
+  for (let i = 0; i < 10; i++) {
+    const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`) as string;
+    const icon = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
+    const lists: string[] = [];
+
+    for (let j = 0; j < 10; j++) {
+      const item = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`) as string;
+      if (!item || item.trim() === "") break;
+      lists.push(item.trim());
+    }
+
+    if (!title || title.trim() === "") break;
+
+    serviceDetails.completeSupportSystem.push({
+      title: title.trim(),
+      icon: icon instanceof File ? await handleFileUpload(icon, "/services/completeSupportSystem") : icon?.toString() || "",
+      lists
+    });
+  }
+}
+["trainingDetails", "agreementDetails", "goodThings", "compareAndChoose"].forEach(field => {
+  if (formData.has(`serviceDetails[${field}][0]`)) {
+    serviceDetails[field] = [];
+    for (let i = 0; i < 50; i++) {
+      const val = formData.get(`serviceDetails[${field}][${i}]`) as string;
+      if (!val || val.trim() === "") break;
+      serviceDetails[field].push(val.trim());
+    }
+  }
+});
+
+if (formData.has("serviceDetails[companyDetails][0][name]")) {
+  serviceDetails.companyDetails = [];
+
+  for (let i = 0; i < 10; i++) {
+    const name = formData.get(`serviceDetails[companyDetails][${i}][name]`) as string;
+    const location = formData.get(`serviceDetails[companyDetails][${i}][location]`) as string;
+
+    if (!name || name.trim() === "") break;
+
+    const details: any[] = [];
+    for (let j = 0; j < 10; j++) {
+      const title = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][title]`) as string;
+      const description = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][description]`) as string;
+      if (!title || title.trim() === "") break;
+
+      details.push({
+        title: title.trim(),
+        description: description?.trim() || "",
+      });
+    }
+
+    serviceDetails.companyDetails.push({
+      name: name.trim(),
+      location: location?.trim() || "",
+      details,
+    });
+  }
+}
+
+
+if (formData.has("serviceDetails[counter][0][number]")) {
+  serviceDetails.counter = [];
+  for (let i = 0; i < 10; i++) {
+    const number = formData.get(`serviceDetails[counter][${i}][number]`) as string;
+    const title = formData.get(`serviceDetails[counter][${i}][title]`) as string;
+
+    if (!number || number.trim() === "") break; // ✅ Avoid empty number
+
+    serviceDetails.counter.push({
+      number: Number(number),
+      title: title?.trim() || "", // ✅ Safe trim
+    });
+  }
+}
+
+if (formData.has("serviceDetails[businessFundamental][description]")) {
+  serviceDetails.businessFundamental = {
+    description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
+    points: [],
+  };
+
+  for (let i = 0; i < 10; i++) {
+    const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
+    const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
+    if (!subtitle || subtitle.trim() === "") break;
+
+    serviceDetails.businessFundamental.points.push({
+      subtitle: subtitle.trim(),
+      subDescription: subDescription?.trim() || "",
+    });
+  }
+}
+
+// ------------------ ROI ------------------
+serviceDetails.roi = [];
+if (formData.has("serviceDetails[roi][0]")) {
+  for (let i = 0; i < 10; i++) {
+    const val = formData.get(`serviceDetails[roi][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.roi.push(val.trim());
+  }
+}
+
+if (formData.has("serviceDetails[level]")) {
+  serviceDetails.level = (formData.get("serviceDetails[level]") as string)?.trim() || existingService.level;
+}
+
+if (formData.has("serviceDetails[lessonCount]")) {
+  serviceDetails.lessonCount = Number(formData.get("serviceDetails[lessonCount]") || existingService.lessonCount);
+}
+
+if (formData.has("serviceDetails[duration][weeks]")) {
+  serviceDetails.duration = {
+    weeks: Number(formData.get("serviceDetails[duration][weeks]") || 0),
+    hours: Number(formData.get("serviceDetails[duration][hours]") || 0),
+  };
+}
+
+// ------------------ What You Will Learn ------------------
+serviceDetails.whatYouWillLearn = [];
+if (formData.has("serviceDetails[whatYouWillLearn][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[whatYouWillLearn][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.whatYouWillLearn.push(val.trim());
+  }
+}
+
+// ------------------ Eligible For ------------------
+serviceDetails.eligibleFor = [];
+if (formData.has("serviceDetails[eligibleFor][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[eligibleFor][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.eligibleFor.push(val.trim());
+  }
+}
+
+// ------------------ Course Curriculum ------------------
+serviceDetails.courseCurriculum = [];
+if (formData.has("serviceDetails[courseCurriculum][0][title]")) {
+  for (let i = 0; i < 10; i++) {
+    const title = formData.get(`serviceDetails[courseCurriculum][${i}][title]`) as string;
+    if (!title || title.trim() === "") break;
+
+    const lists: string[] = [];
+    for (let j = 0; j < 50; j++) {
+      const listItem = formData.get(`serviceDetails[courseCurriculum][${i}][lists][${j}]`) as string;
+      if (!listItem || listItem.trim() === "") break;
+      lists.push(listItem.trim());
+    }
+
+    const model: string[] = [];
+    for (let j = 0; j < 50; j++) {
+      const modelItem = formData.get(`serviceDetails[courseCurriculum][${i}][model][${j}]`) as string;
+      if (!modelItem || modelItem.trim() === "") break;
+      model.push(modelItem.trim());
+    }
+
+    serviceDetails.courseCurriculum.push({
+      title: title.trim(),
+      lists,
+      model,
+    });
+  }
+}
+
+// ------------------ Course Includes ------------------
+serviceDetails.courseIncludes = [];
+if (formData.has("serviceDetails[courseIncludes][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[courseIncludes][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.courseIncludes.push(val.trim());
+  }
+}
+
+// ------------------ Whom To Sell ------------------
+// serviceDetails.whomToSell = [];
+// if (formData.has("serviceDetails[whomToSell][0][lists]")) {
+//   for (let i = 0; i < 10; i++) {
+//     const lists: string[] = [];
+//     for (let j = 0; j < 50; j++) {
+//       const listItem = formData.get(`serviceDetails[whomToSell][${i}][lists][${j}]`) as string;
+//       if (!listItem || listItem.trim() === "") break;
+//       lists.push(listItem.trim());
+//     }
+
+//     const icon = formData.get(`serviceDetails[whomToSell][${i}][icon]`);
+//     serviceDetails.whomToSell.push({
+//       lists,
+//       icon: icon instanceof File ? await handleFileUpload(icon, "/services/whomToSell") : icon?.toString() || "",
+//     });
+//   }
+// }
+
+// ------------------ Include ------------------
+serviceDetails.include = [];
+if (formData.has("serviceDetails[include][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[include][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.include.push(val.trim());
+  }
+}
+
+// ------------------ Not Include ------------------
+serviceDetails.notInclude = [];
+if (formData.has("serviceDetails[notInclude][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[notInclude][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.notInclude.push(val.trim());
+  }
+}
+
+// ------------------ Safety And Assurance ------------------
+serviceDetails.safetyAndAssurance = [];
+if (formData.has("serviceDetails[safetyAndAssurance][0]")) {
+  for (let i = 0; i < 50; i++) {
+    const val = formData.get(`serviceDetails[safetyAndAssurance][${i}]`) as string;
+    if (!val || val.trim() === "") break;
+    serviceDetails.safetyAndAssurance.push(val.trim());
+  }
+} 
+
+// certificateImage
+if (Array.from(formData.keys()).some(k => k.startsWith("serviceDetails[certificateImage]"))) {
+  serviceDetails.certificateImage = [];
+
+  for (const [key, val] of formData.entries()) {
+    if (!key.startsWith("serviceDetails[certificateImage]")) continue;
+
+    if (val instanceof File && val.size > 0) {
+      serviceDetails.certificateImage.push(
+        await handleFileUpload(val, "/services/certificates")
+      );
+    } else if (typeof val === "string") {
+      serviceDetails.certificateImage.push(val);
+    }
+  }
+}
 
     // --- Extra Images ---
   const extraImagesUpdated = Array.from(formData.keys()).some(key =>
