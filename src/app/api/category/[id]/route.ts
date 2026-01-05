@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import WhyJustOurService from "@/models/WhyJustOurService";
+import Category from "@/models/Category";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,40 +59,38 @@ export async function PUT(req: Request) {
   try {
     const id = getIdFromReq(req);
     const formData = await req.formData();
+    
 
-    const moduleId = formData.get("module") as string;
-    const updateData: any = {};
-    if (moduleId) updateData.module = moduleId;
-
-    // 🔹 rebuild items array
-    const items: any[] = [];
-    let index = 0;
-
-    while (formData.get(`items[${index}][title]`)) {
-      const title = formData.get(`items[${index}][title]`) as string;
-      const description = formData.get(`items[${index}][description]`) as string;
-      const iconFile = formData.get(`items[${index}][icon]`) as File | null;
-      const oldIcon = formData.get(`items[${index}][oldIcon]`) as string;
-
-      let iconUrl = oldIcon;
-
-      if (iconFile) {
-        const buffer = Buffer.from(await iconFile.arrayBuffer());
-        const upload = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${iconFile.name}`,
-          folder: "/whyjustourservice",
-        });
-        iconUrl = upload.url;
-      }
-
-      items.push({ title, description, icon: iconUrl });
-      index++;
+    // 🔍 Debug (recommended)
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
     }
 
-    if (items.length) updateData.items = items;
+    const updateData: any = {};
 
-    const updated = await WhyJustOurService
+    // ---------------- BASIC FIELDS ----------------
+    const name = formData.get("name") as string;
+    const moduleId = formData.get("module") as string;
+    const imageFile = formData.get("image") as File | null;
+
+    if (name) updateData.name = name;
+    if (moduleId) updateData.module = moduleId;
+
+    // ---------------- IMAGE UPLOAD ----------------
+    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${imageFile.name}`,
+        folder: "/category",
+      });
+
+      updateData.image = upload.url;
+    }
+
+    // ---------------- UPDATE DB ----------------
+    const updated = await Category
       .findByIdAndUpdate(id, updateData, { new: true })
       .populate("module", "name");
 
@@ -99,13 +98,17 @@ export async function PUT(req: Request) {
       { success: true, data: updated },
       { status: 200, headers: corsHeaders }
     );
+
   } catch (error: any) {
+    console.error(error);
+
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 400, headers: corsHeaders }
     );
   }
 }
+
 
 
 // ✅ DELETE
