@@ -516,16 +516,16 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
   }
 
   // Helper to handle file uploads in arrays
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, 
-                           currentItem: any, 
-                           updateItem: (updated: any) => void, 
-                           fieldName: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      updateItem({ ...currentItem, [fieldName]: url });
-    }
-  };
+ const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, 
+                         currentItem: any, 
+                         updateItem: (updated: any) => void, 
+                         fieldName: string) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    // ✅ Store the actual File object directly
+    updateItem({ ...currentItem, [fieldName]: file });
+  }
+};
 // Helper function for file upload handling
 const handleFileChange = (
   e: React.ChangeEvent<HTMLInputElement>,
@@ -879,7 +879,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 3: FRANCHISE OPERATING MODEL ============= */}
-   {fieldsConfig?.franchiseOperatingModel && (
+ {fieldsConfig?.franchiseOperatingModel && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Franchise Operating Model</Label>
     {renderArrayField<FranchiseOperatingModelItem>(
@@ -1007,7 +1007,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
       }
     )}
   </div>
-   )}
+)}
 
   {/* ============= SECTION 4: BUSINESS FUNDAMENTAL ============= */}
    {fieldsConfig?.businessFundamental && (
@@ -1056,7 +1056,8 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 5: KEY ADVANTAGES ============= */}
-   {fieldsConfig?.keyAdvantages && (
+ 
+{fieldsConfig?.keyAdvantages && (
   <div className="mb-6">
     <Label className="mb-2 font-semibold">Key Advantages</Label>
     {renderArrayField<KeyAdvantageItem>(
@@ -1087,10 +1088,11 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
       { icon: '', title: '', description: '' }
     )}
   </div>
-   )}
+)}
 
   {/* ============= SECTION 6: COMPLETE SUPPORT SYSTEM ============= */}
-   {fieldsConfig?.completeSupportSystem && (
+ 
+{fieldsConfig?.completeSupportSystem && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Complete Support System</Label>
     {renderArrayField<CompleteSupportSystemItem>(
@@ -1133,7 +1135,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
       { icon: '', title: '', lists: [''] }
     )}
   </div>
-   )}
+)}
 
   {/* ============= SECTION 7: TRAINING & AGREEMENT DETAILS ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

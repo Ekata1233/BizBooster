@@ -82,6 +82,85 @@ interface FranchiseModelItem {
   _id?: string;
 }
 
+interface CounterItem {
+  number?: number;
+  title?: string;
+  _id?: string;
+}
+
+interface FranchiseOperatingModelItem {
+  info?: string;
+  title?: string;
+  description?: string;
+  features?: FeatureItem[];
+  tags?: string[];
+  example?: string;
+  _id?: string;
+}
+
+interface FeatureItem {
+  icon?: string;
+  subtitle?: string;
+  subDescription?: string;
+  _id?: string;
+}
+
+interface BusinessFundamental {
+  description?: string;
+  points?: FundamentalPoint[];
+}
+
+interface FundamentalPoint {
+  subtitle?: string;
+  subDescription?: string;
+  _id?: string;
+}
+
+interface KeyAdvantageItem {
+  icon?: string;
+  title?: string;
+  description?: string;
+  _id?: string;
+}
+
+interface SupportSystemItem {
+  icon?: string;
+  title?: string;
+  lists?: string[];
+  _id?: string;
+}
+
+interface CompanyDetailItem {
+  name?: string;
+  location?: string;
+  details?: CompanyDetailPoint[];
+  _id?: string;
+}
+
+interface CompanyDetailPoint {
+  title?: string;
+  description?: string;
+  _id?: string;
+}
+
+interface DurationItem {
+  weeks?: number;
+  hours?: number;
+}
+
+interface CourseCurriculumItem {
+  title?: string;
+  lists?: string[];
+  model?: string[];
+  _id?: string;
+}
+
+interface WhomToSellItem {
+  icon?: string;
+  lists?: string;
+  _id?: string;
+}
+
 interface ServiceDetails {
   aboutUs: string[];
   assuredByFetchTrue: TitleDescItem[];
@@ -100,6 +179,33 @@ interface ServiceDetails {
   connectWith: ConnectWithItem[];
   timeRequired: TimeRequiredItem[];
   termsAndConditions: string[];
+  operatingCities?: string[];
+  brochureImage?: string[];
+  emiavalable?: string[];
+  counter?: CounterItem[];
+  franchiseOperatingModel?: FranchiseOperatingModelItem[];
+  businessFundamental?: BusinessFundamental;
+  keyAdvantages?: KeyAdvantageItem[];
+  completeSupportSystem?: SupportSystemItem[];
+  trainingDetails?: string[];
+  agreementDetails?: string[];
+  goodThings?: string[];
+  compareAndChoose?: string[];
+  companyDetails?: CompanyDetailItem[];
+  roi?: string[];
+  level?: 'beginner' | 'medium' | 'advanced';
+  lessonCount?: number;
+  duration?: DurationItem;
+  whatYouWillLearn?: string[];
+  eligibleFor?: string[];
+  courseCurriculum?: CourseCurriculumItem[];
+  courseIncludes?: string[];
+  certificateImage?: string[];
+  whomToSell?: WhomToSellItem[];
+  include?: string[];
+  notInclude?: string[];
+  safetyAndAssurance?: string[];
+
 }
 
 interface FranchiseDetails {
@@ -253,6 +359,33 @@ const ServiceDetailsPage = () => {
   const assuredByFetchTrue = serviceDetails?.assuredByFetchTrue || [];
   const extraSections = serviceDetails?.extraSections || [];
   const extraImages = serviceDetails?.extraImages || [];
+
+const operatingCities = serviceDetails?.operatingCities || [];
+const brochureImage = serviceDetails?.brochureImage || [];
+const emiavalable = serviceDetails?.emiavalable || [];
+const counter = serviceDetails?.counter || [];
+const franchiseOperatingModel = serviceDetails?.franchiseOperatingModel || [];
+const businessFundamental = serviceDetails?.businessFundamental || null;
+const keyAdvantages = serviceDetails?.keyAdvantages || [];
+const completeSupportSystem = serviceDetails?.completeSupportSystem || [];
+const trainingDetails = serviceDetails?.trainingDetails || [];
+const agreementDetails = serviceDetails?.agreementDetails || [];
+const goodThings = serviceDetails?.goodThings || [];
+const compareAndChoose = serviceDetails?.compareAndChoose || [];
+const companyDetails = serviceDetails?.companyDetails || [];
+const roi = serviceDetails?.roi || [];
+const level = serviceDetails?.level || 'beginner';
+const lessonCount = serviceDetails?.lessonCount || 0;
+const duration = serviceDetails?.duration || { weeks: 0, hours: 0 };
+const whatYouWillLearn = serviceDetails?.whatYouWillLearn || [];
+const eligibleFor = serviceDetails?.eligibleFor || [];
+const courseCurriculum = serviceDetails?.courseCurriculum || [];
+const courseIncludes = serviceDetails?.courseIncludes || [];
+const certificateImage = serviceDetails?.certificateImage || [];
+const whomToSell = serviceDetails?.whomToSell || [];
+const include = serviceDetails?.include || [];
+const notInclude = serviceDetails?.notInclude || [];
+const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
 
   // Extract franchise data
   const franchiseCommission = franchiseDetails?.commission || '';
@@ -652,6 +785,589 @@ const ServiceDetailsPage = () => {
                 )}
               </div>
             )}
+{/* Operating Cities */}
+{operatingCities.length > 0 && (
+  <ComponentCard title="Operating Cities">
+    <div className="flex flex-wrap gap-3">
+      {operatingCities.map((city, index) => (
+        <span 
+          key={index} 
+          className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full border border-blue-100"
+        >
+          {city}
+        </span>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Brochure Images */}
+{brochureImage.length > 0 && (
+  <ComponentCard title="Brochure Images">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {brochureImage.map((img, index) => (
+        <div key={index} className="relative h-64 rounded-xl overflow-hidden border">
+          <Image
+            src={img}
+            alt={`Brochure ${index + 1}`}
+            fill
+            className="object-contain bg-gray-50"
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* EMI Available */}
+{emiavalable.length > 0 && (
+  <ComponentCard title="EMI Options Available">
+    <div className="space-y-3">
+      {emiavalable.map((emi, index) => (
+        <div key={index} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+            ₹
+          </div>
+          <span className="text-gray-700">{emi}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Counter */}
+{counter.length > 0 && (
+  <ComponentCard title="Achievements">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {counter.map((item, index) => (
+        <div key={index} className="text-center">
+          <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+            {item.number ? item.number.toLocaleString() : 'N/A'}
+          </div>
+          <div className="text-gray-600">{item.title}</div>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Franchise Operating Model */}
+{franchiseOperatingModel.length > 0 && (
+  <ComponentCard title="Franchise Operating Model">
+    <div className="space-y-8">
+      {franchiseOperatingModel.map((model, index) => (
+        <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+          {model.title && (
+            <h4 className="text-xl font-bold text-gray-900 mb-4">{model.title}</h4>
+          )}
+          
+          {model.info && (
+            <p className="text-gray-700 mb-4">{model.info}</p>
+          )}
+          
+          {model.description && (
+            <p className="text-gray-600 mb-4">{model.description}</p>
+          )}
+          
+          {model.features && model.features.length > 0 && (
+            <div className="mt-6">
+              <h5 className="font-semibold text-gray-700 mb-3">Features:</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {model.features.map((feature, fIndex) => (
+                  <div key={fIndex} className="bg-white p-4 rounded-lg shadow-sm">
+                    {feature.icon && (
+                      <div className="w-10 h-10 mb-2 relative">
+                        <Image
+                          src={feature.icon}
+                          alt={feature.subtitle || 'Feature icon'}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    )}
+                    {feature.subtitle && (
+                      <h6 className="font-medium text-gray-800 mb-1">{feature.subtitle}</h6>
+                    )}
+                    {feature.subDescription && (
+                      <p className="text-sm text-gray-600">{feature.subDescription}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {model.tags && model.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {model.tags.map((tag, tagIndex) => (
+                <span key={tagIndex} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {model.example && (
+            <div className="mt-4 p-4 bg-white rounded-lg border">
+              <h6 className="font-semibold text-gray-700 mb-2">Example:</h6>
+              <p className="text-gray-600">{model.example}</p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Business Fundamental */}
+{businessFundamental && (
+  <ComponentCard title="Business Fundamentals">
+    <div className="bg-white border rounded-xl p-6">
+      {businessFundamental.description && (
+        <p className="text-gray-700 mb-6">{businessFundamental.description}</p>
+      )}
+      
+      {businessFundamental.points && businessFundamental.points.length > 0 && (
+        <div className="space-y-4">
+          {businessFundamental.points.map((point, index) => (
+            <div key={index} className="flex gap-4">
+              <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
+              <div>
+                {point.subtitle && (
+                  <h6 className="font-medium text-gray-800 mb-1">{point.subtitle}</h6>
+                )}
+                {point.subDescription && (
+                  <p className="text-gray-600">{point.subDescription}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Key Advantages */}
+{keyAdvantages.length > 0 && (
+  <ComponentCard title="Key Advantages">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {keyAdvantages.map((advantage, index) => (
+        <div key={index} className="bg-white border rounded-xl p-6 text-center hover:shadow-md transition-shadow">
+          {advantage.icon && (
+            <div className="w-16 h-16 mx-auto mb-4 relative">
+              <Image
+                src={advantage.icon}
+                alt={advantage.title || 'Advantage icon'}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+          {advantage.title && (
+            <h5 className="font-semibold text-gray-800 mb-2">{advantage.title}</h5>
+          )}
+          {advantage.description && (
+            <p className="text-sm text-gray-600">{advantage.description}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Complete Support System */}
+{completeSupportSystem.length > 0 && (
+  <ComponentCard title="Complete Support System">
+    <div className="space-y-6">
+      {completeSupportSystem.map((support, index) => (
+        <div key={index} className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 p-6 rounded-xl">
+          {support.icon && (
+            <div className="md:w-1/6">
+              <div className="w-16 h-16 relative">
+                <Image
+                  src={support.icon}
+                  alt={support.title || 'Support icon'}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+          <div className="flex-grow">
+            {support.title && (
+              <h5 className="text-lg font-semibold text-gray-800 mb-3">{support.title}</h5>
+            )}
+            {support.lists && support.lists.length > 0 && (
+              <ul className="space-y-2">
+                {support.lists.map((item, itemIndex) => (
+                  <li key={itemIndex} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                    <span className="text-gray-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Training Details */}
+{trainingDetails.length > 0 && (
+  <ComponentCard title="Training Details">
+    <div className="space-y-3">
+      {trainingDetails.map((detail, index) => (
+        <div key={index} className="p-4 bg-blue-50 rounded-lg">
+          <p className="text-gray-700">{detail}</p>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Agreement Details */}
+{agreementDetails.length > 0 && (
+  <ComponentCard title="Agreement Details">
+    <div className="space-y-3">
+      {agreementDetails.map((detail, index) => (
+        <div key={index} className="p-4 border rounded-lg">
+          <p className="text-gray-700">{detail}</p>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Good Things */}
+{goodThings.length > 0 && (
+  <ComponentCard title="Why It's Good">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {goodThings.map((item, index) => (
+        <div key={index} className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+            ✓
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+
+{/* Compare and Choose */}
+{compareAndChoose?.length > 0 && (
+  <ComponentCard title="Compare and Choose">
+    <div className="bg-white border rounded-xl p-6 overflow-x-auto">
+      {compareAndChoose.map((item, index) => (
+        <div
+          key={index}
+          className="ckeditor-content"
+          dangerouslySetInnerHTML={{ __html: item }}
+        />
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+
+{/* Company Details */}
+{companyDetails.length > 0 && (
+  <ComponentCard title="Company Details">
+    <div className="space-y-6">
+      {companyDetails.map((company, index) => (
+        <div key={index} className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
+          {company.name && (
+            <h4 className="text-xl font-bold text-gray-900 mb-2">{company.name}</h4>
+          )}
+          {company.location && (
+            <p className="text-gray-600 mb-4">📍 {company.location}</p>
+          )}
+          
+          {company.details && company.details.length > 0 && (
+            <div className="space-y-4">
+              {company.details.map((detail, detailIndex) => (
+                <div key={detailIndex} className="border-t pt-4">
+                  {detail.title && (
+                    <h6 className="font-semibold text-gray-800 mb-1">{detail.title}</h6>
+                  )}
+                  {detail.description && (
+                    <p className="text-gray-600">{detail.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* ROI Details */}
+{roi.length > 0 && (
+  <ComponentCard title="Return on Investment (ROI)">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8">
+      <div className="text-center mb-6">
+        <h4 className="text-2xl font-bold text-gray-900 mb-2">Return on Investment Analysis</h4>
+      </div>
+      <div className="space-y-4">
+        {roi.map((item, index) => (
+          <div key={index} className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
+            <div className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+              ₹
+            </div>
+            <p className="text-gray-700">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Level, Duration, and Lesson Count */}
+{(level !== 'beginner' || lessonCount > 0 || duration.weeks > 0 || duration.hours > 0) && (
+  <ComponentCard title="Course Information">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {level !== 'beginner' && (
+        <div className="text-center p-6 bg-blue-50 rounded-xl">
+          <div className="text-3xl font-bold text-blue-600 mb-2 capitalize">{level}</div>
+          <p className="text-gray-600">Level</p>
+        </div>
+      )}
+      
+      {lessonCount > 0 && (
+        <div className="text-center p-6 bg-green-50 rounded-xl">
+          <div className="text-3xl font-bold text-green-600 mb-2">{lessonCount}</div>
+          <p className="text-gray-600">Lessons</p>
+        </div>
+      )}
+      
+      {(duration.weeks > 0 || duration.hours > 0) && (
+        <div className="text-center p-6 bg-purple-50 rounded-xl">
+          <div className="text-xl font-bold text-purple-600 mb-2">
+            {duration.weeks > 0 && `${duration.weeks} weeks`}
+            {duration.weeks > 0 && duration.hours > 0 && ' • '}
+            {duration.hours > 0 && `${duration.hours} hours`}
+          </div>
+          <p className="text-gray-600">Duration</p>
+        </div>
+      )}
+    </div>
+  </ComponentCard>
+)}
+
+{/* What You Will Learn */}
+{whatYouWillLearn.length > 0 && (
+  <ComponentCard title="What You Will Learn">
+    <div className="space-y-3">
+      {whatYouWillLearn.map((item, index) => (
+        <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+          <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full text-sm">
+            {index + 1}
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Eligible For */}
+{eligibleFor.length > 0 && (
+  <ComponentCard title="Eligible For">
+    <div className="flex flex-wrap gap-3">
+      {eligibleFor.map((item, index) => (
+        <span 
+          key={index} 
+          className="px-4 py-2 bg-green-100 text-green-800 rounded-full border border-green-200"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Curriculum */}
+{courseCurriculum.length > 0 && (
+  <ComponentCard title="Course Curriculum">
+    <div className="space-y-6">
+      {courseCurriculum.map((curriculum, index) => (
+        <div key={index} className="border rounded-xl p-6">
+          {curriculum.title && (
+            <h5 className="text-lg font-semibold text-gray-900 mb-4">{curriculum.title}</h5>
+          )}
+          
+          {curriculum.lists && curriculum.lists.length > 0 && (
+            <ul className="space-y-3 mb-4">
+              {curriculum.lists.map((item, itemIndex) => (
+                <li key={itemIndex} className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                  <span className="text-gray-700">{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          
+         {curriculum.model && curriculum.model.length > 0 && (
+  <div className="mt-6">
+    <h6 className="text-lg font-semibold text-gray-800 mb-4">
+      Models Covered
+    </h6>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {curriculum.model.map((model, modelIndex) => (
+        <div
+          key={modelIndex}
+          className="p-4 border border-blue-100 rounded-lg bg-white shadow-sm ckeditor-content"
+          dangerouslySetInnerHTML={{ __html: model }}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Includes */}
+{courseIncludes.length > 0 && (
+  <ComponentCard title="Course Includes">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {courseIncludes.map((item, index) => (
+        <div key={index} className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full">
+            ✓
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Certificate Images */}
+{certificateImage.length > 0 && (
+  <ComponentCard title="Certificates">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {certificateImage.map((img, index) => (
+        <div key={index} className="relative h-64 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+          <Image
+            src={img}
+            alt={`Certificate ${index + 1}`}
+            fill
+            className="object-contain bg-gradient-to-br from-gray-50 to-gray-100"
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Whom to Sell */}
+{whomToSell.length > 0 && (
+  <ComponentCard title="Target Audience">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {whomToSell.map((item, index) => (
+        <div key={index} className="text-center p-6 bg-white border rounded-xl hover:shadow-md transition-shadow">
+          {item.icon && (
+            <div className="w-16 h-16 mx-auto mb-4 relative">
+              <Image
+                src={item.icon}
+                alt="Target audience icon"
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+          {item.lists && (
+            <p className="text-gray-700 font-medium">{item.lists}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Includes & Not Includes */}
+{(include.length > 0 || notInclude.length > 0) && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {include.length > 0 && (
+  <ComponentCard title="What's Included">
+    <div className="space-y-3">
+      {include.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 p-3 bg-green-50 rounded-lg"
+        >
+          <div className="w-6 h-6 flex items-center justify-center bg-green-100 text-green-600 rounded-full flex-shrink-0">
+            ✓
+          </div>
+
+          <div
+            className="text-gray-700 ckeditor-content"
+            dangerouslySetInnerHTML={{ __html: item }}
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+    
+   {notInclude.length > 0 && (
+  <ComponentCard title="What's Not Included">
+    <div className="space-y-3">
+      {notInclude.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 p-3 bg-red-50 rounded-lg"
+        >
+          <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-600 rounded-full flex-shrink-0">
+            ✗
+          </div>
+
+          <div
+            className="text-gray-700 ckeditor-content"
+            dangerouslySetInnerHTML={{ __html: item }}
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+  </div>
+)}
+
+{/* Safety and Assurance */}
+{safetyAndAssurance.length > 0 && (
+  <ComponentCard title="Safety and Assurance">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {safetyAndAssurance.map((item, index) => (
+          <div key={index} className="flex items-start gap-4">
+            <div className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full flex-shrink-0">
+              🔒
+            </div>
+
+            <div
+              className="text-gray-700 ckeditor-content"
+              dangerouslySetInnerHTML={{ __html: item }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </ComponentCard>
+)}
 
             {/* More Info */}
             {moreInfo.length > 0 && (
@@ -774,7 +1490,7 @@ const ServiceDetailsPage = () => {
                 </div>
               </ComponentCard>
             )}
-
+            
             {/* Extra Sections */}
         {extraSections.length > 0 && (
               <ComponentCard title="Additional Details">
@@ -952,6 +1668,8 @@ const ServiceDetailsPage = () => {
               </ComponentCard>
             )}
 
+
+
             {/* Extra Images */}
             {extraImages.length > 0 && (
               <ComponentCard title="Extra Images">
@@ -989,20 +1707,26 @@ const ServiceDetailsPage = () => {
             )}
 
             {/* Investment Range */}
-            {investmentRange.length > 0 && (
-              <ComponentCard title="Investment Range">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {investmentRange.map((item, index) => (
-                    <div key={index} className="text-center p-6 bg-white border rounded-xl shadow-sm">
-                      <div className="text-2xl font-bold text-gray-900 mb-2">
-                        ₹{formatPrice(Number(item.minRange))} - ₹{formatPrice(Number(item.maxRange))}
-                      </div>
-                      <p className="text-gray-600">Investment Required</p>
-                    </div>
-                  ))}
-                </div>
-              </ComponentCard>
-            )}
+          {monthlyEarnPotential?.length > 0 && (
+  <ComponentCard title="Monthly Earning Potential">
+    <div className="flex flex-wrap gap-4">
+      {monthlyEarnPotential.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
+        >
+          <span className="text-xl font-semibold text-emerald-700">
+            {item.range}
+          </span>
+          <span className="ml-2 text-sm font-medium text-emerald-600">
+            {item.parameters}
+          </span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
 
             {/* Monthly Earning Potential */}
             {monthlyEarnPotential.length > 0 && (
