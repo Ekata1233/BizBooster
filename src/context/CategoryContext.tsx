@@ -9,6 +9,8 @@ export interface Category {
   name: string;
   module: { _id: string, name: string };
   image?: string;
+   subcategoryCount?: number;
+   sortOrder: number;
   isDeleted?: boolean;
 }
 
