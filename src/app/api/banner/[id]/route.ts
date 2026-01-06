@@ -23,6 +23,9 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+
+    console.log("formdata : ", formData);
+
     const page = formData.get("page") as string;
     const selectionType = formData.get("selectionType") as string;
 
@@ -45,18 +48,17 @@ console.log("module : ",module);
     let fileUrl = "";
     const file = formData.get("file") as File | null;
 
-    if (file && file instanceof File) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    if (file && file.size > 0) {
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/banner",
-      });
+  const uploadResponse = await imagekit.upload({
+    file: buffer,
+    fileName: `${uuidv4()}-${file.name}`,
+    folder: "/banner",
+  });
 
-      fileUrl = uploadResponse.url;
-    }
+  fileUrl = uploadResponse.url;
+}
 
     const updateData: Record<string, unknown> = {
       page,

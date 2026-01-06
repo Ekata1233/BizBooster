@@ -64,7 +64,7 @@ const Banner = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
   const { modules } = useModule();
-  console.log("modules : ", modules)
+  console.log("banners : ", banners)
 
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
@@ -150,6 +150,7 @@ const Banner = () => {
       // Pass both id and formData as separate arguments
       await updateBanner(currentBanner._id, formData);
       alert('Banner updated successfully');
+       await fetchFilteredBanners();
       setEditModalOpen(false);
       setNewImage(null);
     } catch (err) {
