@@ -9,9 +9,7 @@ interface IAdvisor extends Document {
     phoneNumber: number;
     language: string;
     tags: [string];
-    chat: string;
-
-   
+    chat: string;  
 }
 
 const AdvisorSchema: Schema = new Schema<IAdvisor>(
@@ -31,11 +29,14 @@ const AdvisorSchema: Schema = new Schema<IAdvisor>(
         rating: {
             type: Number,
              required: [true, 'rating is required'],
+             min: [0, 'Rating cannot be less than 0'],
+      max: [5, 'Rating cannot be more than 5'],
         },
 
         phoneNumber: {
-            type: Number,
-            required: [true, 'phoneNumber is required'],
+            type: String, // ✅ CHANGE to String
+      required: [true, 'Phone number is required'],
+      match: [/^\d{10}$/, 'Phone number must be exactly 10 digits'],
         },
 
         language: {
@@ -44,8 +45,14 @@ const AdvisorSchema: Schema = new Schema<IAdvisor>(
         },
 
           tags: {
-            type: [String],
-            required: [true, 'tags are required'],
+           type: [String],
+      required: [true, 'Tags are required'],
+      validate: {
+        validator: function (v: string[]) {
+          return Array.isArray(v) && v.length > 0;
+        },
+        message: 'At least one tag is required',
+      },
         },
 
         chat: {

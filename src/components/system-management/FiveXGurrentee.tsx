@@ -52,7 +52,7 @@ function FiveXGurrentee() {
       await fetchData();
     } catch (err) {
       console.error(err);
-      alert("Error saving ❌");
+      alert("Something went wrong while saving the data. Please try again.");
     } finally {
       setLoading(false);
     }
