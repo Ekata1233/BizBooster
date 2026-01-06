@@ -15,6 +15,7 @@ import { useModule } from '@/context/ModuleContext';
 import { useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import { useService } from '@/context/ServiceContext';
+import Image from 'next/image';
 
 const ClientSideCustomEditor = dynamic(
   () => import('@/components/custom-editor/CustomEditor'),
@@ -568,19 +569,19 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                   ✓ Valid: {bannerImageFile.name} ({(bannerImageFile.size / (1024 * 1024)).toFixed(2)}MB)
                 </p>
               )}
-              {existingBannerUrl && !bannerImageFile && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Current:&nbsp;
-                  <a
-                    href={existingBannerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline text-blue-600"
-                  >
-                    View Banner
-                  </a>
-                </p>
-              )}
+              <div>
+                {existingBannerUrl && !bannerImageFile && (
+  <div className="relative mt-2 h-32 w-full">
+    <Image
+      src={existingBannerUrl}
+      alt="Existing Banner"
+      fill
+      className="rounded-lg object-cover"
+    />
+  </div>
+)}
+
+              </div>
               <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
             </div>
 
@@ -599,19 +600,17 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                   ✓ Valid: {thumbnailImageFile.name} ({(thumbnailImageFile.size / (1024 * 1024)).toFixed(2)}MB)
                 </p>
               )}
-              {existingThumbnailUrl && !thumbnailImageFile && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Current:&nbsp;
-                  <a
-                    href={existingThumbnailUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline text-blue-600"
-                  >
-                    View Thumbnail
-                  </a>
-                </p>
-              )}
+             {existingThumbnailUrl && !thumbnailImageFile && (
+  <div className="relative mt-2 h-24 w-24">
+    <Image
+      src={existingThumbnailUrl}
+      alt="Existing Thumbnail"
+      fill
+      className="rounded-lg object-cover"
+    />
+  </div>
+)}
+
               <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
             </div>
 
@@ -655,25 +654,27 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                 {galleryFiles.length > 0 && ` | Total size: ${(galleryFiles.reduce((acc, file) => acc + file.size, 0) / (1024 * 1024)).toFixed(2)}MB`}
               </p>
             )}
-            {existingGalleryUrls.length > 0 && galleryFiles.length === 0 && (
-              <div className="mt-2 space-y-1">
-                <Label className="text-xs text-gray-600">Current Gallery:</Label>
-                <ul className="text-xs space-y-1">
-                  {existingGalleryUrls.map((u, i) => (
-                    <li key={i}>
-                      <a
-                        href={u}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-blue-600"
-                      >
-                        Image {i + 1}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+           {existingGalleryUrls.length > 0 && galleryFiles.length === 0 && (
+  <div className="mt-3">
+    <Label className="text-xs text-gray-600 mb-2 block">
+      Current Gallery:
+    </Label>
+
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {existingGalleryUrls.map((url, i) => (
+        <div key={i} className="relative h-24 w-full">
+          <Image
+            src={url}
+            alt={`Gallery Image ${i + 1}`}
+            fill
+            className="rounded-lg object-cover"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
             <p className="text-xs text-gray-500 mt-1">Max size per image: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
           </div>
 
