@@ -78,17 +78,29 @@ export async function PUT(req: Request) {
     if (moduleId) updateData.module = moduleId;
 
     // ---------------- IMAGE UPLOAD ----------------
-    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
+    // if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+    //   const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-      const upload = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${imageFile.name}`,
-        folder: "/category",
-      });
+    //   const upload = await imagekit.upload({
+    //     file: buffer,
+    //     fileName: `${uuidv4()}-${imageFile.name}`,
+    //     folder: "/category",
+    //   });
 
-      updateData.image = upload.url;
-    }
+    //   updateData.image = upload.url;
+    // }
+
+    if (imageFile && imageFile.size > 0) {
+  const buffer = Buffer.from(await imageFile.arrayBuffer());
+
+  const upload = await imagekit.upload({
+    file: buffer,
+    fileName: `${uuidv4()}-${imageFile.name}`,
+    folder: "/category",
+  });
+
+  updateData.image = upload.url;
+}
 
     // ---------------- UPDATE DB ----------------
     const updated = await Category
