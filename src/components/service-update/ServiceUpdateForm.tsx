@@ -46,6 +46,7 @@ interface ServiceUpdateFromProps {
    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
 
+
 // ---------------- COMPONENT ----------------
 const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, fieldsConfig }) => {
   // ---------- BASIC STATES ----------
@@ -165,6 +166,8 @@ useEffect(() => {
     goodThings,
     compareAndChoose,
     companyDetails,
+    brochureImage,
+    certificateImage,
     roi,
     courseCurriculum,
     level,
@@ -203,6 +206,8 @@ useEffect(() => {
   goodThings,
   compareAndChoose,
   companyDetails,
+  brochureImage,
+  certificateImage,
   roi,
   courseCurriculum,
   level,
@@ -346,6 +351,16 @@ setCertificateImage(
     }
   };
 
+  const handleFileChange = (
+  e: React.ChangeEvent<HTMLInputElement>, 
+  setter: React.Dispatch<React.SetStateAction<(File | string)[]>>
+) => {
+  if (e.target.files) {
+    const files = Array.from(e.target.files);
+    setter(prev => [...prev, ...files]);
+  }
+};
+
   const handleSingleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -357,6 +372,20 @@ setCertificateImage(
       // Store as array with single item for compatibility
       setter([value]);
     };
+
+    function handleFileUploadUpdate<T>(
+  e: React.ChangeEvent<HTMLInputElement>,
+  item: T,
+  updateItem: (updated: T) => void,
+  property: keyof T
+) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  updateItem({ ...item, [property]: url });
+}
+
 
   function renderArrayField<T>(
     items: T[],
@@ -879,7 +908,7 @@ setCertificateImage(
                         <div>
                           <Label className="text-xs mb-1">Icon</Label>
                           <FileInput
-                            onChange={(e) => handleFileUpload(e, feature, updateFeature, 'icon')}
+                            onChange={(e) => handleFileUploadUpdate(e, feature, updateFeature, 'icon')}
                           />
                           {feature.icon && (
                   <div className="w-16 h-16 relative mt-2">
@@ -1022,7 +1051,7 @@ setCertificateImage(
                   <div>
                     <Label className="text-sm mb-1">Icon</Label>
                     <FileInput
-                      onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+                      onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
                     />
                     {item.icon && (
                   <div className="w-16 h-16 relative mt-2">
@@ -1059,7 +1088,7 @@ setCertificateImage(
                   className="mb-2"
                 />
                 <FileInput
-                  onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+                  onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
                   className="mb-2"
                 />
                 {item.icon && (
@@ -1476,7 +1505,7 @@ setCertificateImage(
                 <div>
                   <Label className="text-sm mb-1">Icon</Label>
                   <FileInput
-                    onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+                  onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
                   />
                   {item.icon && (
                   <div className="w-16 h-16 relative mt-2">
