@@ -122,6 +122,7 @@ const ProviderList = () => {
       setProviders((prev) =>
         prev.map((p) => (p.id === id ? { ...p, isDeleted: true } : p))
       );
+      fetchProviders();
     } catch (error) {
       console.error("Failed to delete provider:", error);
     }
