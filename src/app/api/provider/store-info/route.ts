@@ -112,6 +112,7 @@ function validateStoreInfo(storeInfo: any) {
       errors.push("Store name must contain only letters");
   }
 
+  
   if (storeInfo.city && !onlyChars.test(storeInfo.city))
     errors.push("City must contain only letters");
 

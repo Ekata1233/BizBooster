@@ -85,6 +85,7 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
+const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('');
 
 
   const handleDelete = async (id: string) => {
@@ -334,6 +335,16 @@ const Banner = () => {
 
   console.log("Banner data in frontend  : ", banners);
 
+  const filteredSubcategories = selectedCategoryForSub
+  ? subcategoryData.filter(
+      (sub) =>
+        typeof sub.category === 'object'
+          ? sub.category?._id === selectedCategoryForSub
+          : sub.category === selectedCategoryForSub
+    )
+  : [];
+
+
 
   if (!filteredBanner) return <div>Loading...</div>;
 
@@ -469,11 +480,19 @@ const Banner = () => {
                 <select
                   className="w-full border px-3 py-2 rounded"
                   value={(currentBanner as any)?.screenCategory || ""}
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, screenCategory: e.target.value } : null
-                    )
-                  }
+                  onChange={(e) => {
+  const value = e.target.value;
+  setSelectedCategoryForSub(value);
+  setCurrentBanner((prev) =>
+    prev
+      ? {
+          ...prev,
+          category: value,
+          subcategory: '' 
+        }
+      : null
+  );
+}}
                 >
                   <option value="">Select Screen Category</option>
                   {categoryData.map((cat) => (
@@ -545,11 +564,19 @@ const Banner = () => {
                       ? currentBanner.category?._id
                       : currentBanner?.category || ''
                   }
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, category: e.target.value, subcategory: '' } : null
-                    )
-                  }
+                   onChange={(e) => {
+  const value = e.target.value;
+  setSelectedCategoryForSub(value);
+  setCurrentBanner((prev) =>
+    prev
+      ? {
+          ...prev,
+          category: value,
+          subcategory: '' 
+        }
+      : null
+  );
+}}
                 >
                   <option value="">Select Category</option>
                   {categoryData.map((cat) => (
@@ -579,7 +606,7 @@ const Banner = () => {
                   }
                 >
                   <option value="">Select Subcategory</option>
-                  {subcategoryData.map((sub) => (
+                  {filteredSubcategories.map((sub) => (
                     <option key={sub._id} value={sub._id}>
                       {sub.name}
                     </option>
