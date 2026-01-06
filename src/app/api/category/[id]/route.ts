@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import WhyJustOurService from "@/models/WhyJustOurService";
 import Category from "@/models/Category";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,22 +112,40 @@ export async function PUT(req: Request) {
 
 
 
-// ✅ DELETE
+// ✅ DELETE (CASCADE DELETE)
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
   try {
     const id = getIdFromReq(req);
-    await WhyJustOurService.findByIdAndDelete(id);
+
+    // 1️⃣ Delete all subcategories under this category
+    await mongoose.model("Subcategory").deleteMany({
+      category: id,
+    });
+
+    // 2️⃣ Delete all services under this category
+    await mongoose.model("Service").deleteMany({
+      category: id,
+    });
+
+    // 3️⃣ Delete the category itself
+    await Category.findByIdAndDelete(id);
 
     return NextResponse.json(
-      { success: true, message: "Deleted successfully" },
+      {
+        success: true,
+        message: "Category, subcategories, and services deleted successfully",
+      },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: any) {
+    console.error(error);
+
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+
