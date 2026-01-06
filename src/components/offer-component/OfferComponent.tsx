@@ -631,6 +631,7 @@ const AddOffer: React.FC<AddOfferProps> = ({ offerIdToEdit }) => {
                 id="offerEnd"
                 type="datetime-local"
                 value={offerEndTime}
+                min={offerStartTime || undefined}
                 onChange={(e) => setOfferEndTime(e.target.value)}
               />
             </div>
