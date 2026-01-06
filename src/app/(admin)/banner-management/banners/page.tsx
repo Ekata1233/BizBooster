@@ -615,7 +615,6 @@ const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('')
               </div>
             )}
 
-
             {currentBanner?.selectionType === 'service' && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium">Service</label>

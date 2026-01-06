@@ -143,7 +143,11 @@ export async function DELETE(req: Request) {
     // 🔹 Soft delete instead of hard delete
     const deletedProvider = await Provider.findByIdAndUpdate(
       id,
-      { isDeleted: true },
+      { 
+        isDeleted: true,
+        isRecommended: false,
+        isTrending: false,
+       },
       { new: true }
     );
 
