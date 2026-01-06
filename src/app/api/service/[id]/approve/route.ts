@@ -8,7 +8,6 @@ import { connectToDatabase } from '@/utils/db';
 
 import '@/models/Category';
 import '@/models/Subcategory';
-import '@/models/WhyChoose';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin':  '*',

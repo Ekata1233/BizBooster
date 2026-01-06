@@ -58,9 +58,8 @@ const ZoneList = () => {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
   });
+const activeZonesCount = zones.filter(zone => !zone.isDeleted).length;
 
-
-  console.log("zones : ", zones);
   // ✅ Fetch all zones when page loads
   useEffect(() => {
     fetchAllZones();
@@ -231,7 +230,7 @@ const ZoneList = () => {
         <div className="w-full lg:w-1/4 my-5">
           <StatCard
             title="Total Zones"
-            value={zones.length}
+            value={activeZonesCount}
             icon={UserIcon}
             badgeColor="success"
             badgeValue="0.00%"

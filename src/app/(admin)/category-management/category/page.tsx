@@ -163,8 +163,9 @@ const CategoryPage = () => {
     router.push(`/category-management/category/modals/${id}`);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete category?")) return;
+    if (!confirm("Are you sure you want to delete this category?")) return;
     await deleteCategory(id);
+     alert("Category deleted successfully.");
     fetchCategories();
   };
 

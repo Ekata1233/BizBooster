@@ -3,7 +3,6 @@ import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
 import "@/models/Category";
 import "@/models/Subcategory";
-import "@/models/WhyChoose";
 import mongoose from "mongoose";
 
 type ProviderPriceInput = {

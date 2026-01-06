@@ -4,6 +4,8 @@ import { connectToDatabase } from "@/utils/db";
 import imagekit from "@/utils/imagekit";
 import WhyJustOurService from "@/models/WhyJustOurService";
 import Category from "@/models/Category";
+import "@/models/Service";
+import "@/models/Subcategory"
 import mongoose from "mongoose";
 
 const corsHeaders = {

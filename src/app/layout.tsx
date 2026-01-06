@@ -11,7 +11,6 @@ import { SubcategoryProvider } from '@/context/SubcategoryContext';
 import { BannerProvider } from '@/context/BannerContext';
 import { ServiceProvider } from '@/context/ServiceContext';
 import { ProviderContextProvider } from '@/context/ProviderContext';
-import { WhyChooseProvider } from '@/context/WhyChooseContext';
 import { ZoneProvider } from '@/context/ZoneContext';
 import RouteLoader from '@/components/RouteLoader';
 import { SubscribeProvider } from '@/context/SubscribeContext';
@@ -69,7 +68,6 @@ export default function RootLayout({
                           <BannerProvider>
                             <ServiceProvider>
                               <ProviderContextProvider>
-                                <WhyChooseProvider>
                                   <ZoneProvider>
                                     <SubscribeProvider>
                                       <CouponProvider>
@@ -119,7 +117,6 @@ export default function RootLayout({
                                       </CouponProvider>
                                     </SubscribeProvider>
                                   </ZoneProvider>
-                                </WhyChooseProvider>
                               </ProviderContextProvider>
                             </ServiceProvider>
                           </BannerProvider>
