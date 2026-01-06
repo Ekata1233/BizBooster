@@ -23,6 +23,9 @@ export async function PUT(req: Request) {
 
     const formData = await req.formData();
 
+
+    console.log("formdata : ", formData);
+
     const page = formData.get("page") as string;
     const selectionType = formData.get("selectionType") as string;
 
