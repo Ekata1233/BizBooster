@@ -836,32 +836,74 @@ export async function PUT(req: NextRequest) {
     }
 
     // --- Helper: Upload File ---
-    async function handleFileUpload(file: File, folder: string): Promise<string> {
-      try {
-        const buffer = Buffer.from(await file.arrayBuffer());
+    // async function handleFileUpload(file: File, folder: string): Promise<string> {
+    //   try {
+    //     const buffer = Buffer.from(await file.arrayBuffer());
         
-        // Optional: Validate file type and size
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (buffer.length > maxSize) {
-          throw new Error(`File size too large. Maximum size is 5MB.`);
-        }
+    //     // Optional: Validate file type and size
+    //     const maxSize = 5 * 1024 * 1024; // 5MB
+    //     if (buffer.length > maxSize) {
+    //       throw new Error(`File size too large. Maximum size is 5MB.`);
+    //     }
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!allowedTypes.includes(file.type)) {
-          throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
-        }
+    //     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    //     if (!allowedTypes.includes(file.type)) {
+    //       throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+    //     }
 
-        const upload = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${file.name}`,
-          folder,
-        });
-        return upload.url;
-      } catch (error) {
-        console.error("File upload error:", error);
-        throw error;
-      }
+    //     const upload = await imagekit.upload({
+    //       file: buffer,
+    //       fileName: `${uuidv4()}-${file.name}`,
+    //       folder,
+    //     });
+    //     return upload.url;
+    //   } catch (error) {
+    //     console.error("File upload error:", error);
+    //     throw error;
+    //   }
+    // }
+    async function handleFileUpload(
+  file: File | string | null, 
+  folder: string
+): Promise<string> {
+  // If it's already a URL (including blob URLs), return it as is
+  if (typeof file === 'string') {
+    // Check if it's a blob URL or already uploaded URL
+    if (file.startsWith('blob:') || file.startsWith('http')) {
+      return file;
     }
+  }
+  
+  // If it's a File object, upload it
+  if (file instanceof File && file.size > 0) {
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (buffer.length > maxSize) {
+        throw new Error(`File size too large. Maximum size is 5MB.`);
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+      }
+
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${file.name}`,
+        folder,
+      });
+      return upload.url;
+    } catch (error) {
+      console.error("File upload error:", error);
+      throw error;
+    }
+  }
+  
+  // Return empty string if no file
+  return "";
+}
 
     // --- Thumbnail ---
     let thumbnailImage = existingService.thumbnailImage || "";
@@ -1140,6 +1182,34 @@ if (formData.has("serviceDetails[operatingCities][0]")) {
   }
 }
 
+if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[brochureImage]"))) {
+  serviceDetails.brochureImage = [];
+  
+  // Method 1: Loop through sequential indices
+  for (let i = 0; i < 10; i++) {
+    const brochureFile = formData.get(`serviceDetails[brochureImage][${i}]`);
+    if (!brochureFile) break;
+    
+    const url = await handleFileUpload(brochureFile, "/services/brochures");
+    if (url) {
+      serviceDetails.brochureImage.push(url);
+    }
+  }
+}
+
+if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[certificateImage]"))) {
+  serviceDetails.certificateImage = [];
+  
+  for (let i = 0; i < 10; i++) {
+    const certFile = formData.get(`serviceDetails[certificateImage][${i}]`);
+    if (!certFile) break;
+    
+    const url = await handleFileUpload(certFile, "/services/certificates");
+    if (url) {
+      serviceDetails.certificateImage.push(url);
+    }
+  }
+}
 // emiavalable
 if (formData.has("serviceDetails[emiavalable][0]")) {
   serviceDetails.emiavalable = [];
@@ -1165,14 +1235,16 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
     for (let j = 0; j < 10; j++) {
       const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`) as string;
       const subDescription = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) as string;
-      const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
+       const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
 
       if (!subtitle || subtitle.trim() === "") break;
+
+      const iconUrl = icon ? await handleFileUpload(icon, "/services/franchiseOperatingModel") : "";
 
       features.push({
         subtitle: subtitle.trim(),
         subDescription: subDescription?.trim() || "",
-        icon: icon instanceof File ? await handleFileUpload(icon, "/services/franchiseOperatingModel") : icon?.toString() || ""
+        icon: iconUrl,
       });
     }
 
@@ -1218,14 +1290,16 @@ if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
   for (let i = 0; i < 10; i++) {
     const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`) as string;
     const description = formData.get(`serviceDetails[keyAdvantages][${i}][description]`) as string;
-    const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
+   const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
 
     if (!title || title.trim() === "") break;
+
+    const iconUrl = icon ? await handleFileUpload(icon, "/services/keyAdvantages") : "";
 
     serviceDetails.keyAdvantages.push({
       title: title.trim(),
       description: description?.trim() || "",
-      icon: icon instanceof File ? await handleFileUpload(icon, "/services/keyAdvantages") : icon?.toString() || "",
+      icon: iconUrl,
     });
   }
 }
@@ -1246,9 +1320,11 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
 
     if (!title || title.trim() === "") break;
 
+      const iconUrl = icon ? await handleFileUpload(icon, "/services/completeSupportSystem") : "";
+
     serviceDetails.completeSupportSystem.push({
       title: title.trim(),
-      icon: icon instanceof File ? await handleFileUpload(icon, "/services/completeSupportSystem") : icon?.toString() || "",
+      icon: iconUrl,
       lists
     });
   }
