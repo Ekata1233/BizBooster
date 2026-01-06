@@ -37,20 +37,21 @@ export async function PUT(
     }
 
     let imageUrl = "";
-    const file = formData.get("image") as File | null;
+   const file = formData.get("image");
 
-    if (file && file instanceof File) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+if (file && typeof file === "object" && "arrayBuffer" in file) {
+  const arrayBuffer = await (file as Blob).arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
 
-      const uploadResponse = await imagekit.upload({
-        file: buffer,
-        fileName: `${uuidv4()}-${file.name}`,
-        folder: "/banner",
-      });
+  const uploadResponse = await imagekit.upload({
+    file: buffer,
+    fileName: `${uuidv4()}`,
+    folder: "/banner",
+  });
 
-      imageUrl = uploadResponse.url;
-    }
+  imageUrl = uploadResponse.url;
+}
+
 
     const updateData: Record<string, unknown> = {
       name,

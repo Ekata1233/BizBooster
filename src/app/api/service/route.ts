@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const thumbnailFile = formData.get("thumbnail") as File | null;
     if (thumbnailFile instanceof File) {
       const buffer = Buffer.from(await thumbnailFile.arrayBuffer());
-      const upload = await imagekit.upload({
+      const upload = await imagekit.upload({ 
         file: buffer,
         fileName: `${uuidv4()}-${thumbnailFile.name}`,
         folder: "/services/thumbnail",
@@ -412,49 +412,128 @@ for (let i = 0; i < 20; i++) {
       });
     }
 
-    // 5. franchiseOperatingModel
-    for (let i = 0; i < 20; i++) {
-      const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`);
-      if (!title) break;
+  // 5. franchiseOperatingModel
+for (let i = 0; i < 20; i++) {
+  const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`);
+  if (!title) break;
 
-      const franchiseModel: any = {
-        info: formData.get(`serviceDetails[franchiseOperatingModel][${i}][info]`) || "",
-        title: title,
-        description: formData.get(`serviceDetails[franchiseOperatingModel][${i}][description]`) || "",
-        features: [],
-        tags: [],
-        example: formData.get(`serviceDetails[franchiseOperatingModel][${i}][example]`) || ""
-      };
+  const franchiseModel: any = {
+    info: formData.get(`serviceDetails[franchiseOperatingModel][${i}][info]`) || "",
+    title: title,
+    description: formData.get(`serviceDetails[franchiseOperatingModel][${i}][description]`) || "",
+    features: [],
+    tags: [],
+    example: formData.get(`serviceDetails[franchiseOperatingModel][${i}][example]`) || ""
+  };
 
-      // Process features
-      for (let j = 0; j < 20; j++) {
-        const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`);
-        if (!subtitle) break;
-        
-        const iconFile = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
-        let iconUrl = "";
-        if (iconFile instanceof File) {
-          iconUrl = await handleFileUpload(iconFile, "/services/franchiseFeatures");
-        } else if (typeof iconFile === "string") {
-          iconUrl = iconFile;
+  // Process features
+  for (let j = 0; j < 20; j++) {
+    const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`);
+    if (!subtitle) break;
+    
+    // Look for icon files with the same pattern as brochureImage
+    let iconUrl = "";
+    for (const key of formData.keys()) {
+      if (key.startsWith(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`)) {
+        const file = formData.get(key);
+        if (file instanceof File) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const upload = await imagekit.upload({
+            file: buffer,
+            fileName: `${uuidv4()}-${file.name}`,
+            folder: "/services/franchiseFeatures",
+          });
+          iconUrl = upload.url;
+          break; // Found the file, break the loop
         }
-
-        franchiseModel.features.push({
-          icon: iconUrl,
-          subtitle: subtitle,
-          subDescription: formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) || ""
-        });
       }
-
-      // Process tags
-      for (let j = 0; j < 20; j++) {
-        const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`);
-        if (!tag) break;
-        franchiseModel.tags.push(tag);
-      }
-
-      serviceDetails.franchiseOperatingModel.push(franchiseModel);
     }
+
+    franchiseModel.features.push({
+      icon: iconUrl,
+      subtitle: subtitle,
+      subDescription: formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) || ""
+    });
+  }
+
+  // Process tags
+  for (let j = 0; j < 20; j++) {
+    const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`);
+    if (!tag) break;
+    franchiseModel.tags.push(tag);
+  }
+
+  serviceDetails.franchiseOperatingModel.push(franchiseModel);
+}
+
+// 7. keyAdvantages
+for (let i = 0; i < 20; i++) {
+  const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`);
+  if (!title) break;
+
+  // Look for icon files with the same pattern as brochureImage
+  let iconUrl = "";
+  for (const key of formData.keys()) {
+    if (key.startsWith(`serviceDetails[keyAdvantages][${i}][icon]`)) {
+      const file = formData.get(key);
+      if (file instanceof File) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${file.name}`,
+          folder: "/services/keyAdvantages",
+        });
+        iconUrl = upload.url;
+        break; // Found the file, break the loop
+      }
+    }
+  }
+
+  serviceDetails.keyAdvantages.push({
+    icon: iconUrl,
+    title: title,
+    description: formData.get(`serviceDetails[keyAdvantages][${i}][description]`) || ""
+  });
+}
+
+// 8. completeSupportSystem
+for (let i = 0; i < 20; i++) {
+  const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`);
+  if (!title) break;
+
+  // Look for icon files with the same pattern as brochureImage
+  let iconUrl = "";
+  for (const key of formData.keys()) {
+    if (key.startsWith(`serviceDetails[completeSupportSystem][${i}][icon]`)) {
+      const file = formData.get(key);
+      if (file instanceof File) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${file.name}`,
+          folder: "/services/supportSystem",
+        });
+        iconUrl = upload.url;
+        break; // Found the file, break the loop
+      }
+    }
+  }
+
+  const supportSystem: any = {
+    icon: iconUrl,
+    title: title,
+    lists: []
+  };
+
+  // Process lists
+  for (let j = 0; j < 20; j++) {
+    const listItem = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`);
+    if (!listItem) break;
+    supportSystem.lists.push(listItem);
+  }
+
+  serviceDetails.completeSupportSystem.push(supportSystem);
+}
 
     // 6. businessFundamental
     serviceDetails.businessFundamental.description = formData.get("serviceDetails[businessFundamental][description]") || "";
@@ -468,54 +547,74 @@ for (let i = 0; i < 20; i++) {
       });
     }
 
-    // 7. keyAdvantages
-    for (let i = 0; i < 20; i++) {
-      const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`);
-      if (!title) break;
+//     // 7. keyAdvantages
+//     for (let i = 0; i < 20; i++) {
+//       const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`);
+//       if (!title) break;
 
-      const iconFile = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
-      let iconUrl = "";
-      if (iconFile instanceof File) {
-        iconUrl = await handleFileUpload(iconFile, "/services/keyAdvantages");
-      } else if (typeof iconFile === "string") {
-        iconUrl = iconFile;
-      }
+//      let iconUrl = "";
 
-      serviceDetails.keyAdvantages.push({
-        icon: iconUrl,
-        title: title,
-        description: formData.get(`serviceDetails[keyAdvantages][${i}][description]`) || ""
-      });
-    }
+// for (const key of formData.keys()) {
+//   if (key === `serviceDetails[keyAdvantages][${i}][icon]`) {
+//     const file = formData.get(key);
+//     if (file instanceof File) {
+//       const buffer = Buffer.from(await file.arrayBuffer());
+//       const upload = await imagekit.upload({
+//         file: buffer,
+//         fileName: `${uuidv4()}-${file.name}`,
+//         folder: "/services/keyAdvantages",
+//       });
+//       iconUrl = upload.url;
+//     }
+//   }
+// }
 
-    // 8. completeSupportSystem
-    for (let i = 0; i < 20; i++) {
-      const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`);
-      if (!title) break;
 
-      const iconFile = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
-      let iconUrl = "";
-      if (iconFile instanceof File) {
-        iconUrl = await handleFileUpload(iconFile, "/services/supportSystem");
-      } else if (typeof iconFile === "string") {
-        iconUrl = iconFile;
-      }
+//       serviceDetails.keyAdvantages.push({
+//         icon: iconUrl,
+//         title: title,
+//         description: formData.get(`serviceDetails[keyAdvantages][${i}][description]`) || ""
+//       });
+//     }
 
-      const supportSystem: any = {
-        icon: iconUrl,
-        title: title,
-        lists: []
-      };
+//     // 8. completeSupportSystem
+//     for (let i = 0; i < 20; i++) {
+//       const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`);
+//       if (!title) break;
 
-      // Process lists
-      for (let j = 0; j < 20; j++) {
-        const listItem = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`);
-        if (!listItem) break;
-        supportSystem.lists.push(listItem);
-      }
+//      let iconUrl = "";
 
-      serviceDetails.completeSupportSystem.push(supportSystem);
-    }
+// for (const key of formData.keys()) {
+//   if (key === `serviceDetails[completeSupportSystem][${i}][icon]`) {
+//     const file = formData.get(key);
+//     if (file instanceof File) {
+//       const buffer = Buffer.from(await file.arrayBuffer());
+//       const upload = await imagekit.upload({
+//         file: buffer,
+//         fileName: `${uuidv4()}-${file.name}`,
+//         folder: "/services/supportSystem",
+//       });
+//       iconUrl = upload.url;
+//     }
+//   }
+// }
+
+
+//       const supportSystem: any = {
+//         icon: iconUrl,
+//         title: title,
+//         lists: []
+//       };
+
+//       // Process lists
+//       for (let j = 0; j < 20; j++) {
+//         const listItem = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`);
+//         if (!listItem) break;
+//         supportSystem.lists.push(listItem);
+//       }
+
+//       serviceDetails.completeSupportSystem.push(supportSystem);
+//     }
 
     // 9. trainingDetails
     for (let i = 0; i < 20; i++) {
