@@ -13,7 +13,7 @@ import { Category, useCategory } from '@/context/CategoryContext';
 import { useSubcategory } from '@/context/SubcategoryContext';
 import axios from 'axios';
 import { useService } from '@/context/ServiceContext';
-import { EyeIcon, ChevronDownIcon } from '@/icons';
+import { EyeIcon } from '@/icons';
 import { useRouter } from 'next/navigation';
 import Pagination from '@/components/tables/Pagination';
 import Switch from '@/components/form/switch/Switch';

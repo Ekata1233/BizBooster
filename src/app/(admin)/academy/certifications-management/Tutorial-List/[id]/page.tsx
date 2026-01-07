@@ -12,6 +12,7 @@ import { TrashBinIcon } from '@/icons';
 import { useCertificate } from '@/context/CertificationContext';
 import { PencilIcon } from 'lucide-react';
 import { CheckCircle2, Lock } from 'lucide-react'; 
+import ComponentCard from '@/components/common/ComponentCard';
 
 interface Video {
   _id: string;
@@ -293,7 +294,8 @@ const handleDeleteCertificate = async () => {
   const isCertificationCompleted = certificate.video.length > 0 && completedVideos.length === certificate.video.length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 sm:p-8 md:p-12 font-sans text-gray-800">
+    <div className="min-h-screen bg-gray-50  font-sans text-gray-800">
+      <ComponentCard title="Tutorial Details">
       <div className="max-w-7xl mx-auto">
         <PageBreadcrumb pageTitle="Tutorial Detail" />
 
@@ -301,10 +303,7 @@ const handleDeleteCertificate = async () => {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 sm:mb-0">
             {certificate.name}
           </h1>
-          <button onClick={handleDeleteCertificate} className="flex items-center gap-2 p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors duration-200">
-            <TrashBinIcon className="h-5 w-5" />
           
-          </button>
         </div>
 
         <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-lg mb-10 flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -442,6 +441,7 @@ const handleDeleteCertificate = async () => {
           </Button>
         </Link>
       </div>
+      </ComponentCard>
     </div>
   );
 };

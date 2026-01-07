@@ -26,7 +26,6 @@ export async function PUT(req: NextRequest) {
         }
 
         const formData = await req.formData();
-        console.log("Formdata of edit advisor : ", formData);
         const advisor = await Advisor.findById(id);
 
         if (!advisor) {
