@@ -16,7 +16,7 @@ type AdvisorFormData = {
   name: string;
   imageUrl: string; // This will store the existing URL or the new one
   imageFile: File | null; // This will store the new file to be uploaded
-  tags: string;
+tags: string[];
   language: string;
   rating: number;
   phoneNumber: number;
@@ -27,13 +27,14 @@ const EditAdvisorPage: React.FC = () => {
   const router = useRouter();
   const { id } = useParams();
   const advisorId = Array.isArray(id) ? id[0] : id;
+const [tagInput, setTagInput] = useState("");
 
   const { fetchAdvisorById, updateAdvisor } = useAdvisor();
   const [formData, setFormData] = useState<AdvisorFormData>({
     name: "",
     imageUrl: "",
     imageFile: null,
-    tags: "",
+     tags: [],   
     language: "",
     rating: 0,
     phoneNumber: 0,
@@ -41,6 +42,8 @@ const EditAdvisorPage: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  console.log("formdata : ", formData);
 
   useEffect(() => {
     if (!advisorId) {
@@ -57,7 +60,13 @@ const EditAdvisorPage: React.FC = () => {
             name: advisorData.name,
             imageUrl: advisorData.imageUrl,
             imageFile: null, // No file initially selected
-            tags: advisorData.tags.join(", "), // Convert array to comma-separated string
+           tags: Array.isArray(advisorData.tags)
+  ? advisorData.tags
+  : advisorData.tags
+      ?.split(",")
+      .map((tag: string) => tag.trim())
+      .filter(Boolean) || [],
+
             language: advisorData.language,
             rating: advisorData.rating,
             phoneNumber: advisorData.phoneNumber,
@@ -93,6 +102,28 @@ const EditAdvisorPage: React.FC = () => {
     }));
   };
 
+const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter" && tagInput.trim() !== "") {
+    e.preventDefault();
+    const newTag = tagInput.trim().replace(/^#/, "");
+    if (!formData.tags.includes(newTag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag],
+      }));
+    }
+    setTagInput("");
+  }
+};
+
+const handleRemoveTag = (index: number) => {
+  setFormData(prev => ({
+    ...prev,
+    tags: prev.tags.filter((_, i) => i !== index),
+  }));
+};
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!advisorId) {
@@ -106,7 +137,7 @@ const EditAdvisorPage: React.FC = () => {
     // Step 1: Create a FormData object to send to the backend
     const dataToSubmit = new FormData();
     dataToSubmit.append("name", formData.name);
-    dataToSubmit.append("tags", formData.tags.split(",").map(tag => tag.trim()).filter(tag => tag !== "").join(","));
+dataToSubmit.append("tags", formData.tags.join(","));
     dataToSubmit.append("language", formData.language);
     dataToSubmit.append("rating", formData.rating.toString());
     dataToSubmit.append("phoneNumber", formData.phoneNumber.toString());
@@ -153,7 +184,28 @@ const EditAdvisorPage: React.FC = () => {
             </div>
             <div>
               <Label htmlFor="imageFile">Advisor Image</Label>
-              {/* Display current image using Next.js Image component */}
+             
+              {/* The FileInput component for uploading a new image */}
+              <FileInput
+                id="imageFile"
+                name="imageFile"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              {/* Display the name of the newly selected file */}
+              {formData.imageFile && (
+                // <p className="mt-2 text-sm text-gray-500">Selected file: {formData.imageFile.name}</p>
+                <div className="mb-2">
+                  <Image 
+                    src={formData.imageFile.name} 
+                    alt="Current Advisor Image" 
+                    className="h-20 w-20 object-cover rounded-md"
+                    width={80} // Must provide width and height
+                    height={80} 
+                  />
+                </div>
+              )}
+               {/* Display current image using Next.js Image component */}
               {formData.imageUrl && !formData.imageFile && (
                 <div className="mb-2">
                   <Image 
@@ -165,29 +217,37 @@ const EditAdvisorPage: React.FC = () => {
                   />
                 </div>
               )}
-              {/* The FileInput component for uploading a new image */}
-              <FileInput
-                id="imageFile"
-                name="imageFile"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              {/* Display the name of the newly selected file */}
-              {formData.imageFile && (
-                <p className="mt-2 text-sm text-gray-500">Selected file: {formData.imageFile.name}</p>
-              )}
             </div>
             <div>
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
-              <Input
-                id="tags"
-                name="tags"
-                type="text"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="e.g. business, finance, career"
-              />
-            </div>
+  <Label htmlFor="tags">Tags</Label>
+  <div className="border rounded px-3 py-2 flex flex-wrap gap-2">
+    {formData.tags.map((tag, index) => (
+      <span
+        key={index}
+        className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center"
+      >
+        #{tag}
+        <button
+          type="button"
+          onClick={() => handleRemoveTag(index)}
+          className="ml-2 text-red-500"
+        >
+          ×
+        </button>
+      </span>
+    ))}
+
+    <input
+      type="text"
+      value={tagInput}
+      onChange={(e) => setTagInput(e.target.value)}
+      onKeyDown={handleTagKeyDown}
+      placeholder="Type a tag and press Enter"
+      className="flex-grow outline-none py-1"
+    />
+  </div>
+</div>
+
             <div>
               <Label htmlFor="language">Language</Label>
               <Input
@@ -224,7 +284,7 @@ const EditAdvisorPage: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="chat">Chat Link</Label>
+              <Label htmlFor="chat">Chat</Label>
               <Input
                 id="chat"
                 name="chat"

@@ -16,7 +16,7 @@ export async function PUT(req: NextRequest) {
 
     try {
         const url = new URL(req.url);
-        const id = url.pathname.split('/').pop(); // Extract ID from URL
+        const id = url.pathname.split('/').pop(); 
 
         if (!id) {
             return NextResponse.json(
@@ -26,6 +26,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const formData = await req.formData();
+        console.log("Formdata of edit advisor : ", formData);
         const advisor = await Advisor.findById(id);
 
         if (!advisor) {

@@ -111,15 +111,29 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
         await updateAdvisor(advisorIdToEdit, formData);
         alert('Advisor updated successfully!');
       } else {
-        await addAdvisor(formData);
-        alert('Advisor added successfully!');
+       const res = await addAdvisor(formData);
+console.log("response for add advisor : ", res);
+if (!res?.success) {
+  alert(res?.message || 'Submission failed');
+  return;
+}
+
+alert('Advisor added successfully!');
+
       }
 
       resetForm();
-    } catch (err) {
-      console.error('Submit error:', err);
-      setError('Submission failed. Try again.');
-    } finally {
+    } catch (err: any) {
+  console.error('Submit error:', err);
+
+  const apiMessage =
+    err.response?.data?.message ||
+    err.message ||
+    'Submission failed';
+alert(apiMessage);
+  setError(apiMessage);
+}
+ finally {
       setLoading(false);
     }
   };
@@ -128,7 +142,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
     <div>
       <ComponentCard title={advisorIdToEdit ? 'Edit Advisor' : 'Add New Advisor'}>
         {loading && <p className="text-blue-500">Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {/* {error && <p className="text-red-500">{error}</p>} */}
 
         <form
           onSubmit={handleSubmit}

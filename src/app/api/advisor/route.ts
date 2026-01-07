@@ -152,6 +152,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
 
+    console.log("formdata of advisro  : ", formData);
+
     const name = formData.get("name") as string;
     const ratingRaw = formData.get("rating") as string;
     const rating = Number(ratingRaw);
