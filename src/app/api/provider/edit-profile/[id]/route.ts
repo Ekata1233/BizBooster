@@ -43,23 +43,6 @@ if (incomingTags.length > 0) {
 }
 
 
-    // ── Extract text fields (dot notation for nested)
-    // formData.forEach((value, key) => {
-    //   if (typeof value === "string") {
-    //     if (key.includes(".")) {
-    //       const parts = key.split(".");
-    //       let ref = updateData;
-    //       for (let i = 0; i < parts.length - 1; i++) {
-    //         if (!ref[parts[i]]) ref[parts[i]] = {};
-    //         ref = ref[parts[i]];
-    //       }
-    //       ref[parts[parts.length - 1]] = value;
-    //     } else {
-    //       updateData[key] = value;
-    //     }
-    //   }
-    // });
-    
     formData.forEach((value, key) => {
   if (typeof value === "string") {
 
@@ -149,9 +132,44 @@ if (incomingTags.length > 0) {
 
     return NextResponse.json({ success: true, message: "Profile updated successfully", data: providerResponse }, { status: 200, headers: corsHeaders });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+
+  // ✅ Handle MongoDB duplicate key error
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as any).code === 11000
+  ) {
+    const key = Object.keys((error as any).keyValue || {})[0];
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: `${key} already exists`
+      },
+      { status: 409, headers: corsHeaders }
+    );
   }
+
+  // ✅ Handle validation errors
+  if (error instanceof mongoose.Error.ValidationError) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message
+      },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Something went wrong while updating provider"
+    },
+    { status: 500, headers: corsHeaders }
+  );
+}
 }
 
 // ───────────── GET: Fetch Provider ─────────────
