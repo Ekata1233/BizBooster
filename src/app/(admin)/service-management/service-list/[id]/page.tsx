@@ -318,17 +318,17 @@ if (existingBannerUrls.length > 0) {
         );
       });
 
-      /* ================= TIME REQUIRED ================= */
-      (formData.serviceDetails.timeRequired || []).forEach((t, i) => {
-        fd.append(
-          `serviceDetails[timeRequired][${i}][minDays]`,
-          String(t.minDays || 0)
-        );
-        fd.append(
-          `serviceDetails[timeRequired][${i}][maxDays]`,
-          String(t.maxDays || 0)
-        );
-      });
+     /* ================= TIME REQUIRED ================= */
+(formData.serviceDetails.timeRequired || []).forEach((t, i) => {
+  fd.append(
+    `serviceDetails[timeRequired][${i}][range]`,
+    String(t.range || "")  
+  );
+  fd.append(
+    `serviceDetails[timeRequired][${i}][parameters]`,
+    String(t.parameters || "") 
+  );
+});
 
       /* ================= MORE INFO ================= */
       await Promise.all(
@@ -734,29 +734,29 @@ await Promise.all(
           formData.franchiseDetails.termsAndConditions || ""
         );
         
-        /* -------- Investment Range -------- */
-        (formData.franchiseDetails.investmentRange || []).forEach((item, i) => {
-          fd.append(
-            `franchiseDetails[investmentRange][${i}][minRange]`,
-            String(item.minRange || 0)
-          );
-          fd.append(
-            `franchiseDetails[investmentRange][${i}][maxRange]`,
-            String(item.maxRange || 0)
-          );
-        });
+        /* ================= INVESTMENT RANGE ================= */
+(formData.franchiseDetails.investmentRange || []).forEach((item, i) => {
+  fd.append(
+    `franchiseDetails[investmentRange][${i}][range]`,
+    String(item.range || "")  // Changed from minRange
+  );
+  fd.append(
+    `franchiseDetails[investmentRange][${i}][parameters]`,
+    String(item.parameters || "")  // Changed from maxRange
+  );
+});
         
-        /* -------- Monthly Earn Potential -------- */
-        (formData.franchiseDetails.monthlyEarnPotential || []).forEach((item, i) => {
-          fd.append(
-            `franchiseDetails[monthlyEarnPotential][${i}][minEarn]`,
-            String(item.minEarn || 0)
-          );
-          fd.append(
-            `franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`,
-            String(item.maxEarn || 0)
-          );
-        });
+      /* ================= MONTHLY EARN POTENTIAL ================= */
+(formData.franchiseDetails.monthlyEarnPotential || []).forEach((item, i) => {
+  fd.append(
+    `franchiseDetails[monthlyEarnPotential][${i}][range]`,
+    String(item.range || "")  // Changed from minEarn
+  );
+  fd.append(
+    `franchiseDetails[monthlyEarnPotential][${i}][parameters]`,
+    String(item.parameters || "")  // Changed from maxEarn
+  );
+});
         
         /* -------- Franchise Model -------- */
         (formData.franchiseDetails.franchiseModel || []).forEach((model, i) => {

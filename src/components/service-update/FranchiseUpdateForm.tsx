@@ -17,8 +17,8 @@ const ClientSideCustomEditor = dynamic(
 );
 
 /* ---------------- TYPES ---------------- */
-type InvestmentRange = { minRange: number | null; maxRange: number | null };
-type MonthlyEarnPotential = { minEarn: number | null; maxEarn: number | null };
+type InvestmentRange = { range: string; parameters: string };
+type MonthlyEarnPotential = { range: string; parameters: string };
 type FranchiseModel = {
   title: string;
   agreement: string;
@@ -68,10 +68,10 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   const [editorReady, setEditorReady] = useState(false);
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [investmentRange, setInvestmentRange] = useState<InvestmentRange[]>([
-    { minRange: null, maxRange: null },
+    { range: '', parameters: '' },
   ]);
   const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>([
-    { minEarn: null, maxEarn: null },
+    { range: '', parameters: '' },
   ]);
   const [franchiseModel, setFranchiseModel] = useState<FranchiseModel[]>([
     { title: '', agreement: '', price: null, discount: null, gst: null, fees: null },
@@ -135,8 +135,8 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   const updateParentData = useCallback(() => {
     const franchiseDetails = {
       termsAndConditions,
-      investmentRange: investmentRange.filter(item => item.minRange !== null || item.maxRange !== null),
-      monthlyEarnPotential: monthlyEarnPotential.filter(item => item.minEarn !== null || item.maxEarn !== null),
+      investmentRange: investmentRange.filter(item => item.range !== null || item.parameters !== null),
+      monthlyEarnPotential: monthlyEarnPotential.filter(item => item.range !== null || item.parameters !== null),
       franchiseModel: franchiseModel.filter(item => item.title.trim() !== ''),
       extraImages: extraImages.filter(img => img !== ''),
       extraSections: showExtraSections ? extraSections.filter(section => section.title.trim() !== '') : [],
@@ -201,26 +201,26 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   }, [price, commissionType, commissionValue]);
 
   // Handle investment range change
-  const handleInvestmentRangeChange = useCallback((index: number, field: 'minRange' | 'maxRange', value: string) => {
-    setInvestmentRange(prev => 
-      prev.map((item, idx) => 
-        idx === index 
-          ? { ...item, [field]: value === '' ? null : Number(value) } 
-          : item
-      )
-    );
-  }, []);
+  const handleInvestmentRangeChange = useCallback((index: number, field: 'range' | 'parameters', value: string) => {
+  setInvestmentRange(prev => 
+    prev.map((item, idx) => 
+      idx === index 
+        ? { ...item, [field]: value } 
+        : item
+    )
+  );
+}, []);
 
   // Handle monthly earn potential change
-  const handleMonthlyEarnChange = useCallback((index: number, field: 'minEarn' | 'maxEarn', value: string) => {
-    setMonthlyEarnPotential(prev => 
-      prev.map((item, idx) => 
-        idx === index 
-          ? { ...item, [field]: value === '' ? null : Number(value) } 
-          : item
-      )
-    );
-  }, []);
+  const handleMonthlyEarnChange = useCallback((index: number, field: 'range' | 'parameters', value: string) => {
+  setMonthlyEarnPotential(prev => 
+    prev.map((item, idx) => 
+      idx === index 
+        ? { ...item, [field]: value } 
+        : item
+    )
+  );
+}, []);
 
   // Handle franchise model change
   const handleFranchiseModelChange = useCallback((index: number, field: keyof FranchiseModel, value: string) => {
@@ -422,77 +422,82 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       )}
 
       {/* Investment Range */}
-      {fieldsConfig?.investmentRange && (
-        <div>
-          <Label>Investment Range</Label>
-          {investmentRange.map((item, i) => (
-            <div key={i} className="flex gap-3 mt-2">
-              <Input
-                type="number"
-                placeholder="Min Range"
-                value={item.minRange ?? ''}
-                onChange={e => handleInvestmentRangeChange(i, 'minRange', e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Max Range"
-                value={item.maxRange ?? ''}
-                onChange={e => handleInvestmentRangeChange(i, 'maxRange', e.target.value)}
-              />
-              <button 
-                type="button"
-                onClick={() => setInvestmentRange(v => v.filter((_, idx) => idx !== i))}
-              >
-                <TrashBinIcon className="w-5 h-5 text-red-500" />
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-            onClick={() => setInvestmentRange(v => [...v, { minRange: null, maxRange: null }])}
-          >
-            + Add Investment Range
-          </button>
-        </div>
-      )}
+     {/* Investment Range */}
+{fieldsConfig?.investmentRange && (
+  <div>
+    <Label>Investment Range</Label>
+    {investmentRange.map((item, i) => (
+      <div key={i} className="flex gap-3 mt-2">
+        {/* Change from minRange to range */}
+        <Input
+          type="text"  // Changed from number to text
+          placeholder="Range (e.g., 1L - 5L)"
+          value={item.range ?? ''}
+          onChange={e => handleInvestmentRangeChange(i, 'range', e.target.value)}
+        />
+        {/* Change from maxRange to parameters */}
+        <Input
+          type="text"  // Changed from number to text
+          placeholder="Parameters"
+          value={item.parameters ?? ''}
+          onChange={e => handleInvestmentRangeChange(i, 'parameters', e.target.value)}
+        />
+        <button 
+          type="button"
+          onClick={() => setInvestmentRange(v => v.filter((_, idx) => idx !== i))}
+        >
+          <TrashBinIcon className="w-5 h-5 text-red-500" />
+        </button>
+      </div>
+    ))}
+    <button
+      type="button"
+      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+      onClick={() => setInvestmentRange(v => [...v, { range: '', parameters: '' }])}
+    >
+      + Add Investment Range
+    </button>
+  </div>
+)}
 
       {/* Monthly Earn Potential */}
-      {fieldsConfig?.monthlyEarnPotential && (
-        <div>
-          <Label>Monthly Earn Potential</Label>
-          {monthlyEarnPotential.map((item, i) => (
-            <div key={i} className="flex gap-3 mt-2">
-              <Input
-                type="number"
-                placeholder="Min Earn"
-                value={item.minEarn ?? ''}
-                onChange={e => handleMonthlyEarnChange(i, 'minEarn', e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Max Earn"
-                value={item.maxEarn ?? ''}
-                onChange={e => handleMonthlyEarnChange(i, 'maxEarn', e.target.value)}
-              />
-              <button 
-                type="button"
-                onClick={() => setMonthlyEarnPotential(v => v.filter((_, idx) => idx !== i))}
-              >
-                <TrashBinIcon className="w-5 h-5 text-red-500" />
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-            onClick={() => setMonthlyEarnPotential(v => [...v, { minEarn: null, maxEarn: null }])}
-          >
-            + Add Monthly Earn
-          </button>
-        </div>
-      )}
-
+     {/* Monthly Earn Potential */}
+{fieldsConfig?.monthlyEarnPotential && (
+  <div>
+    <Label>Monthly Earn Potential</Label>
+    {monthlyEarnPotential.map((item, i) => (
+      <div key={i} className="flex gap-3 mt-2">
+        {/* Change from minEarn to range */}
+        <Input
+          type="text"  // Changed from number to text
+          placeholder="Range (e.g., 10K - 50K)"
+          value={item.range ?? ''}
+          onChange={e => handleMonthlyEarnChange(i, 'range', e.target.value)}
+        />
+        {/* Change from maxEarn to parameters */}
+        <Input
+          type="text"  // Changed from number to text
+          placeholder="Parameters"
+          value={item.parameters ?? ''}
+          onChange={e => handleMonthlyEarnChange(i, 'parameters', e.target.value)}
+        />
+        <button 
+          type="button"
+          onClick={() => setMonthlyEarnPotential(v => v.filter((_, idx) => idx !== i))}
+        >
+          <TrashBinIcon className="w-5 h-5 text-red-500" />
+        </button>
+      </div>
+    ))}
+    <button
+      type="button"
+      className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
+      onClick={() => setMonthlyEarnPotential(v => [...v, { range: '', parameters: '' }])}
+    >
+      + Add Monthly Earn Potential
+    </button>
+  </div>
+)}
       {/* Franchise Model */}
       {fieldsConfig?.franchiseModel && (
         <div>
