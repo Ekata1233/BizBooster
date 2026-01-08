@@ -60,6 +60,34 @@ export async function GET(req: NextRequest) {
           totalReviews: { $size: "$reviews" },
         },
       },
+/* ---------------- PROVIDER → SERVICES ---------------- */
+{
+  $lookup: {
+    from: "services",
+    localField: "subscribedServices",
+    foreignField: "_id",
+    as: "services",
+  },
+},
+
+/* ---------------- SERVICE → CATEGORY ---------------- */
+{
+  $lookup: {
+    from: "categories",
+    localField: "services.category",
+    foreignField: "_id",
+    as: "categories",
+  },
+},
+
+/* ---------------- CATEGORY LIST ---------------- */
+{
+  $addFields: {
+    category_list: {
+      $setUnion: ["$categories.name"],
+    },
+  },
+},
 
       /* ---------------- SORT ---------------- */
       {
@@ -83,7 +111,7 @@ export async function GET(req: NextRequest) {
           averageRating: { $round: ["$averageRating", 1] },
           totalReviews: 1,
           isStoreOpen: 1,
-
+          category_list: 1,
           storeInfo: {
             storeName: "$storeInfo.storeName",
             storePhone: "$storeInfo.storePhone",
