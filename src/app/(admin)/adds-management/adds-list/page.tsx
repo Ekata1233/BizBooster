@@ -19,6 +19,7 @@ interface AdTableData {
   approveStatus: string;
   expireStatus: string;
   deleteStatus: string;
+  isUpcoming: boolean; 
 }
 
 const AdListPage = () => {
@@ -27,52 +28,84 @@ const AdListPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [filteredAds, setFilteredAds] = useState<AdTableData[]>([]);
 
+const isUpcomingAd = (startDate: string) => {
+  return new Date(startDate) > new Date();
+};
+
+
   useEffect(() => {
     fetchAds();
   }, []);
 
   // Format ads for table
-  useEffect(() => {
-    const formatted: AdTableData[] = ads.map(ad => ({
+useEffect(() => {
+  const formatted: AdTableData[] = ads
+  .slice() // 🔥 prevent mutating context data
+  .sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  )
+  .map(ad => {
+    const upcoming = isUpcomingAd(ad.startDate);
+
+    return {
       id: ad._id,
       title: ad.title,
       fileUrl: ad.fileUrl,
       categoryName: ad.category?.name || 'N/A',
       serviceName: ad.service?.serviceName || 'N/A',
-
-      // ✅ Status fields
       approveStatus: ad.isApproved ? 'Approved' : 'Pending',
-      expireStatus: ad.isExpired ? 'Expired' : 'Active',
+      expireStatus: upcoming
+        ? 'Upcoming'
+        : ad.isExpired
+        ? 'Expired'
+        : 'Active',
       deleteStatus: ad.isDeleted ? 'Deleted' : 'Active',
-    }));
+      isUpcoming: upcoming,
+    };
+  });
 
-    const filtered = formatted.filter(ad =>
-      ad.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
-    setFilteredAds(filtered);
-  }, [ads, searchQuery]);
+  const filtered = formatted.filter(ad =>
+    ad.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  setFilteredAds(filtered);
+}, [ads, searchQuery]);
+
 
   // Filter ads by tab
   const getFilteredByStatus = () => {
-    switch (activeTab) {
-      case 'approved':
-        return filteredAds.filter(ad => ad.approveStatus === 'Approved');
-      case 'pending':
-        return filteredAds.filter(ad => ad.approveStatus === 'Pending');
-      case 'expired':
-        return filteredAds.filter(ad => ad.expireStatus === 'Expired');
-      case 'deleted':
-        return filteredAds.filter(ad => ad.deleteStatus === 'Deleted');
-      default:
-        return filteredAds;
-    }
-  };
+  switch (activeTab) {
+    case 'approved':
+      return filteredAds.filter(
+        ad => ad.approveStatus === 'Approved' && !ad.isUpcoming
+      );
+
+    case 'upcoming':
+      return filteredAds.filter(ad => ad.isUpcoming);
+
+    case 'pending':
+      return filteredAds.filter(ad => ad.approveStatus === 'Pending');
+
+    case 'expired':
+      return filteredAds.filter(ad => ad.expireStatus === 'Expired');
+
+    case 'deleted':
+      return filteredAds.filter(ad => ad.deleteStatus === 'Deleted');
+
+    default:
+      return filteredAds;
+  }
+};
+
 
   // Count tabs
   const counts = {
     all: filteredAds.length,
     approved: filteredAds.filter(ad => ad.approveStatus === 'Approved').length,
+      upcoming: filteredAds.filter(ad => ad.isUpcoming).length, // ✅
     pending: filteredAds.filter(ad => ad.approveStatus === 'Pending').length,
     expired: filteredAds.filter(ad => ad.expireStatus === 'Expired').length,
     deleted: filteredAds.filter(ad => ad.deleteStatus === 'Deleted').length,
@@ -125,19 +158,24 @@ const AdListPage = () => {
     },
 
     // ✅ Expired
-    {
-      header: 'Expire Status',
-      accessor: 'expireStatus',
-      render: (row: AdTableData) => (
-        <span className={`px-3 py-1 rounded-full text-sm font-semibold
-          ${row.expireStatus === 'Expired' 
-            ? 'text-red-600 bg-red-100 border border-red-300'
-            : 'text-green-600 bg-green-100 border border-green-300'}
-        `}>
-          {row.expireStatus}
-        </span>
-      ),
-    },
+   {
+  header: 'Expire Status',
+  accessor: 'expireStatus',
+  render: (row: AdTableData) => (
+    <span className={`px-3 py-1 rounded-full text-sm font-semibold
+      ${
+        row.expireStatus === 'Upcoming'
+          ? 'text-blue-600 bg-blue-100 border border-blue-300'
+          : row.expireStatus === 'Expired'
+          ? 'text-red-600 bg-red-100 border border-red-300'
+          : 'text-green-600 bg-green-100 border border-green-300'
+      }
+    `}>
+      {row.expireStatus}
+    </span>
+  ),
+},
+
 
     // ✅ Deleted
     {
@@ -203,6 +241,7 @@ const AdListPage = () => {
             <ul className="flex space-x-6 text-sm font-medium text-center text-gray-500">
               {[
                 { key: 'all', label: 'All', count: counts.all },
+                  { key: 'upcoming', label: 'Upcoming', count: counts.upcoming },
                 { key: 'approved', label: 'Approved', count: counts.approved },
                 { key: 'pending', label: 'Pending', count: counts.pending },
                 { key: 'expired', label: 'Expired', count: counts.expired },

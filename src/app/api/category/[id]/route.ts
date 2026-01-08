@@ -7,10 +7,10 @@ import Category from "@/models/Category";
 import "@/models/Service";
 import "@/models/Subcategory"
 import mongoose from "mongoose";
-import Banner from "@/models/Banner";
-import Coupon from "@/models/Coupon";
-import { Ad } from "@/models/Ad";
-
+import "@/models/Banner";
+import "@/models/Coupon";
+import"@/models/Ad";
+import "@/models/Offer"; 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -29,7 +29,7 @@ const getIdFromReq = (req: Request) => {
 
 // ✅ GET BY ID
 export async function GET(req: Request) {
-  await connectToDatabase();
+await connectToDatabase();
 
   try {
     const id = getIdFromReq(req);
@@ -135,31 +135,38 @@ export async function DELETE(req: Request) {
 
   try {
     const id = getIdFromReq(req);
+    if (!id) throw new Error("Category ID is required");
 
     // 1️⃣ Delete all subcategories under this category
-    await mongoose.model("Subcategory").deleteMany({
-      category: id,
-    });
+    await mongoose.model("Subcategory").deleteMany({ category: id });
 
-    // 2️⃣ Delete all services under this category
-    await mongoose.model("Service").deleteMany({
-      category: id,
-    });
+    // 2️⃣ Find all services under this category
+    const services = await mongoose.model("Service").find({ category: id });
 
-    // 3️⃣ Delete banners linked to this category
-    await mongoose.model("Banner").deleteMany({
-      category: id,
-    });
+    // 3️⃣ For each service, delete related offers/coupons/etc
+    for (const service of services) {
+      const serviceId = service._id;
 
-    // 4️⃣ Delete coupons linked to this category
-    await mongoose.model("Coupon").deleteMany({
-      category: id,
-    });
+      // Delete offers related to this service
+      await mongoose.model("Offer").deleteMany({ service: serviceId });
 
-    // 5️⃣ Delete advertisements linked to this category
-    await mongoose.model("Ad").deleteMany({
-      category: id,
-    });
+      // Delete coupons related to this service
+      await mongoose.model("Coupon").deleteMany({ service: serviceId });
+
+      // Delete banners related to this service
+      await mongoose.model("Banner").deleteMany({ service: serviceId });
+
+      // Delete advertisements related to this service
+      await mongoose.model("Ad").deleteMany({ service: serviceId });
+    }
+
+    // 4️⃣ Delete all services under this category
+    await mongoose.model("Service").deleteMany({ category: id });
+
+    // 5️⃣ Delete banners, coupons, ads linked directly to this category
+    await mongoose.model("Banner").deleteMany({ category: id });
+    await mongoose.model("Coupon").deleteMany({ category: id });
+    await mongoose.model("Ad").deleteMany({ category: id });
 
     // 6️⃣ Delete the category itself
     await Category.findByIdAndDelete(id);
@@ -168,13 +175,12 @@ export async function DELETE(req: Request) {
       {
         success: true,
         message:
-          "Category, subcategories, services, banners, coupons, and advertisements deleted successfully",
+          "Category, subcategories, services, and related offers/coupons/banners/ads deleted successfully",
       },
       { status: 200, headers: corsHeaders }
     );
   } catch (error: any) {
     console.error(error);
-
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500, headers: corsHeaders }
