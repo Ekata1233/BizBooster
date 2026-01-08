@@ -239,517 +239,6 @@ export async function PATCH(req: NextRequest) {
 }
 
 
-/* =============================
-   UPDATE SERVICE BY ID
-   Supports FormData + ImageKit
-============================= */
-// export async function PUT(req: NextRequest) {
-//   await connectToDatabase();
-
-//   try {
-//     const url = new URL(req.url);
-//     const id = url.pathname.split("/").pop();
-
-//     console.log("Service ID for update:", id);
-
-//     if (!id) {
-//       return NextResponse.json({ success: false, message: "Service ID is required" }, { status: 400, headers: corsHeaders });
-//     }
-
-//     // Check if service exists
-//     const existingService = await Service.findById(id);
-//     if (!existingService) {
-//       return NextResponse.json({ success: false, message: "Service not found" }, { status: 404, headers: corsHeaders });
-//     }
-
-//     const formData = await req.formData();
-//     console.log("------------- Update formdata:", formData);
-
-//     // --- Basic Fields ---
-//     const serviceName = (formData.get("serviceName") as string)?.trim();
-//     const category = (formData.get("category") as string)?.trim();
-//     const subcategory = (formData.get("subcategory") as string)?.trim() || null;
-//     const price = Number(formData.get("price") || existingService.price);
-//     const discount = Number(formData.get("discount") || existingService.discount);
-//     const gst = Number(formData.get("gst") || existingService.gst);
-//     const includeGst = formData.get("includeGst") ? formData.get("includeGst") === "true" : existingService.includeGst;
-//     const recommendedServices = formData.get("recommendedServices") ? formData.get("recommendedServices") === "true" : existingService.recommendedServices;
-
-//     // Validate required fields
-//     if (!serviceName) return NextResponse.json({ success: false, message: "Service name is required" }, { status: 400, headers: corsHeaders });
-//     if (!category) return NextResponse.json({ success: false, message: "Category is required" }, { status: 400, headers: corsHeaders });
-
-//     // --- Tags ---
-//     const tags: string[] = [];
-//     const tagsUpdated = formData.has("tags[0]"); // Check if tags are being updated
-//     if (tagsUpdated) {
-//       for (const key of formData.keys()) {
-//         if (key.startsWith("tags[")) {
-//           const val = formData.get(key) as string;
-//           if (val) tags.push(val);
-//         }
-//       }
-//     } else {
-//       tags.push(...existingService.tags || []);
-//     }
-
-//     // --- Key Values ---
-//     const keyValues: any[] = [];
-//     const keyValuesUpdated = formData.has("keyValues[0][key]");
-//     if (keyValuesUpdated) {
-//       for (let i = 0; i < 10; i++) {
-//         const key = formData.get(`keyValues[${i}][key]`);
-//         const value = formData.get(`keyValues[${i}][value]`);
-//         if (!key || !value) break;
-//         keyValues.push({ key, value });
-//       }
-//     } else {
-//       keyValues.push(...existingService.keyValues || []);
-//     }
-
-//     // --- Helper: Upload File ---
-//     async function handleFileUpload(file: File, folder: string) {
-//       const buffer = Buffer.from(await file.arrayBuffer());
-//       const upload = await imagekit.upload({
-//         file: buffer,
-//         fileName: `${uuidv4()}-${file.name}`,
-//         folder,
-//       });
-//       return upload.url;
-//     }
-
-//     // --- Thumbnail ---
-//     let thumbnailImage = existingService.thumbnailImage || "";
-//     const thumbnailFile = formData.get("thumbnail") as File | null;
-//     if (thumbnailFile instanceof File) {
-//       const buffer = Buffer.from(await thumbnailFile.arrayBuffer());
-//       const upload = await imagekit.upload({
-//         file: buffer,
-//         fileName: `${uuidv4()}-${thumbnailFile.name}`,
-//         folder: "/services/thumbnail",
-//       });
-//       thumbnailImage = upload.url;
-//     }
-
-//     // --- Banner Images ---
-//     let bannerImages: string[] = existingService.bannerImages || [];
-//     const bannerImagesUpdated = Array.from(formData.keys()).some(key => key.startsWith("bannerImages"));
-    
-//     if (bannerImagesUpdated) {
-//       bannerImages = [];
-//       for (const key of formData.keys()) {
-//         if (key.startsWith("bannerImages")) {
-//           const file = formData.get(key);
-//           if (file instanceof File) {
-//             const buffer = Buffer.from(await file.arrayBuffer());
-//             const upload = await imagekit.upload({
-//               file: buffer,
-//               fileName: `${uuidv4()}-${file.name}`,
-//               folder: "/services/banners",
-//             });
-//             bannerImages.push(upload.url);
-//           }
-//         }
-//       }
-//     }
-
-//     // --- Provider Prices ---
-//     const providerPrices: any[] = [];
-//     const providerPricesUpdated = formData.has("providerPrices[0][provider]");
-//     if (providerPricesUpdated) {
-//       for (let i = 0; i < 10; i++) {
-//         const provider = formData.get(`providerPrices[${i}][provider]`);
-//         if (!provider) break;
-//         providerPrices.push({
-//           provider,
-//           providerMRP: formData.get(`providerPrices[${i}][providerMRP]`),
-//           providerDiscount: formData.get(`providerPrices[${i}][providerDiscount]`),
-//           providerPrice: formData.get(`providerPrices[${i}][providerPrice]`),
-//           providerCommission: formData.get(`providerPrices[${i}][providerCommission]`),
-//           status: formData.get(`providerPrices[${i}][status]`),
-//         });
-//       }
-//     } else {
-//       providerPrices.push(...existingService.providerPrices || []);
-//     }
-
-//     // --- Service Details ---
-//     const serviceDetails: any = {
-//       benefits: formData.has("benefits") ? JSON.parse(formData.get("benefits") as string || "[]") : existingService.serviceDetails?.benefits || [],
-//       aboutUs: formData.has("aboutUs") ? JSON.parse(formData.get("aboutUs") as string || "[]") : existingService.serviceDetails?.aboutUs || [],
-//       document: formData.has("document") ? JSON.parse(formData.get("document") as string || "[]") : existingService.serviceDetails?.document || [],
-//       termsAndConditions: formData.has("termsAndConditions") ? JSON.parse(formData.get("termsAndConditions") as string || "[]") : existingService.serviceDetails?.termsAndConditions || [],
-//       highlight: existingService.serviceDetails?.highlight || [],
-//       assuredByFetchTrue: existingService.serviceDetails?.assuredByFetchTrue || [],
-//       howItWorks: existingService.serviceDetails?.howItWorks || [],
-//       whyChooseUs: existingService.serviceDetails?.whyChooseUs || [],
-//       weRequired: existingService.serviceDetails?.weRequired || [],
-//       weDeliver: existingService.serviceDetails?.weDeliver || [],
-//       moreInfo: existingService.serviceDetails?.moreInfo || [],
-//       connectWith: existingService.serviceDetails?.connectWith || [],
-//       timeRequired: existingService.serviceDetails?.timeRequired || [],
-//       faq: existingService.serviceDetails?.faq || [],
-//       packages: existingService.serviceDetails?.packages || [],
-//       extraSections: existingService.serviceDetails?.extraSections || [],
-//       extraImages: existingService.serviceDetails?.extraImages || [],
-//     };
-
-//     // --- Highlights ---
-//     const highlightUpdated = Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[highlight]"));
-//     if (highlightUpdated) {
-//       serviceDetails.highlight = [];
-//       for (const key of formData.keys()) {
-//         if (key.startsWith("serviceDetails[highlight]")) {
-//           const file = formData.get(key);
-//           if (file instanceof File) {
-//             serviceDetails.highlight.push(await handleFileUpload(file, "/services/highlight"));
-//           }
-//         }
-//       }
-//     }
-
-//     // --- Sections with icon/image ---
-//     async function processSection(field: string, folder: string, mediaKey: "icon" | "image", existingData: any[]) {
-//       const arr: any[] = [];
-//       const sectionUpdated = formData.has(`serviceDetails[${field}][0][title]`);
-      
-//       if (!sectionUpdated) return existingData;
-
-//       for (let i = 0; i < 10; i++) {
-//         const title = formData.get(`serviceDetails[${field}][${i}][title]`);
-//         if (!title) break;
-//         const description = formData.get(`serviceDetails[${field}][${i}][description]`);
-//         const mediaFile = formData.get(`serviceDetails[${field}][${i}][${mediaKey}]`);
-//         let url = "";
-//         if (mediaFile instanceof File) {
-//           url = await handleFileUpload(mediaFile, folder);
-//         } else if (existingData[i] && existingData[i][mediaKey]) {
-//           url = existingData[i][mediaKey];
-//         }
-//         arr.push({ title, description, [mediaKey]: url });
-//       }
-//       return arr;
-//     }
-
-//     serviceDetails.assuredByFetchTrue = await processSection(
-//       "assuredByFetchTrue",
-//       "/services/assuredIcons",
-//       "icon",
-//       existingService.serviceDetails?.assuredByFetchTrue || []
-//     );
-
-//     serviceDetails.howItWorks = await processSection(
-//       "howItWorks",
-//       "/services/howItWorks",
-//       "icon",
-//       existingService.serviceDetails?.howItWorks || []
-//     );
-
-//     serviceDetails.whyChooseUs = await processSection(
-//       "whyChooseUs",
-//       "/services/whyChooseUs",
-//       "icon",
-//       existingService.serviceDetails?.whyChooseUs || []
-//     );
-
-//     serviceDetails.weRequired = await processSection(
-//       "weRequired",
-//       "/services/weRequired",
-//       "icon",
-//       existingService.serviceDetails?.weRequired || []
-//     );
-
-//     serviceDetails.weDeliver = await processSection(
-//       "weDeliver",
-//       "/services/weDeliver",
-//       "icon",
-//       existingService.serviceDetails?.weDeliver || []
-//     );
-
-//     serviceDetails.moreInfo = await processSection(
-//       "moreInfo",
-//       "/services/moreInfo",
-//       "image",
-//       existingService.serviceDetails?.moreInfo || []
-//     );
-
-//     // --- Connect With ---
-//     const connectWithUpdated = formData.has("serviceDetails[connectWith][0][name]");
-//     if (connectWithUpdated) {
-//       serviceDetails.connectWith = [];
-//       for (let i = 0; i < 10; i++) {
-//         const name = formData.get(`serviceDetails[connectWith][${i}][name]`);
-//         if (!name) break;
-//         serviceDetails.connectWith.push({
-//           name,
-//           mobileNo: formData.get(`serviceDetails[connectWith][${i}][mobileNo]`),
-//           email: formData.get(`serviceDetails[connectWith][${i}][email]`),
-//         });
-//       }
-//     }
-
-//     // --- Time Required ---
-//     const timeRequiredUpdated = formData.has("serviceDetails[timeRequired][0][minDays]");
-//     if (timeRequiredUpdated) {
-//       serviceDetails.timeRequired = [];
-//       for (let i = 0; i < 10; i++) {
-//         const minDays = formData.get(`serviceDetails[timeRequired][${i}][minDays]`);
-//         if (!minDays) break;
-//         serviceDetails.timeRequired.push({
-//           minDays,
-//           maxDays: formData.get(`serviceDetails[timeRequired][${i}][maxDays]`),
-//         });
-//       }
-//     }
-
-//     // --- FAQ ---
-//     const faqUpdated = formData.has("serviceDetails[faq][0][question]");
-//     if (faqUpdated) {
-//       serviceDetails.faq = [];
-//       for (let i = 0; i < 10; i++) {
-//         const question = formData.get(`serviceDetails[faq][${i}][question]`);
-//         if (!question) break;
-//         const answer = formData.get(`serviceDetails[faq][${i}][answer]`);
-//         serviceDetails.faq.push({ question, answer });
-//       }
-//     }
-
-//     // --- Packages ---
-//     const packagesUpdated = formData.has("serviceDetails[packages][0][name]");
-//     if (packagesUpdated) {
-//       serviceDetails.packages = [];
-//       for (let i = 0; i < 10; i++) {
-//         const name = formData.get(`serviceDetails[packages][${i}][name]`);
-//         if (!name) break;
-//         const pkg: any = {
-//           name,
-//           price: formData.get(`serviceDetails[packages][${i}][price]`),
-//           discount: formData.get(`serviceDetails[packages][${i}][discount]`),
-//           discountedPrice: formData.get(`serviceDetails[packages][${i}][discountedPrice]`),
-//           whatYouGet: [],
-//         };
-//         for (let j = 0; j < 10; j++) {
-//           const item = formData.get(`serviceDetails[packages][${i}][whatYouGet][${j}]`);
-//           if (!item) break;
-//           pkg.whatYouGet.push(item);
-//         }
-//         serviceDetails.packages.push(pkg);
-//       }
-//     }
-
-//     // --- Extra Images ---
-//     const extraImagesUpdated = Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[extraImages]"));
-//     if (extraImagesUpdated) {
-//       serviceDetails.extraImages = [];
-//       for (const key of formData.keys()) {
-//         if (key.startsWith("serviceDetails[extraImages]")) {
-//           const file = formData.get(key);
-//           if (file instanceof File) {
-//             const buffer = Buffer.from(await file.arrayBuffer());
-//             const upload = await imagekit.upload({
-//               file: buffer,
-//               fileName: `${uuidv4()}-${file.name}`,
-//               folder: "/services/extraImages",
-//             });
-//             serviceDetails.extraImages.push(upload.url);
-//           }
-//         }
-//       }
-//     }
-
-//     // --- Extra Sections ---
-//     const extraSectionsUpdated = formData.has("serviceDetails[extraSections][0][title]");
-//     if (extraSectionsUpdated) {
-//       serviceDetails.extraSections = [];
-//       for (let i = 0; i < 10; i++) {
-//         const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
-//         if (!title) break;
-
-//         const extraSection: any = {
-//           title,
-//           subtitle: [],
-//           description: [],
-//           subDescription: [],
-//           lists: [],
-//           tags: [],
-//           image: [],
-//         };
-
-//         for (let j = 0; j < 10; j++) {
-//           const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
-//           if (!subtitle) break;
-//           extraSection.subtitle.push(subtitle);
-//         }
-
-//         for (let j = 0; j < 10; j++) {
-//           const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
-//           if (!description) break;
-//           extraSection.description.push(description);
-//         }
-
-//         for (let j = 0; j < 10; j++) {
-//           const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
-//           if (!subDescription) break;
-//           extraSection.subDescription.push(subDescription);
-//         }
-
-//         for (let j = 0; j < 10; j++) {
-//           const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
-//           if (!list) break;
-//           extraSection.lists.push(list);
-//         }
-
-//         for (let j = 0; j < 10; j++) {
-//           const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
-//           if (!tag) break;
-//           extraSection.tags.push(tag);
-//         }
-
-//         for (let j = 0; j < 10; j++) {
-//           const imageFile = formData.get(`serviceDetails[extraSections][${i}][image][${j}]`);
-//           if (imageFile instanceof File) {
-//             const buffer = Buffer.from(await imageFile.arrayBuffer());
-//             const upload = await imagekit.upload({
-//               file: buffer,
-//               fileName: `${uuidv4()}-${imageFile.name}`,
-//               folder: "/services/extraSections",
-//             });
-//             extraSection.image.push(upload.url);
-//           } else {
-//             break;
-//           }
-//         }
-
-//         serviceDetails.extraSections.push(extraSection);
-//       }
-//     }
-
-//     // --- Franchise Details ---
-//     const franchiseDetails: any = {
-//       commission: formData.has("franchiseDetails[commission]") ? formData.get("franchiseDetails[commission]") : existingService.franchiseDetails?.commission,
-//       termsAndConditions: formData.has("franchiseDetails[termsAndConditions]") ? formData.get("franchiseDetails[termsAndConditions]") : existingService.franchiseDetails?.termsAndConditions,
-//       investmentRange: existingService.franchiseDetails?.investmentRange || [],
-//       monthlyEarnPotential: existingService.franchiseDetails?.monthlyEarnPotential || [],
-//       franchiseModel: existingService.franchiseDetails?.franchiseModel || [],
-//       extraSections: existingService.franchiseDetails?.extraSections || [],
-//       extraImages: existingService.franchiseDetails?.extraImages || [],
-//     };
-
-//     // --- Investment Range ---
-//     const investmentRangeUpdated = formData.has("franchiseDetails[investmentRange][0][minRange]");
-//     if (investmentRangeUpdated) {
-//       franchiseDetails.investmentRange = [];
-//       for (let i = 0; i < 10; i++) {
-//         const min = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`);
-//         const max = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`);
-//         if (!min) break;
-//         franchiseDetails.investmentRange.push({ minRange: min, maxRange: max });
-//       }
-//     }
-
-//     // --- Monthly Earn Potential ---
-//     const monthlyEarnUpdated = formData.has("franchiseDetails[monthlyEarnPotential][0][minEarn]");
-//     if (monthlyEarnUpdated) {
-//       franchiseDetails.monthlyEarnPotential = [];
-//       for (let i = 0; i < 10; i++) {
-//         const min = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`);
-//         const max = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`);
-//         if (!min) break;
-//         franchiseDetails.monthlyEarnPotential.push({ minEarn: min, maxEarn: max });
-//       }
-//     }
-
-//     // --- Franchise Model ---
-//     const franchiseDetails: any = {
-//       commission: formData.has("franchiseDetails[commission]") ? formData.get("franchiseDetails[commission]") : existingService.franchiseDetails?.commission,
-//       termsAndConditions: formData.has("franchiseDetails[termsAndConditions]") ? formData.get("franchiseDetails[termsAndConditions]") : existingService.franchiseDetails?.termsAndConditions,
-//       investmentRange: existingService.franchiseDetails?.investmentRange || [],
-//       monthlyEarnPotential: existingService.franchiseDetails?.monthlyEarnPotential || [],
-//       franchiseModel: existingService.franchiseDetails?.franchiseModel || [],
-//       extraSections: existingService.franchiseDetails?.extraSections || [],
-//       extraImages: existingService.franchiseDetails?.extraImages || [],
-//     };
-
-//     // --- Investment Range ---
-//     const investmentRangeUpdated = formData.has("franchiseDetails[investmentRange][0][minRange]");
-//     if (investmentRangeUpdated) {
-//       franchiseDetails.investmentRange = [];
-//       for (let i = 0; i < 10; i++) {
-//         const min = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`);
-//         const max = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`);
-//         if (!min) break;
-//         franchiseDetails.investmentRange.push({ minRange: min, maxRange: max });
-//       }
-//     }
-
-//     // --- Monthly Earn Potential ---
-//     const monthlyEarnUpdated = formData.has("franchiseDetails[monthlyEarnPotential][0][minEarn]");
-//     if (monthlyEarnUpdated) {
-//       franchiseDetails.monthlyEarnPotential = [];
-//       for (let i = 0; i < 10; i++) {
-//         const min = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`);
-//         const max = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`);
-//         if (!min) break;
-//         franchiseDetails.monthlyEarnPotential.push({ minEarn: min, maxEarn: max });
-//       }
-//     }
-
-//     // --- Franchise Model ---
-//     const franchiseModelUpdated = formData.has("franchiseDetails[franchiseModel][0][title]");
-//     if (franchiseModelUpdated) {
-//       franchiseDetails.franchiseModel = [];
-//       for (let i = 0; i < 10; i++) {
-//         const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`);
-//         if (!title) break;
-//         franchiseDetails.franchiseModel.push({
-//           title,
-//           agreement: formData.get(`franchiseDetails[franchiseModel][${i}][agreement]`),
-//           price: formData.get(`franchiseDetails[franchiseModel][${i}][price]`),
-//           discount: formData.get(`franchiseDetails[franchiseModel][${i}][discount]`),
-//           gst: formData.get(`franchiseDetails[franchiseModel][${i}][gst]`),
-//           fees: formData.get(`franchiseDetails[franchiseModel][${i}][fees]`),
-//         });
-//       }
-//     }
-//     // --- Final Price Calculations ---
-//     const discountedPrice = discount ? Math.floor(price - price * (discount / 100)) : price;
-//     const gstInRupees = (discountedPrice * gst) / 100;
-//     const totalWithGst = discountedPrice + gstInRupees;
-
-//     // --- Update Service ---
-//     const updatedService = await Service.findByIdAndUpdate(
-//       id,
-//       {
-//         serviceName,
-//         category,
-//         subcategory,
-//         price,
-//         discount,
-//         gst,
-//         includeGst,
-//         discountedPrice,
-//         gstInRupees,
-//         totalWithGst,
-//         thumbnailImage,
-//         bannerImages,
-//         providerPrices,
-//         tags,
-//         keyValues,
-//         serviceDetails,
-//         franchiseDetails,
-//         recommendedServices,
-//       },
-//       { new: true, runValidators: true }
-//     );
-
-//     return NextResponse.json({ success: true, data: updatedService }, { status: 200, headers: corsHeaders });
-//   } catch (err: any) {
-//     console.error("🔥 UPDATE API ERROR:", err);
-//     return NextResponse.json({ success: false, message: err.message }, { status: 500, headers: corsHeaders });
-//   }
-// }
-
-
 export async function PUT(req: NextRequest) {
   await connectToDatabase();
 
@@ -834,59 +323,32 @@ export async function PUT(req: NextRequest) {
     } else {
       keyValues.push(...(existingService.keyValues || []));
     }
-
-    // --- Helper: Upload File ---
-    // async function handleFileUpload(file: File, folder: string): Promise<string> {
-    //   try {
-    //     const buffer = Buffer.from(await file.arrayBuffer());
-        
-    //     // Optional: Validate file type and size
-    //     const maxSize = 5 * 1024 * 1024; // 5MB
-    //     if (buffer.length > maxSize) {
-    //       throw new Error(`File size too large. Maximum size is 5MB.`);
-    //     }
-
-    //     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    //     if (!allowedTypes.includes(file.type)) {
-    //       throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
-    //     }
-
-    //     const upload = await imagekit.upload({
-    //       file: buffer,
-    //       fileName: `${uuidv4()}-${file.name}`,
-    //       folder,
-    //     });
-    //     return upload.url;
-    //   } catch (error) {
-    //     console.error("File upload error:", error);
-    //     throw error;
-    //   }
-    // }
-    async function handleFileUpload(
-  file: File | string | null, 
+async function handleFileUpload(
+  file: File | string | null,
   folder: string
 ): Promise<string> {
-  // If it's already a URL (including blob URLs), return it as is
-  if (typeof file === 'string') {
-    // Check if it's a blob URL or already uploaded URL
-    if (file.startsWith('blob:') || file.startsWith('http')) {
-      return file;
-    }
-  }
+  // Return empty string if no file
+  if (!file) return "";
   
-  // If it's a File object, upload it
+  // If it's a File object, upload it directly
   if (file instanceof File && file.size > 0) {
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
-      
+
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (buffer.length > maxSize) {
         throw new Error(`File size too large. Maximum size is 5MB.`);
       }
 
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+        "application/pdf",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+        throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(", ")}`);
       }
 
       const upload = await imagekit.upload({
@@ -901,7 +363,53 @@ export async function PUT(req: NextRequest) {
     }
   }
   
-  // Return empty string if no file
+  // If it's a blob URL, fetch it and upload
+  if (typeof file === "string" && file.startsWith("blob:")) {
+    try {
+      console.log("Fetching blob URL for upload:", file);
+      
+      // Fetch the blob
+      const response = await fetch(file);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch blob: ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Convert blob to buffer
+      const arrayBuffer = await blob.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Validate file size
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (buffer.length > maxSize) {
+        throw new Error(`File size too large. Maximum size is 5MB.`);
+      }
+
+      // Generate a filename
+      const fileName = `${uuidv4()}-uploaded-file`;
+      
+      // Upload to ImageKit
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: fileName,
+        folder,
+      });
+      
+      console.log("Successfully uploaded blob to:", upload.url);
+      return upload.url;
+    } catch (error) {
+      console.error("Error uploading blob URL:", error);
+      // Return empty string instead of blob URL
+      return "";
+    }
+  }
+  
+  // If it's already a proper URL (not blob), return it
+  if (typeof file === "string" && file.startsWith("http")) {
+    return file;
+  }
+  
   return "";
 }
 
@@ -1488,23 +996,29 @@ if (formData.has("serviceDetails[courseIncludes][0]")) {
 }
 
 // ------------------ Whom To Sell ------------------
-// serviceDetails.whomToSell = [];
-// if (formData.has("serviceDetails[whomToSell][0][lists]")) {
-//   for (let i = 0; i < 10; i++) {
-//     const lists: string[] = [];
-//     for (let j = 0; j < 50; j++) {
-//       const listItem = formData.get(`serviceDetails[whomToSell][${i}][lists][${j}]`) as string;
-//       if (!listItem || listItem.trim() === "") break;
-//       lists.push(listItem.trim());
-//     }
+serviceDetails.whomToSell = [];
 
-//     const icon = formData.get(`serviceDetails[whomToSell][${i}][icon]`);
-//     serviceDetails.whomToSell.push({
-//       lists,
-//       icon: icon instanceof File ? await handleFileUpload(icon, "/services/whomToSell") : icon?.toString() || "",
-//     });
-//   }
-// }
+for (let i = 0; i < 10; i++) {
+  const list = formData.get(
+    `serviceDetails[whomToSell][${i}][lists]`
+  )?.toString();
+
+  const icon = formData.get(
+    `serviceDetails[whomToSell][${i}][icon]`
+  );
+
+  if (!list && !icon) continue;
+
+  serviceDetails.whomToSell.push({
+    lists: list || "",
+    icon:
+      icon instanceof File
+        ? await handleFileUpload(icon, "/services/whomToSell")
+        : icon?.toString() || ""
+  });
+}
+
+
 
 // ------------------ Include ------------------
 serviceDetails.include = [];

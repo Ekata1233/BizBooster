@@ -28,6 +28,24 @@ type Package = {
 };
 type MoreInfo = { title: string; image: string; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
+
+type FranchiseFeatureItem = {
+  icon: File | string;
+  subtitle: string;
+  subDescription: string;
+};
+type KeyAdvantageItem = {
+  icon: File | string;
+  title: string;
+  description: string;
+};
+type CompleteSupportSystemItem = {
+  icon: File | string;
+  title: string;
+  lists: string[];
+};
+
+
 type TimeRequired = { minDays: number | null; maxDays: number | null };
 type ExtraImageItem = { icon: string };
 type ExtraSection = {
@@ -38,6 +56,10 @@ type ExtraSection = {
   subDescription: string[];
   lists: string[];
   tags: string[];
+};
+type WhomToSellItem = {
+  icon: File | string;
+  lists: string;
 };
 
 interface ServiceUpdateFromProps {
@@ -124,7 +146,12 @@ const [duration, setDuration] = useState<{ weeks: number | null; hours: number |
 const [whatYouWillLearn, setWhatYouWillLearn] = useState<string[]>(['']);
 const [eligibleFor, setEligibleFor] = useState<string[]>(['']);
 const [courseIncludes, setCourseIncludes] = useState<string[]>(['']);
-const [whomToSell, setWhomToSell] = useState<WhomToSellItem[]>([{ icon: '', lists: '' }]);
+const [whomToSell, setWhomToSell] =
+  useState<{ icon: File | string; lists: string }[]>([
+    { icon: "", lists: "" }
+  ]);
+
+
 const [brochureImage, setBrochureImage] = useState<File[]>([]);
 const [certificateImage, setCertificateImage] = useState<File[]>([]);
 const [include, setInclude] = useState<string[]>(['']);
@@ -373,7 +400,7 @@ setCertificateImage(
       setter([value]);
     };
 
-    function handleFileUploadUpdate<T>(
+ function handleFileUploadUpdate<T>(
   e: React.ChangeEvent<HTMLInputElement>,
   item: T,
   updateItem: (updated: T) => void,
@@ -382,9 +409,14 @@ setCertificateImage(
   const file = e.target.files?.[0];
   if (!file) return;
 
-  const url = URL.createObjectURL(file);
-  updateItem({ ...item, [property]: url });
+  // ✅ STORE FILE (binary), NOT blob URL
+  updateItem({
+    ...item,
+    [property]: file
+  });
 }
+
+
 
 
   function renderArrayField<T>(
@@ -911,10 +943,20 @@ setCertificateImage(
                             onChange={(e) => handleFileUploadUpdate(e, feature, updateFeature, 'icon')}
                           />
                           {feature.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={feature.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
+  <div className="w-16 h-16 relative mt-2">
+    <Image
+      src={
+        typeof feature.icon === "string"
+          ? feature.icon
+          : URL.createObjectURL(feature.icon)
+      }
+      alt="icon"
+      fill
+      className="rounded object-cover"
+    />
+  </div>
+)}
+
                         </div>
                         <div>
                           <Label className="text-xs mb-1">Subtitle</Label>
@@ -1053,11 +1095,21 @@ setCertificateImage(
                     <FileInput
                       onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
                     />
-                    {item.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
+                   {item.icon && (
+  <div className="w-16 h-16 relative mt-2">
+    <Image
+      src={
+        typeof item.icon === "string"
+          ? item.icon
+          : URL.createObjectURL(item.icon)
+      }
+      alt="icon"
+      fill
+      className="rounded object-cover"
+    />
+  </div>
+)}
+
                   </div>
                   <Input
                     value={item.description}
@@ -1091,11 +1143,21 @@ setCertificateImage(
                   onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
                   className="mb-2"
                 />
-                {item.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
+               {item.icon && (
+  <div className="w-16 h-16 relative mt-2">
+    <Image
+      src={
+        typeof item.icon === "string"
+          ? item.icon
+          : URL.createObjectURL(item.icon)
+      }
+      alt="icon"
+      fill
+      className="rounded object-cover"
+    />
+  </div>
+)}
+
                 <Label className="text-sm mb-1">Support Points</Label>
                 {renderArrayField<string>(
                   item.lists,
@@ -1515,7 +1577,7 @@ setCertificateImage(
                   
                 </div>
                 <div className="md:col-span-2">
-                  <Label className="text-sm mb-1">Lists (comma separated)</Label>
+                  <Label className="text-sm mb-1">Lists</Label>
                   <textarea
                     value={item.lists}
                     onChange={(e) => updateItem({ ...item, lists: e.target.value })}
