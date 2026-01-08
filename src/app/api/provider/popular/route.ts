@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
       /* ---------------- FINAL SHAPE ---------------- */
       {
         $project: {
-          _id: 0,
+          _id: 1,
           providerId: "$_id",
 
           fullName: 1,
