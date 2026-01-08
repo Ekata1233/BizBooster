@@ -7,6 +7,9 @@ import Category from "@/models/Category";
 import "@/models/Service";
 import "@/models/Subcategory"
 import mongoose from "mongoose";
+import Banner from "@/models/Banner";
+import Coupon from "@/models/Coupon";
+import { Ad } from "@/models/Ad";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,7 +129,7 @@ export async function PUT(req: Request) {
 
 
 
-// ✅ DELETE (CASCADE DELETE)
+// ✅ DELETE (CASCADE DELETE WITH BANNER, COUPON, ADVERTISEMENT)
 export async function DELETE(req: Request) {
   await connectToDatabase();
 
@@ -143,13 +146,29 @@ export async function DELETE(req: Request) {
       category: id,
     });
 
-    // 3️⃣ Delete the category itself
+    // 3️⃣ Delete banners linked to this category
+    await mongoose.model("Banner").deleteMany({
+      category: id,
+    });
+
+    // 4️⃣ Delete coupons linked to this category
+    await mongoose.model("Coupon").deleteMany({
+      category: id,
+    });
+
+    // 5️⃣ Delete advertisements linked to this category
+    await mongoose.model("Ad").deleteMany({
+      category: id,
+    });
+
+    // 6️⃣ Delete the category itself
     await Category.findByIdAndDelete(id);
 
     return NextResponse.json(
       {
         success: true,
-        message: "Category, subcategories, and services deleted successfully",
+        message:
+          "Category, subcategories, services, banners, coupons, and advertisements deleted successfully",
       },
       { status: 200, headers: corsHeaders }
     );
