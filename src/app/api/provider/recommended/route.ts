@@ -93,10 +93,21 @@ export async function GET(req: NextRequest) {
             storeInfo
           `
           )
-          .populate({
-            path: "storeInfo.module",
-            select: "name",
-          });
+          .populate([
+  {
+    path: "storeInfo.module",
+    select: "name",
+  },
+  {
+    path: "subscribedServices",
+    select: "serviceName category",
+    populate: {
+      path: "category",
+      select: "name",
+    },
+  },
+]);
+
       }
 
       const panIndiaZone = allZones.find((z) => z.isPanIndia);
@@ -145,32 +156,45 @@ export async function GET(req: NextRequest) {
         });
     }
 
-    /* 🧼 RESPONSE SHAPE */
-    const response = providers.map((p) => ({
-      fullName: p.fullName,
-      phoneNo: p.phoneNo,
-      email: p.email,
-      averageRating: p.averageRating,
-      totalReviews: p.totalReviews,
-      isStoreOpen: p.isStoreOpen,
-      storeInfo: {
-        storeName: p.storeInfo?.storeName,
-        storePhone: p.storeInfo?.storePhone,
-        storeEmail: p.storeInfo?.storeEmail,
-        module: p.storeInfo?.module,
-        zone: p.storeInfo?.zone,
-        logo: p.storeInfo?.logo,
-        cover: p.storeInfo?.cover,
-        address: p.storeInfo?.address,
-        city: p.storeInfo?.city,
-        state: p.storeInfo?.state,
-        country: p.storeInfo?.country,
-        aboutUs: p.storeInfo?.aboutUs,
-        tags: p.storeInfo?.tags,
-        totalProjects: p.storeInfo?.totalProjects,
-        totalExperience: p.storeInfo?.totalExperience,
-      },
-    }));
+const response = providers.map((p) => {
+  const categorySet = new Set<string>();
+
+  p.subscribedServices?.forEach((service: any) => {
+    if (service?.category?.name) {
+      categorySet.add(service.category.name);
+    }
+  });
+
+  return {
+    fullName: p.fullName,
+    phoneNo: p.phoneNo,
+    email: p.email,
+    averageRating: p.averageRating,
+    totalReviews: p.totalReviews,
+    isStoreOpen: p.isStoreOpen,
+
+    category_list: Array.from(categorySet),
+
+    storeInfo: {
+      storeName: p.storeInfo?.storeName,
+      storePhone: p.storeInfo?.storePhone,
+      storeEmail: p.storeInfo?.storeEmail,
+      module: p.storeInfo?.module,
+      zone: p.storeInfo?.zone,
+      logo: p.storeInfo?.logo,
+      cover: p.storeInfo?.cover,
+      address: p.storeInfo?.address,
+      city: p.storeInfo?.city,
+      state: p.storeInfo?.state,
+      country: p.storeInfo?.country,
+      aboutUs: p.storeInfo?.aboutUs,
+      tags: p.storeInfo?.tags,
+      totalProjects: p.storeInfo?.totalProjects,
+      totalExperience: p.storeInfo?.totalExperience,
+    },
+  };
+});
+
 
     return NextResponse.json(response, { status: 200 });
   } catch (error: unknown) {
