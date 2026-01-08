@@ -46,7 +46,7 @@ type CompleteSupportSystemItem = {
 };
 
 
-type TimeRequired = { minDays: number | null; maxDays: number | null };
+type TimeRequired = { range: string; parameters: string };
 type ExtraImageItem = { icon: string };
 type ExtraSection = {
   title: string;
@@ -103,7 +103,7 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, f
   const [moreInfo, setMoreInfo] = useState<MoreInfo[]>([{ title: '', image: '', description: '' }]);
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [connectWith, setConnectWith] = useState<ConnectWith[]>([{ name: '', mobileNo: '', email: '' }]);
-  const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ minDays: null, maxDays: null }]);
+  const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ range: '', parameters: '' }]);
   const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: '' }]);
   const [extraSections, setExtraSections] = useState<ExtraSection[]>([]);
   const [showExtraSections, setShowExtraSections] = useState(false);
@@ -289,7 +289,7 @@ useEffect(() => {
   setMoreInfo(details.moreInfo?.length ? details.moreInfo : [{ title: '', image: '', description: '' }]);
   setFaqs(details.faq?.length ? details.faq : [{ question: '', answer: '' }]);
   setConnectWith(details.connectWith?.length ? details.connectWith : [{ name: '', mobileNo: '', email: '' }]);
-  setTimeRequired(details.timeRequired?.length ? details.timeRequired : [{ minDays: null, maxDays: null }]);
+  const timeRequiredData = details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }];
   const extraImagesArray = details.extraImages?.length 
     ? details.extraImages.map(icon => ({ icon })) 
     : [{ icon: '' }];
@@ -427,7 +427,8 @@ setCertificateImage(
   ) {
     return (
       <div className="space-y-4">
-        {items.map((item, idx) => (
+        {Array.isArray(items) && items.map((item, idx) => (
+
           <div key={idx} className="border p-4 rounded relative bg-gray-50">
             {renderItem(item, idx, updated =>
               setItems(prev => prev.map((v, i) => (i === idx ? updated : v)))
@@ -1829,45 +1830,44 @@ setCertificateImage(
       </div>
       )}
 
+      
       {/* Time Required */}
-       {fieldsConfig?.timeRequired && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">Time Required</Label>
-        {renderArrayField(
-          timeRequired,
-          setTimeRequired,
-          (item, _, update) => (
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Label>Min Days</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="Min Days"
-                  value={item.minDays ?? ''}
-                  onChange={e =>
-                    update({ ...item, minDays: e.target.value ? Number(e.target.value) : null })
-                  }
-                />
-              </div>
-              <div className="flex-1">
-                <Label>Max Days</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="Max Days"
-                  value={item.maxDays ?? ''}
-                  onChange={e =>
-                    update({ ...item, maxDays: e.target.value ? Number(e.target.value) : null })
-                  }
-                />
-              </div>
-            </div>
-          ),
-          { minDays: null, maxDays: null }
-        )}
-      </div>
-       )}
+{fieldsConfig?.timeRequired && (
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">Time Required</Label>
+    {renderArrayField(
+      timeRequired,
+      setTimeRequired,
+      (item, _, update) => (
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <Label>Range (e.g., 3-5 days)</Label>
+            <Input
+              type="text"  // Changed from number to text
+              placeholder="Time range"
+              value={item.range ?? ''}
+              onChange={e =>
+                update({ ...item, range: e.target.value })
+              }
+            />
+          </div>
+          <div className="flex-1">
+            <Label>Parameters</Label>
+            <Input
+              type="text"  // Changed from number to text
+              placeholder="Parameters (e.g., Working days)"
+              value={item.parameters ?? ''}
+              onChange={e =>
+                update({ ...item, parameters: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      ),
+      { range: '', parameters: '' }  // Updated default
+    )}
+  </div>
+)}
 
       {/* Extra Images */}
       {fieldsConfig?.extraImage && (

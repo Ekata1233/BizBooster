@@ -628,19 +628,19 @@ async function handleFileUpload(
       }
     }
 
-    // --- Time Required ---
-    const timeRequiredUpdated = formData.has("serviceDetails[timeRequired][0][minDays]");
-    if (timeRequiredUpdated) {
-      serviceDetails.timeRequired = [];
-      for (let i = 0; i < 10; i++) {
-        const minDays = formData.get(`serviceDetails[timeRequired][${i}][minDays]`) as string;
-        if (!minDays) break;
-        serviceDetails.timeRequired.push({
-          minDays: minDays.trim(),
-          maxDays: (formData.get(`serviceDetails[timeRequired][${i}][maxDays]`) as string)?.trim() || "",
-        });
-      }
-    }
+   // --- Time Required ---
+const timeRequiredUpdated = formData.has("serviceDetails[timeRequired][0][range]"); 
+if (timeRequiredUpdated) {
+  serviceDetails.timeRequired = [];
+  for (let i = 0; i < 10; i++) {
+    const range = formData.get(`serviceDetails[timeRequired][${i}][range]`) as string;
+    if (!range) break;
+    serviceDetails.timeRequired.push({
+      range: range.trim(),
+      parameters: (formData.get(`serviceDetails[timeRequired][${i}][parameters]`) as string)?.trim() || "", // Changed from maxDays
+    });
+  }
+}
 
     // --- FAQ ---
     const faqUpdated = formData.has("serviceDetails[faq][0][question]");
@@ -1206,34 +1206,32 @@ for (let j = 0; j < 10; j++) {
     };
 
     // --- Investment Range ---
-    const investmentRangeUpdated = formData.has("franchiseDetails[investmentRange][0][minRange]");
-    if (investmentRangeUpdated) {
-      franchiseDetails.investmentRange = [];
-      for (let i = 0; i < 10; i++) {
-        const min = formData.get(`franchiseDetails[investmentRange][${i}][minRange]`) as string;
-        const max = formData.get(`franchiseDetails[investmentRange][${i}][maxRange]`) as string;
-        if (!min) break;
-        franchiseDetails.investmentRange.push({
-          minRange: min.trim(),
-          maxRange: max?.trim() || "",
-        });
-      }
-    }
+const investmentRangeUpdated = formData.has("franchiseDetails[investmentRange][0][range]"); // Changed from minRange
+if (investmentRangeUpdated) {
+  franchiseDetails.investmentRange = [];
+  for (let i = 0; i < 10; i++) {
+    const range = formData.get(`franchiseDetails[investmentRange][${i}][range]`) as string;
+    if (!range) break;
+    franchiseDetails.investmentRange.push({
+      range: range.trim(),
+      parameters: (formData.get(`franchiseDetails[investmentRange][${i}][parameters]`) as string)?.trim() || "", // Changed from maxRange
+    });
+  }
+}
 
     // --- Monthly Earn Potential ---
-    const monthlyEarnUpdated = formData.has("franchiseDetails[monthlyEarnPotential][0][minEarn]");
-    if (monthlyEarnUpdated) {
-      franchiseDetails.monthlyEarnPotential = [];
-      for (let i = 0; i < 10; i++) {
-        const min = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][minEarn]`) as string;
-        const max = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][maxEarn]`) as string;
-        if (!min) break;
-        franchiseDetails.monthlyEarnPotential.push({
-          minEarn: min.trim(),
-          maxEarn: max?.trim() || "",
-        });
-      }
-    }
+const monthlyEarnUpdated = formData.has("franchiseDetails[monthlyEarnPotential][0][range]"); // Changed from minEarn
+if (monthlyEarnUpdated) {
+  franchiseDetails.monthlyEarnPotential = [];
+  for (let i = 0; i < 10; i++) {
+    const range = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][range]`) as string;
+    if (!range) break;
+    franchiseDetails.monthlyEarnPotential.push({
+      range: range.trim(),
+      parameters: (formData.get(`franchiseDetails[monthlyEarnPotential][${i}][parameters]`) as string)?.trim() || "", // Changed from maxEarn
+    });
+  }
+}
 
     // --- Franchise Model ---
     const franchiseModelUpdated = formData.has("franchiseDetails[franchiseModel][0][title]");

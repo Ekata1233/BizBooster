@@ -174,7 +174,9 @@ const handleBannerImagesUpload = useCallback(
       ? (data.discountedPrice * data.gst) / 100
       : 0;
 
-  const totalWithGst = data.discountedPrice + gstAmount;
+  const totalWithGst = data.discountedPrice > 0 ?data.discountedPrice + gstAmount : 0;
+  console.log("totalwithgst ", totalWithGst);
+  
 
   /* ---------------- RENDER ---------------- */
 

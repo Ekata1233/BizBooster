@@ -260,6 +260,8 @@ export async function GET(req: NextRequest) {
         investmentRange: "$service.franchiseDetails.investmentRange",
         monthlyEarnPotential:
           "$service.franchiseDetails.monthlyEarnPotential",
+            franchiseModel:
+          "$service.franchiseDetails.franchiseModel", 
       },
     },
         },

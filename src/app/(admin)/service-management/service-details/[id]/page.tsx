@@ -57,8 +57,8 @@ interface PackageItem {
 }
 
 interface TimeRequiredItem {
-  minDays: number;
-  maxDays: number;
+  range: string;
+  parameters: string;
   _id?: string;
 }
 
