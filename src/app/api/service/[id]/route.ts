@@ -132,6 +132,22 @@ export async function DELETE(req: Request) {
         { status: 400, headers: corsHeaders }
       );
 
+      const updatedService = await Service.findByIdAndUpdate(
+      id,
+      {
+        isTrending: false,
+        recommendedServices: false,
+      },
+      { new: true }
+    );
+
+    if (!updatedService) {
+      return NextResponse.json(
+        { success: false, message: "Service not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     // Delete the service
     const service = await Service.findByIdAndDelete(id);
     if (!service)

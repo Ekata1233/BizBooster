@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
           "storeInfo.zone": matchedZone._id,
         })
           .select(
-            `
+            `_id
             fullName
             phoneNo
             email
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
           "storeInfo.zone": panIndiaZone._id,
         })
           .select(
-            `
+            `_id
             fullName
             phoneNo
             email
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
       /* 🌍 NO LAT/LNG → RETURN ALL MATCHING */
       providers = await Provider.find(baseFilter)
         .select(
-          `
+          `_id
           fullName
           phoneNo
           email
@@ -166,6 +166,7 @@ const response = providers.map((p) => {
   });
 
   return {
+    _id: p._id,
     fullName: p.fullName,
     phoneNo: p.phoneNo,
     email: p.email,

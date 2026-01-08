@@ -196,7 +196,7 @@ useEffect(() => {
                 strokeWidth="18"
                 strokeLinecap="round"
                 strokeDasharray="314.159"
-                strokeDashoffset={314.159 - (leadPercent / 100) * 314.159}
+                strokeDashoffset={leadPercent === 0 ? 314.159 - 1 : 314.159 - (leadPercent / 100) * 314.159}
               />
 
               <text

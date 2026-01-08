@@ -5,7 +5,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
 import BasicTableOne from "@/components/tables/BasicTableOne";
 import Pagination from "@/components/tables/Pagination";
-import { TrashBinIcon, EyeIcon } from "@/icons";
+import {  EyeIcon } from "@/icons";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { useProvider } from "@/context/ProviderContext";
@@ -306,6 +306,7 @@ const handleToggleChange = async (
     <div className="flex justify-center">
      <Switch
   checked={row.isRecommended}
+   disabled={row.isDeleted}
   onChange={(checked) =>
     handleToggleChange(row.id, "isRecommended", checked)
   }
@@ -322,6 +323,7 @@ const handleToggleChange = async (
     <div className="flex justify-center">
     <Switch
   checked={row.isTrending}
+   disabled={row.isDeleted}
   onChange={(checked) =>
     handleToggleChange(row.id, "isTrending", checked)
   }

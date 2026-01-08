@@ -212,7 +212,7 @@ useEffect(() => {
                     strokeWidth="18"
                     strokeLinecap="round"
                     strokeDasharray="345"
-                    strokeDashoffset={345 - (leadPercent * 345) / 100}
+                    strokeDashoffset={leadPercent === 0 ? 344 :345 - (leadPercent * 345) / 100}
                   />
                   {/* completed months text */}
                   <text
