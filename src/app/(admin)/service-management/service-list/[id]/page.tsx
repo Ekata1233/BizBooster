@@ -560,14 +560,8 @@ fd.append(
   }
 );
 (formData.serviceDetails.keyAdvantages || []).forEach((item, i) => {
-  fd.append(
-    `serviceDetails[keyAdvantages][${i}][title]`,
-    item.title || ""
-  );
-  fd.append(
-    `serviceDetails[keyAdvantages][${i}][description]`,
-    item.description || ""
-  );
+  fd.append(`serviceDetails[keyAdvantages][${i}][title]`, item.title || "");
+  fd.append(`serviceDetails[keyAdvantages][${i}][description]`, item.description || "");
 
   if (item.icon instanceof File) {
     fd.append(`serviceDetails[keyAdvantages][${i}][icon]`, item.icon);
@@ -576,10 +570,7 @@ fd.append(
   }
 });
 (formData.serviceDetails.completeSupportSystem || []).forEach((item, i) => {
-  fd.append(
-    `serviceDetails[completeSupportSystem][${i}][title]`,
-    item.title || ""
-  );
+  fd.append(`serviceDetails[completeSupportSystem][${i}][title]`, item.title || "");
 
   if (item.icon instanceof File) {
     fd.append(`serviceDetails[completeSupportSystem][${i}][icon]`, item.icon);
@@ -590,7 +581,7 @@ fd.append(
   item.lists?.forEach((list, j) => {
     fd.append(
       `serviceDetails[completeSupportSystem][${i}][lists][${j}]`,
-      list || ""
+      list
     );
   });
 });
@@ -700,6 +691,7 @@ await Promise.all(
     }
   })
 );
+
 (formData.serviceDetails.whomToSell || []).forEach((item, i) => {
   fd.append(
     `serviceDetails[whomToSell][${i}][lists]`,
@@ -711,13 +703,16 @@ await Promise.all(
       `serviceDetails[whomToSell][${i}][icon]`,
       item.icon
     );
-  } else if (typeof item.icon === "string") {
+  } else {
     fd.append(
       `serviceDetails[whomToSell][${i}][icon]`,
       item.icon
     );
   }
 });
+
+
+
 (formData.serviceDetails.include || []).forEach((item, i) => {
   fd.append(`serviceDetails[include][${i}]`, item || "");
 });

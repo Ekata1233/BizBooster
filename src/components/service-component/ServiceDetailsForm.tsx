@@ -1519,9 +1519,10 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
    )}
 
   {/* ============= SECTION 15: WHOM TO SELL ============= */}
-   {fieldsConfig?.whomToSell && (
+  {fieldsConfig?.whomToSell && (
   <div className="mb-6 border p-4 rounded">
     <Label className="mb-2 font-semibold">Whom To Sell</Label>
+
     {renderArrayField<WhomToSellItem>(
       whomToSell,
       setWhomToSell,
@@ -1530,26 +1531,35 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div>
             <Label className="text-sm mb-1">Icon</Label>
             <FileInput
-              onChange={(e) => handleFileUpload(e, item, updateItem, 'icon')}
+              onChange={(e) =>
+                handleFileUpload(e, item, updateItem, "icon")
+              }
             />
           </div>
+
           <div className="md:col-span-2">
-            <Label className="text-sm mb-1">Lists (comma separated)</Label>
+            <Label className="text-sm mb-1">Target Audience</Label>
+
             <textarea
               value={item.lists}
-              onChange={(e) => updateItem({ ...item, lists: e.target.value })}
-              placeholder="Target audience, e.g., Students, Professionals, Business Owners"
+              onChange={(e) =>
+                updateItem({ ...item, lists: e.target.value })
+              }
+              placeholder="Enter target audience (one per row)"
               className="w-full p-2 border rounded"
-              rows={3}
+              rows={2}
             />
-            <p className="text-xs text-gray-500 mt-1">Enter as comma separated values</p>
+
+            <p className="text-xs text-gray-500 mt-1">
+              Add one audience per entry. Use + to add more.
+            </p>
           </div>
         </div>
       ),
-      { icon: '', lists: '' }
+      { icon: "", lists: "" }
     )}
   </div>
-   )}
+)}
 
   {/* ============= SECTION 16: FILE UPLOADS ============= */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
