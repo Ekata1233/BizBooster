@@ -74,9 +74,10 @@ if (incomingTags.length > 0) {
        for (const file of files) {
   if (file && typeof file === "object" && "arrayBuffer" in file) {
     const buffer = Buffer.from(await file.arrayBuffer());
+    const ext = file.name.split(".").pop();
     const uploadResponse = await imagekit.upload({
       file: buffer,
-      fileName: `${uuidv4()}`,
+      fileName:`${uuidv4()}.${ext}`, 
       folder:
         key === "galleryImages" || key === "logo" || key === "cover"
           ? "/provider"
