@@ -119,13 +119,20 @@ export async function GET(req: Request) {
 /* =============================
    DELETE SERVICE BY ID
 ============================= */
+/* =============================
+   DELETE SERVICE BY ID
+============================= */
 export async function DELETE(req: Request) {
   await connectToDatabase();
   try {
     const id = extractId(req);
-    if (!id) return NextResponse.json({ success: false, message: "ID missing" }, { status: 400, headers: corsHeaders });
+    if (!id)
+      return NextResponse.json(
+        { success: false, message: "ID missing" },
+        { status: 400, headers: corsHeaders }
+      );
 
-    const updatedService = await Service.findByIdAndUpdate(
+      const updatedService = await Service.findByIdAndUpdate(
       id,
       {
         isTrending: false,
@@ -141,12 +148,27 @@ export async function DELETE(req: Request) {
       );
     }
 
+    // Delete the service
     const service = await Service.findByIdAndDelete(id);
-    if (!service) return NextResponse.json({ success: false, message: "Service not found" }, { status: 404, headers: corsHeaders });
+    if (!service)
+      return NextResponse.json(
+        { success: false, message: "Service not found" },
+        { status: 404, headers: corsHeaders }
+      );
 
-    return NextResponse.json({ success: true, message: "Service deleted successfully" }, { status: 200, headers: corsHeaders });
+    // 🔹 Delete all offers linked to this service
+    const Offer = mongoose.model("Offer"); // lazy-load model
+    await Offer.deleteMany({ service: id });
+
+    return NextResponse.json(
+      { success: true, message: "Service and related offers deleted successfully" },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
