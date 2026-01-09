@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 import Service from "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
-import imagekit from "@/utils/imagekit";
-import { File } from "buffer";
 import mongoose from "mongoose";
 import "@/models/Category"
 import "@/models/Subcategory"
@@ -62,17 +59,24 @@ export async function GET(req: NextRequest) {
   
     try {
       const { searchParams } = new URL(req.url);
-  
+
       const search = searchParams.get("search");
       const category = searchParams.get("category");
       const subcategory = searchParams.get("subcategory");
       const moduleId = searchParams.get("moduleId"); 
       const sort = searchParams.get("sort");
   
-      const page = parseInt(searchParams.get("page") || "1", 10);
-      const limitParam = searchParams.get("limit");
-      const limit = limitParam ? parseInt(limitParam, 10) : null;
-      const skip = limit ? (page - 1) * limit : 0;
+const page = parseInt(searchParams.get("page") || "1", 10);
+const limit = parseInt(searchParams.get("limit") || "10", 10);
+const skip = (page - 1) * limit;
+
+      if (moduleId && !mongoose.Types.ObjectId.isValid(moduleId)) {
+  return NextResponse.json(
+    { success: false, message: "Invalid moduleId" },
+    { status: 400 }
+  );
+}
+
   
       /* ---------------- MATCH FILTER ---------------- */
       const matchStage: any = { isDeleted: false,  recommendedServices: true, };
@@ -159,8 +163,9 @@ export async function GET(req: NextRequest) {
   
       /* ---------------- DATA ---------------- */
       pipeline.push(
-        { $sort: { sortOrder: 1, ...sortOption } },
-        ...(limit ? [{ $skip: skip }, { $limit: limit }] : [])
+        { $sort: { sortOrder: 1, ...sortOption } },{ $skip: skip },
+{ $limit: limit },
+...(limit ? [{ $skip: skip }, { $limit: limit }] : [])
       );
 
       pipeline.push(
