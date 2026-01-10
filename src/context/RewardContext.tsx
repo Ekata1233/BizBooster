@@ -49,16 +49,33 @@ export const RewardProvider = ({ children }: { children: React.ReactNode }) => {
 
   // 🟠 Add or Update Reward (your route handles both)
   const saveReward = async (data: FormData) => {
-    try {
-      setLoading(true);
-      await axios.post("/api/reward-management/reward", data);
-      await fetchRewards();
-    } catch (error) {
-      console.error("Error saving reward:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const res = await axios.post(
+      "/api/reward-management/reward",
+      data
+    );
+
+    await fetchRewards();
+
+    // ✅ RETURN SUCCESS RESPONSE
+    return res.data;
+  } catch (error: any) {
+    console.error("Error saving reward:", error);
+
+    // ✅ RETURN BACKEND VALIDATION MESSAGE
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 🔴 Delete Reward
   const deleteReward = async (id: string) => {
