@@ -173,6 +173,22 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: corsHeaders }
       );
     }
+    /* ----------------- NAME VALIDATION ----------------- */
+if (/^\d+$/.test(name)) {
+  return NextResponse.json(
+    { success: false, message: "Name cannot contain only numbers." },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+/* ----------------- LANGUAGE VALIDATION ----------------- */
+if (/^\d+$/.test(language)) {
+  return NextResponse.json(
+    { success: false, message: "Language cannot contain only numbers." },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
 
     /* ----------------- PHONE VALIDATION ----------------- */
     if (!/^\d{10}$/.test(phoneNumber)) {
@@ -189,6 +205,21 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: corsHeaders }
       );
     }
+
+    /* ----------------- RATING VALIDATION ----------------- */
+if (!ratingRaw || !/^\d+(\.\d+)?$/.test(ratingRaw)) {
+  return NextResponse.json(
+    { success: false, message: "Rating must be a numeric value." },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+if (rating < 0 || rating > 5) {
+  return NextResponse.json(
+    { success: false, message: "Rating must be between 0 and 5." },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
     /* ----------------- TAGS VALIDATION ----------------- */
     if (tags.length === 0) {
