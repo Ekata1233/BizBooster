@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
     -isApproved
     -isVerified
     -isDeleted
-    -isStoreOpen
     -isRecommended
     -isTrending
     -step1Completed

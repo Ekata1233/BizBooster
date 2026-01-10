@@ -935,6 +935,10 @@ formData.service.timeRequired?.forEach((item, i) => {
       try {
         const result = await createService(fd);
         console.log("result of service : " , result);
+            if (!result.success) {
+      alert(result.message || "Service creation failed");
+      return;
+    }
         setCreatedServiceId(result?._id);
        if (result && result._id) {
           if (isFranchiseSelected && franchiseStep === 1) {
