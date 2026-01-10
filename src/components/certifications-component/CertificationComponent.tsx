@@ -186,11 +186,11 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                 await axios.put(`/api/academy/certifications/${certificationIdToEdit}`, formData);
                 alert('Tutorial updated!');
             } else {
-               res = addCertificate
-  ? await addCertificate(formData)
-  : (await axios.post('/api/academy/certifications', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })).data;
+              res = await axios.post(
+      '/api/academy/certifications',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
 
 console.log("response of tutorial: ", res);
 
@@ -216,6 +216,7 @@ alert('Tutorial added successfully...!');
             } else {
                 setError('Failed to submit form. Please try again.');
             }
+            alert(error)
         } finally {
             setLoading(false);
         }
@@ -225,7 +226,7 @@ alert('Tutorial added successfully...!');
         <div>
             <ComponentCard title={certificationIdToEdit ? "Edit Tutorial" : "Add New Tutorial"}>
                 {loading && <p className="text-blue-500">Loading...</p>}
-                {error && <p className="text-red-500">{error}</p>}
+                {/* {error && <p className="text-red-500">{error}</p>} */}
 
                 <form onSubmit={handleSubmit} encType="multipart/form-data">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
