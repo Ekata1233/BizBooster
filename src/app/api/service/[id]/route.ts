@@ -237,8 +237,9 @@ export async function PATCH(req: NextRequest) {
     ----------------------------- */
     const imageFile = formData.get("image") as File | null;
 
-    if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile && 'name' in imageFile) 
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
+    if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile && 'name' in imageFile) {
+  const buffer = Buffer.from(await imageFile.arrayBuffer());
+      
 
       const uploadRes = await imagekit.upload({
         file: buffer,
@@ -947,23 +948,23 @@ if (formData.has("serviceDetails[counter][0][number]")) {
   }
 }
 
-if (formData.has("serviceDetails[businessFundamental][description]")) {
-  serviceDetails.businessFundamental = {
-    description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
-    points: [],
-  };
+// if (formData.has("serviceDetails[businessFundamental][description]")) {
+//   serviceDetails.businessFundamental = {
+//     description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
+//     points: [],
+//   };
 
-  for (let i = 0; i < 10; i++) {
-    const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
-    const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
-    if (!subtitle || subtitle.trim() === "") break;
+//   for (let i = 0; i < 10; i++) {
+//     const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
+//     const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
+//     if (!subtitle || subtitle.trim() === "") break;
 
-    serviceDetails.businessFundamental.points.push({
-      subtitle: subtitle.trim(),
-      subDescription: subDescription?.trim() || "",
-    });
-  }
-}
+//     serviceDetails.businessFundamental.points.push({
+//       subtitle: subtitle.trim(),
+//       subDescription: subDescription?.trim() || "",
+//     });
+//   }
+// }
 
 // ------------------ ROI ------------------
 serviceDetails.roi = [];
@@ -1318,15 +1319,15 @@ if (franchiseExtraImagesUpdated) {
     if (key.startsWith("franchiseDetails[extraImages]")) {
       const value = formData.get(key);
 
-      // ✅ Case 1: New file upload
+      // Case 1: New file upload
+      if (value && typeof value === 'object' && 'size' in value && value.size > 0) {
         const uploadedUrl = await handleFileUpload(
           value,
           "/services/franchise/extraImages"
         );
         franchiseDetails.extraImages.push(uploadedUrl);
       }
-
-      // ✅ Case 2: Existing image URL
+      // Case 2: Existing image URL
       else if (typeof value === "string" && value.trim() !== "") {
         franchiseDetails.extraImages.push(value);
       }
