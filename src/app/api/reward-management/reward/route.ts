@@ -8,6 +8,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+// ✅ Validation helpers
+const hasLetter = (value: string) => /[a-zA-Z]/.test(value);
+const isOnlyNumber = (value: string) => /^\d+(\.\d+)?$/.test(value);
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -55,12 +58,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!name) {
-      return NextResponse.json(
-        { success: false, message: "Name is required" },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+if (!name || !hasLetter(name)) {
+  return NextResponse.json(
+    { success: false, message: "Name must contain at least one letter" },
+    { status: 400, headers: corsHeaders }
+  );
+}
+if (description && !hasLetter(description)) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Description must contain at least one letter",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+if (extraMonthlyEarn && !isOnlyNumber(extraMonthlyEarn)) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Extra Monthly Earn must be a number",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+if (
+  extraMonthlyEarnDescription &&
+  !hasLetter(extraMonthlyEarnDescription)
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      message:
+        "Extra Monthly Earn Description must contain at least one letter",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
 
     // Image upload handling
     let photo = "";
