@@ -745,9 +745,21 @@ if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[broch
     const brochureFile = formData.get(`serviceDetails[brochureImage][${i}]`);
     if (!brochureFile) break;
     
-    const url = await handleFileUpload(brochureFile, "/services/brochures");
-    if (url) {
-      serviceDetails.brochureImage.push(url);
+    // Check if it's a file object (new upload)
+    if (brochureFile && typeof brochureFile === 'object' && 'size' in brochureFile && brochureFile.size > 0) {
+      const url = await handleFileUpload(brochureFile, "/services/brochures");
+      if (url) {
+        serviceDetails.brochureImage.push(url);
+      }
+    }
+    // Check if it's a string URL (existing image from server)
+    else if (typeof brochureFile === 'string' && brochureFile.startsWith('http')) {
+      // Keep existing server URLs
+      serviceDetails.brochureImage.push(brochureFile);
+    }
+    // Ignore blob URLs and empty strings
+    else if (typeof brochureFile === 'string' && !brochureFile.startsWith('blob:') && brochureFile.trim() !== '') {
+      serviceDetails.brochureImage.push(brochureFile);
     }
   }
 }
