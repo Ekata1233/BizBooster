@@ -268,12 +268,17 @@ export type UpdateServiceResponse = {
 // ==============================================================
 // CONTEXT TYPE
 // ==============================================================
+interface ServiceResponse {
+  success: boolean;
+  message: string;
+  data?: Service;
+}
 
 type ServiceContextType = {
   services: Service[];
   fetchServices: () => Promise<void>;
 
-  createService: (formData: FormData) => Promise<Service | undefined>;
+  createService: (formData: FormData) => Promise<ServiceResponse>;
   updateService: (
     id: string,
     data: Partial<Service> | FormData

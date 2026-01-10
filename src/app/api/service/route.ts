@@ -242,15 +242,51 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Connect With ---
-    for (let i = 0; i < 20; i++) {
-      const name = formData.get(`serviceDetails[connectWith][${i}][name]`);
-      if (!name) break;
-      serviceDetails.connectWith.push({
-        name,
-        mobileNo: formData.get(`serviceDetails[connectWith][${i}][mobileNo]`),
-        email: formData.get(`serviceDetails[connectWith][${i}][email]`),
-      });
-    }
+// --- Connect With (WITH VALIDATION) ---
+for (let i = 0; i < 20; i++) {
+  const name = formData.get(`serviceDetails[connectWith][${i}][name]`) as string | null;
+  if (!name) break;
+
+  const mobileNo = formData.get(`serviceDetails[connectWith][${i}][mobileNo]`) as string | null;
+  const email = formData.get(`serviceDetails[connectWith][${i}][email]`) as string | null;
+
+  // ---- Mobile validation ----
+  if (!mobileNo) {
+    return NextResponse.json(
+      { success: false, message: `Mobile number is required for Connect With #${i + 1}` },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  if (!/^[0-9]{10}$/.test(mobileNo)) {
+    return NextResponse.json(
+      { success: false, message: `Invalid mobile number for Connect With #${i + 1}` },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  // ---- Email validation ----
+  if (!email) {
+    return NextResponse.json(
+      { success: false, message: `Email is required for Connect With #${i + 1}` },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json(
+      { success: false, message: `Invalid email address for Connect With #${i + 1}` },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  serviceDetails.connectWith.push({
+    name: name.trim(),
+    mobileNo,
+    email: email.toLowerCase(),
+  });
+}
+
 
     // --- Time Required ---
 for (let i = 0; i < 20; i++) {
