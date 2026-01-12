@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         { status: 400, headers: corsHeaders }
       );
     }
-
+const MAX_FILE_SIZE = 1 * 1024 * 1024;
  if (!file) {
       return NextResponse.json(
         {
@@ -57,6 +57,16 @@ export async function POST(req: Request) {
         { status: 400, headers: corsHeaders }
       );
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "File size must be less than 1MB.",
+    },
+    { status: 413, headers: corsHeaders }
+  );
+}
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
