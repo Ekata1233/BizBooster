@@ -103,7 +103,7 @@ const EditService: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   const { fetchSingleService, singleService: service, updateService } = useService();
-  const [selectedModule, setSelectedModule] = useState(modules[0].name);
+const [selectedModule, setSelectedModule] = useState<string>("");
   const [initialized, setInitialized] = useState(false);
   const [franchiseStep, setFranchiseStep] = useState<number>(1);
   const [formData, setFormData] = useState(initialFormData);
@@ -113,7 +113,14 @@ const EditService: React.FC = () => {
   const [createdServiceId, setCreatedServiceId] = useState(null);
 const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
 
-console.log("formdata for the update : ", formData)
+useEffect(() => {
+  if (service?.category?.module) {
+    setSelectedModuleId(service.category.module);
+  }
+}, [service]);
+
+console.log("selectedModuleId for the update : ", selectedModuleId)
+console.log("service : ", service)
 
   // Fetch single service on load
   useEffect(() => {
@@ -902,35 +909,56 @@ await Promise.all(
     }
   };
 
+  useEffect(() => {
+  if (selectedModuleId) {
+    const matchedModule = modules.find(
+      (mod) => mod._id === selectedModuleId
+    );
+
+    if (matchedModule) {
+      setSelectedModule(matchedModule.name);
+
+      // If Franchise / Business → reset step
+      if (
+        matchedModule.name === "Franchise" ||
+        matchedModule.name === "Business"
+      ) {
+        setFranchiseStep(1);
+      }
+    }
+  }
+}, [selectedModuleId]);
+
+
   const config = moduleFieldConfig[selectedModule] || {};
   const isFranchiseSelected = selectedModule === "Franchise" || selectedModule === "Business";
 
   if (!service) return <p>Loading...</p>;
 
   return (
-    <div className="no-scrollbar w-full max-w-full rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11 mx-auto mt-8">
+    <div className="no-scrollbar w-full max-w-full rounded-3xl bg-white  dark:bg-gray-900">
       <ComponentCard title="Edit Service">
         <div>
           {/* Sticky Module Selection */}
           <div className="sticky top-16 z-20 bg-white py-2">
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-4">
-              {modules.map((mod) => (
-                <div
-                  key={mod.name}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
-                  ${selectedModule === mod.name 
-                    ? "bg-blue-500 text-white border-blue-600" 
-                    : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                  onClick={() => {
-                    setSelectedModule(mod.name);
-                    // reset stepper to step 1 whenever Franchise module is selected
-                    if (mod.name === 'Franchise') setFranchiseStep(1);
-                  }}
-                >
-                  <div className="text-2xl">{mod.icon}</div>
-                  <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
-                </div>
-              ))}
+{modules.map((mod) => (
+  <div
+    key={mod.name}
+    className={`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer border transition-all duration-200 
+      ${selectedModule === mod.name 
+        ? "bg-blue-500 text-white border-blue-600" 
+        : "bg-white text-gray-700 hover:bg-gray-100"}`}
+    onClick={() => {
+      setSelectedModule(mod.name);
+      if (mod.name === "Franchise") setFranchiseStep(1);
+    }}
+  >
+    <div className="text-2xl">{mod.icon}</div>
+    <p className="text-xs font-medium mt-1 text-center">{mod.name}</p>
+  </div>
+))}
+
             </div>
           </div>
 

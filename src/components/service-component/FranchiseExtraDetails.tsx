@@ -70,6 +70,9 @@ function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSa
       ...newFranchises[index],
       [name]: type === "checkbox" ? checked : value,
     };
+    if (name === "investmentFranchiseSize") {
+    newFranchises[index].franchiseSize = value;
+  }
     setFranchises(newFranchises);
   };
 
@@ -147,75 +150,6 @@ function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSa
   }
 };
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     // Prepare model and investment arrays
-  //     const model = franchises.map((item) => ({
-  //       franchiseSize: item.franchiseSize,
-  //       areaRequired: item.areaRequired,
-  //       marketing: item.marketing,
-  //       returnOfInvestment: item.returnOfInvestment,
-  //       manPower: Number(item.manPower),
-  //       staffManagement: item.staffManagement,
-  //       royaltyPercent: item.royaltyPercent,
-  //       grossMargin: item.grossMargin,
-  //       radiusArea: item.radiusArea,
-  //     }));
-
-  //     const investment = franchises.map((item) => ({
-  //       franchiseSize: item.investmentFranchiseSize,
-  //       franchiseType: item.franchiseType,
-  //       city: item.city,
-  //       franchiseFee: Number(item.franchiseFee),
-  //       businessLicenses: Number(item.businessLicenses),
-  //       insurance: Number(item.insurance),
-  //       legalAndAccountingFee: Number(item.legalAndAccountingFee),
-  //       inventoryFee: Number(item.inventoryFee),
-  //       officeSetup: Number(item.officeSetup),
-  //       initialStartupEquipmentAndMarketing: Number(item.initialStartupEquipmentAndMarketing),
-  //       staffAndManagementTrainingExpense: Number(item.staffAndManagementTrainingExpense),
-  //       otherExpense: Number(item.otherExpense),
-  //       totalInvestment: Number(item.totalInvestment),
-  //       gstIncluded: item.gstIncluded,
-  //       gst: Number(item.gst),
-  //       tokenAmount: Number(item.tokenAmount),
-  //     }));
-
-  //       // ------------------ CALL MODEL API ------------------
-  //   const modelResponse = await fetch("/api/service/franchise/model", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ serviceId, model }),
-  //   });
-
-  //   const modelResult = await modelResponse.json();
-
-  //   // ------------------ CALL INVESTMENT API ------------------
-  //   const investmentResponse = await fetch("/api/service/franchise/investment", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ serviceId, investment }),
-  //   });
-
-  //   const investmentResult = await investmentResponse.json();
-
-  //   // Check both responses
-  //   if (modelResult.success && investmentResult.success) {
-  //     alert("Franchise details saved successfully!");
-  //     setFranchises([getEmptyFranchise()]);
-  //     setActiveIndex(0);
-  //      if (onSave) onSave();
-  //   } else {
-  //     alert("Franchise details not saved. Please check your data.");
-  //     console.error("Model API Response:", modelResult);
-  //     console.error("Investment API Response:", investmentResult);
-  //   }
-  //   } catch (error) {
-  //     console.error(error);
-  //     alert("Something went wrong!");
-  //   }
-  // };
-
   const current = franchises[activeIndex];
 
   return (
@@ -277,7 +211,7 @@ function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSa
       <div className="border p-4 rounded mb-6">
         <Label>Model Details</Label>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <Input name="franchiseSize" placeholder="Franchise Size" value={current.franchiseSize} onChange={(e) => handleChange(activeIndex, e)} />
+          <Input name="franchiseSize" placeholder="Franchise Size" value={current.franchiseSize}  disabled onChange={(e) => handleChange(activeIndex, e)} />
           <Input name="areaRequired" placeholder="Area Required" value={current.areaRequired} onChange={(e) => handleChange(activeIndex, e)} />
           <Input name="marketing" placeholder="Marketing" value={current.marketing} onChange={(e) => handleChange(activeIndex, e)} />
           <Input name="returnOfInvestment" placeholder="Return of Investment" value={current.returnOfInvestment} onChange={(e) => handleChange(activeIndex, e)} />
@@ -303,3 +237,4 @@ function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSa
 }
 
 export default FranchiseExtraDetails;
+ 
