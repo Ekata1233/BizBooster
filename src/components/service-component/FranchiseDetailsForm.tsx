@@ -370,7 +370,7 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
       {investmentRange.map((item, i) => (
         <div key={i} className="flex gap-4 mt-2 items-center">
           <Input
-            placeholder="Range (e.g., 50000-100000)"
+            placeholder="Range (e.g., 5-10)"
             value={item.range ?? ''}
             onChange={(e) =>
               updateInvestmentRange(i, 'range', e.target.value)
@@ -416,7 +416,7 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
       {monthlyEarnPotential.map((item, i) => (
         <div key={i} className="flex gap-4 mt-2 items-center">
           <Input
-            placeholder="Range (e.g., 20000-50000)"
+            placeholder="Range (e.g., 20-50)"
             value={item.range ?? ''}
             onChange={(e) =>
               updateMonthlyEarn(i, 'range', e.target.value)

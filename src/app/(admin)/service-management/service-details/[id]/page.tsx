@@ -529,7 +529,7 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
               </div>
               {service.includeGst && (
                 <p className="text-sm text-gray-600 mt-2">
-                  {service.gstInRupees ? `Inclusive of GST: ₹${formatPrice(service.gst)}` : 'GST Inclusive'}
+                  {service.gst ? `Inclusive of GST: ${formatPrice(service.gst)}%` : 'GST Inclusive'}
                 </p>
               )}
             </div>
@@ -1707,6 +1707,28 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
             )}
 
             {/* Investment Range */}
+          {investmentRange?.length > 0 && (
+  <ComponentCard title="Investment Range">
+    <div className="flex flex-wrap gap-4">
+      {investmentRange.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
+        >
+          <span className="text-xl font-semibold text-emerald-700">
+            {item.range}
+          </span>
+          <span className="ml-2 text-sm font-medium text-emerald-600">
+            {item.parameters}
+          </span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+
+            {/* Monthly Earning Potential */}
           {monthlyEarnPotential?.length > 0 && (
   <ComponentCard title="Monthly Earning Potential">
     <div className="flex flex-wrap gap-4">
@@ -1726,23 +1748,6 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
     </div>
   </ComponentCard>
 )}
-
-
-            {/* Monthly Earning Potential */}
-            {monthlyEarnPotential.length > 0 && (
-              <ComponentCard title="Monthly Earning Potential">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {monthlyEarnPotential.map((item, index) => (
-                    <div key={index} className="text-center p-6 bg-gradient-to-r from-green-50 to-emerald-50 border rounded-xl">
-                      <div className="text-2xl font-bold text-green-600 mb-2">
-                        ₹{formatPrice(Number(item.minEarn))} - ₹{formatPrice(Number(item.maxEarn))}
-                      </div>
-                      <p className="text-gray-600">Monthly Earnings</p>
-                    </div>
-                  ))}
-                </div>
-              </ComponentCard>
-            )}
 
             {/* Franchise Models */}
             {franchiseModel.length > 0 && (
