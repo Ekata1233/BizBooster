@@ -606,7 +606,7 @@ setCertificateImage(
       )}
 
       {/* Assured By */}
-       {fieldsConfig?.assuredByFetchTrue && (
+       {fieldsConfig?.assuredByFetchfalse && (
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Assured By FetchTrue</Label>
         {renderArrayField(

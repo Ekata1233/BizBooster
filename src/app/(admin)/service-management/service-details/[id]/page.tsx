@@ -529,7 +529,7 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
               </div>
               {service.includeGst && (
                 <p className="text-sm text-gray-600 mt-2">
-                  {service.gstInRupees ? `Inclusive of GST: ₹${formatPrice(service.gstInRupees)}` : 'GST Inclusive'}
+                  {service.gstInRupees ? `Inclusive of GST: ₹${formatPrice(service.gst)}` : 'GST Inclusive'}
                 </p>
               )}
             </div>
