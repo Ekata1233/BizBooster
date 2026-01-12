@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
     const subcategory = formData.get("subcategory") as string;
     const service = formData.get("service") as string;
     const referralUrl = formData.get("referralUrl") as string;
-    const screenCategory = formData.get("whichCategory") as string;
+    const screenCategory = formData.get("screenCategory") as string;
     const module = formData.get("module") as string;
 
 console.log("module : ",module);
