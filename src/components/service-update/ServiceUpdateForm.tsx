@@ -1595,66 +1595,92 @@ setCertificateImage(
         </div>
          )}
       
-        {/* ============= SECTION 16: FILE UPLOADS ============= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Brochure Image */}
-           {fieldsConfig?.brochureImage && (
-          <div>
-            <Label className="mb-2">Brochure Images</Label>
-            <FileInput
-              multiple
-              onChange={(e) => handleFileChange(e, setBrochureImage)}
-            />
-            <div className="mt-2 flex flex-wrap gap-2">
-              {brochureImage.map((img, idx) => (
-                <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
-                  {typeof img === 'string' ? (
-                    <Image src={img} alt="brochure" fill className="object-cover" />
-                  ) : (
-                    <Image src={URL.createObjectURL(img)} alt="brochure" fill className="object-cover" />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeFile(idx, setBrochureImage)}
-                    className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+       {/* ============= SECTION 16: FILE UPLOADS ============= */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  {/* Brochure Image */}
+  {fieldsConfig?.brochureImage && (
+    <div>
+      <Label className="mb-2">Brochure Images</Label>
+      <FileInput
+        multiple
+        onChange={(e) => {
+          if (e.target.files) {
+            const files = Array.from(e.target.files);
+            // Add ONLY new File objects, not URLs
+            setBrochureImage(prev => {
+              // Filter out any string URLs (keep only File objects)
+              const existingFiles = prev.filter(item => item instanceof File);
+              return [...existingFiles, ...files];
+            });
+          }
+        }}
+      />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {brochureImage.map((img, idx) => (
+          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+            {typeof img === 'string' ? (
+              <Image src={img} alt="brochure" fill className="object-cover" />
+            ) : (
+              <Image src={URL.createObjectURL(img)} alt="brochure" fill className="object-cover" />
+            )}
+            <button
+              type="button"
+              onClick={() => removeFile(idx, setBrochureImage)}
+              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+            >
+              ✕
+            </button>
           </div>
-           )}
-      
-          {/* Certificate Image */}
-           {fieldsConfig?.certificateImage && (
-          <div>
-            <Label className="mb-2">Certificate Images</Label>
-            <FileInput
-              multiple
-              onChange={(e) => handleFileChange(e, setCertificateImage)}
-            />
-            <div className="mt-2 flex flex-wrap gap-2">
-              {certificateImage.map((img, idx) => (
-                <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
-                  {typeof img === 'string' ? (
-                    <Image src={img} alt="certificate" fill className="object-cover" />
-                  ) : (
-                    <Image src={URL.createObjectURL(img)} alt="certificate" fill className="object-cover" />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeFile(idx, setCertificateImage)}
-                    className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-500 mt-1">
+        Note: Adding new images will replace all existing ones
+      </p>
+    </div>
+  )}
+
+  {/* Certificate Image */}
+  {fieldsConfig?.certificateImage && (
+    <div>
+      <Label className="mb-2">Certificate Images</Label>
+      <FileInput
+        multiple
+        onChange={(e) => {
+          if (e.target.files) {
+            const files = Array.from(e.target.files);
+            // Add ONLY new File objects, not URLs
+            setCertificateImage(prev => {
+              // Filter out any string URLs (keep only File objects)
+              const existingFiles = prev.filter(item => item instanceof File);
+              return [...existingFiles, ...files];
+            });
+          }
+        }}
+      />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {certificateImage.map((img, idx) => (
+          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+            {typeof img === 'string' ? (
+              <Image src={img} alt="certificate" fill className="object-cover" />
+            ) : (
+              <Image src={URL.createObjectURL(img)} alt="certificate" fill className="object-cover" />
+            )}
+            <button
+              type="button"
+              onClick={() => removeFile(idx, setCertificateImage)}
+              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+            >
+              ✕
+            </button>
           </div>
-           )}
-        </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-500 mt-1">
+        Note: Adding new images will replace all existing ones
+      </p>
+    </div>
+  )}
+</div>
       
         {/* ============= SECTION 17: CKEDITOR FIELDS ============= */}
         <div className="space-y-6">

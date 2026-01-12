@@ -28,10 +28,17 @@ function extractId(req: Request | NextRequest) {
 }
 
 export const removeEmpty = (value: any): any => {
-  // keep ObjectId & Date untouched
+  // Check for Date object
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    return value;
+  }
+  
+  // Check for ObjectId (works on both client and server)
   if (
-    value instanceof mongoose.Types.ObjectId ||
-    value instanceof Date
+    value &&
+    typeof value === 'object' &&
+    value._bsontype === 'ObjectId' &&
+    typeof value.toString === 'function'
   ) {
     return value;
   }
@@ -230,8 +237,9 @@ export async function PATCH(req: NextRequest) {
     ----------------------------- */
     const imageFile = formData.get("image") as File | null;
 
-    if (imageFile && imageFile instanceof File) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
+    if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile && 'name' in imageFile) {
+  const buffer = Buffer.from(await imageFile.arrayBuffer());
+      
 
       const uploadRes = await imagekit.upload({
         file: buffer,
@@ -362,14 +370,24 @@ export async function PUT(req: NextRequest) {
       keyValues.push(...(existingService.keyValues || []));
     }
 async function handleFileUpload(
-  file: File | string | null,
+  file: any,
   folder: string
 ): Promise<string> {
   // Return empty string if no file
   if (!file) return "";
   
-  // If it's a File object, upload it directly
-  if (file instanceof File && file.size > 0) {
+  // Check if it's a file object (works on both client and server)
+  const isFile = (
+    file &&
+    typeof file === 'object' &&
+    'arrayBuffer' in file &&
+    'size' in file &&
+    'name' in file &&
+    'type' in file
+  );
+  
+  // If it's a File object with content
+  if (isFile && file.size > 0) {
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -401,36 +419,28 @@ async function handleFileUpload(
     }
   }
   
-  // If it's a blob URL, fetch it and upload
+  // If it's a blob URL (should be handled on client side)
   if (typeof file === "string" && file.startsWith("blob:")) {
     try {
       console.log("Fetching blob URL for upload:", file);
       
-      // Fetch the blob
       const response = await fetch(file);
       if (!response.ok) {
         throw new Error(`Failed to fetch blob: ${response.statusText}`);
       }
       
       const blob = await response.blob();
-      
-      // Convert blob to buffer
       const arrayBuffer = await blob.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       
-      // Validate file size
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024;
       if (buffer.length > maxSize) {
         throw new Error(`File size too large. Maximum size is 5MB.`);
       }
 
-      // Generate a filename
-      const fileName = `${uuidv4()}-uploaded-file`;
-      
-      // Upload to ImageKit
       const upload = await imagekit.upload({
         file: buffer,
-        fileName: fileName,
+        fileName: `${uuidv4()}-uploaded-file`,
         folder,
       });
       
@@ -438,7 +448,6 @@ async function handleFileUpload(
       return upload.url;
     } catch (error) {
       console.error("Error uploading blob URL:", error);
-      // Return empty string instead of blob URL
       return "";
     }
   }
@@ -453,8 +462,8 @@ async function handleFileUpload(
 
     // --- Thumbnail ---
     let thumbnailImage = existingService.thumbnailImage || "";
-    const thumbnailFile = formData.get("thumbnail") as File | null;
-    if (thumbnailFile && thumbnailFile instanceof File && thumbnailFile.size > 0) {
+    const thumbnailFile = formData.get("thumbnail");
+if (thumbnailFile && typeof thumbnailFile === 'object' && 'size' in thumbnailFile && thumbnailFile.size > 0) {
       thumbnailImage = await handleFileUpload(thumbnailFile, "/services/thumbnail");
     }
 
@@ -469,7 +478,7 @@ async function handleFileUpload(
       for (const key of formData.keys()) {
         if (key.startsWith("bannerImages")) {
           const file = formData.get(key);
-          if (file instanceof File && file.size > 0) {
+          if (file && typeof file === 'object' && 'size' in file && file.size > 0) {
             const url = await handleFileUpload(file, "/services/banners");
             bannerImages.push(url);
           }
@@ -568,7 +577,7 @@ async function handleFileUpload(
       for (const key of formData.keys()) {
         if (key.startsWith("serviceDetails[highlight]")) {
           const file = formData.get(key);
-          if (file instanceof File && file.size > 0) {
+          if (file && typeof file === 'object' && 'size' in file && file.size > 0) {
             serviceDetails.highlight.push(await handleFileUpload(file, "/services/highlight"));
           }
         }
@@ -594,7 +603,7 @@ async function handleFileUpload(
         const mediaFile = formData.get(`serviceDetails[${field}][${i}][${mediaKey}]`);
 
         let url = "";
-        if (mediaFile instanceof File && mediaFile.size > 0) {
+       if (mediaFile && typeof mediaFile === 'object' && 'size' in mediaFile && mediaFile.size > 0) {
           url = await handleFileUpload(mediaFile, folder);
         } else if (existingData[i] && existingData[i][mediaKey]) {
           url = existingData[i][mediaKey];
@@ -736,9 +745,21 @@ if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[broch
     const brochureFile = formData.get(`serviceDetails[brochureImage][${i}]`);
     if (!brochureFile) break;
     
-    const url = await handleFileUpload(brochureFile, "/services/brochures");
-    if (url) {
-      serviceDetails.brochureImage.push(url);
+    // Check if it's a file object (new upload)
+    if (brochureFile && typeof brochureFile === 'object' && 'size' in brochureFile && brochureFile.size > 0) {
+      const url = await handleFileUpload(brochureFile, "/services/brochures");
+      if (url) {
+        serviceDetails.brochureImage.push(url);
+      }
+    }
+    // Check if it's a string URL (existing image from server)
+    else if (typeof brochureFile === 'string' && brochureFile.startsWith('http')) {
+      // Keep existing server URLs
+      serviceDetails.brochureImage.push(brochureFile);
+    }
+    // Ignore blob URLs and empty strings
+    else if (typeof brochureFile === 'string' && !brochureFile.startsWith('blob:') && brochureFile.trim() !== '') {
+      serviceDetails.brochureImage.push(brochureFile);
     }
   }
 }
@@ -782,10 +803,13 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
       const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`) as string;
       const subDescription = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) as string;
        const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
+const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0 
+  ? await handleFileUpload(icon, "/services/franchiseOperatingModel") 
+  : "";
 
       if (!subtitle || subtitle.trim() === "") break;
 
-      const iconUrl = icon ? await handleFileUpload(icon, "/services/franchiseOperatingModel") : "";
+     
 
       features.push({
         subtitle: subtitle.trim(),
@@ -837,10 +861,12 @@ if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
     const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`) as string;
     const description = formData.get(`serviceDetails[keyAdvantages][${i}][description]`) as string;
    const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
-
+const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0
+  ? await handleFileUpload(icon, "/services/keyAdvantages")
+  : "";
     if (!title || title.trim() === "") break;
 
-    const iconUrl = icon ? await handleFileUpload(icon, "/services/keyAdvantages") : "";
+    
 
     serviceDetails.keyAdvantages.push({
       title: title.trim(),
@@ -855,7 +881,10 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
 
   for (let i = 0; i < 10; i++) {
     const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`) as string;
-    const icon = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
+   const icon = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
+const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0
+  ? await handleFileUpload(icon, "/services/completeSupportSystem")
+  : "";
     const lists: string[] = [];
 
     for (let j = 0; j < 10; j++) {
@@ -866,7 +895,7 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
 
     if (!title || title.trim() === "") break;
 
-      const iconUrl = icon ? await handleFileUpload(icon, "/services/completeSupportSystem") : "";
+      // const iconUrl = icon ? await handleFileUpload(icon, "/services/completeSupportSystem") : "";
 
     serviceDetails.completeSupportSystem.push({
       title: title.trim(),
@@ -931,23 +960,23 @@ if (formData.has("serviceDetails[counter][0][number]")) {
   }
 }
 
-if (formData.has("serviceDetails[businessFundamental][description]")) {
-  serviceDetails.businessFundamental = {
-    description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
-    points: [],
-  };
+// if (formData.has("serviceDetails[businessFundamental][description]")) {
+//   serviceDetails.businessFundamental = {
+//     description: (formData.get("serviceDetails[businessFundamental][description]") as string)?.trim() || "",
+//     points: [],
+//   };
 
-  for (let i = 0; i < 10; i++) {
-    const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
-    const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
-    if (!subtitle || subtitle.trim() === "") break;
+//   for (let i = 0; i < 10; i++) {
+//     const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
+//     const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
+//     if (!subtitle || subtitle.trim() === "") break;
 
-    serviceDetails.businessFundamental.points.push({
-      subtitle: subtitle.trim(),
-      subDescription: subDescription?.trim() || "",
-    });
-  }
-}
+//     serviceDetails.businessFundamental.points.push({
+//       subtitle: subtitle.trim(),
+//       subDescription: subDescription?.trim() || "",
+//     });
+//   }
+// }
 
 // ------------------ ROI ------------------
 serviceDetails.roi = [];
@@ -1050,7 +1079,7 @@ for (let i = 0; i < 10; i++) {
   serviceDetails.whomToSell.push({
     lists: list || "",
     icon:
-      icon instanceof File
+      icon && typeof icon === 'object' && 'size' in icon
         ? await handleFileUpload(icon, "/services/whomToSell")
         : icon?.toString() || ""
   });
@@ -1095,7 +1124,8 @@ if (Array.from(formData.keys()).some(k => k.startsWith("serviceDetails[certifica
   for (const [key, val] of formData.entries()) {
     if (!key.startsWith("serviceDetails[certificateImage]")) continue;
 
-    if (val instanceof File && val.size > 0) {
+    if (val && typeof val === 'object' && 'size' in val && val.size > 0) {
+      
       serviceDetails.certificateImage.push(
         await handleFileUpload(val, "/services/certificates")
       );
@@ -1133,7 +1163,7 @@ if (extraImagesUpdated) {
       serviceDetails.extraSections[sectionIndex].image || [];
 
     // Handle File upload
-    if (value instanceof File && value.size > 0) {
+    if (value && typeof value === 'object' && 'size' in value && value.size > 0) {
       const uploadedUrl = await handleFileUpload(
         value,
         "/services/extraSections"
@@ -1212,7 +1242,7 @@ for (let j = 0; j < 10; j++) {
   if (!imageValue) break;
 
   // ✅ New upload
-  if (imageValue instanceof File && imageValue.size > 0) {
+  if (imageValue && typeof imageValue === 'object' && 'size' in imageValue && imageValue.size > 0) {
     const url = await handleFileUpload(imageValue, "/services/extraSections");
     extraSection.image.push(url);
   }
@@ -1301,16 +1331,15 @@ if (franchiseExtraImagesUpdated) {
     if (key.startsWith("franchiseDetails[extraImages]")) {
       const value = formData.get(key);
 
-      // ✅ Case 1: New file upload
-      if (value instanceof File && value.size > 0) {
+      // Case 1: New file upload
+      if (value && typeof value === 'object' && 'size' in value && value.size > 0) {
         const uploadedUrl = await handleFileUpload(
           value,
           "/services/franchise/extraImages"
         );
         franchiseDetails.extraImages.push(uploadedUrl);
       }
-
-      // ✅ Case 2: Existing image URL
+      // Case 2: Existing image URL
       else if (typeof value === "string" && value.trim() !== "") {
         franchiseDetails.extraImages.push(value);
       }
@@ -1396,7 +1425,7 @@ for (let j = 0; j < 10; j++) {
   if (!imageVal) break;
 
   // Case 1: New file upload
-  if (imageVal instanceof File && imageVal.size > 0) {
+  if (imageVal && typeof imageVal === 'object' && 'size' in imageVal && imageVal.size > 0) {
     const url = await handleFileUpload(
       imageVal,
       "/services/franchise/extraSections"

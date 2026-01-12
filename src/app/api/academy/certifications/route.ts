@@ -18,6 +18,10 @@ interface VideoEntryForBackend {
   videoDescription: string;
   videoImageUrl: string;
 }
+const isOnlyNumeric = (value: string) => {
+  return /^\d+$/.test(value.trim());
+};
+
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
@@ -28,6 +32,15 @@ export async function POST(req: NextRequest) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
 
+    if (!name || isOnlyNumeric(name)) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Tutorial name must contain letters and cannot be only numbers.",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
     // --- Main Image Processing ---
     const mainImageFile = formData.get("imageUrl") as File;
     if (!mainImageFile || mainImageFile.size === 0) {
@@ -54,6 +67,26 @@ export async function POST(req: NextRequest) {
       const videoName = formData.get(`video[${i}][name]`) as string;
       const videoDescription = formData.get(`video[${i}][description]`) as string;
       const videoImageFile = formData.get(`video[${i}][videoImage]`) as File | null;
+      if (isOnlyNumeric(videoUrl)) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: `Video URL for video entry ${i + 1} cannot be only numeric.`,
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+if (isOnlyNumeric(videoName)) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: `Video name for video entry ${i + 1} must contain letters and cannot be only numeric.`,
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
       console.log("Video Image File :", videoImageFile)
       // For POST (new entry), videoImageFile is mandatory for the thumbnail
       if (!videoImageFile || videoImageFile.size === 0) {

@@ -64,7 +64,10 @@ const AddCouponPage = () => {
         label: c.name
     })) ?? [];
     const serviceOptions = services?.map(s => ({ value: s._id, label: s.serviceName })) ?? [];
-    const zoneOptions = zones?.map(z => ({ value: z._id, label: z.name })) ?? [];
+    const zoneOptions = zones
+  ?.filter(z => z.isDeleted === false)
+  .map(z => ({ value: z._id, label: z.name })) ?? [];
+
 
     const [form, setForm] = useState({
         couponType: "",

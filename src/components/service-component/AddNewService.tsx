@@ -931,28 +931,33 @@ formData.service.timeRequired?.forEach((item, i) => {
         }
       });
 
-      // ---------------- CREATE SERVICE ----------------
-      try {
-        const result = await createService(fd);
-        console.log("result of service : " , result);
-        setCreatedServiceId(result?._id);
-       if (result && result._id) {
-          if (isFranchiseSelected && franchiseStep === 1) {
-            alert("Step-1 Saved Successfully...");
-            setFranchiseStep(2);
-          } else {
-            alert("Service Saved Successfully...");
-            resetForm();
-            setFormKey(prev => prev + 1);
-          }
-        } else {
-          alert("Service Save Successfully...");
-          console.error("Service creation failed:", result.message);
-        }
-      } catch (error: any) {
-        console.error("Error creating service:", error);
-        alert(error?.message || "An error occurred while saving the service.");
-      }
+ // ---------------- CREATE SERVICE ----------------
+// ---------------- CREATE SERVICE ----------------
+try {
+  const result = await createService(fd);
+  console.log("Service creation result (should be service object):", result);
+  
+  // Since createService returns the service object directly (not the full response)
+  // We just need to check if we got a service object with _id
+  if (result && result._id) {
+    setCreatedServiceId(result._id);
+    
+    if (isFranchiseSelected && franchiseStep === 1) {
+      alert("Step-1 Saved Successfully...");
+      setFranchiseStep(2);
+    } else {
+      alert("Service Saved Successfully...");
+      resetForm();
+      setFormKey(prev => prev + 1);
+    }
+  } else {
+    alert("Service creation failed - No service ID returned");
+    console.error("Service creation failed, no _id in result:", result);
+  }
+} catch (error: any) {
+  console.error("Error creating service:", error);
+  alert(error?.message || "An error occurred while saving the service.");
+}
     } catch (err) {
       console.error(err);
     } finally {
