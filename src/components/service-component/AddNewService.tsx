@@ -936,9 +936,11 @@ formData.service.timeRequired?.forEach((item, i) => {
 try {
   const result = await createService(fd);
   console.log("Service creation result (should be service object):", result);
+   if (result?.success === false) {
+    alert(result.message || "Service creation failed");
+    return;
+  }
   
-  // Since createService returns the service object directly (not the full response)
-  // We just need to check if we got a service object with _id
   if (result && result._id) {
     setCreatedServiceId(result._id);
     
