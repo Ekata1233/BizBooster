@@ -1273,7 +1273,7 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
 
 {/* Whom to Sell */}
 {whomToSell.length > 0 && (
-  <ComponentCard title="Target Audience">
+  <ComponentCard title="Whom To Sell">
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {whomToSell.map((item, index) => (
         <div key={index} className="text-center p-6 bg-white border rounded-xl hover:shadow-md transition-shadow">
@@ -1281,7 +1281,7 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
             <div className="w-16 h-16 mx-auto mb-4 relative">
               <Image
                 src={item.icon}
-                alt="Target audience icon"
+                alt="whomToSell icon"
                 fill
                 className="object-contain"
               />
