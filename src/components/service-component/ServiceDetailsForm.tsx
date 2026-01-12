@@ -659,7 +659,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         )}
 
         {/* Assured By FetchTrue */}
-        {fieldsConfig?.assuredByFetchTrue && (
+        {fieldsConfig?.assuredByFetchfalse && (
         <div>
           <div className="flex items-center gap-2">
             <Label>Assured By FetchTrue</Label>

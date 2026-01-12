@@ -33,11 +33,10 @@ interface BannerType {
   createdAt?: string;
   updatedAt?: string;
   module?: string;
+  screenCategory?: string;
 }
-type ServiceType = { name?: string };
 interface TableData {
   id: string;
-
   file: string;
   page: string;
   selectionType: string;
@@ -128,7 +127,7 @@ const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('')
       : currentBanner.subcategory;
 
     if (currentBanner?.screenCategory) {
-      formData.append("whichCategory", currentBanner.screenCategory);
+      formData.append("screenCategory", currentBanner.screenCategory);
     }
 
     if (currentBanner.selectionType === 'category' && categoryId) {
@@ -487,8 +486,9 @@ const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('')
     prev
       ? {
           ...prev,
-          category: value,
-          subcategory: '' 
+          screenCategory: value,   
+          category: '',  
+          subcategory: ''
         }
       : null
   );
