@@ -5,7 +5,7 @@ const BusinessInformationSchema = new mongoose.Schema(
   {
     identityType: {
       type: String,
-      enum: ['Passport', 'Driving_license', 'Aadharcard', 'Pancard'],
+      enum: ['passport', 'driving_license', 'aadharcard', 'pancard'],
       required: true,
     },
     identityNumber: {
@@ -16,7 +16,7 @@ const BusinessInformationSchema = new mongoose.Schema(
         {
           validator: function (value) {
             // Aadhaar: exactly 12 digits
-            if (this.identityType === 'addharcard') {
+            if (this.identityType === 'aadharcard') {
               return /^\d{12}$/.test(value);
             }
             // PAN: 10 alphanumeric (common format)
