@@ -194,12 +194,13 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
 
 console.log("response of tutorial: ", res);
 
-if (!res?.success) {
-  alert(res?.message || 'Failed to submit form.');
-  throw new Error(res?.message); // ⛔ STOP execution
+if (!res.data?.success) {
+  const msg = res.data?.message || 'Failed to submit form.';
+  alert(msg);
+  throw new Error(msg);
 }
 
-alert('Tutorial added successfully...!');
+alert('✅ Tutorial added successfully!');
 
             }
             setName('');
@@ -208,16 +209,21 @@ alert('Tutorial added successfully...!');
             setImageUrl(null); // Reset imageUrl state
             setVideoEntries([]);
             setNewVideoUrl('');
-        } catch (err) {
-            console.error('Submission error:', err);
-            // Attempt to get a more specific error message from the response
-            if (axios.isAxiosError(err) && err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
-            } else {
-                setError('Failed to submit form. Please try again.');
-            }
-            alert(error)
-        } finally {
+        }catch (err) {
+  console.error('Submission error:', err);
+
+  let message = 'Failed to submit form. Please try again.';
+
+  if (axios.isAxiosError(err)) {
+    message =
+      err.response?.data?.message || // ✅ YOUR backend error
+      err.message ||
+      message;
+  }
+
+  setError(message);
+  alert(message); // ✅ THIS WILL WORK
+} finally {
             setLoading(false);
         }
     };
