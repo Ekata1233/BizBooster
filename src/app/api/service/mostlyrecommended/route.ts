@@ -35,9 +35,12 @@ export async function GET() {
       .sort({ sortOrder: 1, createdAt: -1 })
       .lean();
 
+                  console.log("data", records);
+
+
     const data = records.map((item) => {
       const franchise = item.service?.franchiseDetails || {};
-
+        
       return {
         _id: item._id,
 
@@ -70,6 +73,8 @@ export async function GET() {
         },
       };
     });
+
+
 
     return NextResponse.json(
       { success: true, data },
