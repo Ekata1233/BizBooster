@@ -276,7 +276,7 @@ const CouponList: React.FC = () => {
               <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                 <Label>Search Coupons</Label>
                 <Input
-                  placeholder="Search by code, type, title, discount, applies to, validity, or status..."
+                  placeholder="Search by code name"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full"

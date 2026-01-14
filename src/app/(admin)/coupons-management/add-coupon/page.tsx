@@ -87,6 +87,8 @@ const AddCouponPage = () => {
         limitPerUser: "",
         discountCostBearer: "Admin" as CostBearer,
         couponAppliesTo: "Growth Partner" as AppliesTo,
+        provider: undefined,
+        isApprove: true,
     });
     const handleChange = <K extends keyof typeof form>(
         field: K,
@@ -108,7 +110,9 @@ const AddCouponPage = () => {
     const handleSubmit = async () => {
         const fd = new FormData();
         Object.entries(form).forEach(([k, v]) => {
-            if (v !== "") fd.append(k, v as string);
+             if (v === "" || v === undefined || v === null) return;
+  if (k === "provider" && form.discountCostBearer === "Admin") return;
+  fd.append(k, String(v));
             // if (k === "customer" && form.couponType !== "customerWise") return;
             // fd.append(k, typeof v === "object" ? v.value ?? "" : v as string);
         });
@@ -137,6 +141,8 @@ const AddCouponPage = () => {
                     limitPerUser: "",
                     discountCostBearer: "Admin",
                     couponAppliesTo: "Growth Partner",
+                    provider: undefined,
+                    isApprove: true,
                 });
             } else {
                 // ❌ Show backend error message

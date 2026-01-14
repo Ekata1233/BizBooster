@@ -23,6 +23,7 @@ export interface ICoupon extends Document {
   provider?: Types.ObjectId;
   couponAppliesTo: 'Growth Partner' | 'Customer';
   isActive: boolean;
+   isApprove: boolean;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -86,6 +87,10 @@ const CouponSchema = new Schema<ICoupon>(
       enum: ['Growth Partner', 'Customer'],
       required: true,
     },
+    isApprove: {
+  type: Boolean,
+  default: false,
+},
     isDeleted: {
       type: Boolean,
       default: false,

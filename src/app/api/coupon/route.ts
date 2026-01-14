@@ -23,6 +23,8 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
+    console.log("formdata : ", formData);
+
     /* ── extract & coerce form values ───────────────── */
     const couponType          = formData.get("couponType") as string;
     const couponCode          = (formData.get("couponCode") as string)?.trim();
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
     const discountCostBearer  = formData.get("discountCostBearer") as string;
     const provider = formData.get("provider") as string | null;
     const couponAppliesTo     = formData.get("couponAppliesTo") as string;
+    const isApprove = formData.get("isApprove");
 
     /* ── basic validation ───────────────────────────── */
     if (
@@ -126,6 +129,7 @@ if (provider && !mongoose.Types.ObjectId.isValid(provider)) {
       discountCostBearer,
        provider: provider || undefined,
       couponAppliesTo,
+      isApprove
     });
 
     return NextResponse.json(
