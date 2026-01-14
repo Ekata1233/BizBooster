@@ -479,16 +479,19 @@ if (thumbnailFile && typeof thumbnailFile === 'object' && 'size' in thumbnailFil
     );
 
     if (bannerImagesUpdated) {
-      bannerImages = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith("bannerImages")) {
-          const file = formData.get(key);
-          if (file && typeof file === 'object' && 'size' in file && file.size > 0) {
-            const url = await handleFileUpload(file, "/services/banners");
-            bannerImages.push(url);
-          }
-        }
-      }
+     const bannerUploadPromises: Promise<string>[] = [];
+
+for (const key of formData.keys()) {
+  if (key.startsWith("bannerImages")) {
+    const file = formData.get(key);
+    if (file && typeof file === "object" && "size" in file && file.size > 0) {
+      bannerUploadPromises.push(handleFileUpload(file, "/services/banners"));
+    }
+  }
+}
+
+bannerImages = (await Promise.all(bannerUploadPromises)).filter(Boolean);
+
     }
 
     // --- Provider Prices ---
@@ -578,15 +581,19 @@ if (thumbnailFile && typeof thumbnailFile === 'object' && 'size' in thumbnailFil
       key.startsWith("serviceDetails[highlight]")
     );
     if (highlightUpdated) {
-      serviceDetails.highlight = [];
-      for (const key of formData.keys()) {
-        if (key.startsWith("serviceDetails[highlight]")) {
-          const file = formData.get(key);
-          if (file && typeof file === 'object' && 'size' in file && file.size > 0) {
-            serviceDetails.highlight.push(await handleFileUpload(file, "/services/highlight"));
-          }
-        }
-      }
+      const highlightUploadPromises: Promise<string>[] = [];
+
+for (const key of formData.keys()) {
+  if (key.startsWith("serviceDetails[highlight]")) {
+    const file = formData.get(key);
+    if (file && typeof file === "object" && "size" in file && file.size > 0) {
+      highlightUploadPromises.push(handleFileUpload(file, "/services/highlight"));
+    }
+  }
+}
+
+serviceDetails.highlight = (await Promise.all(highlightUploadPromises)).filter(Boolean);
+
     }
 
     // --- Sections with icon/image ---
@@ -770,17 +777,20 @@ if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[broch
 }
 
 if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[certificateImage]"))) {
-  serviceDetails.certificateImage = [];
-  
-  for (let i = 0; i < 10; i++) {
-    const certFile = formData.get(`serviceDetails[certificateImage][${i}]`);
-    if (!certFile) break;
-    
-    const url = await handleFileUpload(certFile, "/services/certificates");
-    if (url) {
-      serviceDetails.certificateImage.push(url);
-    }
+  const certificateUploadPromises: Promise<string>[] = [];
+
+for (const [key, val] of formData.entries()) {
+  if (!key.startsWith("serviceDetails[certificateImage]")) continue;
+
+  if (val && typeof val === "object" && "size" in val && val.size > 0) {
+    certificateUploadPromises.push(handleFileUpload(val, "/services/certificates"));
+  } else if (typeof val === "string") {
+    certificateUploadPromises.push(Promise.resolve(val));
   }
+}
+
+serviceDetails.certificateImage = (await Promise.all(certificateUploadPromises)).filter(Boolean);
+
 }
 // emiavalable
 if (formData.has("serviceDetails[emiavalable][0]")) {
@@ -1148,39 +1158,33 @@ if (Array.from(formData.keys()).some(k => k.startsWith("serviceDetails[certifica
 if (extraImagesUpdated) {
   serviceDetails.extraSections = serviceDetails.extraSections || [];
 
-  for (const [key, value] of formData.entries()) {
-    const match = key.match(
-      /serviceDetails\[extraSections]\[(\d+)]\[image]\[(\d+)]/
-    );
+  const extraSectionPromises: Promise<void>[] = [];
 
-    if (!match) continue;
+for (const [key, value] of formData.entries()) {
+  const match = key.match(/serviceDetails\[extraSections]\[(\d+)]\[image]\[(\d+)]/);
+  if (!match) continue;
 
-    const sectionIndex = Number(match[1]);
-    const imageIndex = Number(match[2]);
+  const sectionIndex = Number(match[1]);
+  const imageIndex = Number(match[2]);
 
-    // Ensure section exists
-    if (!serviceDetails.extraSections[sectionIndex]) {
-      serviceDetails.extraSections[sectionIndex] = { image: [] };
-    }
-
-    // Ensure image array exists
-    serviceDetails.extraSections[sectionIndex].image =
-      serviceDetails.extraSections[sectionIndex].image || [];
-
-    // Handle File upload
-    if (value && typeof value === 'object' && 'size' in value && value.size > 0) {
-      const uploadedUrl = await handleFileUpload(
-        value,
-        "/services/extraSections"
-      );
-      serviceDetails.extraSections[sectionIndex].image[imageIndex] = uploadedUrl;
-    }
-
-    // Handle existing URL
-    else if (typeof value === "string" && value.trim() !== "") {
-      serviceDetails.extraSections[sectionIndex].image[imageIndex] = value;
-    }
+  if (!serviceDetails.extraSections[sectionIndex]) {
+    serviceDetails.extraSections[sectionIndex] = { image: [] };
   }
+  serviceDetails.extraSections[sectionIndex].image = serviceDetails.extraSections[sectionIndex].image || [];
+
+  if (value && typeof value === "object" && "size" in value && value.size > 0) {
+    extraSectionPromises.push(
+      handleFileUpload(value, "/services/extraSections").then((url) => {
+        serviceDetails.extraSections[sectionIndex].image[imageIndex] = url;
+      })
+    );
+  } else if (typeof value === "string" && value.trim() !== "") {
+    serviceDetails.extraSections[sectionIndex].image[imageIndex] = value.trim();
+  }
+}
+
+await Promise.all(extraSectionPromises);
+
 }
 
     // --- Extra Sections ---
