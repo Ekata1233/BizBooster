@@ -590,16 +590,21 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           </div>
           <FileInput onChange={handleMultipleFileChange} multiple />
           <div className="flex flex-wrap gap-4 mt-2">
-            {highlightPreviews.map((src, idx) => (
-              <div key={idx} className="relative w-24 h-24">
-                <Image 
-                  src={src} 
-                  alt={`highlight-${idx}`} 
-                  fill
-                  className="rounded object-cover" 
-                />
-              </div>
-            ))}
+           {highlightPreviews.map((src, idx) => {
+  if (!src) return null; // ⬅️ prevents empty src
+
+  return (
+    <div key={idx} className="relative w-24 h-24">
+      <Image
+        src={src}
+        alt={`highlight-${idx}`}
+        fill
+        className="object-cover rounded"
+      />
+    </div>
+  );
+})}
+
           </div>
         </div>
             )}

@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import "@/models/Category";
 import "@/models/Subcategory";
 import "@/models/Provider";
+import MostHomeServices from "@/models/MostHomeServices";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,9 +127,7 @@ export async function GET(req: Request) {
 /* =============================
    DELETE SERVICE BY ID
 ============================= */
-/* =============================
-   DELETE SERVICE BY ID
-============================= */
+
 export async function DELETE(req: Request) {
   await connectToDatabase();
   try {
@@ -155,13 +154,19 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Delete the service
+    // delete service
     const service = await Service.findByIdAndDelete(id);
     if (!service)
       return NextResponse.json(
         { success: false, message: "Service not found" },
         { status: 404, headers: corsHeaders }
       );
+
+    // 🔥 AUTO DELETE FROM MOST HOME SERVICES
+   await MostHomeServices.deleteOne({
+  service: new mongoose.Types.ObjectId(id),
+});
+
 
     // 🔹 Delete all offers linked to this service
     const Offer = mongoose.model("Offer"); // lazy-load model
