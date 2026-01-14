@@ -160,6 +160,7 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
 
 // Add this at the top of your component after useState declarations
 const isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+console.log("package",packages);
 
 // Replace the problematic useEffect with this:
 useEffect(() => {
@@ -698,44 +699,53 @@ setCertificateImage(
                 />
               </div>
 
-              {/* What You Get */}
-              <div>
-                <Label className="font-medium">What You Get</Label>
-                <div className="space-y-2">
-                  {pkg.whatYouGet.map((item, idx) => (
-                    <div key={idx} className="flex gap-2">
-                      <Input
-                        value={item}
-                        placeholder="Feature"
-                        onChange={e => {
-                          const newArr = [...pkg.whatYouGet];
-                          newArr[idx] = e.target.value;
-                          updatePkg({ ...pkg, whatYouGet: newArr });
-                        }}
-                      />
-                      {pkg.whatYouGet.length > 1 && (
-                        <button
-                          type="button"
-                          className="text-red-500 px-3"
-                          onClick={() => {
-                            const newArr = pkg.whatYouGet.filter((_, i) => i !== idx);
-                            updatePkg({ ...pkg, whatYouGet: newArr });
-                          }}
-                        >
-                          <TrashBinIcon className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="text-blue-500 text-sm"
-                    onClick={() => updatePkg({ ...pkg, whatYouGet: [...pkg.whatYouGet, ''] })}
-                  >
-                    + Add Feature
-                  </button>
-                </div>
-              </div>
+             {/* What You Get */}
+<div>
+  <Label className="font-medium">What You Get</Label>
+
+  <div className="space-y-2">
+    {(pkg.whatYouGet ?? []).map((item, idx) => (
+      <div key={idx} className="flex gap-2">
+        <Input
+          value={item}
+          placeholder="Feature"
+          onChange={e => {
+            const newArr = [...(pkg.whatYouGet ?? [])];
+            newArr[idx] = e.target.value;
+            updatePkg({ ...pkg, whatYouGet: newArr });
+          }}
+        />
+
+        {(pkg.whatYouGet?.length ?? 0) > 1 && (
+          <button
+            type="button"
+            className="text-red-500 px-3"
+            onClick={() => {
+              const newArr = (pkg.whatYouGet ?? []).filter((_, i) => i !== idx);
+              updatePkg({ ...pkg, whatYouGet: newArr });
+            }}
+          >
+            <TrashBinIcon className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+    ))}
+
+    <button
+      type="button"
+      className="text-blue-500 text-sm"
+      onClick={() =>
+        updatePkg({
+          ...pkg,
+          whatYouGet: [...(pkg.whatYouGet ?? []), ''],
+        })
+      }
+    >
+      + Add Feature
+    </button>
+  </div>
+</div>
+
             </div>
           ),
           {
