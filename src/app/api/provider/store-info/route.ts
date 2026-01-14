@@ -112,6 +112,9 @@ function validateStoreInfo(storeInfo: any) {
       errors.push("Store name must contain only letters");
   }
 
+  if (!storeInfo.logo) {
+    errors.push("Store logo is required");
+  }
   
   if (storeInfo.city && !onlyChars.test(storeInfo.city))
     errors.push("City must contain only letters");
@@ -144,8 +147,8 @@ export async function PUT(req: NextRequest) {
     if (validationErrors.length > 0) {
       return NextResponse.json(
         {
-          message: "Validation failed",
-          errors: validationErrors,
+           message: validationErrors[0], 
+    errors: validationErrors,
         },
         { status: 400, headers: corsHeaders }
       );

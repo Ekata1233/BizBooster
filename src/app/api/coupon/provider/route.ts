@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Coupon from "@/models/Coupon";
+import mongoose from "mongoose";
+
 import "@/models/Category";
 import "@/models/Service";
 import "@/models/Zone";
@@ -20,17 +22,42 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
+    const providerId = searchParams.get("providerId");
     const search = searchParams.get("search");
-    const active = searchParams.get("active"); 
+    const active = searchParams.get("active");
 
-    // First, deactivate expired coupons
+    /* ── provider validation ─────────────────────── */
+    if (!providerId) {
+      return NextResponse.json(
+        { success: false, message: "providerId is required" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(providerId)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid providerId" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    /* ── deactivate expired coupons ───────────────── */
     await Coupon.updateMany(
-      { endDate: { $lt: new Date() }, isActive: true },
+      {
+        provider: providerId,
+        discountCostBearer: "Provider",
+        endDate: { $lt: new Date() },
+        isActive: true,
+      },
       { $set: { isActive: false } }
     );
 
-    // Build filter object
-    const filter: Record<string, unknown> = {};
+    /* ── build filter ─────────────────────────────── */
+    const filter: Record<string, any> = {
+      provider: providerId,
+      discountCostBearer: "Provider",
+      isDeleted: false,
+    };
 
     if (search) {
       const regex = { $regex: search, $options: "i" };
@@ -49,12 +76,12 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Fetch coupons with proper population
+    /* ── fetch coupons ────────────────────────────── */
     const coupons = await Coupon.find(filter)
-      .populate("category", "name")      // category id + name
-      .populate("service", "serviceName")// service id + serviceName
-      .populate("zone", "name")          // zone id + name
-      .sort({ createdAt: -1 });          // sort by latest
+      .populate("category", "name")
+      .populate("service", "serviceName")
+      .populate("zone", "name")
+      .sort({ createdAt: -1 });
 
     return NextResponse.json(
       { success: true, data: coupons },

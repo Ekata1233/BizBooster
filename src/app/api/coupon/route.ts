@@ -4,6 +4,7 @@ import Coupon from "@/models/Coupon";
 import "@/models/Category";
 import "@/models/Service";
 import "@/models/Zone";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
     const endDate             = new Date(formData.get("endDate") as string);
     const limitPerUser        = Number(formData.get("limitPerUser"));
     const discountCostBearer  = formData.get("discountCostBearer") as string;
+    const provider = formData.get("provider") as string | null;
     const couponAppliesTo     = formData.get("couponAppliesTo") as string;
 
     /* ── basic validation ───────────────────────────── */
@@ -68,7 +70,33 @@ export async function POST(req: Request) {
         { status: 400, headers: corsHeaders }
       );
     }
+    // Provider validation based on cost bearer
+if (discountCostBearer === "Provider" && !provider) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "provider is required when discountCostBearer is Provider.",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
+if (discountCostBearer === "Admin" && provider) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "provider must not be sent when discountCostBearer is Admin.",
+    },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+if (provider && !mongoose.Types.ObjectId.isValid(provider)) {
+  return NextResponse.json(
+    { success: false, message: "Invalid provider id." },
+    { status: 400, headers: corsHeaders }
+  );
+}
     /* ── check duplicate coupon code ─────────────────── */
     const existingCoupon = await Coupon.findOne({ couponCode });
     if (existingCoupon) {
@@ -96,6 +124,7 @@ export async function POST(req: Request) {
       endDate,
       limitPerUser,
       discountCostBearer,
+       provider: provider || undefined,
       couponAppliesTo,
     });
 
