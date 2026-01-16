@@ -166,7 +166,7 @@ export async function GET(req: NextRequest) {
     const search  = searchParams.get("search");
     const active  = searchParams.get("active");
 
-    const filter: Record<string, unknown> = {isActive: true };
+    const filter: Record<string, unknown> = {isActive: true, isApprove: true };
 
      await Coupon.updateMany(
       { endDate: { $lt: new Date() }, isActive: true },
