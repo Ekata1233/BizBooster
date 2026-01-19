@@ -646,7 +646,7 @@ const [totalServices, setTotalServices] = useState(0);
         </div>
       </ComponentCard>
 
-      <ComponentCard title="All Services">
+      <ComponentCard title="All Services" className='mt-4'>
         <BasicTableOne columns={columns} data={services} />
         <Pagination
           currentPage={currentPage}
