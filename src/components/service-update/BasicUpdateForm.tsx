@@ -11,6 +11,11 @@ import { useCategory } from "@/context/CategoryContext";
 import { useSubcategory } from "@/context/SubcategoryContext";
 import Image from "next/image";
 import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
+interface KeyValue {
+  key: string;
+  value: string;
+  icon?: File | null; // ✅ store file instead of string
+}
 
 interface BasicUpdateFormProps {
   data: any;
@@ -138,7 +143,7 @@ const handleBannerImagesUpload = useCallback(
 
   const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
   const handleRemoveRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
-  const handleRowChange = (index: number, field: keyof KeyValue, value: string) => {
+  const handleRowChange = (index: number, field: keyof KeyValue, value: string | File | null) => {
     const updated = [...rows];
     updated[index][field] = value;
     setRows(updated);
@@ -400,7 +405,7 @@ const handleBannerImagesUpload = useCallback(
                     <TrashBinIcon />
                   </button>
                 </div>
-                <div className="flex gap-4 mt-3">
+                <div className="grid grid-cols-2 gap-4 mt-3">
                   <Input
                     placeholder="Key"
                     value={row.key}
@@ -411,6 +416,18 @@ const handleBannerImagesUpload = useCallback(
                     value={row.value}
                     onChange={(e) => handleRowChange(index, "value", e.target.value)}
                   />
+                
+                 <div className="col-span-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const file = e.target.files?.[0] || null;
+                      handleRowChange(index, "icon", file);
+                    }}
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
                 </div>
               </div>
             ))}

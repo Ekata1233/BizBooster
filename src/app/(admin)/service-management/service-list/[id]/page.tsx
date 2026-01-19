@@ -119,8 +119,7 @@ useEffect(() => {
   }
 }, [service]);
 
-console.log("selectedModuleId for the update : ", selectedModuleId)
-console.log("service : ", service)
+console.log("formdata for the update : ", formData)
 
   // Fetch single service on load
   useEffect(() => {

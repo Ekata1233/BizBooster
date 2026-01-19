@@ -37,6 +37,9 @@ type CouponAPIResponse = {
 // Define the context type
 interface CouponContextType {
   coupons: Coupon[];
+ fetchApprovalCoupons: () => Promise<void>;
+ approvalCoupons: Coupon[];
+   getCouponById: (id: string) => Promise<Coupon | null>;
   addCoupon: (formData: FormData) => Promise<CouponAPIResponse>;
   updateCoupon: (id: string, formData: FormData) => Promise<void>;
   deleteCoupon: (id: string) => Promise<void>;
@@ -48,6 +51,8 @@ const CouponContext = createContext<CouponContextType | null>(null);
 // Provider
 export const CouponProvider = ({ children }: { children: React.ReactNode }) => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [approvalCoupons, setApprovalCoupons] = useState<Coupon[]>([]);
+  const [loadingApproval, setLoadingApproval] = useState(false);
 
   // Fetch all coupons
   const fetchCoupons = async () => {
@@ -63,6 +68,42 @@ export const CouponProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     fetchCoupons();
   }, []);
+
+  const getCouponById = async (id: string): Promise<Coupon | null> => {
+    try {
+      const response = await axios.get<CouponAPIResponse>(
+        `/api/coupon/${id}`
+      );
+
+      return response.data.success
+        ? (response.data.data as Coupon)
+        : null;
+    } catch (error) {
+      console.error("Error fetching coupon by ID:", error);
+      return null;
+    }
+  };
+
+  const fetchApprovalCoupons = async () => {
+    setLoadingApproval(true);
+    try {
+      const res = await axios.get("/api/coupon/approve"
+      );
+
+      console.log("coupon approval res : ", res)
+
+      if (res.data.success) {
+        setApprovalCoupons(res.data.data || []);
+      } else {
+        setApprovalCoupons([]);
+      }
+    } catch (error) {
+      console.error("Error fetching approval coupons:", error);
+      setApprovalCoupons([]);
+    } finally {
+      setLoadingApproval(false);
+    }
+  };
 
   // Add coupon
   const addCoupon = async (formData: FormData): Promise<CouponAPIResponse> => {
@@ -104,7 +145,8 @@ export const CouponProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <CouponContext.Provider
-      value={{ coupons, addCoupon, updateCoupon, deleteCoupon }}
+      value={{ coupons, approvalCoupons,getCouponById,
+        fetchApprovalCoupons, addCoupon, updateCoupon, deleteCoupon }}
     >
       {children}
     </CouponContext.Provider>

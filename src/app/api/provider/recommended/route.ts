@@ -137,10 +137,21 @@ export async function GET(req: NextRequest) {
             storeInfo
           `
           )
-          .populate({
-            path: "storeInfo.module",
-            select: "name",
-          });
+          .populate([
+  {
+    path: "storeInfo.module",
+    select: "name",
+  },
+  {
+    path: "subscribedServices",
+    select: "serviceName category",
+    populate: {
+      path: "category",
+      select: "name",
+    },
+  },
+]);
+
       }
 
       providers = [...zoneProviders, ...panIndiaProviders];
@@ -158,11 +169,22 @@ export async function GET(req: NextRequest) {
           storeInfo
         `
         )
-        .populate({
-          path: "storeInfo.module",
-          select: "name",
-        });
-    }
+       .populate([
+  {
+    path: "storeInfo.module",
+    select: "name",
+  },
+  {
+    path: "subscribedServices",
+    select: "serviceName category",
+    populate: {
+      path: "category",
+      select: "name",
+    },
+  },
+]);
+
+      }
 
 const response = providers.map((p) => {
   const categorySet = new Set<string>();
