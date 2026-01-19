@@ -393,6 +393,9 @@ if (keyValueIndexes.size > 0) {
     ) {
       iconUrl = await handleFileUpload(iconFile, "/services/key-values");
     }
+    else if (typeof iconFile === "string" && iconFile.startsWith("http")) {
+      iconUrl = iconFile;
+    }
 
     keyValues.push({
       key: key.trim(),
@@ -1298,10 +1301,20 @@ for (let j = 0; j < 10; j++) {
     }
 
     // --- Franchise Details --- (Fixed duplicate declaration)
+    const getStringOrExisting = (
+  key: string,
+  existing?: string
+) => {
+  if (!formData.has(key)) return existing;
+  const val = (formData.get(key) as string)?.trim();
+  return val ? val : existing;
+};
+
     const franchiseDetails: any = {
-      commission: formData.has("franchiseDetails[commission]")
-        ? (formData.get("franchiseDetails[commission]") as string)
-        : existingService.franchiseDetails?.commission,
+commission: getStringOrExisting(
+    "franchiseDetails[commission]",
+    existingService.franchiseDetails?.commission
+  ),
       termsAndConditions: formData.has("franchiseDetails[termsAndConditions]")
         ? (formData.get("franchiseDetails[termsAndConditions]") as string)
         : existingService.franchiseDetails?.termsAndConditions,

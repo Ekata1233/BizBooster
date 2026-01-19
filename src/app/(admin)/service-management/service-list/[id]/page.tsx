@@ -191,6 +191,8 @@ console.log("formdata for the update : ", formData)
         fd.append(`keyValues[${i}][value]`, kv.value || "");
          if (kv.icon instanceof File) {
     fd.append(`keyValues[${i}][icon]`, kv.icon);
+  }else if (typeof kv.icon === "string") {
+    fd.append(`keyValues[${i}][icon]`, kv.icon);
   }
       });
 

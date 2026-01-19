@@ -42,11 +42,15 @@ const categoryOptions = categories.map(cat => ({
 
   const [rows, setRows] = useState(data.keyValues || []);
 
+    console.log("rows of key value : ", rows);
+
+
     useEffect(() => {
       if (data.keyValues && JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
         setRows(data.keyValues);
       }
     }, [data.keyValues]);
+
     useEffect(() => {
   setData((prev: any) => ({
     ...prev,
@@ -427,6 +431,31 @@ const handleBannerImagesUpload = useCallback(
                     }}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                   {row.icon && (
+    <div className="flex gap-3 mt-3 flex-wrap">
+      <div className="w-24 h-24 relative group">
+        <Image
+          src={row.icon}
+          alt="icon"
+          fill
+          className="rounded-lg object-cover"
+          sizes="96px"
+        />
+
+        <button
+          type="button"
+          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center
+                     opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => {
+            URL.revokeObjectURL(row.icon!.preview);
+            handleRowChange(index, "icon", null);
+          }}
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  )}
                 </div>
                 </div>
               </div>
