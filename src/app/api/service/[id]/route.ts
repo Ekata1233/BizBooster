@@ -361,19 +361,49 @@ export async function PUT(req: NextRequest) {
       tags.push(...(existingService.tags || []));
     }
 
+    const keyValueIndexes = new Set<number>();
+
+for (const key of formData.keys()) {
+  const match = key.match(/keyValues\[(\d+)\]/);
+  if (match) keyValueIndexes.add(Number(match[1]));
+}
+
     // --- Key Values ---
-    const keyValues: { key: string; value: string }[] = [];
-    const keyValuesUpdated = formData.has("keyValues[0][key]");
-    if (keyValuesUpdated) {
-      for (let i = 0; i < 10; i++) {
-        const key = formData.get(`keyValues[${i}][key]`) as string;
-        const value = formData.get(`keyValues[${i}][value]`) as string;
-        if (!key || !value) break;
-        keyValues.push({ key: key.trim(), value: value.trim() });
-      }
-    } else {
-      keyValues.push(...(existingService.keyValues || []));
+const keyValues: {
+  key: string;
+  value: string;
+  icon?: string;
+}[] = [];
+
+if (keyValueIndexes.size > 0) {
+  for (const index of [...keyValueIndexes].sort()) {
+    const key = formData.get(`keyValues[${index}][key]`) as string;
+    const value = formData.get(`keyValues[${index}][value]`) as string;
+    const iconFile = formData.get(`keyValues[${index}][icon]`);
+
+    if (!key || !value) continue;
+
+    let iconUrl = "";
+
+    if (
+      iconFile &&
+      typeof iconFile === "object" &&
+      "size" in iconFile &&
+      iconFile.size > 0
+    ) {
+      iconUrl = await handleFileUpload(iconFile, "/services/key-values");
     }
+
+    keyValues.push({
+      key: key.trim(),
+      value: value.trim(),
+      icon: iconUrl,
+    });
+  }
+} else {
+  keyValues.push(...(existingService.keyValues || []));
+}
+
 async function handleFileUpload(
   file: any,
   folder: string

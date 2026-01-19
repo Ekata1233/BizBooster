@@ -189,6 +189,9 @@ console.log("formdata for the update : ", formData)
       formData.keyValues?.forEach((kv, i) => {
         fd.append(`keyValues[${i}][key]`, kv.key || "");
         fd.append(`keyValues[${i}][value]`, kv.value || "");
+         if (kv.icon instanceof File) {
+    fd.append(`keyValues[${i}][icon]`, kv.icon);
+  }
       });
 
       /* ================= THUMBNAIL ================= */
