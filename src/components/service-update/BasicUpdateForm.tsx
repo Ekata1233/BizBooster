@@ -11,6 +11,11 @@ import { useCategory } from "@/context/CategoryContext";
 import { useSubcategory } from "@/context/SubcategoryContext";
 import Image from "next/image";
 import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
+interface KeyValue {
+  key: string;
+  value: string;
+  icon?: File | null; // ✅ store file instead of string
+}
 
 interface BasicUpdateFormProps {
   data: any;
@@ -37,11 +42,15 @@ const categoryOptions = categories.map(cat => ({
 
   const [rows, setRows] = useState(data.keyValues || []);
 
+    console.log("rows of key value : ", rows);
+
+
     useEffect(() => {
       if (data.keyValues && JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
         setRows(data.keyValues);
       }
     }, [data.keyValues]);
+
     useEffect(() => {
   setData((prev: any) => ({
     ...prev,
@@ -138,7 +147,7 @@ const handleBannerImagesUpload = useCallback(
 
   const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
   const handleRemoveRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
-  const handleRowChange = (index: number, field: keyof KeyValue, value: string) => {
+  const handleRowChange = (index: number, field: keyof KeyValue, value: string | File | null) => {
     const updated = [...rows];
     updated[index][field] = value;
     setRows(updated);
@@ -400,7 +409,7 @@ const handleBannerImagesUpload = useCallback(
                     <TrashBinIcon />
                   </button>
                 </div>
-                <div className="flex gap-4 mt-3">
+                <div className="grid grid-cols-2 gap-4 mt-3">
                   <Input
                     placeholder="Key"
                     value={row.key}
@@ -411,6 +420,43 @@ const handleBannerImagesUpload = useCallback(
                     value={row.value}
                     onChange={(e) => handleRowChange(index, "value", e.target.value)}
                   />
+                
+                 <div className="col-span-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const file = e.target.files?.[0] || null;
+                      handleRowChange(index, "icon", file);
+                    }}
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                   {row.icon && (
+    <div className="flex gap-3 mt-3 flex-wrap">
+      <div className="w-24 h-24 relative group">
+        <Image
+          src={row.icon}
+          alt="icon"
+          fill
+          className="rounded-lg object-cover"
+          sizes="96px"
+        />
+
+        <button
+          type="button"
+          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center
+                     opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => {
+            URL.revokeObjectURL(row.icon!.preview);
+            handleRowChange(index, "icon", null);
+          }}
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  )}
+                </div>
                 </div>
               </div>
             ))}

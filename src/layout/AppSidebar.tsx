@@ -172,6 +172,7 @@ const promotionItems: NavItem[] = [
     subItems: [
       { name: "Add Coupons", path: "/coupons-management/add-coupon", pro: false },
       { name: "Coupons List", path: "/coupons-management/coupons-list", pro: false },
+      { name: "Coupons Request", path: "/coupons-management/coupons-request", pro: false },
     ],
   },
   {

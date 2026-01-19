@@ -371,7 +371,15 @@ async function uploadIcon(file: File, folder: string) {
   return upload.url;
 }
 
+    const keyValueIndexes = new Set<number>();
+
+for (const key of formData.keys()) {
+  const match = key.match(/keyValues\[(\d+)\]/);
+  if (match) keyValueIndexes.add(Number(match[1]));
+}
+
     // --- Key Values ---
+<<<<<<< HEAD
    const keyValues: { key: string; value: string; icon?: string }[] = [];
 
    for (let i = 0; i < 10; i++) {
@@ -405,6 +413,46 @@ async function uploadIcon(file: File, folder: string) {
 
 
     
+=======
+const keyValues: {
+  key: string;
+  value: string;
+  icon?: string;
+}[] = [];
+
+if (keyValueIndexes.size > 0) {
+  for (const index of [...keyValueIndexes].sort()) {
+    const key = formData.get(`keyValues[${index}][key]`) as string;
+    const value = formData.get(`keyValues[${index}][value]`) as string;
+    const iconFile = formData.get(`keyValues[${index}][icon]`);
+
+    if (!key || !value) continue;
+
+    let iconUrl = "";
+
+    if (
+      iconFile &&
+      typeof iconFile === "object" &&
+      "size" in iconFile &&
+      iconFile.size > 0
+    ) {
+      iconUrl = await handleFileUpload(iconFile, "/services/key-values");
+    }
+    else if (typeof iconFile === "string" && iconFile.startsWith("http")) {
+      iconUrl = iconFile;
+    }
+
+    keyValues.push({
+      key: key.trim(),
+      value: value.trim(),
+      icon: iconUrl,
+    });
+  }
+} else {
+  keyValues.push(...(existingService.keyValues || []));
+}
+
+>>>>>>> 19c2deedf8e9637b2e4c600a60a81f3f8107ffa7
 async function handleFileUpload(
   file: any,
   folder: string
@@ -1299,10 +1347,20 @@ for (let j = 0; j < 10; j++) {
     }
 
     // --- Franchise Details --- (Fixed duplicate declaration)
+    const getStringOrExisting = (
+  key: string,
+  existing?: string
+) => {
+  if (!formData.has(key)) return existing;
+  const val = (formData.get(key) as string)?.trim();
+  return val ? val : existing;
+};
+
     const franchiseDetails: any = {
-      commission: formData.has("franchiseDetails[commission]")
-        ? (formData.get("franchiseDetails[commission]") as string)
-        : existingService.franchiseDetails?.commission,
+commission: getStringOrExisting(
+    "franchiseDetails[commission]",
+    existingService.franchiseDetails?.commission
+  ),
       termsAndConditions: formData.has("franchiseDetails[termsAndConditions]")
         ? (formData.get("franchiseDetails[termsAndConditions]") as string)
         : existingService.franchiseDetails?.termsAndConditions,

@@ -119,8 +119,7 @@ useEffect(() => {
   }
 }, [service]);
 
-console.log("selectedModuleId for the update : ", selectedModuleId)
-console.log("service : ", service)
+console.log("formdata for the update : ", formData)
 
   // Fetch single service on load
   useEffect(() => {
@@ -190,6 +189,11 @@ console.log("service : ", service)
       formData.keyValues?.forEach((kv, i) => {
         fd.append(`keyValues[${i}][key]`, kv.key || "");
         fd.append(`keyValues[${i}][value]`, kv.value || "");
+         if (kv.icon instanceof File) {
+    fd.append(`keyValues[${i}][icon]`, kv.icon);
+  }else if (typeof kv.icon === "string") {
+    fd.append(`keyValues[${i}][icon]`, kv.icon);
+  }
       });
 
       /* ================= THUMBNAIL ================= */
