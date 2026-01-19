@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import "@/models/Service";
 import "@/models/Category";
 import Zone from "@/models/Zone";
+import mongoose from "mongoose";
 
 export const runtime = "nodejs";
 
@@ -39,17 +40,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const moduleId = searchParams.get("moduleId");
+    const categoryId = searchParams.get("categoryId");
     const lat = searchParams.get("lat");
     const lng = searchParams.get("lng");
-    console.log("module id : ", moduleId)
-
-    // if (!moduleId) {
-    //   return NextResponse.json(
-    //     { success: false, message: "moduleId is required" },
-    //     { status: 400 }
-    //   );
-    // }
+    
+    console.log("category id : ", categoryId);
 
     /* ✅ BASE FILTER */
     const baseFilter: any = {
@@ -57,10 +52,6 @@ export async function GET(req: NextRequest) {
       isApproved: true,
       isDeleted: false,
     };
-
-    if (moduleId) {
-  baseFilter["storeInfo.module"] = moduleId;
-}
 
     let providers: any[] = [];
 
@@ -90,8 +81,8 @@ export async function GET(req: NextRequest) {
           ...baseFilter,
           "storeInfo.zone": matchedZone._id,
         })
-          .select(
-            `_id
+          .select(`
+            _id
             fullName
             phoneNo
             email
@@ -99,23 +90,22 @@ export async function GET(req: NextRequest) {
             totalReviews
             isStoreOpen
             storeInfo
-          `
-          )
+            subscribedServices
+          `)
           .populate([
-  {
-    path: "storeInfo.module",
-    select: "name",
-  },
-  {
-    path: "subscribedServices",
-    select: "serviceName category",
-    populate: {
-      path: "category",
-      select: "name",
-    },
-  },
-]);
-
+            {
+              path: "storeInfo.module",
+              select: "name",
+            },
+            {
+              path: "subscribedServices",
+              select: "serviceName category",
+              populate: {
+                path: "category",
+                select: "name _id",
+              },
+            },
+          ]);
       }
 
       const panIndiaZone = allZones.find((z) => z.isPanIndia);
@@ -126,8 +116,8 @@ export async function GET(req: NextRequest) {
           ...baseFilter,
           "storeInfo.zone": panIndiaZone._id,
         })
-          .select(
-            `_id
+          .select(`
+            _id
             fullName
             phoneNo
             email
@@ -135,20 +125,30 @@ export async function GET(req: NextRequest) {
             totalReviews
             isStoreOpen
             storeInfo
-          `
-          )
-          .populate({
-            path: "storeInfo.module",
-            select: "name",
-          });
+            subscribedServices
+          `)
+          .populate([
+            {
+              path: "storeInfo.module",
+              select: "name",
+            },
+            {
+              path: "subscribedServices",
+              select: "serviceName category",
+              populate: {
+                path: "category",
+                select: "name _id",
+              },
+            },
+          ]);
       }
 
       providers = [...zoneProviders, ...panIndiaProviders];
     } else {
       /* 🌍 NO LAT/LNG → RETURN ALL MATCHING */
       providers = await Provider.find(baseFilter)
-        .select(
-          `_id
+        .select(`
+          _id
           fullName
           phoneNo
           email
@@ -156,58 +156,132 @@ export async function GET(req: NextRequest) {
           totalReviews
           isStoreOpen
           storeInfo
-        `
-        )
-        .populate({
-          path: "storeInfo.module",
-          select: "name",
+          subscribedServices
+        `)
+        .populate([
+          {
+            path: "storeInfo.module",
+            select: "name",
+          },
+          {
+            path: "subscribedServices",
+            select: "serviceName category",
+            populate: {
+              path: "category",
+              select: "name _id",
+            },
+          },
+        ]);
+    }
+
+    console.log(`Total providers fetched: ${providers.length}`);
+
+    // Filter by categoryId if provided and prepare response
+    const response = [];
+    
+    for (const provider of providers) {
+      // Check if provider has subscribedServices
+      if (!provider.subscribedServices || !Array.isArray(provider.subscribedServices)) {
+        continue;
+      }
+
+      // If categoryId is provided, check if provider has this category
+      if (categoryId) {
+        let hasCategory = false;
+        let filteredCategoryName = "";
+        
+        // Check if any subscribed service belongs to the specified category
+        for (const service of provider.subscribedServices) {
+          const serviceCategoryId = 
+            service?.category?._id?.toString() || 
+            service?.category?.toString();
+          
+          if (serviceCategoryId === categoryId) {
+            hasCategory = true;
+            filteredCategoryName = service?.category?.name || "";
+            break;
+          }
+        }
+        
+        // Skip provider if doesn't have the requested category
+        if (!hasCategory) {
+          continue;
+        }
+        
+        // Add provider to response with only the filtered category
+        response.push({
+          _id: provider._id,
+          fullName: provider.fullName,
+          phoneNo: provider.phoneNo,
+          email: provider.email,
+          averageRating: provider.averageRating,
+          totalReviews: provider.totalReviews,
+          isStoreOpen: provider.isStoreOpen,
+          category_list: filteredCategoryName ? [filteredCategoryName] : [],
+          storeInfo: {
+            storeName: provider.storeInfo?.storeName,
+            storePhone: provider.storeInfo?.storePhone,
+            storeEmail: provider.storeInfo?.storeEmail,
+            module: provider.storeInfo?.module,
+            zone: provider.storeInfo?.zone,
+            logo: provider.storeInfo?.logo,
+            cover: provider.storeInfo?.cover,
+            address: provider.storeInfo?.address,
+            city: provider.storeInfo?.city,
+            state: provider.storeInfo?.state,
+            country: provider.storeInfo?.country,
+            aboutUs: provider.storeInfo?.aboutUs,
+            tags: provider.storeInfo?.tags,
+            totalProjects: provider.storeInfo?.totalProjects,
+            totalExperience: provider.storeInfo?.totalExperience,
+          },
         });
+      } else {
+        // No category filter - show all categories
+        const categorySet = new Set<string>();
+        
+        provider.subscribedServices?.forEach((service: any) => {
+          if (service?.category?.name) {
+            categorySet.add(service.category.name);
+          }
+        });
+        
+        response.push({
+          _id: provider._id,
+          fullName: provider.fullName,
+          phoneNo: provider.phoneNo,
+          email: provider.email,
+          averageRating: provider.averageRating,
+          totalReviews: provider.totalReviews,
+          isStoreOpen: provider.isStoreOpen,
+          category_list: Array.from(categorySet),
+          storeInfo: {
+            storeName: provider.storeInfo?.storeName,
+            storePhone: provider.storeInfo?.storePhone,
+            storeEmail: provider.storeInfo?.storeEmail,
+            module: provider.storeInfo?.module,
+            zone: provider.storeInfo?.zone,
+            logo: provider.storeInfo?.logo,
+            cover: provider.storeInfo?.cover,
+            address: provider.storeInfo?.address,
+            city: provider.storeInfo?.city,
+            state: provider.storeInfo?.state,
+            country: provider.storeInfo?.country,
+            aboutUs: provider.storeInfo?.aboutUs,
+            tags: provider.storeInfo?.tags,
+            totalProjects: provider.storeInfo?.totalProjects,
+            totalExperience: provider.storeInfo?.totalExperience,
+          },
+        });
+      }
     }
 
-const response = providers.map((p) => {
-  const categorySet = new Set<string>();
+    console.log(`Providers in response: ${response.length}`);
 
-  p.subscribedServices?.forEach((service: any) => {
-    if (service?.category?.name) {
-      categorySet.add(service.category.name);
-    }
-  });
-
-  return {
-    _id: p._id,
-    fullName: p.fullName,
-    phoneNo: p.phoneNo,
-    email: p.email,
-    averageRating: p.averageRating,
-    totalReviews: p.totalReviews,
-    isStoreOpen: p.isStoreOpen,
-
-    category_list: Array.from(categorySet),
-
-    storeInfo: {
-      storeName: p.storeInfo?.storeName,
-      storePhone: p.storeInfo?.storePhone,
-      storeEmail: p.storeInfo?.storeEmail,
-      module: p.storeInfo?.module,
-      zone: p.storeInfo?.zone,
-      logo: p.storeInfo?.logo,
-      cover: p.storeInfo?.cover,
-      address: p.storeInfo?.address,
-      city: p.storeInfo?.city,
-      state: p.storeInfo?.state,
-      country: p.storeInfo?.country,
-      aboutUs: p.storeInfo?.aboutUs,
-      tags: p.storeInfo?.tags,
-      totalProjects: p.storeInfo?.totalProjects,
-      totalExperience: p.storeInfo?.totalExperience,
-    },
-  };
-});
-
-
-    return NextResponse.json(response, { status: 200,headers: corsHeaders });
+    return NextResponse.json(response, { status: 200, headers: corsHeaders });
   } catch (error: unknown) {
+    console.error("Error fetching providers:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ success: false, message  }, { status: 500, headers : corsHeaders });
+    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
   }
 }

@@ -237,6 +237,7 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+   
     /* -----------------------------
        HANDLE IMAGE UPLOAD (ImageKit)
     ----------------------------- */
@@ -360,20 +361,50 @@ export async function PUT(req: NextRequest) {
     } else {
       tags.push(...(existingService.tags || []));
     }
+async function uploadIcon(file: File, folder: string) {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const upload = await imagekit.upload({
+    file: buffer,
+    fileName: `${uuidv4()}-${file.name}`,
+    folder,
+  });
+  return upload.url;
+}
 
     // --- Key Values ---
-    const keyValues: { key: string; value: string }[] = [];
-    const keyValuesUpdated = formData.has("keyValues[0][key]");
-    if (keyValuesUpdated) {
-      for (let i = 0; i < 10; i++) {
-        const key = formData.get(`keyValues[${i}][key]`) as string;
-        const value = formData.get(`keyValues[${i}][value]`) as string;
-        if (!key || !value) break;
-        keyValues.push({ key: key.trim(), value: value.trim() });
-      }
-    } else {
-      keyValues.push(...(existingService.keyValues || []));
-    }
+   const keyValues: { key: string; value: string; icon?: string }[] = [];
+
+   for (let i = 0; i < 10; i++) {
+  const key = formData.get(`keyValues[${i}][key]`) as string | null;
+  const value = formData.get(`keyValues[${i}][value]`) as string | null;
+  const iconFile = formData.get(`keyValues[${i}][icon]`);
+
+  if (!key && !value && !iconFile) break;
+
+  let iconUrl = "";
+
+  // 🟢 New icon uploaded
+  if (iconFile instanceof File) {
+    iconUrl = await uploadIcon(iconFile, "/services/keyValueIcons");
+  }
+  // 🟢 Existing icon URL sent
+  else if (typeof iconFile === "string" && iconFile.trim() !== "") {
+    iconUrl = iconFile;
+  }
+  // 🟢 Keep old icon
+  else if (existingService.keyValues?.[i]?.icon) {
+    iconUrl = existingService.keyValues[i].icon;
+  }
+
+  keyValues.push({
+    key: key?.trim() || "",
+    value: value?.trim() || "",
+    icon: iconUrl,
+  });
+}
+
+
+    
 async function handleFileUpload(
   file: any,
   folder: string
@@ -1498,5 +1529,5 @@ for (let j = 0; j < 10; j++) {
     );
   }
 }
-
+ 
 
