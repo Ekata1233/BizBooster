@@ -39,7 +39,7 @@ export interface StoreInfo {
   aboutUs?: string;
   tags?: string[];
   totalProjects?: number;
-  totalExperience?: number;
+  totalExperience?: string;
 }
 
 export interface KYC {
@@ -154,8 +154,7 @@ const storeInfoSchema = new Schema<StoreInfo>(
       min: [0, "Total projects cannot be negative"],
     },
     totalExperience : {
-      type: Number,
-      min: [0, "Total experience cannot be negative"],
+      type: String
     },
   },
   { _id: false }
