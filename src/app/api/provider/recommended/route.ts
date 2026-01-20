@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const moduleId = searchParams.get("moduleId");
+    
     const lat = searchParams.get("lat");
     const lng = searchParams.get("lng");
     console.log("module id : ", moduleId)

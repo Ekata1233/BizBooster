@@ -160,6 +160,7 @@ const handleToggleChange = async (
   field: "recommendedServices" | "isTrending",
   checked: boolean
 ) => {
+  const previousValue = !checked;
   try {
     setLoadingToggle(id);
     // Optimistic UI update
@@ -182,8 +183,23 @@ const handleToggleChange = async (
       }
     );
     setLoadingToggle(null);
-  } catch (error) {
-    console.error("Toggle update failed:", error);
+  } catch (error: any) {
+    // 🔁 Rollback optimistic update
+    setServices((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, [field]: previousValue } : p
+      )
+    );
+
+    // ✅ Show backend error message
+    const message =
+      error?.response?.data?.message || "Something went wrong";
+
+      console.log("message : ", message);
+
+    alert(message);
+  } finally {
+    setLoadingToggle(null);
   }
 };
 

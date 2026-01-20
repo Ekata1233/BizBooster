@@ -11,6 +11,7 @@ import "@/models/Category";
 import "@/models/Subcategory";
 import "@/models/Provider";
 import MostHomeServices from "@/models/MostHomeServices";
+import Category from "@/models/Category";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -187,6 +188,45 @@ export async function DELETE(req: Request) {
 /* =============================
    PATCH SERVICE BY ID
 ============================= */
+async function checkModuleLimit(
+  serviceId: any,
+  categoryId: any,
+  field: "recommendedServices" | "isTrending",
+  limit = 10
+) {
+  const category = await Category.findById(categoryId).select("module");
+
+  if (!category?.module) {
+    throw new Error("Module not found for category");
+  }
+
+  const result = await Service.aggregate([
+    {
+      $match: {
+        [field]: true,
+        _id: { $ne: serviceId }
+      }
+    },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "category",
+        foreignField: "_id",
+        as: "category"
+      }
+    },
+    { $unwind: "$category" },
+    {
+      $match: {
+        "category.module": category.module
+      }
+    },
+    { $count: "total" }
+  ]);
+
+  return result[0]?.total || 0;
+}
+
 export async function PATCH(req: NextRequest) {
   await connectToDatabase();
 
@@ -259,6 +299,53 @@ export async function PATCH(req: NextRequest) {
        CLEAN EMPTY VALUES
     ----------------------------- */
     const cleanedData = removeEmpty(updateData);
+
+    console.log("cleaned Data : ", cleanedData);
+
+    const categoryId = cleanedData.category || service.category;
+
+    /* =============================
+       RECOMMENDED SERVICES LIMIT
+    ============================= */
+    if (cleanedData.recommendedServices === true && service.recommendedServices !== true) {
+      const count = await checkModuleLimit(
+        service._id,
+        categoryId,
+        "recommendedServices"
+      );
+    
+      if (count >= 10) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "You can recommend only 10 services per module"
+          },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+    
+    /* =============================
+       TRENDING SERVICES LIMIT
+    ============================= */
+    if (cleanedData.isTrending === true && service.isTrending !== true) {
+      const count = await checkModuleLimit(
+        service._id,
+        categoryId,
+        "isTrending"
+      );
+    
+      if (count >= 10) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "You can recommend only 10 services per module"
+          },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+       
 
     /* -----------------------------
        UPDATE SERVICE
