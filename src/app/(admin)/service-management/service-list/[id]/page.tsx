@@ -93,6 +93,7 @@ const initialFormData = {
     termsAndConditions: "",
     investmentRange: [],
     monthlyEarnPotential: [],
+    areaRequired: "",
     franchiseModel: [],
     extraSections: [],
     extraImages: [],
@@ -150,6 +151,7 @@ console.log("formdata for the update : ", formData)
     });
   }, [service , initialized]);
 
+  console.log("formdata of service : ", formData);
 
   const handleUpdate = async () => {
     if (!service) {
@@ -768,6 +770,11 @@ await Promise.all(
     String(item.parameters || "")  // Changed from maxEarn
   );
 });
+
+fd.append(
+  "franchiseDetails[areaRequired]",
+  formData.franchiseDetails.areaRequired || ""
+);
         
         /* -------- Franchise Model -------- */
         (formData.franchiseDetails.franchiseModel || []).forEach((model, i) => {

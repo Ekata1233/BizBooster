@@ -1408,6 +1408,7 @@ commission: getStringOrExisting(
       investmentRange: existingService.franchiseDetails?.investmentRange || [],
       monthlyEarnPotential: existingService.franchiseDetails?.monthlyEarnPotential || [],
       franchiseModel: existingService.franchiseDetails?.franchiseModel || [],
+      areaRequired : formData.get("franchiseDetails[areaRequired]"),
       extraSections: existingService.franchiseDetails?.extraSections || [],
       extraImages: existingService.franchiseDetails?.extraImages || [],
     };
