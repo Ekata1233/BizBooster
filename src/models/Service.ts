@@ -277,6 +277,7 @@ keyValues: [
     parameters: { type: String, default: "" },
   },
 ],
+areaRequired: { type: String },
 
       franchiseModel: [
         {

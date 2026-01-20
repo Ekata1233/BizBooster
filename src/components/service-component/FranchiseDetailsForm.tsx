@@ -20,6 +20,7 @@ const ClientSideCustomEditor = dynamic(
 type RowData = { title: string; description: string };
 type InvestmentRange = { range: string; parameters: string };
 type MonthlyEarnPotential = { range: string; parameters: string };
+type AreaRequired = string;
 type FranchiseModel = {
   title: string;
   agreement?: string;
@@ -31,7 +32,7 @@ type FranchiseModel = {
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: string[]; // using URL strings for images to keep consistent with ServiceDetailsForm approach
+  image: string[];
   description: string[];
   subDescription: string[];
   lists: string[];
@@ -70,6 +71,7 @@ const didInitFromData = useRef(false);
 const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>(
   data?.monthlyEarnPotential?.length ? data.monthlyEarnPotential : [{ range: '', parameters: '' }]
 );
+const [areaRequired, setAreaRequired] = useState<string>(data?.areaRequired || '');
   const [franchiseModel, setFranchiseModel] = useState<FranchiseModel[]>(
     data?.franchiseModel?.length
       ? data.franchiseModel
@@ -99,6 +101,7 @@ const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPote
   termsAndConditions,
   investmentRange,
   monthlyEarnPotential,
+  areaRequired,
   franchiseModel,
   extraSections,
   extraImages,
@@ -112,6 +115,7 @@ const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPote
   termsAndConditions,
   investmentRange,
   monthlyEarnPotential,
+  areaRequired,
   franchiseModel,
   extraSections,
   extraImages,
@@ -445,6 +449,26 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
       >
         + Add Monthly Earn
       </button>
+    </div>
+  </div>
+</div>
+)}
+
+{fieldsConfig?.areaRequired && (
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Area Required</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
+        <div  className="flex gap-4 mt-2 items-center">
+        <Input
+            placeholder="100sq - 500sq"
+            value={areaRequired}
+            onChange={(e) => setAreaRequired(e.target.value)}
+          />
+        </div>
     </div>
   </div>
 </div>
