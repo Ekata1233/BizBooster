@@ -60,7 +60,18 @@ const PromotionRequest = () => {
         return;
       }
 
-      const mappedProviders = data.map((provider: any): ProviderTableData => {
+const nonPromotedProviders = data.filter(
+  (provider: any) => provider.isPromoted === false
+);
+
+if (nonPromotedProviders.length === 0) {
+  setProviders([]);
+  setMessage("No promotion requests found");
+  return;
+}
+
+const mappedProviders = nonPromotedProviders.map(
+  (provider: any): ProviderTableData => {
         const storeInfo = provider.storeInfo || {};
 
         const isComplete =
@@ -124,6 +135,10 @@ const PromotionRequest = () => {
   const handleApprove = async (id: string) => {
     try {
       await axios.patch(`/api/provider/${id}`, { isPromoted: true });
+      alert(
+      "Promotion Approved Successfully ✅\n\n" +
+      "The provider has been promoted and will now be highlighted in featured listings."
+    );
       fetchProviders();
     } catch (error) {
       console.error("Promotion approve failed:", error);
@@ -265,6 +280,18 @@ const PromotionRequest = () => {
       </ComponentCard>
 
       <ComponentCard title="Promotion Request Table">
+        {!loading && filteredProviders.length === 0 ? (
+  <div className="flex flex-col items-center justify-center gap-3 border border-dashed border-gray-300 rounded-lg p-8 text-center">
+    <CheckLineIcon className="w-10 h-10 text-gray-400" />
+    <p className="text-lg font-semibold text-gray-600">
+      No Promotion Requests Found
+    </p>
+    <p className="text-sm text-gray-500">
+      All providers have already been promoted or no requests are available at the moment.
+    </p>
+  </div>
+) : (
+  <>
         <BasicTableOne columns={columns} data={currentRows} />
         <Pagination
           currentPage={currentPage}
@@ -272,6 +299,9 @@ const PromotionRequest = () => {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
+
+         </>
+)}
       </ComponentCard>
     </div>
   );
