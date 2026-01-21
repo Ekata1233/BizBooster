@@ -66,7 +66,7 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [editorReady, setEditorReady] = useState(false);
   const mounted = useRef(false);
 
-
+console.log("service data for the update : ", data)
   // ------------------- STATES -------------------
   const [benefits, setBenefits] = useState<string[]>(Array.isArray(data?.benefits) ? data.benefits : ['']);
   const [aboutUs, setAboutUs] = useState<string[]>(data?.aboutUs || []);
@@ -93,6 +93,24 @@ const [extraImages, setExtraImages] = useState<ExtraImageItem[]>(
     ? data.extraImages.map(img => ({ icon: img })) // convert existing strings to objects
     : [{ icon: "" }] // default empty object
 );  const [showExtraSections, setShowExtraSections] = useState(false);
+
+const FilePreview = ({ file }: { file?: File | string | null }) => {
+  if (!file) return null;
+
+  const src =
+    typeof file === "string" ? file : URL.createObjectURL(file);
+
+    console.log("fiel preivew src : ", src);
+
+  return (
+    <img
+      src={src}
+      alt="preview"
+      className="w-24 h-24 mt-2 rounded-lg object-cover border"
+    />
+  );
+};
+
 
   useEffect(() => {
 
@@ -330,6 +348,8 @@ function renderArrayField<T extends object>(
         }
       }}
     />
+
+    <FilePreview file={item.icon} />
 
     <Input value={item.description} placeholder="Description" onChange={e => updateItem({ ...item, description: e.target.value })} />
   </div>
