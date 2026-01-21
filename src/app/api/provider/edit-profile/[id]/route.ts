@@ -33,22 +33,36 @@ export async function PATCH(req: Request) {
     const formData = await req.formData();
     const updateData: Record<string, any> = {};
 
-    // ── Extract text fields (dot notation for nested)
+
+    // ✅ Handle storeInfo.tags as full array (REPLACE strategy)
+const incomingTags = formData.getAll("storeInfo.tags");
+
+if (incomingTags.length > 0) {
+  updateData.storeInfo = updateData.storeInfo || {};
+  updateData.storeInfo.tags = incomingTags;
+}
+
+
     formData.forEach((value, key) => {
-      if (typeof value === "string") {
-        if (key.includes(".")) {
-          const parts = key.split(".");
-          let ref = updateData;
-          for (let i = 0; i < parts.length - 1; i++) {
-            if (!ref[parts[i]]) ref[parts[i]] = {};
-            ref = ref[parts[i]];
-          }
-          ref[parts[parts.length - 1]] = value;
-        } else {
-          updateData[key] = value;
-        }
+  if (typeof value === "string") {
+
+    // 🔥 Skip tags here (handled separately as array)
+    if (key === "storeInfo.tags") return;
+
+    if (key.includes(".")) {
+      const parts = key.split(".");
+      let ref = updateData;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!ref[parts[i]]) ref[parts[i]] = {};
+        ref = ref[parts[i]];
       }
-    });
+      ref[parts[parts.length - 1]] = value;
+    } else {
+      updateData[key] = value;
+    }
+  }
+});
+
 
     // ── File upload keys
     const fileKeys = ["logo", "cover", "galleryImages", "aadhaarCard", "panCard", "storeDocument", "GST", "other"];
@@ -57,17 +71,22 @@ export async function PATCH(req: Request) {
       const files = formData.getAll(key) as File[];
       if (files && files.length > 0) {
         const uploadedUrls: string[] = [];
-        for (const file of files) {
-          if (file instanceof File) {
-            const buffer = Buffer.from(await file.arrayBuffer());
-            const uploadResponse = await imagekit.upload({
-              file: buffer,
-              fileName: `${uuidv4()}-${file.name}`,
-              folder: key === "galleryImages" || key === "logo" || key === "cover" ? "/provider" : "/provider/kyc",
-            });
-            uploadedUrls.push(uploadResponse.url);
-          }
-        }
+       for (const file of files) {
+  if (file && typeof file === "object" && "arrayBuffer" in file) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const ext = file.name.split(".").pop();
+    const uploadResponse = await imagekit.upload({
+      file: buffer,
+      fileName:`${uuidv4()}.${ext}`, 
+      folder:
+        key === "galleryImages" || key === "logo" || key === "cover"
+          ? "/provider"
+          : "/provider/kyc",
+    });
+    uploadedUrls.push(uploadResponse.url);
+  }
+}
+
 
         if (["logo", "cover"].includes(key)) {
           updateData[`storeInfo.${key}`] = uploadedUrls[0];
@@ -114,9 +133,44 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: true, message: "Profile updated successfully", data: providerResponse }, { status: 200, headers: corsHeaders });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ success: false, message }, { status: 500, headers: corsHeaders });
+
+  // ✅ Handle MongoDB duplicate key error
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as any).code === 11000
+  ) {
+    const key = Object.keys((error as any).keyValue || {})[0];
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: `${key} already exists`
+      },
+      { status: 409, headers: corsHeaders }
+    );
   }
+
+  // ✅ Handle validation errors
+  if (error instanceof mongoose.Error.ValidationError) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message
+      },
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Something went wrong while updating provider"
+    },
+    { status: 500, headers: corsHeaders }
+  );
+}
 }
 
 // ───────────── GET: Fetch Provider ─────────────

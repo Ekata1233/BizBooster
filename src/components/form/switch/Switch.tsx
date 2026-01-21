@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 interface SwitchProps {
-  label: string;
+  label?: string;
   checked?: boolean; // ✅ Added for controlled usage
   defaultChecked?: boolean;
   disabled?: boolean;

@@ -449,12 +449,6 @@ const Page = () => {
                             </button>
                         </div>
 
-                        {/* Response */}
-                        {response && (
-                            <pre className="bg-gray-100 p-2 rounded text-sm">
-                                {JSON.stringify(response, null, 2)}
-                            </pre>
-                        )}
                     </div>
                 </ComponentCard>
             </div>

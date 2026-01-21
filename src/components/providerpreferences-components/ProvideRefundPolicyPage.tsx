@@ -175,7 +175,7 @@ const ProviderAboutUsPage: React.FC<EditorFormProps> = ({
    <div className="p-6 bg-white rounded-lg shadow-md w-full my-8">
 
       <h2 className="text-3xl font-bold text-gray-800 dark:text-white/90 text-center mb-6">
-        {initialData?._id ? 'EditRefund Policy' : 'Add New Refund Policy'}
+        {initialData?._id ? 'Edit Refund Policy' : 'Add New Refund Policy'}
       </h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-6">

@@ -88,6 +88,24 @@ const moduleItems: NavItem[] = [
       { name: "Banner-list", path: "/banner-management/banners", pro: false },
     ],
   },
+  {
+  icon: <PaperPlaneIcon />,
+  name: "Why This Service",
+  subItems: [
+    {
+      name: "Add",
+      path: "/why-just-our-service/add",
+      pro: false,
+    },
+    {
+      name: "List",
+      path: "/why-just-our-service/",
+      pro: false,
+    },
+    
+  ],
+},
+
 ];
 
 const customerItems: NavItem[] = [
@@ -113,6 +131,7 @@ const providerItems: NavItem[] = [
       { name: "Provider List", path: "/provider-management/provider-list", pro: false },
       { name: "Provider Gallery", path: "/provider-management/provider-gallery", pro: false },
       { name: "Payment Adjustment", path: "/provider-management/payment-adjustment", pro: false },
+      { name: "Promotion Request", path: "/provider-management/promotion-request", pro: false },
     ],
   },
   {
@@ -132,7 +151,6 @@ const serviceItems: NavItem[] = [
     subItems: [
       { name: "Add New Service", path: "/service-management/add-service", pro: false },
       { name: "Service List", path: "/service-management/service-list", pro: false },
-      { name: "Add Why Choose FetchTrue", path: "/service-management/add-why-choose", pro: false },
     ],
   },
 ];
@@ -155,6 +173,7 @@ const promotionItems: NavItem[] = [
     subItems: [
       { name: "Add Coupons", path: "/coupons-management/add-coupon", pro: false },
       { name: "Coupons List", path: "/coupons-management/coupons-list", pro: false },
+      { name: "Coupons Request", path: "/coupons-management/coupons-request", pro: false },
     ],
   },
   {
@@ -167,9 +186,11 @@ const promotionItems: NavItem[] = [
   },
   {
     icon: <TrendingUp />,
-    name: "Trendings",
+    name: "Trending",
     subItems: [
-      { name: "Add Trend ", path: "/adds-management/trending-services", pro: false },
+      { name: "Trending Services ", path: "/adds-management/trending-services", pro: false },
+        { name: "Most Trending Services ", path: "/adds-management/most-trending-services", pro: false },
+      { name: "Trending Provider ", path: "/adds-management/trending-providers", pro: false },
     ],
   },
   {

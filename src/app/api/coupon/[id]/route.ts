@@ -4,6 +4,7 @@ import Coupon from "@/models/Coupon";
 import "@/models/Category";
 import "@/models/Service";
 import "@/models/Zone";
+import "@/models/Provider";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -156,6 +157,48 @@ export async function DELETE(req: Request) {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+export async function GET(req: Request) {
+  await connectToDatabase();
+
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const coupon = await Coupon.findById(id)
+      .populate("category")
+      .populate("service")
+      .populate("zone")
+      // .populate("provider");
+
+    if (!coupon) {
+      return NextResponse.json(
+        { success: false, message: "Coupon not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: coupon },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+
     return NextResponse.json(
       { success: false, message },
       { status: 500, headers: corsHeaders }

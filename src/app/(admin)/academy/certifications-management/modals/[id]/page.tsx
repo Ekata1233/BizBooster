@@ -115,12 +115,21 @@ const handleUpdate = async () => {
     });
 
     try {
-        await updateCertificate(editId, fd);
-      alert('Tutorial updated successfully');
+      const res =  await updateCertificate(editId, fd);
+        if (!res || !res._id) {
+    throw new Error('Failed to update tutorial');
+  }
+
+  alert('Tutorial updated successfully');
       router.push('/academy/certifications-management/Tutorial-List'); 
     } catch (err) {
         console.error('Error updating webinar:', err);
-        alert('Failed to update webinar');
+         const message =
+      err?.response?.data?.message ||
+      err.message ||
+      'Failed to update tutorial';
+
+    alert(message);
     }
 };
 

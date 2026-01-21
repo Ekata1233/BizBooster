@@ -11,7 +11,6 @@ import { SubcategoryProvider } from '@/context/SubcategoryContext';
 import { BannerProvider } from '@/context/BannerContext';
 import { ServiceProvider } from '@/context/ServiceContext';
 import { ProviderContextProvider } from '@/context/ProviderContext';
-import { WhyChooseProvider } from '@/context/WhyChooseContext';
 import { ZoneProvider } from '@/context/ZoneContext';
 import RouteLoader from '@/components/RouteLoader';
 import { SubscribeProvider } from '@/context/SubscribeContext';
@@ -38,6 +37,7 @@ import { PackageTransactionProvider } from '@/context/PackageTransactionContext'
 import { RewardProvider } from '@/context/RewardContext';
 import { ClaimNowProvider } from '@/context/ClaimContext';
 import { SupportQuestionProvider } from '@/context/SupportContext';
+import { WhyJustOurServiceProvider } from '@/context/WhyJustOurServiceContext';
 
 
 
@@ -68,7 +68,6 @@ export default function RootLayout({
                           <BannerProvider>
                             <ServiceProvider>
                               <ProviderContextProvider>
-                                <WhyChooseProvider>
                                   <ZoneProvider>
                                     <SubscribeProvider>
                                       <CouponProvider>
@@ -92,7 +91,9 @@ export default function RootLayout({
                                                                           <RewardProvider>
                                                                             <ClaimNowProvider>
                                                                               <SupportQuestionProvider>
+                                                                                <WhyJustOurServiceProvider>
                                                                             {children}
+                                                                            </WhyJustOurServiceProvider>
                                                                               </SupportQuestionProvider>
                                                                             </ClaimNowProvider>
                                                                           </RewardProvider>
@@ -116,7 +117,6 @@ export default function RootLayout({
                                       </CouponProvider>
                                     </SubscribeProvider>
                                   </ZoneProvider>
-                                </WhyChooseProvider>
                               </ProviderContextProvider>
                             </ServiceProvider>
                           </BannerProvider>

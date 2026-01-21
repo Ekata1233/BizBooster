@@ -22,8 +22,8 @@ interface BasicTableOneProps<T> {
 export default function BasicTableOne<T>({ columns, data }: BasicTableOneProps<T>) {
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[800px]">
+      <div className="relative max-w-full overflow-x-auto">
+       <div className="inline-block min-w-full">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">

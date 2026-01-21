@@ -62,28 +62,97 @@ export async function POST(req: Request) {
 }
 
 // GET - Get all banners (that are not deleted)
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     console.log("search params : ", searchParams)
+//     const search = searchParams.get('search');
+//     const subcategory = searchParams.get('subcategory');
+//     const sort = searchParams.get('sort');
+
+//     const filter: Record<string, unknown> = { isDeleted: false };
+//     if (search) {
+//       filter.$or = [
+//         { page: { $regex: search, $options: 'i' } }
+//       ];
+//     }
+
+//     if (subcategory) {
+//       filter.subcategory = subcategory;
+//     }
+
+//     // Build query
+//     let sortOption: Record<string, 1 | -1> = {};
+
+//     switch (sort) {
+//       case 'latest':
+//         sortOption = { createdAt: -1 };
+//         break;
+//       case 'oldest':
+//         sortOption = { createdAt: 1 };
+//         break;
+//       case 'ascending':
+//         sortOption = { subcategory: 1 };
+//         break;
+//       case 'descending':
+//         sortOption = { subcategory: -1 };
+//         break;
+//       default:
+//         sortOption = { createdAt: -1 };
+//     }
+
+//     const banners = await Banner.find(filter)
+//       .populate('module')
+//       .populate('category')
+//       .populate({
+//         path: 'subcategory',
+//         populate: {
+//           path: 'category',
+//           select: 'name' 
+//         }
+//       }).sort(sortOption).lean();
+
+//     return NextResponse.json(banners, { status: 200, headers: corsHeaders });
+//   } catch (err: unknown) {
+//     const errorMessage = err instanceof Error ? err.message : String(err);
+//     console.error('GET /api/banner error:', errorMessage);
+//     return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500, headers: corsHeaders });
+//   }
+// }
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
+
   try {
     const { searchParams } = new URL(req.url);
-    console.log("search params : ", searchParams)
+
+    const moduleId = searchParams.get('module');
     const search = searchParams.get('search');
     const subcategory = searchParams.get('subcategory');
     const sort = searchParams.get('sort');
 
     const filter: Record<string, unknown> = { isDeleted: false };
+
+    /* ---------------- GET BY MODULE ONLY ---------------- */
+    if (moduleId) {
+      filter.module = moduleId;
+    }
+
+    /* ---------------- SEARCH ---------------- */
     if (search) {
       filter.$or = [
-        { page: { $regex: search, $options: 'i' } }
+        { page: { $regex: search, $options: 'i' } },
       ];
     }
 
+    /* ---------------- SUBCATEGORY FILTER ---------------- */
     if (subcategory) {
       filter.subcategory = subcategory;
     }
 
-    // Build query
-    let sortOption: Record<string, 1 | -1> = {};
+    /* ---------------- SORT ---------------- */
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
 
     switch (sort) {
       case 'latest':
@@ -93,13 +162,11 @@ export async function GET(req: NextRequest) {
         sortOption = { createdAt: 1 };
         break;
       case 'ascending':
-        sortOption = { subcategory: 1 };
+        sortOption = { createdAt: 1 };
         break;
       case 'descending':
-        sortOption = { subcategory: -1 };
-        break;
-      default:
         sortOption = { createdAt: -1 };
+        break;
     }
 
     const banners = await Banner.find(filter)
@@ -109,14 +176,22 @@ export async function GET(req: NextRequest) {
         path: 'subcategory',
         populate: {
           path: 'category',
-          select: 'name' 
-        }
-      }).sort(sortOption).lean();
+          select: 'name',
+        },
+      })
+      .sort(sortOption)
+      .lean();
 
-    return NextResponse.json(banners, { status: 200, headers: corsHeaders });
-  } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    console.error('GET /api/banner error:', errorMessage);
-    return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(banners, {
+      status: 200,
+      headers: corsHeaders,
+    });
+
+  } catch (err) {
+    console.error('GET /api/banner error:', err);
+    return NextResponse.json(
+      { error: 'Failed to fetch banners' },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }

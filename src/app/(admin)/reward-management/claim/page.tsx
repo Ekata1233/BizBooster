@@ -10,6 +10,7 @@ import Input from '@/components/form/input/InputField';
 import RouteLoader from '@/components/RouteLoader';
 import { EyeIcon } from '@/icons';
 import { useClaimNow } from '@/context/ClaimContext';
+import { InboxIcon } from 'lucide-react';
 
 const ClaimNowPage = () => {
   const { claims, fetchClaims, loading } = useClaimNow();
@@ -231,7 +232,20 @@ const ClaimNowPage = () => {
           </ul>
         </div>
 
+{currentRows.length === 0 ? (
+  <div className="flex flex-col items-center justify-center py-10 px-6 border border-gray-200 rounded-lg bg-gray-50">
+  <InboxIcon className="w-12 h-12 text-gray-400 mb-3" />
+  <p className="text-gray-700 font-semibold text-base">
+    No records available
+  </p>
+  <p className="text-sm text-gray-500 mt-1">
+    There is no data to display for the selected criteria.
+  </p>
+</div>
+
+) : (
         <BasicTableOne columns={columns} data={currentRows} />
+        )}
       </ComponentCard>
     </div>
   );

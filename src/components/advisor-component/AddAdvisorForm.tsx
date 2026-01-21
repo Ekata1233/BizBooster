@@ -29,6 +29,8 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
   const [fileInputKey, setFileInputKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+const [preview, setPreview] = useState<string | null>(null);
+const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAdvisor = async () => {
@@ -94,6 +96,10 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
       alert('Please fill in all required fields.');
       return;
     }
+if (errorMessage) {
+  alert("Please fix image errors before submitting.");
+  return;
+}
 
     try {
       setLoading(true);
@@ -111,15 +117,29 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
         await updateAdvisor(advisorIdToEdit, formData);
         alert('Advisor updated successfully!');
       } else {
-        await addAdvisor(formData);
-        alert('Advisor added successfully!');
+       const res = await addAdvisor(formData);
+console.log("response for add advisor : ", res);
+if (!res?.success) {
+  alert(res?.message || 'Submission failed');
+  return;
+}
+
+alert('Advisor added successfully!');
+
       }
 
       resetForm();
-    } catch (err) {
-      console.error('Submit error:', err);
-      setError('Submission failed. Try again.');
-    } finally {
+    } catch (err: any) {
+  console.error('Submit error:', err);
+
+  const apiMessage =
+    err.response?.data?.message ||
+    err.message ||
+    'Submission failed';
+alert(apiMessage);
+  setError(apiMessage);
+}
+ finally {
       setLoading(false);
     }
   };
@@ -128,7 +148,7 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
     <div>
       <ComponentCard title={advisorIdToEdit ? 'Edit Advisor' : 'Add New Advisor'}>
         {loading && <p className="text-blue-500">Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {/* {error && <p className="text-red-500">{error}</p>} */}
 
         <form
           onSubmit={handleSubmit}
@@ -148,16 +168,54 @@ const AddAdvisor: React.FC<AddAdvisorProps> = ({ advisorIdToEdit }) => {
           <div>
             <Label>Main Image</Label>
             <FileInput
-              accept="image/*"
-              key={fileInputKey}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  setImageUrl(file);
-                }
-              }}
-            />
+  accept="image/*"
+  key={fileInputKey}
+  onChange={(e) => {
+    const file = e.target.files?.[0] || null;
+
+    if (!file) {
+      setImageUrl(null);
+      setPreview(null);
+      setErrorMessage(null);
+      return;
+    }
+
+    // ✅ Allowed file types
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      setErrorMessage("Invalid file type. Allowed: JPEG, JPG, PNG, WEBP, GIF");
+      e.target.value = "";
+      return;
+    }
+
+    // ✅ Max size 1MB
+    if (file.size > 1024 * 1024) {
+      setErrorMessage("Image size must be ≤ 1MB");
+      e.target.value = "";
+      return;
+    }
+
+    setErrorMessage(null);
+    setImageUrl(file);
+    setPreview(URL.createObjectURL(file));
+  }}
+/>
+
             {imageUrl && <p className="text-sm text-gray-500 mt-1">Selected: {imageUrl.name}</p>}
+
+            {preview && (
+  <img
+    src={preview}
+    alt="Advisor Preview"
+    className="w-full h-48 object-cover rounded-lg mt-2"
+  />
+)}
+{errorMessage && (
+  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mt-2 text-sm">
+    {errorMessage}
+  </div>
+)}
+
           </div>
 
           <div>

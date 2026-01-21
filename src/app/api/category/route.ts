@@ -100,66 +100,75 @@ export async function POST(req: Request) {
 }
 
 
+
+
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
   const selectedModule = searchParams.get("selectedModule") || "";
+  const moduleId = searchParams.get("moduleId") || "";
 
   try {
-    // Always fetch all with populate
-const categories = await Category.find({})
-  .populate("module")
-  .sort({ sortOrder: 1, createdAt: 1 }); // ✅ SORT BY order
+    const query: any = { isDeleted: false };
 
-    // Filter in-memory for `name` and `module.name`
-    let filteredCategories = categories;
-
-  
-
-    if (search || selectedModule) {
-      const regex = search ? new RegExp(search, "i") : null;
-
-      filteredCategories = categories.filter((cat) => {
-        const matchesSearch = regex
-          ? regex.test(cat.name) || regex.test(cat.module?.name)
-          : true;
-
-        const matchesModule = selectedModule
-          ? cat.module?._id?.toString() === selectedModule
-          : true;
-
-        return matchesSearch && matchesModule;
-      });
+    // 🔹 Priority: moduleId > selectedModule
+    if (moduleId) {
+      query.module = moduleId;
+    } else if (selectedModule) {
+      query.module = selectedModule;
     }
 
+    // 🔹 Search category name
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
 
-    const categoriesWithSubcategoryCount = await Promise.all(
-      filteredCategories.map(async (category) => {
-        // Count the number of subcategories related to this category
-        const subcategoryCount = await Subcategory.countDocuments({
-          category: category._id,
-            isDeleted: false,
-        });
+    // 1️⃣ Fetch categories
+    const categories = await Category.find(query)
+      .populate("module")
+      .sort({ sortOrder: 1, createdAt: 1 })
+      .lean(); // IMPORTANT
 
-        // Return category with subcategory count
-        return {
-          ...category.toObject(),
-          subcategoryCount,
-        };
-      })
-    );
+    // 2️⃣ Get subcategory counts in ONE query
+    const subcategoryCounts = await Subcategory.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          category: { $in: categories.map(c => c._id) },
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // 3️⃣ Convert counts to map
+    const countMap: Record<string, number> = {};
+    subcategoryCounts.forEach(item => {
+      countMap[item._id.toString()] = item.count;
+    });
+
+    // 4️⃣ Attach count to each category
+    const finalData = categories.map(category => ({
+      ...category,
+      subcategoryCount: countMap[category._id.toString()] || 0,
+    }));
 
     return NextResponse.json(
-      { success: true, data: categoriesWithSubcategoryCount },
+      { success: true, data: finalData },
       { status: 200, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    const err = error as Error;
+
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, message: err.message },
+      { success: false, message: error.message },
       { status: 500, headers: corsHeaders }
     );
   }
 }
+

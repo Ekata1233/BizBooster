@@ -15,6 +15,7 @@ const RewardPage = () => {
   // 🆕 New states
   const [extraMonthlyEarn, setExtraMonthlyEarn] = useState("");
   const [extraMonthlyEarnDescription, setExtraMonthlyEarnDescription] = useState("");
+const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 🟢 Load reward data for selected packageType
   useEffect(() => {
@@ -53,8 +54,15 @@ const RewardPage = () => {
     formData.append("extraMonthlyEarnDescription", extraMonthlyEarnDescription); // 🆕
     if (photo) formData.append("photo", photo);
 
-    await saveReward(formData);
-    alert(`${selectedTab} reward saved successfully!`);
+   const response = await saveReward(formData);
+
+if (!response?.success) {
+  setErrorMessage(response?.message || "Something went wrong");
+  return;
+}
+
+alert(`${selectedTab} reward saved successfully!`);
+
   };
 
   // 🔴 Handle Delete
@@ -103,7 +111,11 @@ const RewardPage = () => {
         <h2 className="text-xl font-bold text-gray-700">
           {selectedTab} Reward
         </h2>
-
+{errorMessage && (
+  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+    {errorMessage}
+  </div>
+)}
         {/* Reward Name */}
         <div>
           <label className="block font-semibold mb-2 text-gray-700">
@@ -112,7 +124,11 @@ const RewardPage = () => {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+             onChange={(e) => {
+    setName(e.target.value);
+    setErrorMessage(null);
+  }}
+            
             placeholder="Enter reward name"
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           />
@@ -126,11 +142,37 @@ const RewardPage = () => {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0] || null;
-              setPhoto(file);
-              setPreview(file ? URL.createObjectURL(file) : preview);
-            }}
+           onChange={(e) => {
+  const file = e.target.files?.[0] || null;
+
+  if (!file) {
+    setPhoto(null);
+    setPreview(null);
+    setErrorMessage(null);
+    return;
+  }
+
+  // Allowed types
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+  if (!allowedTypes.includes(file.type)) {
+    setErrorMessage("Invalid file type. Allowed: JPEG, JPG, PNG, WEBP, GIF");
+    e.target.value = ""; // reset input
+    return;
+  }
+
+  // Max size 1MB
+  if (file.size > 1024 * 1024) {
+    setErrorMessage(`Image size must be ≤ 1MB. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+    e.target.value = ""; // reset input
+    return;
+  }
+
+  setErrorMessage(null);
+  setPhoto(file);
+  setPreview(URL.createObjectURL(file));
+}}
+
+
             className="w-full border rounded-lg px-3 py-2 bg-gray-50"
           />
           {preview && (
@@ -149,7 +191,10 @@ const RewardPage = () => {
           </label>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+    setDescription(e.target.value);
+    setErrorMessage(null);
+  }}
             placeholder={`Enter ${selectedTab} reward description`}
             rows={3}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
@@ -164,7 +209,10 @@ const RewardPage = () => {
           <input
             type="text"
             value={extraMonthlyEarn}
-            onChange={(e) => setExtraMonthlyEarn(e.target.value)}
+             onChange={(e) => {
+    setExtraMonthlyEarn(e.target.value);
+    setErrorMessage(null);
+  }}
             placeholder="Enter extra monthly earn amount"
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           />
@@ -177,12 +225,16 @@ const RewardPage = () => {
           </label>
           <textarea
             value={extraMonthlyEarnDescription}
-            onChange={(e) => setExtraMonthlyEarnDescription(e.target.value)}
+           onChange={(e) => {
+    setExtraMonthlyEarnDescription(e.target.value);
+    setErrorMessage(null);
+  }}
             placeholder="Enter extra monthly earn details"
             rows={3}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
 
         {/* Buttons */}
         <div className="flex justify-between">

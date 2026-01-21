@@ -56,6 +56,23 @@ async function parseFormAndUpload(
   // Handle text fields first
   for (const [key, value] of fd.entries()) {
     if (value instanceof Blob) continue; // Node-safe check
+     if (key === "tags") {
+      // handle tags safely
+      if (typeof value === "string") {
+        try {
+          storeInfo.tags = JSON.parse(value); // ["a","b"]
+        } catch {
+          storeInfo.tags = value.split(",").map(v => v.trim());
+        }
+      }
+      continue;
+    }
+
+    if (key === "totalProjects" || key === "totalExperience") {
+      storeInfo[key] = Number(value);
+      continue;
+    }
+
     try {
       storeInfo[key] = JSON.parse(value as string); // allow JSON strings
     } catch {
@@ -83,6 +100,36 @@ async function parseFormAndUpload(
   return storeInfo;
 }
 
+function validateStoreInfo(storeInfo: any) {
+  const errors: string[] = [];
+
+  const onlyChars = /^[A-Za-z\s]+$/;
+
+  if (storeInfo.storeName) {
+    if (storeInfo.storeName.length < 3)
+      errors.push("Store name must be at least 3 characters");
+    if (!onlyChars.test(storeInfo.storeName))
+      errors.push("Store name must contain only letters");
+  }
+
+  if (!storeInfo.logo) {
+    errors.push("Store logo is required");
+  }
+  
+  if (storeInfo.city && !onlyChars.test(storeInfo.city))
+    errors.push("City must contain only letters");
+
+  if (storeInfo.state && !onlyChars.test(storeInfo.state))
+    errors.push("State must contain only letters");
+
+  if (storeInfo.country && !onlyChars.test(storeInfo.country))
+    errors.push("Country must contain only letters");
+
+  if (storeInfo.address && storeInfo.address.length < 5)
+    errors.push("Address must be at least 5 characters");
+
+  return errors;
+}
 
 /** ---- API handlers ------------------------------------------------------ */
 
@@ -96,8 +143,16 @@ export async function PUT(req: NextRequest) {
   try {
     const storeInfo = await parseFormAndUpload(req, providerId);
 
-    console.log("store info : ", storeInfo)
-        console.log("providerId info : ", providerId)
+    const validationErrors = validateStoreInfo(storeInfo);
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        {
+           message: validationErrors[0], 
+    errors: validationErrors,
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
 
     const provider = await Provider.findByIdAndUpdate(
@@ -107,7 +162,7 @@ export async function PUT(req: NextRequest) {
         storeInfoCompleted: true,
         registrationStatus: "store",
       },
-      { new: true },
+      { new: true, runValidators: true },
     );
 
     return NextResponse.json({ message: "Store info saved", provider },{ headers: corsHeaders });

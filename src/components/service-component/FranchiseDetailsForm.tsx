@@ -7,6 +7,7 @@ import FileInput from '../form/input/FileInput';
 import { TrashBinIcon } from '../../icons';
 import dynamic from 'next/dynamic';
 import { FranchiseDetails } from '@/context/ServiceContext';
+import { moduleFieldConfig } from '@/utils/moduleFieldConfig';
 
 const ClientSideCustomEditor = dynamic(
   () => import('../../components/custom-editor/CustomEditor'),
@@ -17,8 +18,9 @@ const ClientSideCustomEditor = dynamic(
 // Types
 // ---------------------------
 type RowData = { title: string; description: string };
-type InvestmentRange = { minRange: number | null; maxRange: number | null };
-type MonthlyEarnPotential = { minEarn: number | null; maxEarn: number | null };
+type InvestmentRange = { range: string; parameters: string };
+type MonthlyEarnPotential = { range: string; parameters: string };
+type AreaRequired = string;
 type FranchiseModel = {
   title: string;
   agreement?: string;
@@ -30,7 +32,7 @@ type FranchiseModel = {
 type ExtraSection = {
   title: string;
   subtitle: string[];
-  image: string[]; // using URL strings for images to keep consistent with ServiceDetailsForm approach
+  image: string[];
   description: string[];
   subDescription: string[];
   lists: string[];
@@ -41,10 +43,10 @@ interface FranchiseDetailsFormProps {
   data: FranchiseDetails;
   setData: (newData: Partial<FranchiseDetails>) => void;
   price?: number;
-   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["franchiseDetails"];
+  fieldsConfig?: typeof moduleFieldConfig["Franchise"]["franchiseDetails"];
 }
 
-const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price,fieldsConfig  }) => {
+const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setData, price ,fieldsConfig  }) => {
   const mounted = useRef(false);
 
 
@@ -60,15 +62,16 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
   const [showExtraSections, setShowExtraSections] = useState(false);
+const didInitFromData = useRef(false);
 
 
-  // Newly added schema-aligned fields
   const [investmentRange, setInvestmentRange] = useState<InvestmentRange[]>(
-    data?.investmentRange?.length ? data.investmentRange : [{ minRange: null, maxRange: null }]
-  );
-  const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>(
-    data?.monthlyEarnPotential?.length ? data.monthlyEarnPotential : [{ minEarn: null, maxEarn: null }]
-  );
+  data?.investmentRange?.length ? data.investmentRange : [{ range: '', parameters: '' }]
+);
+const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>(
+  data?.monthlyEarnPotential?.length ? data.monthlyEarnPotential : [{ range: '', parameters: '' }]
+);
+const [areaRequired, setAreaRequired] = useState<string>(data?.areaRequired || '');
   const [franchiseModel, setFranchiseModel] = useState<FranchiseModel[]>(
     data?.franchiseModel?.length
       ? data.franchiseModel
@@ -80,7 +83,6 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
       : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
   );
   const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : []);
-
 
   useEffect(() => {
     // no-op to keep behavior consistent with other forms that use mounted ref
@@ -99,6 +101,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   termsAndConditions,
   investmentRange,
   monthlyEarnPotential,
+  areaRequired,
   franchiseModel,
   extraSections,
   extraImages,
@@ -112,39 +115,54 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   termsAndConditions,
   investmentRange,
   monthlyEarnPotential,
+  areaRequired,
   franchiseModel,
   extraSections,
   extraImages,
   ]);
 
 
-  useEffect(() => {
-     if (data?.termsAndConditions) {
-    setTermsAndConditions(data.termsAndConditions);
-  }
+useEffect(() => {
+  if (!data || didInitFromData.current) return;
+
+  didInitFromData.current = true;
+
+  setTermsAndConditions(data.termsAndConditions || '');
+
   if (data.commission) {
     const numericValue = data.commission.replace(/[^\d]/g, '');
     setCommissionValue(numericValue);
   }
-   if (Array.isArray(data.investmentRange) && data.investmentRange.length) {
-    setInvestmentRange(data.investmentRange);
-  }
 
-  if (
-    Array.isArray(data.monthlyEarnPotential) &&
-    data.monthlyEarnPotential.length
-  ) {
-    setMonthlyEarnPotential(data.monthlyEarnPotential);
-  }
+  setCommissionType(data.commissionType || 'percentage');
 
-  if (Array.isArray(data.franchiseModel) && data.franchiseModel.length) {
-    setFranchiseModel(data.franchiseModel);
-  }
+ setInvestmentRange(
+  Array.isArray(data.investmentRange) && data.investmentRange.length
+    ? data.investmentRange
+    : [{ range: '', parameters: '' }]
+);
 
-  if (Array.isArray(data.extraSections) && data.extraSections.length) {
-    setExtraSections(data.extraSections);
-  }
-}, [data]);
+setMonthlyEarnPotential(
+  Array.isArray(data.monthlyEarnPotential) && data.monthlyEarnPotential.length
+    ? data.monthlyEarnPotential
+    : [{ range: '', parameters: '' }]
+);
+
+  setFranchiseModel(
+    Array.isArray(data.franchiseModel) && data.franchiseModel.length
+      ? data.franchiseModel
+      : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
+  );
+
+  setExtraSections(
+    Array.isArray(data.extraSections) && data.extraSections.length
+      ? data.extraSections
+      : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
+  );
+
+  setExtraImages(Array.isArray(data.extraImages) ? data.extraImages : []);
+}, []);
+
   // -----------------------
   // Commission handlers (kept unchanged)
   // -----------------------
@@ -163,47 +181,25 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
     }
   };
 
-  // -----------------------
-  // Row handlers
-  // -----------------------
-  const handleAddRow = () => {
-    const newRows = [...rows, { title: '', description: '' }];
-    setRows(newRows);
-  };
-
-  const handleRemoveRow = (index: number) => {
-    const updated = [...rows];
-    updated.splice(index, 1);
-    setRows(updated);
-  };
-
-  const handleRowChange = (index: number, field: keyof RowData, value: string) => {
-    const updated = [...rows];
-    updated[index] = { ...updated[index], [field]: value };
-    setRows(updated);
-  };
-
-  // -----------------------
-  // InvestmentRange handlers
-  // -----------------------
-  const addInvestmentRange = () => setInvestmentRange([...investmentRange, { minRange: null, maxRange: null }]);
-  const removeInvestmentRange = (i: number) => setInvestmentRange(investmentRange.filter((_, idx) => idx !== i));
-  const updateInvestmentRange = (i: number, key: 'minRange' | 'maxRange', value: number | null) => {
-    const v = [...investmentRange];
-    v[i] = { ...v[i], [key]: value };
-    setInvestmentRange(v);
-  };
+  
+const addInvestmentRange = () => setInvestmentRange([...investmentRange, { range: '', parameters: '' }]);
+const removeInvestmentRange = (i: number) => setInvestmentRange(investmentRange.filter((_, idx) => idx !== i));
+const updateInvestmentRange = (i: number, key: 'range' | 'parameters', value: string) => {
+  const v = [...investmentRange];
+  v[i] = { ...v[i], [key]: value };
+  setInvestmentRange(v);
+};
 
   // -----------------------
   // MonthlyEarn handlers
   // -----------------------
-  const addMonthlyEarn = () => setMonthlyEarnPotential([...monthlyEarnPotential, { minEarn: null, maxEarn: null }]);
-  const removeMonthlyEarn = (i: number) => setMonthlyEarnPotential(monthlyEarnPotential.filter((_, idx) => idx !== i));
-  const updateMonthlyEarn = (i: number, key: 'minEarn' | 'maxEarn', value: number | null) => {
-    const v = [...monthlyEarnPotential];
-    v[i] = { ...v[i], [key]: value };
-    setMonthlyEarnPotential(v);
-  };
+  const addMonthlyEarn = () => setMonthlyEarnPotential([...monthlyEarnPotential, { range: '', parameters: '' }]);
+const removeMonthlyEarn = (i: number) => setMonthlyEarnPotential(monthlyEarnPotential.filter((_, idx) => idx !== i));
+const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string) => {
+  const v = [...monthlyEarnPotential];
+  v[i] = { ...v[i], [key]: value };
+  setMonthlyEarnPotential(v);
+};
 
   // -----------------------
   // FranchiseModel handlers
@@ -269,49 +265,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   };
   const removeExtraImage = (i: number) => setExtraImages(extraImages.filter((_, idx) => idx !== i));
 
-  // -----------------------
-  // render helper for generic array sections (keeps style similar to ServiceDetailsForm)
-  // -----------------------
-  const renderArrayField = <T extends object>(
-    items: T[] | undefined,
-    setItems: React.Dispatch<React.SetStateAction<T[]>>,
-    renderItem: (item: T, idx: number, updateItem: (newItem: T) => void) => React.ReactNode,
-    defaultItem: T
-  ) => {
-    const safeItems = items || [];
-    return (
-      <div className="my-3">
-        {safeItems.map((item, idx) => (
-          <div key={idx} className="border p-4 rounded mb-3 relative">
-            {renderItem(item, idx, (newItem: T) =>
-              setItems((prev) => {
-                const arr = prev || [];
-                return arr.map((it, i) => (i === idx ? newItem : it));
-              })
-            )}
-            <button
-              type="button"
-              className="absolute top-2 right-2 text-red-500"
-              onClick={() => setItems(safeItems.filter((_, i) => i !== idx))}
-            >
-              <TrashBinIcon className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => setItems([...safeItems, defaultItem])}
-        >
-          + Add More
-        </button>
-      </div>
-    );
-  };
 
-  // -----------------------
-  // Render
-  // -----------------------
   return (
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">
@@ -394,11 +348,12 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
         </div>
 
         {/* Editors */}
-         {fieldsConfig?.termsAndConditions && (
+        {fieldsConfig?.termsAndConditions && (
         <div className="my-3">
            <div className="flex items-center gap-2">
                 
           <Label>Terms & Conditions</Label>
+            <span className="text-red-500 text-sm font-semibold">(All Services)</span>
           </div>
           <ClientSideCustomEditor value={termsAndConditions || ''} onChange={setTermsAndConditions} />
         </div>
@@ -406,150 +361,128 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 
       
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   {/* Investment Range */}
   {fieldsConfig?.investmentRange && (
-  <div>
+<div>
   <div className="my-4">
-  <div className="items-center gap-2">
-    <Label>Investment Range</Label>
-  
-  </div>
-
-  <div className="border p-4 rounded">
-    {investmentRange.map((item, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2 items-center"
+    <div className="flex items-center gap-2">
+      <Label>Investment Range</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
+      {investmentRange.map((item, i) => (
+        <div key={i} className="flex gap-4 mt-2 items-center">
+          <Input
+            placeholder="Range (e.g., 5-10)"
+            value={item.range ?? ''}
+            onChange={(e) =>
+              updateInvestmentRange(i, 'range', e.target.value)
+            }
+          />
+          <Input
+            placeholder="Parameters (e.g., rupees, lakhs)"
+            value={item.parameters ?? ''}
+            onChange={(e) =>
+              updateInvestmentRange(i, 'parameters', e.target.value)
+            }
+          />
+          <button
+            type="button"
+            className="text-red-500"
+            onClick={() => removeInvestmentRange(i)}
+          >
+            <TrashBinIcon className="w-5 h-5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addInvestmentRange}
+        className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
       >
-        {/* Min Range */}
-        <Input
-          type="number"
-          placeholder="Min Range"
-          value={item.minRange ?? ''}
-          onChange={(e) =>
-            updateInvestmentRange(
-              i,
-              'minRange',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Max Range */}
-        <Input
-          type="number"
-          placeholder="Max Range"
-          value={item.maxRange ?? ''}
-          onChange={(e) =>
-            updateInvestmentRange(
-              i,
-              'maxRange',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Delete Button */}
-        <button
-          type="button"
-          className="text-red-500 flex justify-start md:justify-center"
-          onClick={() => removeInvestmentRange(i)}
-        >
-          <TrashBinIcon className="w-5 h-5" />
-        </button>
-      </div>
-    ))}
-
-    {/* Add Button */}
-    <button
-      type="button"
-      onClick={addInvestmentRange}
-      className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
-    >
-      + Add Investment Range
-    </button>
-   
+        + Add Investment Range
+      </button>
+    </div>
   </div>
 </div>
-
-  </div>
-  )}
+)}
 
   {/* Monthly Earn Potential */}
-  {fieldsConfig?.monthlyEarnPotential && (
-  <div>
-   <div className="my-4">
-  <div className="items-center gap-2">
-    <Label>Monthly Earn Potential</Label>
-    
-  </div>
-
-  <div className="border p-4 rounded">
-    {monthlyEarnPotential.map((item, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2 items-center"
+    {fieldsConfig?.monthlyEarnPotential && (
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Monthly Earn Potential</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
+      {monthlyEarnPotential.map((item, i) => (
+        <div key={i} className="flex gap-4 mt-2 items-center">
+          <Input
+            placeholder="Range (e.g., 20-50)"
+            value={item.range ?? ''}
+            onChange={(e) =>
+              updateMonthlyEarn(i, 'range', e.target.value)
+            }
+          />
+          <Input
+            placeholder="Parameters (e.g., rupees, per month)"
+            value={item.parameters ?? ''}
+            onChange={(e) =>
+              updateMonthlyEarn(i, 'parameters', e.target.value)
+            }
+          />
+          <button
+            type="button"
+            className="text-red-500"
+            onClick={() => removeMonthlyEarn(i)}
+          >
+            <TrashBinIcon className="w-5 h-5" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addMonthlyEarn}
+        className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
       >
-        {/* Min Earn */}
-        <Input
-          type="number"
-          placeholder="Min Earn"
-          value={item.minEarn ?? ''}
-          onChange={(e) =>
-            updateMonthlyEarn(
-              i,
-              'minEarn',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Max Earn */}
-        <Input
-          type="number"
-          placeholder="Max Earn"
-          value={item.maxEarn ?? ''}
-          onChange={(e) =>
-            updateMonthlyEarn(
-              i,
-              'maxEarn',
-              e.target.value ? Number(e.target.value) : null
-            )
-          }
-        />
-
-        {/* Delete button */}
-        <button
-          type="button"
-          className="text-red-500 flex justify-start md:justify-center"
-          onClick={() => removeMonthlyEarn(i)}
-        >
-          <TrashBinIcon className="w-5 h-5" />
-        </button>
-      </div>
-    ))}
-
-    <button
-      type="button"
-      onClick={addMonthlyEarn}
-      className="mt-3 bg-blue-500 text-white px-3 py-2 rounded"
-    >
-      + Add Monthly Earn
-    </button>
+        + Add Monthly Earn
+      </button>
+    </div>
   </div>
 </div>
+)}
 
+{fieldsConfig?.areaRequired && (
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Area Required</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
+        <div  className="flex gap-4 mt-2 items-center">
+        <Input
+            placeholder="100sq - 500sq"
+            value={areaRequired}
+            onChange={(e) => setAreaRequired(e.target.value)}
+          />
+        </div>
+    </div>
   </div>
-  )}
+</div>
+)}
+</div>
 
 
         {/* Franchise Model */}
-        {fieldsConfig?.franchiseModel && (
+         {fieldsConfig?.franchiseModel && (
         <div className="my-4">
            <div className="flex items-center gap-2">
                 
           <Label>Franchise Model</Label>
-            
+            <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
           </div>
           {franchiseModel.map((item, i) => (
             <div key={i} className="border p-4 rounded mb-3 relative">
@@ -609,7 +542,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
             + Add Franchise Model
           </button>
         </div>
-        )}
+         )}
 
         {/* Extra Images (URLs) */}
         {fieldsConfig?.extraImages && (
@@ -655,8 +588,9 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   </button>
 </div>
         )}
+ 
 
-
+        {/* Extra Sections */}
 {/* Extra Sections */}
 {fieldsConfig?.extraSections && (
 <div className="my-4">
@@ -819,4 +753,3 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
 };
 
 export default FranchiseDetailsForm;
- 

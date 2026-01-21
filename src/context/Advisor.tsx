@@ -21,7 +21,7 @@ type AdvisorData = {
 
 interface AdvisorContextType {
   advisors: AdvisorData[];
-  addAdvisor: (formData: FormData) => Promise<void>;
+  addAdvisor: (formData: FormData) => Promise<any>;
   updateAdvisor: (id: string, formData: FormData) => Promise<void>;
   fetchAdvisorById: (id: string) => Promise<AdvisorData | null>;
   deleteAdvisor: (id: string) => Promise<void>;
@@ -46,14 +46,22 @@ export const AdvisorProvider = ({ children }: { children: React.ReactNode }) => 
     fetchAdvisors();
   }, []);
 
-  const addAdvisor = async (formData: FormData) => {
-    try {
-      await axios.post("/api/advisor", formData);
-      fetchAdvisors();
-    } catch (error) {
-      console.error("Error adding advisors:", error);
-    }
-  };
+const addAdvisor = async (formData: FormData) => {
+  try {
+    const res = await axios.post("/api/advisor", formData);
+    console.log("res of advisor context : ", res);
+
+    fetchAdvisors();
+    return res.data;
+  } catch (error: any) {
+    console.error(
+      "Error adding advisor:",
+      error.response?.data || error.message
+    );
+    throw error; // 🔥 VERY IMPORTANT
+  }
+};
+
 
   const updateAdvisor = async (id: string, formData: FormData) => {
     try {

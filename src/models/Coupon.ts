@@ -20,8 +20,10 @@ export interface ICoupon extends Document {
   endDate: Date;
   limitPerUser: number;
   discountCostBearer: 'Admin' | 'Provider';
+  provider?: Types.ObjectId;
   couponAppliesTo: 'Growth Partner' | 'Customer';
   isActive: boolean;
+   isApprove: boolean;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -76,11 +78,19 @@ const CouponSchema = new Schema<ICoupon>(
       enum: ['Admin', 'Provider'],
       required: true,
     },
+    provider: {
+  type: Schema.Types.ObjectId,
+  ref: 'Provider',
+},
     couponAppliesTo: {
       type: String,
       enum: ['Growth Partner', 'Customer'],
       required: true,
     },
+    isApprove: {
+  type: Boolean,
+  default: false,
+},
     isDeleted: {
       type: Boolean,
       default: false,
@@ -96,6 +106,20 @@ CouponSchema.pre('validate', function (next) {
     this.invalidate(
       'maxDiscount',
       'maxDiscount is required when discountAmountType is "Percentage"'
+    );
+  }
+   if (this.discountCostBearer === 'Provider' && !this.provider) {
+    this.invalidate(
+      'provider',
+      'Provider is required when discountCostBearer is "Provider"'
+    );
+  }
+
+  // provider should NOT be set when Admin bears cost (optional but recommended)
+  if (this.discountCostBearer === 'Admin' && this.provider) {
+    this.invalidate(
+      'provider',
+      'Provider must be empty when discountCostBearer is "Admin"'
     );
   }
   next();

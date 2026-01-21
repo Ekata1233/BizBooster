@@ -44,9 +44,6 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
 
             try {
                 const res = await axios.get(`/api/academy/certifications/${certificationIdToEdit}`);
-                // IMPORTANT: Adjust this line based on your actual API response structure
-                // If your API returns { data: { ... } }, then res.data.data is correct.
-                // If your API returns { ... } directly, then use res.data.
                 const data = res.data.data; // KEEP THIS IF YOUR API NESTS DATA. If not, change to res.data;
 
                 setName(data.name || '');
@@ -120,7 +117,6 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
             ...prev,
             { videoUrl: newVideoUrl, name: '', description: '', videoImageFile: null, videoImageUrl: null },
         ]);
-        setNewVideoUrl('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -140,7 +136,7 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
             formData.append('currentImageUrl', imageUrl);
         } else {
             // If neither new file nor existing URL, and it's required for creation/update
-            alert('Main image for the tutorial is required.');
+            alert('Please add first basic details.');
             setLoading(false);
             return;
         }
@@ -151,7 +147,7 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
         for (const [i, video] of videoEntries.entries()) {
             // Basic text field validation for each video
             if (!video.videoUrl || !video.name || !video.description) {
-                alert(`Please complete all text fields (URL, Name, Description) for video entry ${i + 1}.`);
+                alert(`Please complete all details for video no ${i + 1}.`);
                 setLoading(false);
                 return;
             }
@@ -185,36 +181,49 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
         }
 
         try {
+            let res;
             if (certificationIdToEdit) {
                 await axios.put(`/api/academy/certifications/${certificationIdToEdit}`, formData);
                 alert('Tutorial updated!');
             } else {
-                if (addCertificate) {
-                    await addCertificate(formData);
-                } else {
-                    // This path is for direct POST to the API if addCertificate is not provided
-                    await axios.post('/api/academy/certifications', formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                    });
-                }
-                alert('Tutorial added!');
-            }
+              res = await axios.post(
+      '/api/academy/certifications',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
 
-            // Reset form fields after successful submission
+console.log("response of tutorial: ", res);
+
+if (!res.data?.success) {
+  const msg = res.data?.message || 'Failed to submit form.';
+  alert(msg);
+  throw new Error(msg);
+}
+
+alert('✅ Tutorial added successfully!');
+
+            }
             setName('');
             setDescription('');
             setMainImageFile(null);
             setImageUrl(null); // Reset imageUrl state
             setVideoEntries([]);
-        } catch (err) {
-            console.error('Submission error:', err);
-            // Attempt to get a more specific error message from the response
-            if (axios.isAxiosError(err) && err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
-            } else {
-                setError('Failed to submit form. Please try again.');
-            }
-        } finally {
+            setNewVideoUrl('');
+        }catch (err) {
+  console.error('Submission error:', err);
+
+  let message = 'Failed to submit form. Please try again.';
+
+  if (axios.isAxiosError(err)) {
+    message =
+      err.response?.data?.message || // ✅ YOUR backend error
+      err.message ||
+      message;
+  }
+
+  setError(message);
+  alert(message); // ✅ THIS WILL WORK
+} finally {
             setLoading(false);
         }
     };
@@ -223,10 +232,10 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
         <div>
             <ComponentCard title={certificationIdToEdit ? "Edit Tutorial" : "Add New Tutorial"}>
                 {loading && <p className="text-blue-500">Loading...</p>}
-                {error && <p className="text-red-500">{error}</p>}
+                {/* {error && <p className="text-red-500">{error}</p>} */}
 
                 <form onSubmit={handleSubmit} encType="multipart/form-data">
-                    <div className="space-y-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 md:gap-6">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
 
                         <div>
                             <Label htmlFor="certificateName">Tutorial Name</Label>
@@ -274,7 +283,7 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                                     onChange={(e) => setNewVideoUrl(e.target.value)}
                                 />
                                 <Button type="button" onClick={handleAddUrl}>
-                                    + URL
+                                    + Details
                                 </Button>
                             </div>
                         </div>
@@ -341,13 +350,15 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                             </div>
                         ))}
 
-                        <div className="mt-4 col-span-2">
-                            <Button size="sm" variant="primary" type="submit" disabled={loading}>
+                        
+
+                    </div>
+
+                    <div className="mt-6 col-span-2">
+                            <Button className="w-full" size="sm" variant="primary" type="submit" disabled={loading}>
                                 {certificationIdToEdit ? "Update Tutorial" : "Add Tutorial"}
                             </Button>
                         </div>
-
-                    </div>
                 </form>
             </ComponentCard>
         </div>

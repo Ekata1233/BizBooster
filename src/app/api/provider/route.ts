@@ -25,20 +25,6 @@ function isPointInPolygon(
   return inside;
 }
 
-// export async function GET() {
-//   await connectToDatabase();
-//   const providers = await Provider.find().sort().populate({
-//       path: 'subscribedServices',
-//       select: 'serviceName price discountedPrice category isDeleted providerCommission',
-//       populate: {
-//         path: 'category',
-//         select: 'name' // Only get the category name
-//       }
-//     });
-//   return NextResponse.json(providers);
-// }
-
-
 export async function GET(req: NextRequest) {
   await connectToDatabase();
 
@@ -50,7 +36,6 @@ export async function GET(req: NextRequest) {
     let providers: any[] = [];
 
     if (lat && lng) {
-      // ─────────────── Zone-based logic ───────────────
       const allZones = await Zone.find({ isDeleted: false });
       let matchedZone: any = null;
 
@@ -64,22 +49,26 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Providers in matched zone
       let zoneProviders: any[] = [];
       if (matchedZone) {
         zoneProviders = await Provider.find({
           "storeInfo.zone": matchedZone._id,
           isApproved: true,
           isDeleted: false,
-        }).populate({
-          path: "subscribedServices",
-          select:
-            "serviceName price discountedPrice category isDeleted providerCommission",
-          populate: { path: "category", select: "name" },
-        });
+        }).populate([
+          {
+            path: "subscribedServices",
+            select:
+              "serviceName price discountedPrice category isDeleted providerCommission",
+            populate: { path: "category", select: "name" },
+          },
+          {
+            path: "storeInfo.module",       // ✅ Added populate for Module
+            select: "name",                 // Only name field
+          },
+        ]);
       }
 
-      // Providers in PAN INDIA
       const panIndiaZone = allZones.find((z) => z.isPanIndia);
       let panIndiaProviders: any[] = [];
       if (panIndiaZone) {
@@ -87,28 +76,39 @@ export async function GET(req: NextRequest) {
           "storeInfo.zone": panIndiaZone._id,
           isApproved: true,
           isDeleted: false,
-        }).populate({
-          path: "subscribedServices",
-          select:
-            "serviceName price discountedPrice category isDeleted providerCommission",
-          populate: { path: "category", select: "name" },
-        });
+        }).populate([
+          {
+            path: "subscribedServices",
+            select:
+              "serviceName price discountedPrice category isDeleted providerCommission",
+            populate: { path: "category", select: "name" },
+          },
+          {
+            path: "storeInfo.module",       // ✅ Added populate for Module
+            select: "name",
+          },
+        ]);
       }
 
       providers = [...zoneProviders, ...panIndiaProviders];
     } else {
-      // ─────────────── Fallback: get all providers ───────────────
       providers = await Provider.find()
-        .populate({
-          path: "subscribedServices",
-          select:
-            "serviceName price discountedPrice category isDeleted providerCommission",
-          populate: { path: "category", select: "name" },
-        })
+        .populate([
+          {
+            path: "subscribedServices",
+            select:
+              "serviceName price discountedPrice category isDeleted providerCommission",
+            populate: { path: "category", select: "name" },
+          },
+          {
+            path: "storeInfo.module",       // ✅ Added populate for Module
+            select: "name",
+          },
+        ])
         .sort();
     }
 
-    return NextResponse.json( providers, { status: 200 });
+    return NextResponse.json(providers, { status: 200 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ success: false, message }, { status: 500 });

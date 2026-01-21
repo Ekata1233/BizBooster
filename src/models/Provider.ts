@@ -1,11 +1,24 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
+const onlyCharsRegex = /^[A-Za-z\s]+$/;
+
+const minLength = (len: number) => ({
+  validator: (v: string) => !v || v.length >= len,
+  message: `Must be at least ${len} characters long`,
+});
+
+const onlyCharacters = {
+  validator: (v: string) => !v || onlyCharsRegex.test(v),
+  message: "Only alphabetic characters are allowed",
+};
+
+
 /* ─────────────── Interfaces ─────────────────────────── */
 
 export interface Location {
   type: "home" | "office" | "other";
-  coordinates: [number, number]; // [longitude, latitude]
+  coordinates: [number, number];
 }
 
 export interface StoreInfo {
@@ -23,8 +36,10 @@ export interface StoreInfo {
   city?: string;
   state?: string;
   country?: string;
-  postalCode?: string;
   aboutUs?: string;
+  tags?: string[];
+  totalProjects?: number;
+  totalExperience?: string;
 }
 
 export interface KYC {
@@ -47,7 +62,7 @@ export interface ProviderDocument extends Document {
   referralCode?: string;
   referredBy?: mongoose.Schema.Types.ObjectId;
   galleryImages?: string[];
-
+  
   /* step-2 */
   storeInfo?: StoreInfo;
 
@@ -64,6 +79,9 @@ export interface ProviderDocument extends Document {
   isVerified: boolean;
   isDeleted: boolean;
   isStoreOpen?: boolean | null;
+  isPromoted?: boolean | null;
+  isRecommended?: boolean;
+  isTrending? : boolean;
   /* progress flags */
   step1Completed: boolean;
   storeInfoCompleted: boolean;
@@ -95,7 +113,12 @@ const locationSchema = new Schema<Location>(
 
 const storeInfoSchema = new Schema<StoreInfo>(
   {
-    storeName: { type: String, trim: true },
+    storeName: {
+      type: String,
+      trim: true,
+      minlength: [3, "Store name must be at least 3 characters"],
+      match: [onlyCharsRegex, "Store name must contain only letters"],
+    },
     storePhone: { type: String, trim: true },
     storeEmail: { type: String, lowercase: true, trim: true },
     module: { type: Schema.Types.ObjectId, ref: "Module" },
@@ -104,12 +127,36 @@ const storeInfoSchema = new Schema<StoreInfo>(
     cover: String,
     tax: String,
     location: locationSchema,
-    address: String,
+    address: {
+      type: String,
+      minlength: [5, "Address must be at least 5 characters"],
+      trim: true,
+    },
     officeNo: String,
-    city: String,
-    state: String,
-    country: String,
+    city: {
+      type: String,
+      trim: true,
+      validate: onlyCharacters,
+    },
+    state: {
+      type: String,
+      trim: true,
+      validate: onlyCharacters,
+    },
+    country: {
+      type: String,
+      trim: true,
+      validate: onlyCharacters,
+    },
     aboutUs: String,
+    tags: { type: [String], default: [] },
+    totalProjects : {
+      type: Number,
+      min: [0, "Total projects cannot be negative"],
+    },
+    totalExperience : {
+      type: String
+    },
   },
   { _id: false }
 );
@@ -161,6 +208,9 @@ const providerSchema = new Schema<ProviderDocument>(
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isStoreOpen: { type: Boolean, default: true },
+    isPromoted: { type: Boolean, default: null },
+    isRecommended: { type: Boolean, default: false },
+    isTrending: { type: Boolean, default: false },
 
     /* ––– Registration progress flags ––– */
     step1Completed: { type: Boolean, default: false },

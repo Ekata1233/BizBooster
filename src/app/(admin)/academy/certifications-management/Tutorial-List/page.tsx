@@ -9,7 +9,7 @@ import ModuleStatCard from '@/components/module-component/ModuleStatCard';
 import RouteLoader from '@/components/RouteLoader';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
-import { EyeIcon, TrashBinIcon } from '@/icons';
+import { EyeIcon, PencilIcon, TrashBinIcon } from '@/icons';
 import { PlusCircle } from 'lucide-react';
 import { useCertificate } from '@/context/CertificationContext';
 import { useRouter } from 'next/navigation';
@@ -181,8 +181,9 @@ const CertificatePage: React.FC = () => {
             onClick={() => handleEdit(row.id)}
             className="p-2 rounded-md border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
           >
-            <PlusCircle size={16} />
+            <PencilIcon size={16} />
           </button>
+          
           <button
             onClick={() => handleDelete(row.id)}
             className="p-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"

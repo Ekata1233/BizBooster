@@ -2,13 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
-import StatCard from '@/components/common/StatCard';
-import { ArrowUpIcon, BoxCubeIcon, CalenderIcon, DollarLineIcon, EyeIcon, UserIcon } from '@/icons';
-import BasicTableOne from '@/components/tables/BasicTableOne';
+import {  EyeIcon } from '@/icons';
 import Link from 'next/link';
 import ProviderInfoSection from '@/components/provider-component/ProviderInfoSection';
 import ProviderStatsSection from '@/components/provider-component/ProviderStatsSection';
@@ -134,62 +131,6 @@ const ProviderDetailsPage = () => {
     discountedPrice: service.discountedPrice,
     isDeleted: service.isDeleted,
   }));
-
-
-  const columns = [
-    {
-      header: 'Service Name',
-      accessor: 'serviceName',
-    },
-    {
-      header: 'Price',
-      accessor: 'price',
-    },
-    {
-      header: 'Discount Price',
-      accessor: 'discountedPrice',
-    },
-    {
-      header: 'Status',
-      accessor: 'status',
-      render: (row: TableData) => {
-        const status = row.isDeleted;
-        let colorClass = '';
-
-        switch (status) {
-          case true:
-            colorClass = 'text-red-500 bg-red-100 border border-red-300';
-            break;
-          case false:
-            colorClass = 'text-green-600 bg-green-100 border border-green-300';
-            break;
-          default:
-            colorClass = 'text-gray-600 bg-gray-100 border border-gray-300';
-        }
-
-        return (
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${colorClass}`}>
-            {status ? 'Inactive' : 'Active'}
-          </span>
-        );
-      },
-    },
-
-    {
-      header: 'Action',
-      accessor: 'action',
-      render: (row: TableData) => (
-        <div className="flex gap-2">
-          <Link href={`/service-management/service-details/${row.id}`} passHref>
-            <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white hover:border-blue-500">
-              <EyeIcon />
-            </button>
-          </Link>
-        </div>
-      ),
-    }
-
-  ];
 
   return (
     <div className="container mx-auto p-4">

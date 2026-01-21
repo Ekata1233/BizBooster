@@ -155,7 +155,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
   return (
     <div className="container mx-auto px-4">
 
-      <PageBreadcrumb pageTitle="  Manage Privacy Policy Sections" />
+      <PageBreadcrumb pageTitle="  Manage Privacy & Policy Sections" />
 
 
       {saveSuccess && (
@@ -201,7 +201,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
       {/* <div className="mb-10 p-6 bg-white rounded-lg shadow-md"> */}
 
 
-      <ComponentCard title={currentFormEntry._id ? 'Edit Privacy Policy Section' : 'Add New Privacy Policy Section'}>
+      <ComponentCard title={currentFormEntry._id ? 'Edit Privacy & Policy Section' : 'Add New Privacy & Policy Section'}>
 
         <PrivacyPolicyEditorForm
           /* IMPORTANT: pass the safe object, not possibly-null editingEntry */
@@ -213,9 +213,9 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
       {/* </div> */}
 
 
-      <ComponentCard title="Existing Privacy Policy Sections">
+      <ComponentCard title="Existing Privacy & Policy Sections">
         {aboutUsList.length === 0 && !isLoading && !error && (
-          <p className="text-gray-600">No Privacy Policy section found. Click &quot;Add New&quot; to create one.</p>
+          <p className="text-gray-600">No Privacy & Policy section found. Click &quot;Add New&quot; to create one.</p>
         )}
 
         <div className="space-y-6">
@@ -223,7 +223,7 @@ const AdminPrivacyPolicyManagementPage: React.FC = () => { // Renamed for clarit
             <div key={entry._id} className="">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="text-xl font-semibold text-gray-800">
-                  Privacy Policy Entry (ID: {entry._id.substring(0, 6)}...)
+                  Privacy & Policy Entry (ID: {entry._id.substring(0, 6)}...)
                 </h3>
                 {/* <div className="flex space-x-2">
                 <button

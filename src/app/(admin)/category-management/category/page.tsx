@@ -128,6 +128,7 @@ const CategoryPage = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
+console.log("category : ",categories);
 
   // ✅ Proper filtering logic (fixed module filter)
   useEffect(() => {
@@ -135,7 +136,8 @@ const CategoryPage = () => {
       id: c._id,
       name: c.name,
       image: c.image,
-      subcategoryCount: 0,
+      subcategoryCount: c.subcategoryCount ?? 0,
+
       moduleId: c.module?._id || "", // ✅ Added moduleId
       moduleName: c.module?.name || "N/A",
       status: c.isDeleted ? "Deleted" : "Active",
@@ -163,8 +165,9 @@ const CategoryPage = () => {
     router.push(`/category-management/category/modals/${id}`);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete category?")) return;
+    if (!confirm("Are you sure you want to delete this category?")) return;
     await deleteCategory(id);
+     alert("Category deleted successfully.");
     fetchCategories();
   };
 

@@ -55,6 +55,15 @@ export async function GET() {
 
 
 
+function isUploadedFile(v: unknown): v is File {
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    "arrayBuffer" in v &&
+    "size" in v &&
+    typeof (v as any).size === "number"
+  );
+}
 
 type FAQItem = { question: string; answer: string };
 
@@ -172,7 +181,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!(bannerImageFile instanceof File) || bannerImageFile.size === 0) {
+    if (!isUploadedFile(bannerImageFile) || bannerImageFile.size === 0) {
       return NextResponse.json(
         { success: false, message: 'Banner image file is required.' },
         { status: 400, headers: corsHeaders }
@@ -184,7 +193,7 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: corsHeaders }
       );
     }
-    if (!(thumbnailImageFile instanceof File) || thumbnailImageFile.size === 0) {
+  if (!isUploadedFile(thumbnailImageFile) || thumbnailImageFile.size === 0) {
       return NextResponse.json(
         { success: false, message: 'Thumbnail image file is required.' },
         { status: 400, headers: corsHeaders }
@@ -247,7 +256,7 @@ export async function POST(req: NextRequest) {
     /* gallery --------------------------- */
     const galleryFiles = formData
       .getAll('galleryImages')
-      .filter((f): f is File => f instanceof File && f.size > 0);
+       .filter((f): f is File => isUploadedFile(f) && f.size > 0);
 
     for (const gf of galleryFiles) {
       if (gf.size > MAX_IMAGE_SIZE) {
@@ -309,14 +318,31 @@ export async function POST(req: NextRequest) {
       { success: true, data: newOffer },
       { status: 201, headers: corsHeaders }
     );
-  } catch (error: unknown) {
-    console.error('POST /api/offer error:', error);
+  } catch (error: any) {
+  console.error("POST /api/offer error:", error);
+
+  // Handle mongoose validation errors
+  if (error.name === "ValidationError") {
+    const messages = Object.values(error.errors).map((err: any) =>
+      err.message.replace("Path `", "").replace("` is required.", " is required.")
+    );
+
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Internal Server Error',
+        message: messages.join(", "), // clean, readable message
+        errors: messages, // full list, optional
       },
-      { status: 500, headers: corsHeaders }
+      { status: 400, headers: corsHeaders }
     );
   }
+
+  return NextResponse.json(
+    {
+      success: false,
+      message: error instanceof Error ? error.message : "Internal Server Error",
+    },
+    { status: 500, headers: corsHeaders }
+  );
+}
 }

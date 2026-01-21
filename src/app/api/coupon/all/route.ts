@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
-    const active = searchParams.get("active"); // "true" | "false" | null
+    const active = searchParams.get("active"); 
 
     // First, deactivate expired coupons
     await Coupon.updateMany(

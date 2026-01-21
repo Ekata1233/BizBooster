@@ -64,7 +64,10 @@ const AddCouponPage = () => {
         label: c.name
     })) ?? [];
     const serviceOptions = services?.map(s => ({ value: s._id, label: s.serviceName })) ?? [];
-    const zoneOptions = zones?.map(z => ({ value: z._id, label: z.name })) ?? [];
+    const zoneOptions = zones
+  ?.filter(z => z.isDeleted === false)
+  .map(z => ({ value: z._id, label: z.name })) ?? [];
+
 
     const [form, setForm] = useState({
         couponType: "",
@@ -84,6 +87,8 @@ const AddCouponPage = () => {
         limitPerUser: "",
         discountCostBearer: "Admin" as CostBearer,
         couponAppliesTo: "Growth Partner" as AppliesTo,
+        provider: undefined,
+        isApprove: true,
     });
     const handleChange = <K extends keyof typeof form>(
         field: K,
@@ -105,7 +110,9 @@ const AddCouponPage = () => {
     const handleSubmit = async () => {
         const fd = new FormData();
         Object.entries(form).forEach(([k, v]) => {
-            if (v !== "") fd.append(k, v as string);
+             if (v === "" || v === undefined || v === null) return;
+  if (k === "provider" && form.discountCostBearer === "Admin") return;
+  fd.append(k, String(v));
             // if (k === "customer" && form.couponType !== "customerWise") return;
             // fd.append(k, typeof v === "object" ? v.value ?? "" : v as string);
         });
@@ -134,6 +141,8 @@ const AddCouponPage = () => {
                     limitPerUser: "",
                     discountCostBearer: "Admin",
                     couponAppliesTo: "Growth Partner",
+                    provider: undefined,
+                    isApprove: true,
                 });
             } else {
                 // ❌ Show backend error message

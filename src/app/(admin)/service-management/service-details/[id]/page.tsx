@@ -16,6 +16,7 @@ interface KeyValue {
   value: string;
   _id?: string;
 }
+
 type RowData = { title: string; description: string[] };
 type InvestmentRangeItem = {
   minRange: number | string;
@@ -35,6 +36,7 @@ interface ConnectWithItem {
 interface TitleDescItem {
   title: string;
   description: string;
+  icon?: string;
   image?: string | File | null;
   _id?: string;
 }
@@ -55,8 +57,8 @@ interface PackageItem {
 }
 
 interface TimeRequiredItem {
-  minDays: number;
-  maxDays: number;
+  range: string;
+  parameters: string;
   _id?: string;
 }
 
@@ -71,26 +73,6 @@ interface ExtraSection {
   _id?: string;
 }
 
-interface ServiceDetails {
-  aboutUs: any[];
-  assuredByFetchTrue: TitleDescItem[];
-  benefits: any[];
-  highlight: any[];
-  howItWorks: TitleDescItem[];
-  whyChooseUs: TitleDescItem[];
-  faq: FaqItem[];
-  document: any[];
-  weRequired: TitleDescItem[];
-  weDeliver: TitleDescItem[];
-  moreInfo: TitleDescItem[];
-  packages: PackageItem[];
-  extraSections: ExtraSection[];
-  extraImages: string[];
-  connectWith: ConnectWithItem[];
-  timeRequired: TimeRequiredItem[];
-  termsAndConditions: any[];
-}
-
 interface FranchiseModelItem {
   title: string;
   agreement: string;
@@ -100,10 +82,135 @@ interface FranchiseModelItem {
   _id?: string;
 }
 
+interface CounterItem {
+  number?: number;
+  title?: string;
+  _id?: string;
+}
+
+interface FranchiseOperatingModelItem {
+  info?: string;
+  title?: string;
+  description?: string;
+  features?: FeatureItem[];
+  tags?: string[];
+  example?: string;
+  _id?: string;
+}
+
+interface FeatureItem {
+  icon?: string;
+  subtitle?: string;
+  subDescription?: string;
+  _id?: string;
+}
+
+interface BusinessFundamental {
+  description?: string;
+  points?: FundamentalPoint[];
+}
+
+interface FundamentalPoint {
+  subtitle?: string;
+  subDescription?: string;
+  _id?: string;
+}
+
+interface KeyAdvantageItem {
+  icon?: string;
+  title?: string;
+  description?: string;
+  _id?: string;
+}
+
+interface SupportSystemItem {
+  icon?: string;
+  title?: string;
+  lists?: string[];
+  _id?: string;
+}
+
+interface CompanyDetailItem {
+  name?: string;
+  location?: string;
+  details?: CompanyDetailPoint[];
+  _id?: string;
+}
+
+interface CompanyDetailPoint {
+  title?: string;
+  description?: string;
+  _id?: string;
+}
+
+interface DurationItem {
+  weeks?: number;
+  hours?: number;
+}
+
+interface CourseCurriculumItem {
+  title?: string;
+  lists?: string[];
+  model?: string[];
+  _id?: string;
+}
+
+interface WhomToSellItem {
+  icon?: string;
+  lists?: string;
+  _id?: string;
+}
+
+interface ServiceDetails {
+  aboutUs: string[];
+  assuredByFetchTrue: TitleDescItem[];
+  benefits: string[];
+  highlight: string[];
+  howItWorks: TitleDescItem[];
+  whyChooseUs: TitleDescItem[];
+  faq: FaqItem[];
+  document: string[];
+  weRequired: TitleDescItem[];
+  weDeliver: TitleDescItem[];
+  moreInfo: TitleDescItem[];
+  packages: PackageItem[];
+  extraSections: ExtraSection[];
+  extraImages: string[];
+  connectWith: ConnectWithItem[];
+  timeRequired: TimeRequiredItem[];
+  termsAndConditions: string[];
+  operatingCities?: string[];
+  brochureImage?: string[];
+  emiavalable?: string[];
+  counter?: CounterItem[];
+  franchiseOperatingModel?: FranchiseOperatingModelItem[];
+  businessFundamental?: BusinessFundamental;
+  keyAdvantages?: KeyAdvantageItem[];
+  completeSupportSystem?: SupportSystemItem[];
+  trainingDetails?: string[];
+  agreementDetails?: string[];
+  goodThings?: string[];
+  compareAndChoose?: string[];
+  companyDetails?: CompanyDetailItem[];
+  roi?: string[];
+  level?: 'beginner' | 'medium' | 'advanced';
+  lessonCount?: number;
+  duration?: DurationItem;
+  whatYouWillLearn?: string[];
+  eligibleFor?: string[];
+  courseCurriculum?: CourseCurriculumItem[];
+  courseIncludes?: string[];
+  certificateImage?: string[];
+  whomToSell?: WhomToSellItem[];
+  include?: string[];
+  notInclude?: string[];
+  safetyAndAssurance?: string[];
+
+}
+
 interface FranchiseDetails {
-   commission?: string;
+  commission?: string;
   commissionType?: 'percentage' | 'amount';
- 
   howItWorks?: string;
   termsAndConditions?: string;
   rows?: RowData[];
@@ -111,16 +218,14 @@ interface FranchiseDetails {
   monthlyEarnPotential?: MonthlyEarnItem[];
   franchiseModel?: FranchiseModelItem[];
   extraSections?: ExtraSection[];
-  extraImages?: (File | string)[];
+  extraImages?: string[];
 }
 
 export interface ServiceData {
   _id: string;
-  id: string;
   serviceName: string;
-  name: string;
-  category: { _id: string; name: string };
-  subcategory: { _id: string; name: string };
+  category: { _id: string; name: string; image?: string };
+  subcategory: { _id: string; name: string; image?: string };
   thumbnailImage: string;
   bannerImages: string[];
   price: number;
@@ -128,15 +233,18 @@ export interface ServiceData {
   gst: number;
   includeGst: boolean;
   gstInRupees?: number;
+  discountedPrice?: number;
   totalWithGst?: number;
-
+  averageRating: number;
+  totalReviews: number;
+  
   keyValues: KeyValue[];
   tags: string[];
+  recommendedServices?: boolean;
 
   serviceDetails: ServiceDetails;
   franchiseDetails: FranchiseDetails;
 
-  recommendedServices?: boolean;
   sortOrder?: number;
   isDeleted: boolean;
   createdAt?: string;
@@ -148,6 +256,7 @@ const ServiceDetailsPage = () => {
   const id = params?.id as string;
   const [activeTab, setActiveTab] = useState<'service' | 'franchise'>('service');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const {
     fetchSingleService,
@@ -156,12 +265,31 @@ const ServiceDetailsPage = () => {
     singleServiceError,
   } = useService();
 
-const stripHtml = (html: string) => {
-  if (!html) return "";
-  return html.replace(/<[^>]+>/g, ""); // removes all tags
-};
+  useEffect(() => {
+    if (singleService) {
+      console.log("Fetched single service 👉", singleService);
+    }
+  }, [singleService]);
 
-  
+  const stripHtml = (html: string) => {
+    if (!html) return "";
+    return html.replace(/<[^>]+>/g, "").trim();
+  };
+
+  const toggleSection = (sectionId: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
+    } else {
+      newExpanded.add(sectionId);
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN').format(price);
+  };
+
   useEffect(() => {
     if (id) {
       fetchSingleService(id);
@@ -169,26 +297,54 @@ const stripHtml = (html: string) => {
   }, [id]);
 
   if (singleServiceLoading) {
-    return <div className="text-center text-gray-500">Loading service...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading service details...</p>
+        </div>
+      </div>
+    );
   }
 
   if (singleServiceError) {
-    return <div className="text-center text-red-500">Error: {singleServiceError}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center text-red-500 p-4 bg-red-50 rounded-lg max-w-md">
+          <h3 className="text-lg font-semibold mb-2">Error Loading Service</h3>
+          <p>{singleServiceError}</p>
+          <button 
+            onClick={() => fetchSingleService(id)}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!singleService) {
-    return <div className="text-center text-gray-500">No service found.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Service Not Found</h3>
+          <p className="text-gray-500">The service you're looking for doesn't exist.</p>
+        </div>
+      </div>
+    );
   }
 
-  const service = singleService;
-
-  // Safe access to nested properties with fallbacks
-const serviceDetails: ServiceDetails = service?.serviceDetails || ({} as ServiceDetails);
-const franchiseDetails: FranchiseDetails = service?.franchiseDetails || ({} as FranchiseDetails);
-
+  const service: ServiceData = singleService;
   
-  const highlightRaw = serviceDetails?.highlight || [];
+  // Safe access to nested properties with fallbacks
+  const serviceDetails: ServiceDetails = service?.serviceDetails || ({} as ServiceDetails);
+  const franchiseDetails: FranchiseDetails = service?.franchiseDetails || ({} as FranchiseDetails);
+
+  // Extract all data from serviceDetails
+  const aboutUs = serviceDetails?.aboutUs || [];
   const benefits = serviceDetails?.benefits || [];
+  const highlight = serviceDetails?.highlight || [];
   const howItWorks = serviceDetails?.howItWorks || [];
   const termsAndConditions = serviceDetails?.termsAndConditions || [];
   const document = serviceDetails?.document || [];
@@ -204,319 +360,393 @@ const franchiseDetails: FranchiseDetails = service?.franchiseDetails || ({} as F
   const extraSections = serviceDetails?.extraSections || [];
   const extraImages = serviceDetails?.extraImages || [];
 
-  // Normalize to string[] whether it's File[] or string[]
-  const highlightArray: string[] = Array.isArray(highlightRaw)
-    ? highlightRaw.map((item) =>
-        typeof item === 'string' ? item : URL.createObjectURL(item)
-      )
-    : [];
+const operatingCities = serviceDetails?.operatingCities || [];
+const brochureImage = serviceDetails?.brochureImage || [];
+const emiavalable = serviceDetails?.emiavalable || [];
+const counter = serviceDetails?.counter || [];
+const franchiseOperatingModel = serviceDetails?.franchiseOperatingModel || [];
+const businessFundamental = serviceDetails?.businessFundamental || null;
+const keyAdvantages = serviceDetails?.keyAdvantages || [];
+const completeSupportSystem = serviceDetails?.completeSupportSystem || [];
+const trainingDetails = serviceDetails?.trainingDetails || [];
+const agreementDetails = serviceDetails?.agreementDetails || [];
+const goodThings = serviceDetails?.goodThings || [];
+const compareAndChoose = serviceDetails?.compareAndChoose || [];
+const companyDetails = serviceDetails?.companyDetails || [];
+const roi = serviceDetails?.roi || [];
+const level = serviceDetails?.level || 'beginner';
+const lessonCount = serviceDetails?.lessonCount || 0;
+const duration = serviceDetails?.duration || { weeks: 0, hours: 0 };
+const whatYouWillLearn = serviceDetails?.whatYouWillLearn || [];
+const eligibleFor = serviceDetails?.eligibleFor || [];
+const courseCurriculum = serviceDetails?.courseCurriculum || [];
+const courseIncludes = serviceDetails?.courseIncludes || [];
+const certificateImage = serviceDetails?.certificateImage || [];
+const whomToSell = serviceDetails?.whomToSell || [];
+const include = serviceDetails?.include || [];
+const notInclude = serviceDetails?.notInclude || [];
+const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
+
+  // Extract franchise data
+  const franchiseCommission = franchiseDetails?.commission || '';
+  const franchiseTerms = franchiseDetails?.termsAndConditions || '';
+  const investmentRange = franchiseDetails?.investmentRange || [];
+  const monthlyEarnPotential = franchiseDetails?.monthlyEarnPotential || [];
+  const franchiseModel = franchiseDetails?.franchiseModel || [];
+  const franchiseExtraSections = franchiseDetails?.extraSections || [];
+  const franchiseExtraImages = franchiseDetails?.extraImages || [];
 
   const bannerImages = service?.bannerImages || [];
+  const keyValues = service?.keyValues || [];
+  const tags = service?.tags || [];
 
   return (
-    <div className="p-4 space-y-6 ">
-      <PageBreadcrumb pageTitle={`${service.serviceName}`} />
-
-      {/* Meta Card */}
-      <div className="flex items-center justify-between gap-6 ">
-        {/* Left side: Image + Service Details */}
-        <div className="flex items-center gap-6">
-          <Image
-            src={service.thumbnailImage || '/placeholder-image.jpg'}
-            alt={service.serviceName}
-            width={150}
-            height={100}
-            className="rounded shadow"
-          />
-          <div>
-            <h2 className="text-2xl font-semibold">{service.serviceName}</h2>
-            <p className="text-gray-600">
-              {service.category?.name || "No category"} / {service.subcategory?.name || "No subcategory"}
-            </p>
-            <p className="text-lg font-medium mt-2">₹{service.price || 0}</p>
-          </div>
-        </div>
-
-        {/* Right side: Rating */}
-        <Link href={`/service-management/service-details/review/${service._id}`}>
-          <div className="text-right cursor-pointer hover:underline">
-            <h1 className="text-lg font-semibold">⭐ {service.averageRating || 0} / 5</h1>
-            <p className="text-sm text-gray-500">{service.totalReviews || 0} Reviews</p>
-          </div>
-        </Link>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <PageBreadcrumb 
+          pageTitle={`${service.serviceName || 'Service Details'}`}
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Services', href: '/services' },
+            { label: service.category?.name || 'Category', href: '#' },
+            { label: service.serviceName || 'Details', href: '#' }
+          ]}
+        />
       </div>
 
-      {/* Banner Images */}
-      {bannerImages.length > 0 && (
-        <div className="flex items-center gap-6">
-          <div>
-            <p className="text-gray-600">Cover Images</p>
+      {/* Main Service Card */}
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left side: Images */}
+          <div className="lg:w-1/3">
+            {/* Thumbnail */}
+            <div className="mb-4">
+              <div className="relative h-64 w-full rounded-lg overflow-hidden">
+                <Image
+                  src={service.thumbnailImage || '/placeholder-image.jpg'}
+                  alt={service.serviceName}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2 text-center">Thumbnail Image</p>
+            </div>
+
+            {/* Banner Images */}
+            {bannerImages.length > 0 && (
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Banner Images</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {bannerImages.map((bannerUrl, index) => (
+                    <div key={index} className="relative h-32 rounded-lg overflow-hidden">
+                      <Image
+                        src={bannerUrl}
+                        alt={`${service.serviceName} Banner ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          {bannerImages.map((bannerUrl, index) => (
-            <Image
-              key={index}
-              src={bannerUrl}
-              alt={`${service.serviceName} Banner ${index + 1}`}
-              width={150}
-              height={100}
-              className="rounded shadow"
-            />
-          ))}
-        </div>
-      )}
 
-      {/* Tabs */}
-      <div className="border-b border-gray-300 mb-4">
-        <button
-          className={`px-4 py-2 mr-2 text-sm font-medium ${activeTab === 'service' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'
-            }`}
-          onClick={() => setActiveTab('service')}
-        >
-          Service Details
-        </button>
-        <button
-          className={`px-4 py-2 text-sm font-medium ${activeTab === 'franchise' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'
-            }`}
-          onClick={() => setActiveTab('franchise')}
-        >
-          Franchise Details
-        </button>
-      </div>
+          {/* Right side: Service Info */}
+          <div className="lg:w-2/3">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{service.serviceName}</h1>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    {service.category?.name || 'Uncategorized'}
+                  </span>
+                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                    {service.subcategory?.name || 'No Subcategory'}
+                  </span>
+                </div>
+              </div>
+              
+            {/* Parent Wrapper */}
+<div className="text-center">
 
-      {/* Service Tab Content */}
-      {activeTab === 'service' && (
-        <ComponentCard title="Service Details">
-          <div className="space-y-4">
-            {/* About Us */}
-           {/* About Us */}
-{serviceDetails.aboutUs && serviceDetails.aboutUs.length > 0 && (
-  <SectionCard title="About Us">
-    {serviceDetails.aboutUs.map((item: string, index: number) => (
-      <p key={index} className="text-sm text-gray-700 mb-2">
-        {stripHtml(item)}
-      </p>
-    ))}
-  </SectionCard>
-)}
-
-
+  {/* Rating (Clickable) */}
+  <Link href={`/service-management/service-details/review/${service._id}`}>
+    <div className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       
-           {/* Benefits */}
-{benefits.length > 0 && (
-  <SectionCard title="Benefits">
-    {benefits.map((benefit: string, index: number) => (
-      <p key={index} className="text-sm text-gray-700 mb-2">
-        • {stripHtml(benefit)}
+      <div className="flex items-center justify-center gap-1 mb-1">
+        <span className="text-2xl font-bold text-yellow-500">⭐</span>
+        <span className="text-2xl font-bold text-gray-900">
+          {service.averageRating || 0}
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-600">
+        {service.totalReviews || 0} Reviews
       </p>
-    ))}
-  </SectionCard>
-)}
 
+    </div>
+  </Link>
 
-            {/* Highlight Images */}
-            {highlightArray.length > 0 && (
-              <SectionCard title="Highlight">
-                {highlightArray.map((img, index) => (
-                  <div key={index} className="mb-4 rounded-lg overflow-hidden relative w-full h-80">
-                    <Image
-                      src={img}
-                      alt={`Highlight ${index + 1}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-lg"
-                      priority={index === 0}
-                    />
-                  </div>
-                ))}
-              </SectionCard>
+  {/* Recommended Service (Outside Link but same card section) */}
+  {service.recommendedServices && (
+    <div className="mt-2">
+      <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+        ★ Recommended Service
+      </span>
+    </div>
+  )}
+
+</div>
+
+              
+            </div>
+
+            {/* Price Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-4">
+                {service.discount > 0 ? (
+                  <>
+                    <div>
+                      <span className="text-2xl font-bold text-gray-900">
+                        ₹{formatPrice(service.discountedPrice || service.price)}
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500 line-through">
+                        ₹{formatPrice(service.price)}
+                      </span>
+                    </div>
+                    <span className="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full">
+                      {service.discount}% OFF
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-2xl font-bold text-gray-900">
+                    ₹{formatPrice(service.price || 0)}
+                  </span>
+                )}
+              </div>
+              {service.includeGst && (
+                <p className="text-sm text-gray-600 mt-2">
+                  {service.gst ? `Inclusive of GST: ${formatPrice(service.gst)}%` : 'GST Inclusive'}
+                </p>
+              )}
+            </div>
+
+            {/* Key Values */}
+            {keyValues.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-700 mb-3">Key Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {keyValues.map((item, index) => (
+                    <div key={item._id || index} className="bg-gray-50 p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">{item.key}:</span>{' '}
+                      <span className="text-gray-600">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
-            {/* How It Works */}
-            {howItWorks.length > 0 && (
-              <SectionCard title="How It Works">
-                {howItWorks.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
+            {/* Tags */}
+            {tags.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-700 mb-3">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <span 
+                      key={index}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full border"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs - Moved outside the main service card */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200">
+          <div className="flex space-x-1">
+            <button
+              onClick={() => setActiveTab('service')}
+              className={`px-8 py-4 text-base font-medium rounded-t-lg transition-colors ${
+                activeTab === 'service'
+                  ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600 font-semibold'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Service Details
+            </button>
+            <button
+              onClick={() => setActiveTab('franchise')}
+              className={`px-8 py-4 text-base font-medium rounded-t-lg transition-colors ${
+                activeTab === 'franchise'
+                  ? 'bg-white border-t border-l border-r border-gray-200 text-blue-600 font-semibold'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Franchise Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="space-y-6">
+        {/* Service Details Tab */}
+        {activeTab === 'service' && (
+          <>
+            {/* About Us */}
+            {aboutUs.length > 0 && (
+              <ComponentCard title="About Us">
+                <div className="prose prose-blue max-w-none">
+                  {aboutUs.map((item, index) => (
+                    <div 
+                      key={index}
+                      className="text-gray-700 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: item }}
+                    />
+                  ))}
+                </div>
+              </ComponentCard>
             )}
 
             {/* Assured By FetchTrue */}
             {assuredByFetchTrue.length > 0 && (
-              <SectionCard title="Assured By FetchTrue">
-                {assuredByFetchTrue.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
+              <ComponentCard title="Assured By FetchTrue">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {assuredByFetchTrue.map((item, index) => (
+                    <div key={item._id || index} className="flex gap-4 p-4 bg-blue-50 rounded-lg">
+                      {item.icon && (
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 relative">
+                            <Image
+                              src={item.icon}
+                              alt={item.title}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-1">{item.title}</h4>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Benefits */}
+            {benefits.length > 0 && (
+              <ComponentCard title="Benefits">
+                <div className="space-y-3">
+                  {benefits.map((benefit, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 mt-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                      <div 
+                        className="text-gray-700"
+                        dangerouslySetInnerHTML={{ __html: benefit }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Highlight Images */}
+            {highlight.length > 0 && (
+              <ComponentCard title="Highlights">
+                <div className="grid grid-cols-1 gap-6">
+                  {highlight.map((img, index) => (
+                    <div key={index} className="relative h-64 md:h-96 rounded-xl overflow-hidden">
+                      <Image
+                        src={img}
+                        alt={`Highlight ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
             )}
 
             {/* Why Choose Us */}
             {whyChooseUs.length > 0 && (
-              <SectionCard title="Why Choose Us">
-                {whyChooseUs.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
+              <ComponentCard title="Why Choose Us">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {whyChooseUs.map((item, index) => (
+                    <div key={item._id || index} className="text-center p-6 bg-white border rounded-xl shadow-sm">
+                      {item.icon && (
+                        <div className="w-16 h-16 mx-auto mb-4 relative">
+                          <Image
+                            src={item.icon}
+                            alt={item.title}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      )}
+                      <h4 className="font-semibold text-gray-800 mb-2">{item.title}</h4>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
             )}
 
-            {/* Packages */}
+            {/* Packages - Updated to 3 columns */}
             {packages.length > 0 && (
-              <SectionCard title="Packages">
-                {packages.map((pkg: any, index: number) => (
-                  <div key={pkg._id || index} className="mb-4 p-3 border rounded-lg">
-                    <h5 className="font-medium text-gray-800">{pkg.name}</h5>
-                    <p className="text-sm text-gray-700">Price: ₹{pkg.price}</p>
-                    {pkg.discount && <p className="text-sm text-gray-700">Discount: {pkg.discount}%</p>}
-                    {pkg.discountedPrice && <p className="text-sm text-gray-700">Discounted Price: ₹{pkg.discountedPrice}</p>}
-                    {pkg.whatYouGet && pkg.whatYouGet.length > 0 && (
-                      <div className="mt-2">
-                        <h6 className="font-medium text-gray-700">What You Get:</h6>
-                        <ul className="list-disc list-inside text-sm text-gray-700">
-                          {pkg.whatYouGet.map((item: string, i: number) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-            {/* We Required */}
-            {weRequired.length > 0 && (
-              <SectionCard title="We Required">
-                {weRequired.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-            {/* We Deliver */}
-            {weDeliver.length > 0 && (
-              <SectionCard title="We Deliver">
-                {weDeliver.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-            {/* More Info */}
-            {moreInfo.length > 0 && (
-              <SectionCard title="More Information">
-                {moreInfo.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    {item.image && (
-                      <div className="mb-2 rounded-lg overflow-hidden relative w-full h-48">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-lg"
-                        />
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-700 mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-            {/* Time Required */}
-            {timeRequired.length > 0 && (
-              <SectionCard title="Time Required">
-                {timeRequired.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <p className="text-sm text-gray-700">
-                      {item.minDays && item.maxDays 
-                        ? `${item.minDays} - ${item.maxDays} days`
-                        : item.minDays 
-                        ? `Minimum ${item.minDays} days`
-                        : item.maxDays 
-                        ? `Maximum ${item.maxDays} days`
-                        : 'Time not specified'
-                      }
-                    </p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-            {/* Connect With */}
-            {connectWith.length > 0 && (
-              <SectionCard title="Connect With">
-                {connectWith.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-4">
-                    <h5 className="font-medium text-gray-800">{item.name}</h5>
-                    <p className="text-sm text-gray-700">Mobile: {item.mobileNo}</p>
-                    <p className="text-sm text-gray-700">Email: {item.email}</p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
-
-          
-           {/* Documents */}
-{document.length > 0 && (
-  <SectionCard title="Documents">
-    {document.map((doc: string, index: number) => (
-      <p key={index} className="text-sm text-gray-700 mb-2">
-        • {stripHtml(doc)}
-      </p>
-    ))}
-  </SectionCard>
-)}
-
-{/* Terms and Conditions */}
-{termsAndConditions.length > 0 && (
-  <SectionCard title="Terms and Conditions">
-    {termsAndConditions.map((term: string, index: number) => (
-      <p key={index} className="text-sm text-gray-700 mb-2">
-        • {stripHtml(term)}
-      </p>
-    ))}
-  </SectionCard>
-)}
-
-            {/* FAQ Section */}
-            {faq.length > 0 && (
-              <ComponentCard title="FAQs">
-                <div className="space-y-2">
-                  {faq.map((item: { question: string; answer: string }, i: number) => (
-                    <div key={i} className="border rounded-md p-3 shadow-sm bg-white">
-                      <button
-                        onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
-                        className="flex items-center justify-between w-full text-left"
-                      >
-                        <span className="flex items-center font-medium text-primary">
-                          <ChevronDownIcon className="mr-2" />
-                          Q: {item.question}
-                        </span>
-                        {openFaqIndex === i ? (
-                          <ChevronDownIcon className="text-xl transform rotate-180" />
-                        ) : (
-                          <ChevronDownIcon className="text-xl" />
+              <ComponentCard title="Packages">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {packages.map((pkg, index) => (
+                    <div key={pkg._id || index} className="border-2 border-blue-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-xl font-bold text-gray-900">{pkg.name}</h4>
+                        {pkg.discount > 0 && (
+                          <span className="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full">
+                            {pkg.discount}% OFF
+                          </span>
                         )}
-                      </button>
-                      {openFaqIndex === i && (
-                        <div className="mt-2 ml-6 text-gray-700 text-sm">
-                          <strong>A:</strong> {item.answer}
+                      </div>
+                      
+                      <div className="space-y-3 mb-6 flex-grow">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Original Price:</span>
+                          <span className="text-lg font-semibold text-gray-900">
+                            ₹{formatPrice(pkg.price)}
+                          </span>
+                        </div>
+                        {pkg.discount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Discounted Price:</span>
+                            <span className="text-2xl font-bold text-blue-600">
+                              ₹{formatPrice(pkg.discountedPrice)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {pkg.whatYouGet && pkg.whatYouGet.length > 0 && (
+                        <div className="mt-auto">
+                          <h5 className="font-semibold text-gray-700 mb-3">What You Get:</h5>
+                          <ul className="space-y-2">
+                            {pkg.whatYouGet.map((item, i) => (
+                              <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                                <span className="flex-grow">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>
@@ -525,256 +755,1121 @@ const franchiseDetails: FranchiseDetails = service?.franchiseDetails || ({} as F
               </ComponentCard>
             )}
 
-            {/* Extra Sections */}
-            {extraSections.length > 0 && (
-              <ComponentCard title="Extra Sections">
-                {extraSections.map((item: any, i: number) => (
-                  <div key={i} className="mb-6">
-                    {item.title && <h4 className="font-semibold text-lg mb-3">{item.title}</h4>}
-                    
-                    {item.subtitle && item.subtitle.length > 0 && (
-                      <div className="mb-2">
-                        {item.subtitle.map((sub: string, subIndex: number) => (
-                          <p key={subIndex} className="font-medium text-gray-800">{sub}</p>
-                        ))}
+            {/* We Required & We Deliver in Grid */}
+            {(weRequired.length > 0 || weDeliver.length > 0) && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {weRequired.length > 0 && (
+                  <ComponentCard title="We Required">
+                    <div className="space-y-4">
+                      {weRequired.map((item, index) => (
+                        <div key={item._id || index} className="p-4 bg-gray-50 rounded-lg">
+                          <h5 className="font-semibold text-gray-800 mb-2">{item.title}</h5>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ComponentCard>
+                )}
+
+                {weDeliver.length > 0 && (
+                  <ComponentCard title="We Deliver">
+                    <div className="space-y-4">
+                      {weDeliver.map((item, index) => (
+                        <div key={item._id || index} className="p-4 bg-gray-50 rounded-lg">
+                          <h5 className="font-semibold text-gray-800 mb-2">{item.title}</h5>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ComponentCard>
+                )}
+              </div>
+            )}
+{/* Operating Cities */}
+{operatingCities.length > 0 && (
+  <ComponentCard title="Operating Cities">
+    <div className="flex flex-wrap gap-3">
+      {operatingCities.map((city, index) => (
+        <span 
+          key={index} 
+          className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full border border-blue-100"
+        >
+          {city}
+        </span>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Brochure Images */}
+{brochureImage.length > 0 && (
+  <ComponentCard title="Brochure Images">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {brochureImage.map((img, index) => (
+        <div key={index} className="relative h-64 rounded-xl overflow-hidden border">
+          <Image
+            src={img}
+            alt={`Brochure ${index + 1}`}
+            fill
+            className="object-contain bg-gray-50"
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* EMI Available */}
+{emiavalable.length > 0 && (
+  <ComponentCard title="EMI Options Available">
+    <div className="space-y-3">
+      {emiavalable.map((emi, index) => (
+        <div key={index} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+            ₹
+          </div>
+          <span className="text-gray-700">{emi}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Counter */}
+{counter.length > 0 && (
+  <ComponentCard title="Achievements">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {counter.map((item, index) => (
+        <div key={index} className="text-center">
+          <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+            {item.number ? item.number.toLocaleString() : 'N/A'}
+          </div>
+          <div className="text-gray-600">{item.title}</div>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Franchise Operating Model */}
+{franchiseOperatingModel.length > 0 && (
+  <ComponentCard title="Franchise Operating Model">
+    <div className="space-y-8">
+      {franchiseOperatingModel.map((model, index) => (
+        <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+          {model.title && (
+            <h4 className="text-xl font-bold text-gray-900 mb-4">{model.title}</h4>
+          )}
+          
+          {model.info && (
+            <p className="text-gray-700 mb-4">{model.info}</p>
+          )}
+          
+          {model.description && (
+            <p className="text-gray-600 mb-4">{model.description}</p>
+          )}
+          
+          {model.features && model.features.length > 0 && (
+            <div className="mt-6">
+              <h5 className="font-semibold text-gray-700 mb-3">Features:</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {model.features.map((feature, fIndex) => (
+                  <div key={fIndex} className="bg-white p-4 rounded-lg shadow-sm">
+                    {feature.icon && (
+                      <div className="w-10 h-10 mb-2 relative">
+                        <Image
+                          src={feature.icon}
+                          alt={feature.subtitle || 'Feature icon'}
+                          fill
+                          className="object-contain"
+                        />
                       </div>
                     )}
-                    
-                    {item.description && item.description.length > 0 && (
-                      <div className="mb-2">
-                        {item.description.map((desc: string, descIndex: number) => (
-                          <p key={descIndex} className="text-sm text-gray-700 mb-1">{desc}</p>
-                        ))}
-                      </div>
+                    {feature.subtitle && (
+                      <h6 className="font-medium text-gray-800 mb-1">{feature.subtitle}</h6>
                     )}
-                    
-                    {item.subDescription && item.subDescription.length > 0 && (
-                      <div className="mb-2">
-                        {item.subDescription.map((subDesc: string, subDescIndex: number) => (
-                          <p key={subDescIndex} className="text-xs text-gray-600 mb-1">{subDesc}</p>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {item.lists && item.lists.length > 0 && (
-                      <ul className="list-disc list-inside mb-2">
-                        {item.lists.map((listItem: string, listIndex: number) => (
-                          <li key={listIndex} className="text-sm text-gray-700">{listItem}</li>
-                        ))}
-                      </ul>
-                    )}
-                    
-                    {item.tags && item.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {item.tags.map((tag: string, tagIndex: number) => (
-                          <span key={tagIndex} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {item.image && item.image.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                        {item.image.map((img: string, imgIndex: number) => (
-                          <div key={imgIndex} className="rounded-lg overflow-hidden relative w-full h-48">
-                            <Image
-                              src={img}
-                              alt={`${item.title} image ${imgIndex + 1}`}
-                              layout="fill"
-                              objectFit="cover"
-                              className="rounded-lg"
-                            />
-                          </div>
-                        ))}
-                      </div>
+                    {feature.subDescription && (
+                      <p className="text-sm text-gray-600">{feature.subDescription}</p>
                     )}
                   </div>
                 ))}
-              </ComponentCard>
-            )}
+              </div>
+            </div>
+          )}
+          
+          {model.tags && model.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {model.tags.map((tag, tagIndex) => (
+                <span key={tagIndex} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {model.example && (
+            <div className="mt-4 p-4 bg-white rounded-lg border">
+              <h6 className="font-semibold text-gray-700 mb-2">Example:</h6>
+              <p className="text-gray-600">{model.example}</p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
 
-            {/* Extra Images */}
-            {extraImages.length > 0 && (
-              <SectionCard title="Additional Images">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {extraImages.map((img: string, index: number) => (
-                    <div key={index} className="rounded-lg overflow-hidden relative w-full h-48">
-                      <Image
-                        src={img}
-                        alt={`Extra image ${index + 1}`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
+{/* Business Fundamental */}
+{businessFundamental && (
+  <ComponentCard title="Business Fundamentals">
+    <div className="bg-white border rounded-xl p-6">
+      {businessFundamental.description && (
+        <p className="text-gray-700 mb-6">{businessFundamental.description}</p>
+      )}
+      
+      {businessFundamental.points && businessFundamental.points.length > 0 && (
+        <div className="space-y-4">
+          {businessFundamental.points.map((point, index) => (
+            <div key={index} className="flex gap-4">
+              <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
+              <div>
+                {point.subtitle && (
+                  <h6 className="font-medium text-gray-800 mb-1">{point.subtitle}</h6>
+                )}
+                {point.subDescription && (
+                  <p className="text-gray-600">{point.subDescription}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Key Advantages */}
+{keyAdvantages.length > 0 && (
+  <ComponentCard title="Key Advantages">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {keyAdvantages.map((advantage, index) => (
+        <div key={index} className="bg-white border rounded-xl p-6 text-center hover:shadow-md transition-shadow">
+          {advantage.icon && (
+            <div className="w-16 h-16 mx-auto mb-4 relative">
+              <Image
+                src={advantage.icon}
+                alt={advantage.title || 'Advantage icon'}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+          {advantage.title && (
+            <h5 className="font-semibold text-gray-800 mb-2">{advantage.title}</h5>
+          )}
+          {advantage.description && (
+            <p className="text-sm text-gray-600">{advantage.description}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Complete Support System */}
+{completeSupportSystem.length > 0 && (
+  <ComponentCard title="Complete Support System">
+    <div className="space-y-6">
+      {completeSupportSystem.map((support, index) => (
+        <div key={index} className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 p-6 rounded-xl">
+          {support.icon && (
+            <div className="md:w-1/6">
+              <div className="w-16 h-16 relative">
+                <Image
+                  src={support.icon}
+                  alt={support.title || 'Support icon'}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+          <div className="flex-grow">
+            {support.title && (
+              <h5 className="text-lg font-semibold text-gray-800 mb-3">{support.title}</h5>
+            )}
+            {support.lists && support.lists.length > 0 && (
+              <ul className="space-y-2">
+                {support.lists.map((item, itemIndex) => (
+                  <li key={itemIndex} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                    <span className="text-gray-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-        </ComponentCard>
-      )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
 
-      {/* Franchise Tab Content */}
-      {activeTab === 'franchise' && (
-        <ComponentCard title="Franchise Details">
-          <div className="space-y-4">
-            {/* Commission */}
-            {franchiseDetails.commission && (
-              <SectionCard title="Commission" content={franchiseDetails.commission.toString()} />
-            )}
+{/* Training Details */}
+{trainingDetails.length > 0 && (
+  <ComponentCard title="Training Details">
+    <div className="space-y-3">
+      {trainingDetails.map((detail, index) => (
+        <div key={index} className="p-4 bg-blue-50 rounded-lg">
+          <p className="text-gray-700">{detail}</p>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
 
-            {/* Terms & Conditions */}
-           {franchiseDetails.termsAndConditions && (
-  <SectionCard
-    title="Terms & Conditions"
-    content={stripHtml(franchiseDetails.termsAndConditions)}
-  />
+{/* Agreement Details */}
+{agreementDetails.length > 0 && (
+  <ComponentCard title="Agreement Details">
+    <div className="space-y-3">
+      {agreementDetails.map((detail, index) => (
+        <div key={index} className="p-4 border rounded-lg">
+          <p className="text-gray-700">{detail}</p>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Good Things */}
+{goodThings.length > 0 && (
+  <ComponentCard title="Why It's Good">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {goodThings.map((item, index) => (
+        <div key={index} className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+            ✓
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
 )}
 
 
-            {/* Investment Range */}
-            {franchiseDetails.investmentRange && franchiseDetails.investmentRange.length > 0 && (
-              <SectionCard title="Investment Range">
-                {franchiseDetails.investmentRange.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-2">
-                    <p className="text-sm text-gray-700">
-                      ₹{item.minRange || 0} - ₹{item.maxRange || 0}
-                    </p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
+{/* Compare and Choose */}
+{compareAndChoose?.length > 0 && (
+  <ComponentCard title="Compare and Choose">
+    <div className="bg-white border rounded-xl p-6 overflow-x-auto">
+      {compareAndChoose.map((item, index) => (
+        <div
+          key={index}
+          className="ckeditor-content"
+          dangerouslySetInnerHTML={{ __html: item }}
+        />
+      ))}
+    </div>
+  </ComponentCard>
+)}
 
-            {/* Monthly Earning Potential */}
-            {franchiseDetails.monthlyEarnPotential && franchiseDetails.monthlyEarnPotential.length > 0 && (
-              <SectionCard title="Monthly Earning Potential">
-                {franchiseDetails.monthlyEarnPotential.map((item: any, index: number) => (
-                  <div key={item._id || index} className="mb-2">
-                    <p className="text-sm text-gray-700">
-                      ₹{item.minEarn || 0} - ₹{item.maxEarn || 0}
-                    </p>
-                  </div>
-                ))}
-              </SectionCard>
-            )}
 
-            {/* Franchise Model */}
-            {franchiseDetails.franchiseModel && franchiseDetails.franchiseModel.length > 0 && (
-              <SectionCard title="Franchise Models">
-                {franchiseDetails.franchiseModel.map((item: any, index: number) => (
-                  <div key={index} className="mb-4 p-3 border rounded-lg">
-                    <h5 className="font-medium text-gray-800">{item.title}</h5>
-                    {item.agreement && <p className="text-sm text-gray-700">Agreement: {item.agreement}</p>}
-                    {item.price && <p className="text-sm text-gray-700">Price: ₹{item.price}</p>}
-                    {item.discount && <p className="text-sm text-gray-700">Discount: {item.discount}%</p>}
-                    {item.gst && <p className="text-sm text-gray-700">GST: {item.gst}%</p>}
-                    {item.fees && <p className="text-sm text-gray-700">Fees: ₹{item.fees}</p>}
-                  </div>
-                ))}
-              </SectionCard>
-            )}
+{/* Company Details */}
+{companyDetails.length > 0 && (
+  <ComponentCard title="Company Details">
+    <div className="space-y-6">
+      {companyDetails.map((company, index) => (
+        <div key={index} className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
+          {company.name && (
+            <h4 className="text-xl font-bold text-gray-900 mb-2">{company.name}</h4>
+          )}
+          {company.location && (
+            <p className="text-gray-600 mb-4">📍 {company.location}</p>
+          )}
+          
+          {company.details && company.details.length > 0 && (
+            <div className="space-y-4">
+              {company.details.map((detail, detailIndex) => (
+                <div key={detailIndex} className="border-t pt-4">
+                  {detail.title && (
+                    <h6 className="font-semibold text-gray-800 mb-1">{detail.title}</h6>
+                  )}
+                  {detail.description && (
+                    <p className="text-gray-600">{detail.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
 
-            {/* Extra Sections */}
-            {franchiseDetails.extraSections && franchiseDetails.extraSections.length > 0 && (
-              <ComponentCard title="Extra Sections">
-                {franchiseDetails.extraSections.map((item: any, i: number) => (
-                  <div key={i} className="mb-6">
-                    {item.title && <h4 className="font-semibold text-lg mb-3">{item.title}</h4>}
-                    
-                    {item.subtitle && item.subtitle.length > 0 && (
-                      <div className="mb-2">
-                        {item.subtitle.map((sub: string, subIndex: number) => (
-                          <p key={subIndex} className="font-medium text-gray-800">{sub}</p>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {item.description && item.description.length > 0 && (
-                      <div className="mb-2">
-                        {item.description.map((desc: string, descIndex: number) => (
-                          <p key={descIndex} className="text-sm text-gray-700 mb-1">{desc}</p>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {item.image && item.image.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                        {item.image.map((img: string, imgIndex: number) => (
-                          <div key={imgIndex} className="rounded-lg overflow-hidden relative w-full h-48">
+{/* ROI Details */}
+{roi.length > 0 && (
+  <ComponentCard title="Return on Investment (ROI)">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8">
+      <div className="text-center mb-6">
+        <h4 className="text-2xl font-bold text-gray-900 mb-2">Return on Investment Analysis</h4>
+      </div>
+      <div className="space-y-4">
+        {roi.map((item, index) => (
+          <div key={index} className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
+            <div className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+              ₹
+            </div>
+            <p className="text-gray-700">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Level, Duration, and Lesson Count */}
+{(level !== 'beginner' || lessonCount > 0 || duration.weeks > 0 || duration.hours > 0) && (
+  <ComponentCard title="Course Information">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {level !== 'beginner' && (
+        <div className="text-center p-6 bg-blue-50 rounded-xl">
+          <div className="text-3xl font-bold text-blue-600 mb-2 capitalize">{level}</div>
+          <p className="text-gray-600">Level</p>
+        </div>
+      )}
+      
+      {lessonCount > 0 && (
+        <div className="text-center p-6 bg-green-50 rounded-xl">
+          <div className="text-3xl font-bold text-green-600 mb-2">{lessonCount}</div>
+          <p className="text-gray-600">Lessons</p>
+        </div>
+      )}
+      
+      {(duration.weeks > 0 || duration.hours > 0) && (
+        <div className="text-center p-6 bg-purple-50 rounded-xl">
+          <div className="text-xl font-bold text-purple-600 mb-2">
+            {duration.weeks > 0 && `${duration.weeks} weeks`}
+            {duration.weeks > 0 && duration.hours > 0 && ' • '}
+            {duration.hours > 0 && `${duration.hours} hours`}
+          </div>
+          <p className="text-gray-600">Duration</p>
+        </div>
+      )}
+    </div>
+  </ComponentCard>
+)}
+
+{/* What You Will Learn */}
+{whatYouWillLearn.length > 0 && (
+  <ComponentCard title="What You Will Learn">
+    <div className="space-y-3">
+      {whatYouWillLearn.map((item, index) => (
+        <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+          <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full text-sm">
+            {index + 1}
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Eligible For */}
+{eligibleFor.length > 0 && (
+  <ComponentCard title="Eligible For">
+    <div className="flex flex-wrap gap-3">
+      {eligibleFor.map((item, index) => (
+        <span 
+          key={index} 
+          className="px-4 py-2 bg-green-100 text-green-800 rounded-full border border-green-200"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Curriculum */}
+{courseCurriculum.length > 0 && (
+  <ComponentCard title="Course Curriculum">
+    <div className="space-y-6">
+      {courseCurriculum.map((curriculum, index) => (
+        <div key={index} className="border rounded-xl p-6">
+          {curriculum.title && (
+            <h5 className="text-lg font-semibold text-gray-900 mb-4">{curriculum.title}</h5>
+          )}
+          
+          {curriculum.lists && curriculum.lists.length > 0 && (
+            <ul className="space-y-3 mb-4">
+              {curriculum.lists.map((item, itemIndex) => (
+                <li key={itemIndex} className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                  <span className="text-gray-700">{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          
+         {curriculum.model && curriculum.model.length > 0 && (
+  <div className="mt-6">
+    <h6 className="text-lg font-semibold text-gray-800 mb-4">
+      Models Covered
+    </h6>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {curriculum.model.map((model, modelIndex) => (
+        <div
+          key={modelIndex}
+          className="p-4 border border-blue-100 rounded-lg bg-white shadow-sm ckeditor-content"
+          dangerouslySetInnerHTML={{ __html: model }}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Course Includes */}
+{courseIncludes.length > 0 && (
+  <ComponentCard title="Course Includes">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {courseIncludes.map((item, index) => (
+        <div key={index} className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+          <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full">
+            ✓
+          </div>
+          <span className="text-gray-700">{item}</span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Certificate Images */}
+{certificateImage.length > 0 && (
+  <ComponentCard title="Certificates">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {certificateImage.map((img, index) => (
+        <div key={index} className="relative h-64 rounded-xl overflow-hidden border-4 border-white shadow-lg">
+          <Image
+            src={img}
+            alt={`Certificate ${index + 1}`}
+            fill
+            className="object-contain bg-gradient-to-br from-gray-50 to-gray-100"
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Whom to Sell */}
+{whomToSell.length > 0 && (
+  <ComponentCard title="Whom To Sell">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {whomToSell.map((item, index) => (
+        <div key={index} className="text-center p-6 bg-white border rounded-xl hover:shadow-md transition-shadow">
+          {item.icon && (
+            <div className="w-16 h-16 mx-auto mb-4 relative">
+              <Image
+                src={item.icon}
+                alt="whomToSell icon"
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+          {item.lists && (
+            <p className="text-gray-700 font-medium">{item.lists}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+{/* Includes & Not Includes */}
+{(include.length > 0 || notInclude.length > 0) && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {include.length > 0 && (
+  <ComponentCard title="What's Included">
+    <div className="space-y-3">
+      {include.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 p-3 bg-green-50 rounded-lg"
+        >
+          <div className="w-6 h-6 flex items-center justify-center bg-green-100 text-green-600 rounded-full flex-shrink-0">
+            ✓
+          </div>
+
+          <div
+            className="text-gray-700 ckeditor-content"
+            dangerouslySetInnerHTML={{ __html: item }}
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+    
+   {notInclude.length > 0 && (
+  <ComponentCard title="What's Not Included">
+    <div className="space-y-3">
+      {notInclude.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 p-3 bg-red-50 rounded-lg"
+        >
+          <div className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-600 rounded-full flex-shrink-0">
+            ✗
+          </div>
+
+          <div
+            className="text-gray-700 ckeditor-content"
+            dangerouslySetInnerHTML={{ __html: item }}
+          />
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+  </div>
+)}
+
+{/* Safety and Assurance */}
+{safetyAndAssurance.length > 0 && (
+  <ComponentCard title="Safety and Assurance">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {safetyAndAssurance.map((item, index) => (
+          <div key={index} className="flex items-start gap-4">
+            <div className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full flex-shrink-0">
+              🔒
+            </div>
+
+            <div
+              className="text-gray-700 ckeditor-content"
+              dangerouslySetInnerHTML={{ __html: item }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </ComponentCard>
+)}
+
+            {/* More Info */}
+            {moreInfo.length > 0 && (
+              <ComponentCard title="More Information">
+                <div className="space-y-8">
+                  {moreInfo.map((item, index) => (
+                    <div key={item._id || index} className="flex flex-col md:flex-row gap-6 items-start">
+                      {item.image && (
+                        <div className="md:w-1/3">
+                          <div className="relative h-48 md:h-64 rounded-xl overflow-hidden">
                             <Image
-                              src={img}
-                              alt={`${item.title} image ${imgIndex + 1}`}
-                              layout="fill"
-                              objectFit="cover"
-                              className="rounded-lg"
+                              src={item.image}
+                              alt={item.title}
+                              fill
+                              className="object-cover"
                             />
                           </div>
-                        ))}
+                        </div>
+                      )}
+                      <div className={item.image ? "md:w-2/3" : "w-full"}>
+                        <h4 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h4>
+                        <p className="text-gray-700 leading-relaxed">{item.description}</p>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </ComponentCard>
             )}
 
+            {/* Connect With */}
+            {connectWith.length > 0 && (
+              <ComponentCard title="Connect With">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {connectWith.map((item, index) => (
+                    <div key={item._id || index} className="bg-white border rounded-xl p-6 shadow-sm">
+                      <h5 className="font-semibold text-gray-900 mb-4">{item.name}</h5>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-500">📱</span>
+                          <span className="text-gray-700">{item.mobileNo}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-500">✉️</span>
+                          <span className="text-gray-700">{item.email}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Documents */}
+            {document.length > 0 && (
+              <ComponentCard title="Required Documents">
+                <div className="space-y-3">
+                  {document.map((doc, index) => (
+                    <div 
+                      key={index}
+                      className="text-gray-700 p-3 bg-gray-50 rounded-lg"
+                      dangerouslySetInnerHTML={{ __html: doc }}
+                    />
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Terms and Conditions */}
+            {termsAndConditions.length > 0 && (
+              <ComponentCard title="Terms and Conditions">
+                <div className="space-y-3">
+                  {termsAndConditions.map((term, index) => (
+                    <div 
+                      key={index}
+                      className="text-gray-700 p-3 bg-gray-50 rounded-lg"
+                      dangerouslySetInnerHTML={{ __html: term }}
+                    />
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* FAQ Section */}
+            {faq.length > 0 && (
+              <ComponentCard title="Frequently Asked Questions">
+                <div className="space-y-3">
+                  {faq.map((item, index) => (
+                    <div key={index} className="border rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                        className="flex items-center justify-between w-full p-4 text-left bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full">
+                            Q
+                          </div>
+                          <span className="font-semibold text-gray-900">{item.question}</span>
+                        </div>
+                        <ChevronDownIcon 
+                          className={`w-5 h-5 text-gray-500 transition-transform ${
+                            openFaqIndex === index ? 'transform rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {openFaqIndex === index && (
+                        <div className="p-4 pt-0">
+                          <div className="ml-11 pl-4 border-l-2 border-blue-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
+                                A
+                              </div>
+                              <span className="font-medium text-gray-700">Answer:</span>
+                            </div>
+                            <p className="text-gray-600 ml-11">{item.answer}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+            
+            {/* Extra Sections */}
+        {extraSections.length > 0 && (
+              <ComponentCard title="Additional Details">
+                <div className="space-y-8">
+                  {extraSections.map((item, index) => {
+                    // Check if this is a counter section (based on data structure)
+                    const isCounterSection = 
+                      item.title?.toLowerCase() === 'counter' && 
+                      item.subtitle?.length > 0 && 
+                      item.subDescription?.length > 0;
+                    
+                    // Check if this is a comparison table (based on data structure)
+                    const isComparisonSection = 
+                      item.title?.includes('Franchise') && 
+                      item.subtitle?.length > 0 && 
+                      item.subDescription?.length > 0;
+
+                    if (isCounterSection) {
+                      // Render counter section with stats
+                      return (
+                        <div key={item._id || index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8">
+                          <h4 className="text-2xl font-bold text-gray-900 mb-8 text-center">{item.title}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {item.subtitle?.map((value, i) => (
+                              <div key={i} className="text-center">
+                                <div className="text-4xl font-bold text-blue-600 mb-2">
+                                  {value}
+                                </div>
+                                <div className="text-gray-600">
+                                  {item.subDescription?.[i] || `Stat ${i + 1}`}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    } else if (isComparisonSection) {
+                      // Render comparison table
+                      return (
+                        <div key={item._id || index} className="bg-white border rounded-xl p-6 shadow-sm">
+                          <h4 className="text-2xl font-bold text-gray-900 mb-6">{item.title}</h4>
+                          
+                          {item.description && item.description.length > 0 && (
+                            <p className="text-gray-700 mb-6">{item.description[0]}</p>
+                          )}
+                          
+                          {item.subtitle && item.subtitle.length > 0 && (
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Aspect
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Details
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {item.subtitle.map((aspect, aspectIndex) => (
+                                    <tr key={aspectIndex} className="hover:bg-gray-50">
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {aspect}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {item.subDescription?.[aspectIndex] || 'N/A'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                          
+                          {item.lists && item.lists.length > 0 && (
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                              <h5 className="font-semibold text-blue-800 mb-2">Example:</h5>
+                              <p className="text-blue-700">{item.lists[0]}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } else {
+                      // Default rendering for other sections
+                      return (
+                        <div key={item._id || index} className="bg-white border rounded-xl p-6 shadow-sm">
+                          {item.title && (
+                            <h4 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h4>
+                          )}
+                          
+                          {item.subtitle && item.subtitle.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Sub Titles:</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {item.subtitle.map((sub, subIndex) => (
+                                  <span key={subIndex} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                                    {sub}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {item.description && item.description.length > 0 && (
+                            <div className="mb-4 space-y-3">
+                              {item.description.map((desc, descIndex) => (
+                                <p key={descIndex} className="text-gray-700">{desc}</p>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {item.subDescription && item.subDescription.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Details:</h5>
+                              <ul className="space-y-2">
+                                {item.subDescription.map((subDesc, subDescIndex) => (
+                                  <li key={subDescIndex} className="flex items-start gap-2">
+                                    <div className="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                                    <span className="text-gray-600">{subDesc}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {item.lists && item.lists.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">List Items:</h5>
+                              <ul className="space-y-2 pl-5">
+                                {item.lists.map((listItem, listIndex) => (
+                                  <li key={listIndex} className="text-gray-700 list-disc">
+                                    {listItem}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {item.tags && item.tags.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-semibold text-gray-700 mb-2">Tags:</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {item.tags.map((tag, tagIndex) => (
+                                  <span
+                                    key={tagIndex}
+                                    className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {item.image && item.image.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                              {item.image.map((img, imgIndex) => (
+                                <div key={imgIndex} className="relative h-48 rounded-lg overflow-hidden">
+                                  <Image
+                                    src={img}
+                                    alt={`${item.title || 'Extra'} image ${imgIndex + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              </ComponentCard>
+            )}
+
+
+
             {/* Extra Images */}
-            {franchiseDetails.extraImages && franchiseDetails.extraImages.length > 0 && (
-              <SectionCard title="Additional Images">
+            {extraImages.length > 0 && (
+              <ComponentCard title="Extra Images">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {franchiseDetails.extraImages.map((img: string, index: number) => (
-                    <div key={index} className="rounded-lg overflow-hidden relative w-full h-48">
+                  {extraImages.map((img, index) => (
+                    <div key={index} className="relative h-48 rounded-xl overflow-hidden shadow-md">
                       <Image
                         src={img}
-                        alt={`Franchise image ${index + 1}`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
+                        alt={`Extra Images ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   ))}
                 </div>
-              </SectionCard>
+              </ComponentCard>
             )}
-          </div>
-        </ComponentCard>
-      )}
+            
+          </>
+        )}
+
+        {/* Franchise Details Tab */}
+        {activeTab === 'franchise' && (
+          <>
+            {/* Commission */}
+            {franchiseCommission && (
+              <ComponentCard title="Commission Structure">
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                  <div className="text-center">
+                    <span className="text-4xl font-bold text-blue-600">{franchiseCommission}</span>
+                    <p className="text-gray-600 mt-2">Commission on every service</p>
+                  </div>
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Investment Range */}
+          {investmentRange?.length > 0 && (
+  <ComponentCard title="Investment Range">
+    <div className="flex flex-wrap gap-4">
+      {investmentRange.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
+        >
+          <span className="text-xl font-semibold text-emerald-700">
+            {item.range}
+          </span>
+          <span className="ml-2 text-sm font-medium text-emerald-600">
+            {item.parameters}
+          </span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+
+            {/* Monthly Earning Potential */}
+          {monthlyEarnPotential?.length > 0 && (
+  <ComponentCard title="Monthly Earning Potential">
+    <div className="flex flex-wrap gap-4">
+      {monthlyEarnPotential.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
+        >
+          <span className="text-xl font-semibold text-emerald-700">
+            {item.range}
+          </span>
+          <span className="ml-2 text-sm font-medium text-emerald-600">
+            {item.parameters}
+          </span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
+            {/* Franchise Models */}
+            {franchiseModel.length > 0 && (
+              <ComponentCard title="Franchise Models">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {franchiseModel.map((model, index) => (
+                    <div key={index} className="bg-white border rounded-xl p-6 shadow-sm h-full">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-xl font-bold text-gray-900">{model.title}</h4>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-blue-600">
+                            ₹{formatPrice(model.price)}
+                          </div>
+                          {model.discount > 0 && (
+                            <span className="text-sm text-red-500">Save {model.discount}%</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {model.agreement && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Agreement:</span>
+                            <p className="text-gray-800 mt-1">{model.agreement}</p>
+                          </div>
+                        )}
+                        {model.gst > 0 && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">GST:</span>
+                            <p className="text-gray-800 mt-1">{model.gst}%</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Franchise Terms & Conditions */}
+            {franchiseTerms && (
+              <ComponentCard title="Franchise Terms & Conditions">
+                <div 
+                  className="prose prose-blue max-w-none p-6 bg-gray-50 rounded-lg"
+                  dangerouslySetInnerHTML={{ __html: franchiseTerms }}
+                />
+              </ComponentCard>
+            )}
+
+            {/* Franchise Extra Sections */}
+            {franchiseExtraSections.length > 0 && (
+              <ComponentCard title="Additional Information">
+                <div className="space-y-8">
+                  {franchiseExtraSections.map((item, index) => (
+                    <div key={index} className="bg-white border rounded-xl p-6">
+                      {item.title && (
+                        <h4 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h4>
+                      )}
+                      
+                      {item.description && item.description.length > 0 && (
+                        <div className="space-y-3">
+                          {item.description.map((desc, descIndex) => (
+                            <p key={descIndex} className="text-gray-700">{desc}</p>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {item.image && item.image.length > 0 && (
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {item.image.map((img, imgIndex) => (
+                            <div key={imgIndex} className="relative h-48 rounded-lg overflow-hidden">
+                              <Image
+                                src={img}
+                                alt={`${item.title || 'Franchise'} image ${imgIndex + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Franchise Extra Images */}
+            {franchiseExtraImages.length > 0 && (
+              <ComponentCard title="Extra Images">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {franchiseExtraImages.map((img, index) => (
+                    <div key={index} className="relative h-48 rounded-xl overflow-hidden shadow-md">
+                      <Image
+                        src={img}
+                        alt={`Extra Images ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </ComponentCard>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="text-center text-gray-500 text-sm">
+          <p>Service ID: {service._id}</p>
+          <p>Created: {new Date(service.createdAt || '').toLocaleDateString()}</p>
+          {service.recommendedServices && (
+            <span className="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+              ★ Recommended Service
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
-
-// Section Card Component
-const SectionCard = ({
-  title,
-  content,
-  icon,
-  isHtml = false,
-  children,
-}: {
-  title: string;
-  content?: string;
-  icon?: React.ReactNode;
-  isHtml?: boolean;
-  children?: React.ReactNode;
-}) => (
-  <div className="bg-white shadow-sm border rounded p-4">
-    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-      {icon}
-      {title}
-    </h4>
-
-    {children ? (
-      <div className="text-sm text-gray-700">{children}</div>
-    ) : isHtml ? (
-      <div
-        className="text-sm text-gray-700"
-        dangerouslySetInnerHTML={{ __html: content || '' }}
-      />
-    ) : (
-      <p className="text-sm text-gray-700">{content}</p>
-    )}
-  </div>
-);
 
 export default ServiceDetailsPage;

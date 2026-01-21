@@ -15,16 +15,52 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+
 // export async function GET(req: NextRequest) {
 //   await connectToDatabase();
 
-//     const { searchParams } = new URL(req.url);
+//   const { searchParams } = new URL(req.url);
 //   const search = searchParams.get("search") || "";
+//   const selectedCategory = searchParams.get("selectedCategory") || "";
 
 //   try {
-//     const data = await Subcategory.find().populate("category");
-//     return NextResponse.json({ success: true, data }, { status: 200, headers: corsHeaders });
-//   } catch (error) {
+//     // Fetch all subcategories with populated 'category'
+// const subcategories = await Subcategory.find({ isDeleted: false })
+//   .populate("category")
+//   .sort({ sortOrder: 1, createdAt: 1 }); // ✅ ORDERING
+
+//     // Filter in-memory for `name` and `category.name`
+//     let filteredSubcategories = subcategories;
+
+//     // if (search || selectedCategory) {
+//     //   const regex = new RegExp(search, "i");
+//     //   filteredSubcategories = subcategories.filter((sub) =>
+//     //     regex.test(sub.name) || regex.test(sub.category?.name)
+//     //   );
+//     // }
+
+//     if (search || selectedCategory) {
+//       const regex = search ? new RegExp(search, "i") : null;
+
+//       filteredSubcategories = subcategories.filter((sub) => {
+//         const matchesSearch = regex
+//           ? regex.test(sub.name) || regex.test(sub.category?.name)
+//           : true;
+
+//         const matchesCategory = selectedCategory
+//           ? sub.category?._id?.toString() === selectedCategory
+//           : true;
+
+//         return matchesSearch && matchesCategory;
+//       });
+//     }
+
+
+//     return NextResponse.json(
+//       { success: true, data: filteredSubcategories },
+//       { status: 200, headers: corsHeaders }
+//     );
+//   } catch (error: unknown) {
 //     return NextResponse.json(
 //       { success: false, message: (error as Error).message },
 //       { status: 500, headers: corsHeaders }
@@ -38,22 +74,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
   const selectedCategory = searchParams.get("selectedCategory") || "";
+  const categoryId = searchParams.get("categoryId") || ""; // ✅ NEW
 
   try {
-    // Fetch all subcategories with populated 'category'
-const subcategories = await Subcategory.find({ isDeleted: false })
-  .populate("category")
-  .sort({ sortOrder: 1, createdAt: 1 }); // ✅ ORDERING
+    // ✅ Base query
+    const query: any = { isDeleted: false };
 
-    // Filter in-memory for `name` and `category.name`
+    // ✅ If categoryId is passed, filter at DB level
+    if (categoryId) {
+      query.category = categoryId;
+    }
+
+    // ✅ Fetch subcategories
+    const subcategories = await Subcategory.find(query)
+      .populate("category")
+      .sort({ sortOrder: 1, createdAt: 1 });
+
+    // ✅ Preserve existing functionality
     let filteredSubcategories = subcategories;
-
-    // if (search || selectedCategory) {
-    //   const regex = new RegExp(search, "i");
-    //   filteredSubcategories = subcategories.filter((sub) =>
-    //     regex.test(sub.name) || regex.test(sub.category?.name)
-    //   );
-    // }
 
     if (search || selectedCategory) {
       const regex = search ? new RegExp(search, "i") : null;
@@ -71,7 +109,6 @@ const subcategories = await Subcategory.find({ isDeleted: false })
       });
     }
 
-
     return NextResponse.json(
       { success: true, data: filteredSubcategories },
       { status: 200, headers: corsHeaders }
@@ -83,6 +120,7 @@ const subcategories = await Subcategory.find({ isDeleted: false })
     );
   }
 }
+
 
 export async function POST(req: Request) {
   await connectToDatabase();

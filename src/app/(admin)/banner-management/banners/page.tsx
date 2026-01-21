@@ -33,11 +33,10 @@ interface BannerType {
   createdAt?: string;
   updatedAt?: string;
   module?: string;
+  screenCategory?: string;
 }
-type ServiceType = { name?: string };
 interface TableData {
   id: string;
-
   file: string;
   page: string;
   selectionType: string;
@@ -64,7 +63,7 @@ const Banner = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
   const { modules } = useModule();
-  console.log("modules : ", modules)
+  console.log("banners : ", banners)
 
   // Create mapping objects for easy lookup
   // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
@@ -85,6 +84,7 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
+const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('');
 
 
   const handleDelete = async (id: string) => {
@@ -127,7 +127,7 @@ const Banner = () => {
       : currentBanner.subcategory;
 
     if (currentBanner?.screenCategory) {
-      formData.append("whichCategory", currentBanner.screenCategory);
+      formData.append("screenCategory", currentBanner.screenCategory);
     }
 
     if (currentBanner.selectionType === 'category' && categoryId) {
@@ -150,6 +150,7 @@ const Banner = () => {
       // Pass both id and formData as separate arguments
       await updateBanner(currentBanner._id, formData);
       alert('Banner updated successfully');
+       await fetchFilteredBanners();
       setEditModalOpen(false);
       setNewImage(null);
     } catch (err) {
@@ -333,6 +334,16 @@ const Banner = () => {
 
   console.log("Banner data in frontend  : ", banners);
 
+  const filteredSubcategories = selectedCategoryForSub
+  ? subcategoryData.filter(
+      (sub) =>
+        typeof sub.category === 'object'
+          ? sub.category?._id === selectedCategoryForSub
+          : sub.category === selectedCategoryForSub
+    )
+  : [];
+
+
 
   if (!filteredBanner) return <div>Loading...</div>;
 
@@ -468,11 +479,20 @@ const Banner = () => {
                 <select
                   className="w-full border px-3 py-2 rounded"
                   value={(currentBanner as any)?.screenCategory || ""}
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, screenCategory: e.target.value } : null
-                    )
-                  }
+                  onChange={(e) => {
+  const value = e.target.value;
+  setSelectedCategoryForSub(value);
+  setCurrentBanner((prev) =>
+    prev
+      ? {
+          ...prev,
+          screenCategory: value,   
+          category: '',  
+          subcategory: ''
+        }
+      : null
+  );
+}}
                 >
                   <option value="">Select Screen Category</option>
                   {categoryData.map((cat) => (
@@ -544,11 +564,19 @@ const Banner = () => {
                       ? currentBanner.category?._id
                       : currentBanner?.category || ''
                   }
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, category: e.target.value, subcategory: '' } : null
-                    )
-                  }
+                   onChange={(e) => {
+  const value = e.target.value;
+  setSelectedCategoryForSub(value);
+  setCurrentBanner((prev) =>
+    prev
+      ? {
+          ...prev,
+          category: value,
+          subcategory: '' 
+        }
+      : null
+  );
+}}
                 >
                   <option value="">Select Category</option>
                   {categoryData.map((cat) => (
@@ -578,7 +606,7 @@ const Banner = () => {
                   }
                 >
                   <option value="">Select Subcategory</option>
-                  {subcategoryData.map((sub) => (
+                  {filteredSubcategories.map((sub) => (
                     <option key={sub._id} value={sub._id}>
                       {sub.name}
                     </option>
@@ -586,7 +614,6 @@ const Banner = () => {
                 </select>
               </div>
             )}
-
 
             {currentBanner?.selectionType === 'service' && (
               <div className="md:col-span-2">

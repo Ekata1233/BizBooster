@@ -423,9 +423,15 @@ const EditCouponPage: React.FC = () => {
 
             {/* Submit */}
             <div className="flex justify-end gap-3 pt-2 md:col-span-2">
-              <Button variant="outline" size="sm" type="button">
-                Cancel
-              </Button>
+             <Button
+  variant="outline"
+  size="sm"
+  type="button"
+  onClick={() => router.back()}
+>
+  Cancel
+</Button>
+
               <Button size="sm" type="submit">
                 Update Changes
               </Button>

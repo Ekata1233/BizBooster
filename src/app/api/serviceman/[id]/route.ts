@@ -142,7 +142,7 @@ export async function PUT(req: Request) {
     const updatedServiceMan = await ServiceMan.findByIdAndUpdate(
       id,
       { $set: setObj },
-      { new: true }
+      { new: true, runValidators: true, }
     ).populate("provider", "providerId fullName email phoneNo");
 
     return NextResponse.json(

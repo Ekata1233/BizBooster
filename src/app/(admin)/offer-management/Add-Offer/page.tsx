@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import AddOfferForm from './AddOfferForm'; // We will create this component next
+import AddOfferForm from './AddOfferForm'; 
 
 // A simple loading UI to show while the form is loading
 const Loading = () => (

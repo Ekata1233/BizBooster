@@ -46,7 +46,6 @@ export async function GET(req: NextRequest) {
                 { email: regex },
                 { mobileNumber: regex },
                 { referralCode: regex },
-                {isDeleted: regex},
             ];
         }
 

@@ -10,11 +10,13 @@ import { TrashBinIcon } from "@/icons";
 import { useCategory } from "@/context/CategoryContext";
 import { useSubcategory } from "@/context/SubcategoryContext";
 import { moduleFieldConfig } from "@/utils/moduleFieldConfig";
-
 interface KeyValue {
   key: string;
   value: string;
+  icon?: File | null; // ✅ store file instead of string
 }
+
+
 
 export interface BasicDetailsData {
   serviceName?: string | null;
@@ -37,26 +39,35 @@ export interface BasicDetailsData {
 interface BasicDetailsFormProps {
   data: BasicDetailsData;
   setData: (newData: Partial<BasicDetailsData>) => void;
-    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
+  selectedModuleId: string;
+   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
 
-const BasicDetailsForm = ({ data, setData,fieldsConfig  }: BasicDetailsFormProps) => {
+const BasicDetailsForm = ({ data, setData, selectedModuleId ,fieldsConfig }: BasicDetailsFormProps) => {
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
+console.log('data of basic details : ', data)
 
   // Sync key-value rows with parent data
-  useEffect(() => {
-    if (data.keyValues && JSON.stringify(data.keyValues) !== JSON.stringify(rows)) {
-      setRows(data.keyValues);
-    }
-  }, [data.keyValues]);
+ useEffect(() => {
+  if (
+    data.keyValues &&
+    (data.keyValues.length !== rows.length ||
+      data.keyValues.some(
+        (row, i) =>
+          row.key !== rows[i]?.key ||
+          row.value !== rows[i]?.value
+      ))
+  ) {
+    setRows(data.keyValues);
+  }
+}, [data.keyValues]);
+
+
   
-
-
-console.log("update data for the update : ", data)
 
   // Calculate discountedPrice, gstInRupees, totalWithGst
   useEffect(() => {
@@ -72,13 +83,32 @@ console.log("update data for the update : ", data)
   }, [data.price, data.discount, data.gst]);
 
   // Add / Remove rows
-  const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
-  const handleRemoveRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
-  const handleRowChange = (index: number, field: keyof KeyValue, value: string) => {
-    const updated = [...rows];
-    updated[index][field] = value;
-    setRows(updated);
-  };
+const handleAddRow = () => {
+  const updated = [...rows, { key: "", value: "", icon: null }];
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+
+const handleRemoveRow = (index: number) => {
+  const updated = rows.filter((_, i) => i !== index);
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+const handleRowChange = (
+  index: number,
+  field: keyof KeyValue,
+  value: string | File | null
+) => {
+  const updated = [...rows];
+  updated[index][field] = value;
+  setRows(updated);
+  setData({ keyValues: updated });
+};
+
+
+
+
+
 
   // Tags handling
   const tags = data.tags || [];
@@ -92,9 +122,14 @@ console.log("update data for the update : ", data)
   const handleRemoveTag = (index: number) => setData({ tags: tags.filter((_, i) => i !== index) });
 
   // Category & Subcategory options
-  const categoryOptions = categories.map(cat => ({ value: cat._id, label: cat.name, image: cat.image || "" }));
+const filteredCategories = categories.filter(
+  (cat) => cat.module?._id === selectedModuleId
+);
+  const categoryOptions = filteredCategories.map(cat => ({ value: cat._id, label: cat.name, image: cat.image || "" }));
   const filteredSubcategories = data.category ? subcategories.filter(s => s.category?._id === data.category) : [];
   const subcategoryOptions = filteredSubcategories.map(subcat => ({ value: subcat._id, label: subcat.name, image: subcat.image || "" }));
+
+  console.log("categoryes : ", categories);
 
   // File handling
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,8 +146,10 @@ console.log("update data for the update : ", data)
     <div>
       <h4 className="text-xl font-bold text-gray-800 dark:text-white/90 text-center my-4">Basic Details</h4>
 
-
- {fieldsConfig?.serviceName && (
+        
+       
+        
+           {fieldsConfig?.serviceName && (
         <div>
   <Label>Service Name</Label>
   <Input
@@ -136,12 +173,12 @@ console.log("update data for the update : ", data)
     <p className="text-red-500 text-sm mt-1">{errors.serviceName}</p>
   )}
 </div>
- )}
+)}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LEFT SIDE */}
-        <div className="space-y-4">
-
-           {fieldsConfig?.category && (
+<div className="space-y-4">
+  {fieldsConfig?.category && (
           <div>
             <Label>Select Category</Label>
            <Select
@@ -167,30 +204,16 @@ console.log("update data for the update : ", data)
 
 
           </div>
-           )}
+          )}
 
-         {fieldsConfig?.thumbnail && (
-  <div>
-    <Label>Thumbnail</Label>
-    <FileInput onChange={handleThumbnailChange} />
-
-    {/* 🔥 Thumbnail Preview */}
-    {data.thumbnailImage && (
-      <img
-        src={
-          typeof data.thumbnailImage === "string"
-            ? data.thumbnailImage
-            : URL.createObjectURL(data.thumbnailImage)
-        }
-        className="w-32 h-32 mt-3 rounded-lg object-cover border"
-        alt="Thumbnail Preview"
-      />
-    )}
-  </div>
+          {fieldsConfig?.thumbnail && (
+          <div>
+            <Label>Thumbnail</Label>
+            <FileInput onChange={handleThumbnailChange} />
+          </div>
 )}
 
-
-           {fieldsConfig?.tags && (
+ {fieldsConfig?.tags && (
           <div>
             <Label>Tags</Label>
             <div className="border rounded px-3 py-1 flex flex-wrap gap-2">
@@ -209,8 +232,9 @@ console.log("update data for the update : ", data)
               />
             </div>
           </div>
- )}
-  {fieldsConfig?.recomnded && (
+           )}
+
+             {fieldsConfig?.recomnded && (
           <div>
             <Label>Recommended Service</Label>
             <Switch
@@ -219,11 +243,11 @@ console.log("update data for the update : ", data)
               label="Recommended Service"
             />
           </div>
- )}
+           )}
 
  {fieldsConfig?.price && (
             <div className="border p-3 rounded-md">
-            <div>
+          <div>
             <Label>Price</Label>
             <Input
               type="number"
@@ -245,17 +269,16 @@ console.log("update data for the update : ", data)
           <div>
             <Label>After Discount Price</Label>
             <Input type="number" readOnly value={data.discountedPrice || 0} />
-          </div>
-          </div>
+          </div></div>
  )}
 
 
         </div>
 
+
         {/* RIGHT SIDE */}
         <div className="space-y-4">
-
-
+          
 
  {fieldsConfig?.subcategory && (
           <div>
@@ -271,30 +294,13 @@ console.log("update data for the update : ", data)
 
 
  {fieldsConfig?.bannerImage && (
-  <div>
-    <Label>Banner Images</Label>
-    <FileInput multiple onChange={handleBannerChange} />
+          <div>
+            <Label>Banner Images</Label>
+            <FileInput multiple onChange={handleBannerChange} />
+          </div>
+ )}
 
-    {/* 🔥 Banner Preview */}
-    {data.bannerImages && (
-      <div className="flex gap-3 flex-wrap mt-3">
-        {Array.from(data.bannerImages).map((img: any, index: number) => (
-          <img
-            key={index}
-            src={
-              typeof img === "string"
-                ? img
-                : URL.createObjectURL(img)
-            }
-            className="w-32 h-32 rounded-lg object-cover border"
-            alt={`Banner ${index}`}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-)}
-
+          
 
 
  {fieldsConfig?.keyValue && (
@@ -309,17 +315,31 @@ console.log("update data for the update : ", data)
                   </button>
                 </div>
                 <div className="flex gap-4 mt-3">
-                  <Input
-                    placeholder="Key"
-                    value={row.key}
-                    onChange={(e) => handleRowChange(index, "key", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={row.value}
-                    onChange={(e) => handleRowChange(index, "value", e.target.value)}
-                  />
-                </div>
+  <Input
+    placeholder="Key"
+    value={row.key}
+    onChange={(e) => handleRowChange(index, "key", e.target.value)}
+  />
+  <Input
+    placeholder="Value"
+    value={row.value}
+    onChange={(e) => handleRowChange(index, "value", e.target.value)}
+  />
+ <div className="flex-1">
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] || null;
+      console.log("Direct file input - File:", file);
+      console.log("Is File?", file instanceof File);
+      handleRowChange(index, "icon", file);
+    }}
+    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  />
+</div>
+</div>
+
               </div>
             ))}
             <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
@@ -330,7 +350,6 @@ console.log("update data for the update : ", data)
 
  {fieldsConfig?.gst && (
           <div className="border p-3 rounded-md">
-
             <div className="flex items-center justify-between mb-2">
               <Label>Include GST</Label>
               <Switch

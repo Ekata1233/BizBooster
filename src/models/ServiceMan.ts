@@ -5,7 +5,7 @@ const BusinessInformationSchema = new mongoose.Schema(
   {
     identityType: {
       type: String,
-      enum: ['passport', 'driving_license', 'addharcard', 'pancard'],
+      enum: ['passport', 'driving_license', 'aadharcard', 'pancard'],
       required: true,
     },
     identityNumber: {
@@ -16,7 +16,7 @@ const BusinessInformationSchema = new mongoose.Schema(
         {
           validator: function (value) {
             // Aadhaar: exactly 12 digits
-            if (this.identityType === 'addharcard') {
+            if (this.identityType === 'aadharcard') {
               return /^\d{12}$/.test(value);
             }
             // PAN: 10 alphanumeric (common format)
@@ -50,8 +50,26 @@ const BusinessInformationSchema = new mongoose.Schema(
 const ServiceManSchema = new mongoose.Schema(
   {
     serviceManId: { type: String, unique: true },
-    name: { type: String, required: true },
-    lastName: { type: String, required: true },
+    name: { type: String,
+  required: true,
+  trim: true,
+  minlength: [4, "Name must be at least 4 characters long"],
+  validate: {
+    validator: function (v: string) {
+      return /^[A-Za-z]+$/.test(v);
+    },
+    message: "Name must contain only alphabetic characters",
+  }, },
+    lastName: {  type: String,
+  required: true,
+  trim: true,
+  minlength: [4, "Last name must be at least 4 characters long"],
+  validate: {
+    validator: function (v: string) {
+      return /^[A-Za-z]+$/.test(v);
+    },
+    message: "Last name must contain only alphabetic characters",
+  }, },
     phoneNo: {
       type: String,
       required: [true, "Phone number is required"],
@@ -77,7 +95,7 @@ const ServiceManSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: function (v) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+          return /^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/.test(v);
         },
         message: (props) => `${props.value} is not a valid email address!`,
       },
