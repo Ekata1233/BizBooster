@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
+import { useRouter } from "next/navigation";
 
 interface FranchiseData {
   franchiseSize: string;
@@ -62,6 +63,7 @@ const getEmptyFranchise = (): FranchiseData => ({
 function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSave?: () => void; }) {
   const [franchises, setFranchises] = useState<FranchiseData[]>([getEmptyFranchise()]);
   const [activeIndex, setActiveIndex] = useState(0);
+const router = useRouter();
 
   const handleChange = (index: number, e: any) => {
     const { name, value, type, checked } = e.target;
@@ -143,7 +145,8 @@ function FranchiseExtraDetails({ serviceId ,onSave,}: { serviceId: string , onSa
     alert("Franchise details saved successfully!");
     setFranchises([getEmptyFranchise()]);
     setActiveIndex(0);
-    if (onSave) onSave();
+    // if (onSave) onSave();
+    router.push("/service-management/service-list");
   } catch (error) {
     console.error(error);
     alert("Something went wrong!");

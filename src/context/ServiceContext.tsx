@@ -133,6 +133,7 @@ export interface CompanyDetailItem {
 export interface CompanyDetails {
   name: string;
   location: string;
+  profile: string;
   details: CompanyDetailItem[];
 }
 

@@ -279,7 +279,7 @@ const mappedProviders = nonPromotedProviders.map(
         />
       </ComponentCard>
 
-      <ComponentCard title="Promotion Request Table">
+      <ComponentCard title="Promotion Request Table" className="mt-4">
         {!loading && filteredProviders.length === 0 ? (
   <div className="flex flex-col items-center justify-center gap-3 border border-dashed border-gray-300 rounded-lg p-8 text-center">
     <CheckLineIcon className="w-10 h-10 text-gray-400" />

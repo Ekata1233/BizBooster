@@ -14,6 +14,7 @@ import Link from 'next/link';
 interface KeyValue {
   key: string;
   value: string;
+  icon: string;
   _id?: string;
 }
 
@@ -21,10 +22,14 @@ type RowData = { title: string; description: string[] };
 type InvestmentRangeItem = {
   minRange: number | string;
   maxRange: number | string;
+  range: string;
+  parameters: string;
 };
 type MonthlyEarnItem = {
   minEarn: string | number;
   maxEarn: string | number;
+  range: string;
+  parameters: string;
 };
 interface ConnectWithItem {
   name: string;
@@ -536,18 +541,59 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
 
             {/* Key Values */}
             {keyValues.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-700 mb-3">Key Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {keyValues.map((item, index) => (
-                    <div key={item._id || index} className="bg-gray-50 p-3 rounded-lg">
-                      <span className="font-medium text-gray-700">{item.key}:</span>{' '}
-                      <span className="text-gray-600">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
+  <div className="mb-6">
+    <h3 className="font-semibold text-gray-700 mb-3">
+      Key Information
+    </h3>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {keyValues.map((item, index) => {
+        const hasIcon = !!item.icon;
+        const hasKey = !!item.key;
+        const hasValue = !!item.value;
+
+        return (
+          <div
+            key={item._id || index}
+            className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg"
+          >
+            {/* Icon */}
+            {hasIcon && (
+              <div className="flex-shrink-0">
+                <Image
+                  src={item.icon}
+                  alt={item.key || item.value || "icon"}
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </div>
             )}
+
+            {/* Text Content */}
+            <div className="flex flex-col leading-snug">
+              {hasKey && (
+                <span className="text-sm font-medium text-gray-700">
+                  {item.key}
+                </span>
+              )}
+
+              {hasKey && hasValue && (
+                <span className="mx-1 font-medium">:</span>
+              )}
+
+              {hasValue && (
+                <span className="text-sm text-gray-600">
+                  {item.value}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
             {/* Tags */}
             {tags.length > 0 && (

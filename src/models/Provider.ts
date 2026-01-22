@@ -210,6 +210,10 @@ const providerSchema = new Schema<ProviderDocument>(
     isStoreOpen: { type: Boolean, default: true },
     isPromoted: { type: Boolean, default: null },
     isRecommended: { type: Boolean, default: false },
+    isPromoted: {
+      type: Boolean,
+      default: null, 
+    },
     isTrending: { type: Boolean, default: false },
 
     /* ––– Registration progress flags ––– */
