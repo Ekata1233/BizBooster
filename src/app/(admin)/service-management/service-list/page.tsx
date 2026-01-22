@@ -664,7 +664,7 @@ const ServiceList = () => {
                         <Pagination
                           currentPage={currentPage}
                           totalItems={totalPages * rowsPerPage}
-                          totalPages={totalPages}
+                          // totalPages={totalPages}
                           onPageChange={(page) => setCurrentPage(page)}
                         />
                       </div>
