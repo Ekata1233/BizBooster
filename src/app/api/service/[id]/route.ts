@@ -1056,8 +1056,31 @@ if (formData.has("serviceDetails[companyDetails][0][name]")) {
   for (let i = 0; i < 10; i++) {
     const name = formData.get(`serviceDetails[companyDetails][${i}][name]`) as string;
     const location = formData.get(`serviceDetails[companyDetails][${i}][location]`) as string;
-
     if (!name || name.trim() === "") break;
+
+    const profileFile = formData.get(
+      `serviceDetails[companyDetails][${i}][profile]`
+    );
+
+    let profile = "";
+
+    // ✅ Handle profile upload / reuse
+    if (profileFile instanceof File && profileFile.size > 0) {
+      try {
+        const buffer = Buffer.from(await profileFile.arrayBuffer());
+        const upload = await imagekit.upload({
+          file: buffer,
+          fileName: `${uuidv4()}-${profileFile.name}`,
+          folder: "/services/companyProfiles",
+        });
+        profile = upload.url;
+      } catch (error) {
+        console.error(`Failed to upload company profile for index ${i}:`, error);
+      }
+    } else if (typeof profileFile === "string" && profileFile.trim()) {
+      // edit case → already uploaded URL
+      profile = profileFile;
+    }
 
     const details: any[] = [];
     for (let j = 0; j < 10; j++) {
@@ -1074,6 +1097,7 @@ if (formData.has("serviceDetails[companyDetails][0][name]")) {
     serviceDetails.companyDetails.push({
       name: name.trim(),
       location: location?.trim() || "",
+      profile,
       details,
     });
   }

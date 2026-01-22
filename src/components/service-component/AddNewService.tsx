@@ -262,8 +262,6 @@ const AddNewService = () => {
       connectWith: [{ name: '', mobileNo: '', email: '' }],
       timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
-      
-      // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
       emiavalable: [''],
@@ -353,8 +351,6 @@ const AddNewService = () => {
       connectWith: [{ name: '', mobileNo: '', email: '' }],
       timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
-      
-      // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
       emiavalable: [''],
@@ -410,7 +406,7 @@ const AddNewService = () => {
   };
 
   console.log("formdata for add service : ", formData);
-  
+
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
     if (data && typeof data === 'object' && !(data instanceof File) && !(data instanceof Blob)) {
