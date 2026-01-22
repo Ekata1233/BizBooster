@@ -86,6 +86,7 @@ const moduleItems: NavItem[] = [
     subItems: [
       { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
       { name: "Banner-list", path: "/banner-management/banners", pro: false },
+      { name: "Category Banners", path: "/category-management/category/category-banner", pro: false },
     ],
   },
   {
