@@ -189,6 +189,7 @@ type FranchiseDetails = {
   rows?: RowData[];
   investmentRange?: InvestmentRangeItem[];
   monthlyEarnPotential?: MonthlyEarnItem[];
+  areaRequired? : string,
   franchiseModel?: FranchiseModelItem[];
   extraSections?: ExtraSection[];
   extraImages?: (File | string)[];
@@ -308,6 +309,7 @@ const AddNewService = () => {
       termsAndConditions: '',
       investmentRange: [],
       monthlyEarnPotential: [],
+      areaRequired: '',
       franchiseModel: [],
       rows: [],
       extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
@@ -398,6 +400,7 @@ const AddNewService = () => {
       termsAndConditions: '',
       investmentRange: [],
       monthlyEarnPotential: [],
+      areaRequired: '',
       franchiseModel: [],
       rows: [],
       extraSections: [{ title: '', description: [''], subtitle: [''], subDescription: [''], lists: [''], tags: [''], image: [] }],
@@ -883,7 +886,7 @@ formData.service.timeRequired?.forEach((item, i) => {
       // ---------------- FRANCHISE DETAILS ----------------
       fd.append("franchiseDetails[commission]", formData.franchise.commission || "");
       fd.append("franchiseDetails[termsAndConditions]", formData.franchise.termsAndConditions || "");
-
+      
       formData.franchise.investmentRange?.forEach((item, i) => {
   fd.append(`franchiseDetails[investmentRange][${i}][range]`, item.range || "");
   fd.append(`franchiseDetails[investmentRange][${i}][parameters]`, item.parameters || "");
@@ -893,6 +896,7 @@ formData.service.timeRequired?.forEach((item, i) => {
   fd.append(`franchiseDetails[monthlyEarnPotential][${i}][range]`, item.range || "");
   fd.append(`franchiseDetails[monthlyEarnPotential][${i}][parameters]`, item.parameters || "");
 });
+fd.append("franchiseDetails[areaRequired]", formData.franchise.areaRequired || "");
 
       formData.franchise.franchiseModel?.forEach((model, i) => {
         fd.append(`franchiseDetails[franchiseModel][${i}][title]`, model.title || "");

@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // --- Key Values ---
     const keyValues: any[] = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const key = formData.get(`keyValues[${i}][key]`) as string | null;
       const value = formData.get(`keyValues[${i}][value]`) as string | null;
       const iconFile = formData.get(`keyValues[${i}][icon]`);
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
 
     // --- Provider Prices ---
     const providerPrices: any[] = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const provider = formData.get(`providerPrices[${i}][provider]`);
       if (!provider) break;
       providerPrices.push({
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
     // --- Sections with icon/image ---
     async function processSection(field: string, folder: string, mediaKey: "icon" | "image") {
       const arr: any[] = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 8; i++) {
         const title = formData.get(`serviceDetails[${field}][${i}][title]`);
         if (!title) break;
         const description = formData.get(`serviceDetails[${field}][${i}][description]`);
@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
     serviceDetails.moreInfo = await processSection("moreInfo", "/services/moreInfo", "image");
 
     // --- We Required ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`serviceDetails[weRequired][${i}][title]`);
       const description = formData.get(`serviceDetails[weRequired][${i}][description]`);
       if (!title && !description) break;
@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- We Deliver ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`serviceDetails[weDeliver][${i}][title]`);
       const description = formData.get(`serviceDetails[weDeliver][${i}][description]`);
       if (!title && !description) break;
@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
 
     // --- Connect With ---
 // --- Connect With (WITH VALIDATION) ---
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 8; i++) {
   const name = formData.get(`serviceDetails[connectWith][${i}][name]`) as string | null;
   if (!name) break;
 
@@ -289,7 +289,7 @@ for (let i = 0; i < 20; i++) {
 
 
     // --- Time Required ---
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 8; i++) {
   const range = formData.get(`serviceDetails[timeRequired][${i}][range]`);
   if (!range) break;
   serviceDetails.timeRequired.push({
@@ -299,7 +299,7 @@ for (let i = 0; i < 20; i++) {
 }
 
     // --- FAQ ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const question = formData.get(`serviceDetails[faq][${i}][question]`);
       if (!question) break;
       const answer = formData.get(`serviceDetails[faq][${i}][answer]`);
@@ -307,7 +307,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // --- Packages ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const name = formData.get(`serviceDetails[packages][${i}][name]`);
       if (!name) break;
       const pkg: any = {
@@ -317,7 +317,7 @@ for (let i = 0; i < 20; i++) {
         discountedPrice: formData.get(`serviceDetails[packages][${i}][discountedPrice]`),
         whatYouGet: [],
       };
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const item = formData.get(`serviceDetails[packages][${i}][whatYouGet][${j}]`);
         if (!item) break;
         pkg.whatYouGet.push(item);
@@ -343,7 +343,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // --- Extra Sections ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
       if (!title) break;
 
@@ -357,37 +357,37 @@ for (let i = 0; i < 20; i++) {
         image: [],
       };
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
         if (!subtitle) break;
         extraSection.subtitle.push(subtitle);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
         if (!description) break;
         extraSection.description.push(description);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
         if (!subDescription) break;
         extraSection.subDescription.push(subDescription);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
         if (!list) break;
         extraSection.lists.push(list);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
         if (!tag) break;
         extraSection.tags.push(tag);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const imageFile = formData.get(
           `serviceDetails[extraSections][${i}][image][${j}]`
         );
@@ -409,7 +409,7 @@ for (let i = 0; i < 20; i++) {
     // --- NEW EXTENDED FIELDS PROCESSING ---
     
     // 1. operatingCities
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const city = formData.get(`serviceDetails[operatingCities][${i}]`);
       if (!city) break;
       serviceDetails.operatingCities.push(city);
@@ -432,14 +432,14 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 3. emiavalable
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const emi = formData.get(`serviceDetails[emiavalable][${i}]`);
       if (!emi) break;
       serviceDetails.emiavalable.push(emi);
     }
 
     // 4. counter
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const number = formData.get(`serviceDetails[counter][${i}][number]`);
       if (!number) break;
       serviceDetails.counter.push({
@@ -449,7 +449,7 @@ for (let i = 0; i < 20; i++) {
     }
 
   // 5. franchiseOperatingModel
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 8; i++) {
   const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`);
   if (!title) break;
 
@@ -463,7 +463,7 @@ for (let i = 0; i < 20; i++) {
   };
 
   // Process features
-  for (let j = 0; j < 20; j++) {
+  for (let j = 0; j < 8; j++) {
     const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`);
     if (!subtitle) break;
     
@@ -493,7 +493,7 @@ for (let i = 0; i < 20; i++) {
   }
 
   // Process tags
-  for (let j = 0; j < 20; j++) {
+  for (let j = 0; j < 8; j++) {
     const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`);
     if (!tag) break;
     franchiseModel.tags.push(tag);
@@ -503,7 +503,7 @@ for (let i = 0; i < 20; i++) {
 }
 
 // 7. keyAdvantages
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 8; i++) {
   const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`);
   if (!title) break;
 
@@ -533,7 +533,7 @@ for (let i = 0; i < 20; i++) {
 }
 
 // 8. completeSupportSystem
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 8; i++) {
   const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`);
   if (!title) break;
 
@@ -562,7 +562,7 @@ for (let i = 0; i < 20; i++) {
   };
 
   // Process lists
-  for (let j = 0; j < 20; j++) {
+  for (let j = 0; j < 8; j++) {
     const listItem = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`);
     if (!listItem) break;
     supportSystem.lists.push(listItem);
@@ -574,7 +574,7 @@ for (let i = 0; i < 20; i++) {
     // 6. businessFundamental
     serviceDetails.businessFundamental.description = formData.get("serviceDetails[businessFundamental][description]") || "";
     
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`);
       if (!subtitle) break;
       serviceDetails.businessFundamental.points.push({
@@ -584,35 +584,35 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 9. trainingDetails
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const detail = formData.get(`serviceDetails[trainingDetails][${i}]`);
       if (!detail) break;
       serviceDetails.trainingDetails.push(detail);
     }
 
     // 10. agreementDetails
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const detail = formData.get(`serviceDetails[agreementDetails][${i}]`);
       if (!detail) break;
       serviceDetails.agreementDetails.push(detail);
     }
 
     // 11. goodThings
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const thing = formData.get(`serviceDetails[goodThings][${i}]`);
       if (!thing) break;
       serviceDetails.goodThings.push(thing);
     }
 
     // 12. compareAndChoose
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const compare = formData.get(`serviceDetails[compareAndChoose][${i}]`);
       if (!compare) break;
       serviceDetails.compareAndChoose.push(compare);
     }
 
     // 13. companyDetails
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const name = formData.get(`serviceDetails[companyDetails][${i}][name]`);
       if (!name) break;
 
@@ -623,7 +623,7 @@ for (let i = 0; i < 20; i++) {
       };
 
       // Process details
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const title = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][title]`);
         if (!title) break;
         company.details.push({
@@ -636,7 +636,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 14. roi
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const roiItem = formData.get(`serviceDetails[roi][${i}]`);
       if (!roiItem) break;
       serviceDetails.roi.push(roiItem);
@@ -659,21 +659,21 @@ for (let i = 0; i < 20; i++) {
     if (hours) serviceDetails.duration.hours = Number(hours);
 
     // 18. whatYouWillLearn
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[whatYouWillLearn][${i}]`);
       if (!item) break;
       serviceDetails.whatYouWillLearn.push(item);
     }
 
     // 19. eligibleFor
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[eligibleFor][${i}]`);
       if (!item) break;
       serviceDetails.eligibleFor.push(item);
     }
 
     // 20. courseCurriculum
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`serviceDetails[courseCurriculum][${i}][title]`);
       if (!title) break;
 
@@ -684,14 +684,14 @@ for (let i = 0; i < 20; i++) {
       };
 
       // Process lists
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const listItem = formData.get(`serviceDetails[courseCurriculum][${i}][lists][${j}]`);
         if (!listItem) break;
         curriculum.lists.push(listItem);
       }
 
       // Process model
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const modelItem = formData.get(`serviceDetails[courseCurriculum][${i}][model][${j}]`);
         if (!modelItem) break;
         curriculum.model.push(modelItem);
@@ -701,7 +701,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 21. courseIncludes
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[courseIncludes][${i}]`);
       if (!item) break;
       serviceDetails.courseIncludes.push(item);
@@ -724,7 +724,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 23. whomToSell
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const lists = formData.get(`serviceDetails[whomToSell][${i}][lists]`);
       if (!lists) break;
 
@@ -743,21 +743,21 @@ for (let i = 0; i < 20; i++) {
     }
 
     // 24. include
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[include][${i}]`);
       if (!item) break;
       serviceDetails.include.push(item);
     }
 
     // 25. notInclude
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[notInclude][${i}]`);
       if (!item) break;
       serviceDetails.notInclude.push(item);
     }
 
     // 26. safetyAndAssurance
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const item = formData.get(`serviceDetails[safetyAndAssurance][${i}]`);
       if (!item) break;
       serviceDetails.safetyAndAssurance.push(item);
@@ -769,12 +769,13 @@ for (let i = 0; i < 20; i++) {
       termsAndConditions: formData.get("franchiseDetails[termsAndConditions]"),
       investmentRange: [],
       monthlyEarnPotential: [],
+      areaRequired : formData.get("franchiseDetails[areaRequired]"),
       franchiseModel: [],
       extraSections: [],
       extraImages: [],
     };
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
   const range = formData.get(`franchiseDetails[investmentRange][${i}][range]`);
   if (!range) break;
   franchiseDetails.investmentRange.push({
@@ -783,7 +784,7 @@ for (let i = 0; i < 20; i++) {
   });
 }
 
-   for (let i = 0; i < 20; i++) {
+   for (let i = 0; i < 8; i++) {
   const range = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][range]`);
   if (!range) break;
   franchiseDetails.monthlyEarnPotential.push({
@@ -792,7 +793,7 @@ for (let i = 0; i < 20; i++) {
   });
 }
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`);
       if (!title) break;
       franchiseDetails.franchiseModel.push({
@@ -806,7 +807,7 @@ for (let i = 0; i < 20; i++) {
     }
 
     // --- Franchise Extra Sections ---
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       const title = formData.get(`franchiseDetails[extraSections][${i}][title]`);
       if (!title) break;
 
@@ -820,37 +821,37 @@ for (let i = 0; i < 20; i++) {
         image: [],
       };
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const subtitle = formData.get(`franchiseDetails[extraSections][${i}][subtitle][${j}]`);
         if (!subtitle) break;
         extraSection.subtitle.push(subtitle);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const description = formData.get(`franchiseDetails[extraSections][${i}][description][${j}]`);
         if (!description) break;
         extraSection.description.push(description);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const subDescription = formData.get(`franchiseDetails[extraSections][${i}][subDescription][${j}]`);
         if (!subDescription) break;
         extraSection.subDescription.push(subDescription);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const list = formData.get(`franchiseDetails[extraSections][${i}][lists][${j}]`);
         if (!list) break;
         extraSection.lists.push(list);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const tag = formData.get(`franchiseDetails[extraSections][${i}][tags][${j}]`);
         if (!tag) break;
         extraSection.tags.push(tag);
       }
 
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 8; j++) {
         const imageFile = formData.get(`franchiseDetails[extraSections][${i}][image][${j}]`);
         if (imageFile instanceof File) {
           const buffer = Buffer.from(await imageFile.arrayBuffer());

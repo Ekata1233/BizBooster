@@ -39,7 +39,7 @@ export interface StoreInfo {
   aboutUs?: string;
   tags?: string[];
   totalProjects?: number;
-  totalExperience?: number;
+  totalExperience?: string;
 }
 
 export interface KYC {
@@ -79,6 +79,7 @@ export interface ProviderDocument extends Document {
   isVerified: boolean;
   isDeleted: boolean;
   isStoreOpen?: boolean | null;
+  isPromoted?: boolean | null;
   isRecommended?: boolean;
   isTrending? : boolean;
   /* progress flags */
@@ -154,8 +155,7 @@ const storeInfoSchema = new Schema<StoreInfo>(
       min: [0, "Total projects cannot be negative"],
     },
     totalExperience : {
-      type: Number,
-      min: [0, "Total experience cannot be negative"],
+      type: String
     },
   },
   { _id: false }
@@ -208,6 +208,7 @@ const providerSchema = new Schema<ProviderDocument>(
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isStoreOpen: { type: Boolean, default: true },
+    isPromoted: { type: Boolean, default: null },
     isRecommended: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
 

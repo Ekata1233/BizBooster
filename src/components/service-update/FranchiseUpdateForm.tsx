@@ -19,6 +19,7 @@ const ClientSideCustomEditor = dynamic(
 /* ---------------- TYPES ---------------- */
 type InvestmentRange = { range: string; parameters: string };
 type MonthlyEarnPotential = { range: string; parameters: string };
+type AreaRequired = string;
 type FranchiseModel = {
   title: string;
   agreement: string;
@@ -73,6 +74,8 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   const [monthlyEarnPotential, setMonthlyEarnPotential] = useState<MonthlyEarnPotential[]>([
     { range: '', parameters: '' },
   ]);
+  const [areaRequired, setAreaRequired] = useState<string>('');
+  
   const [franchiseModel, setFranchiseModel] = useState<FranchiseModel[]>([
     { title: '', agreement: '', price: null, discount: null, gst: null, fees: null },
   ]);
@@ -117,6 +120,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       setMonthlyEarnPotential(fd.monthlyEarnPotential);
     }
     
+    setAreaRequired(fd.areaRequired);
     if (fd.franchiseModel?.length) {
       setFranchiseModel(fd.franchiseModel);
     }
@@ -137,6 +141,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       termsAndConditions,
       investmentRange: investmentRange.filter(item => item.range !== null || item.parameters !== null),
       monthlyEarnPotential: monthlyEarnPotential.filter(item => item.range !== null || item.parameters !== null),
+      areaRequired,
       franchiseModel: franchiseModel.filter(item => item.title.trim() !== ''),
       extraImages: extraImages.filter(img => img !== ''),
       extraSections: showExtraSections ? extraSections.filter(section => section.title.trim() !== '') : [],
@@ -154,6 +159,7 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
     termsAndConditions,
     investmentRange,
     monthlyEarnPotential,
+    areaRequired,
     franchiseModel,
     extraImages,
     extraSections,
@@ -421,7 +427,6 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
         </div>
       )}
 
-      {/* Investment Range */}
      {/* Investment Range */}
 {fieldsConfig?.investmentRange && (
   <div>
@@ -460,7 +465,6 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
   </div>
 )}
 
-      {/* Monthly Earn Potential */}
      {/* Monthly Earn Potential */}
 {fieldsConfig?.monthlyEarnPotential && (
   <div>
@@ -497,6 +501,26 @@ const FranchiseUpdateForm: React.FC<FranchiseUpdateFormProps> = ({
       + Add Monthly Earn Potential
     </button>
   </div>
+)}
+
+{fieldsConfig?.areaRequired && (
+<div>
+  <div className="my-4">
+    <div className="flex items-center gap-2">
+      <Label>Area Required</Label>
+      <span className="text-red-500 text-sm font-semibold">(Only Franchise Service)</span>
+    </div>
+    <div className='border p-4 rounded'>
+        <div  className="flex gap-4 mt-2 items-center">
+        <Input
+            placeholder="100sq - 500sq"
+            value={areaRequired}
+            onChange={(e) => setAreaRequired(e.target.value)}
+          />
+        </div>
+    </div>
+  </div>
+</div>
 )}
       {/* Franchise Model */}
       {fieldsConfig?.franchiseModel && (
