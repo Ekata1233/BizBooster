@@ -697,24 +697,39 @@ bannerImages = (await Promise.all(bannerUploadPromises)).filter(Boolean);
     };
 
     // --- Highlights ---
-    const highlightUpdated = Array.from(formData.keys()).some((key) =>
-      key.startsWith("serviceDetails[highlight]")
-    );
-    if (highlightUpdated) {
-      const highlightUploadPromises: Promise<string>[] = [];
+// --- Highlights ---
+const highlightUpdated = Array.from(formData.keys()).some((key) =>
+  key.startsWith("serviceDetails[highlight]")
+);
 
-for (const key of formData.keys()) {
-  if (key.startsWith("serviceDetails[highlight]")) {
-    const file = formData.get(key);
-    if (file && typeof file === "object" && "size" in file && file.size > 0) {
-      highlightUploadPromises.push(handleFileUpload(file, "/services/highlight"));
+if (highlightUpdated) {
+  const highlights: string[] = [];
+
+  for (const key of formData.keys()) {
+    if (key.startsWith("serviceDetails[highlight]")) {
+      const value = formData.get(key);
+
+      // ✅ New file upload
+      if (
+        value &&
+        typeof value === "object" &&
+        "size" in value &&
+        value.size > 0
+      ) {
+        const url = await handleFileUpload(value, "/services/highlight");
+        if (url) highlights.push(url);
+      }
+
+      // ✅ Existing URL (edit case)
+      else if (typeof value === "string" && value.startsWith("http")) {
+        highlights.push(value);
+      }
     }
   }
+
+  serviceDetails.highlight = highlights;
 }
 
-serviceDetails.highlight = (await Promise.all(highlightUploadPromises)).filter(Boolean);
-
-    }
 
     // --- Sections with icon/image ---
     async function processSection(
@@ -813,7 +828,7 @@ if (timeRequiredUpdated) {
   serviceDetails.timeRequired = [];
   for (let i = 0; i < 10; i++) {
     const range = formData.get(`serviceDetails[timeRequired][${i}][range]`) as string;
-    if (!range) break;
+if (!range || range.trim() === "") break;
     serviceDetails.timeRequired.push({
       range: range.trim(),
       parameters: (formData.get(`serviceDetails[timeRequired][${i}][parameters]`) as string)?.trim() || "", // Changed from maxDays
@@ -938,14 +953,22 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
       const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`) as string;
       const subDescription = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) as string;
        const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
-const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0 
-  ? await handleFileUpload(icon, "/services/franchiseOperatingModel") 
-  : "";
+ if (!subtitle || subtitle.trim() === "") break;
 
-      if (!subtitle || subtitle.trim() === "") break;
+      let iconUrl = "";
 
-     
+      // ✅ CASE 1: uploaded file
+      if (icon instanceof File && icon.size > 0) {
+        iconUrl = await handleFileUpload(
+          icon,
+          "/services/franchiseOperatingModel"
+        );
+      }
 
+      // ✅ CASE 2: already a URL string (terminal / Postman)
+      else if (typeof icon === "string" && icon.trim() !== "") {
+        iconUrl = icon;
+      }
       features.push({
         subtitle: subtitle.trim(),
         subDescription: subDescription?.trim() || "",
@@ -996,12 +1019,15 @@ if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
     const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`) as string;
     const description = formData.get(`serviceDetails[keyAdvantages][${i}][description]`) as string;
    const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
-const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0
-  ? await handleFileUpload(icon, "/services/keyAdvantages")
-  : "";
     if (!title || title.trim() === "") break;
 
-    
+    let iconUrl = "";
+    if (icon instanceof File && icon.size > 0) {
+      iconUrl = await handleFileUpload(icon, "/services/keyAdvantages");
+    }
+    else if (typeof icon === "string" && icon.trim() !== "") {
+      iconUrl = icon;
+    }
 
     serviceDetails.keyAdvantages.push({
       title: title.trim(),
@@ -1017,20 +1043,33 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
   for (let i = 0; i < 10; i++) {
     const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`) as string;
    const icon = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
-const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size > 0
-  ? await handleFileUpload(icon, "/services/completeSupportSystem")
-  : "";
+ if (!title || title.trim() === "") break;
+
+    let iconUrl = "";
+
+    // ✅ CASE 1: icon is a File (browser upload)
+    if (icon instanceof File && icon.size > 0) {
+      iconUrl = await handleFileUpload(
+        icon,
+        "/services/completeSupportSystem"
+      );
+    }
+
+    // ✅ CASE 2: icon is already a URL string (terminal / Postman)
+    else if (typeof icon === "string" && icon.trim() !== "") {
+      iconUrl = icon;
+    }
+
     const lists: string[] = [];
 
     for (let j = 0; j < 10; j++) {
-      const item = formData.get(`serviceDetails[completeSupportSystem][${i}][lists][${j}]`) as string;
+      const item = formData.get(
+        `serviceDetails[completeSupportSystem][${i}][lists][${j}]`
+      ) as string;
+
       if (!item || item.trim() === "") break;
       lists.push(item.trim());
     }
-
-    if (!title || title.trim() === "") break;
-
-      // const iconUrl = icon ? await handleFileUpload(icon, "/services/completeSupportSystem") : "";
 
     serviceDetails.completeSupportSystem.push({
       title: title.trim(),
@@ -1039,6 +1078,7 @@ const iconUrl = icon && typeof icon === 'object' && 'size' in icon && icon.size 
     });
   }
 }
+
 ["trainingDetails", "agreementDetails", "goodThings", "compareAndChoose"].forEach(field => {
   if (formData.has(`serviceDetails[${field}][0]`)) {
     serviceDetails[field] = [];
@@ -1294,6 +1334,34 @@ if (Array.from(formData.keys()).some(k => k.startsWith("serviceDetails[certifica
   }
 }
 
+// -----------------------------------------------------------------------
+const serviceExtraImagesUpdated = Array.from(formData.keys()).some((key) =>
+  key.startsWith("franchiseDetails[extraImages]")
+);
+
+if (serviceExtraImagesUpdated) {
+  serviceDetails.extraImages = [];
+
+  for (const key of formData.keys()) {
+    if (key.startsWith("serviceDetails[extraImages]")) {
+      const value = formData.get(key);
+
+      // Case 1: New file upload
+      if (value && typeof value === 'object' && 'size' in value && value.size > 0) {
+        const uploadedUrl = await handleFileUpload(
+          value,
+          "/services/franchise/extraImages"
+        );
+        serviceDetails.extraImages.push(uploadedUrl);
+      }
+      // Case 2: Existing image URL
+      else if (typeof value === "string" && value.trim() !== "") {
+        serviceDetails.extraImages.push(value);
+      }
+    }
+  }
+}
+// -----------------------------------------------------------------------
     // --- Extra Images ---
   const extraImagesUpdated = Array.from(formData.keys()).some(key =>
   key.startsWith("serviceDetails[extraSections]")

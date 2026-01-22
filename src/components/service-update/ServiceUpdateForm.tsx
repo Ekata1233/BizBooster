@@ -161,7 +161,7 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
 
 // Add this at the top of your component after useState declarations
 const isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
-console.log("package",packages);
+console.log("timeRequired : ",timeRequired);
 
 // Replace the problematic useEffect with this:
 useEffect(() => {
@@ -291,7 +291,7 @@ useEffect(() => {
   setMoreInfo(details.moreInfo?.length ? details.moreInfo : [{ title: '', image: '', description: '' }]);
   setFaqs(details.faq?.length ? details.faq : [{ question: '', answer: '' }]);
   setConnectWith(details.connectWith?.length ? details.connectWith : [{ name: '', mobileNo: '', email: '' }]);
-  const timeRequiredData = details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }];
+  setTimeRequired(details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }]);
   const extraImagesArray = details.extraImages?.length 
     ? details.extraImages.map(icon => ({ icon })) 
     : [{ icon: '' }];
