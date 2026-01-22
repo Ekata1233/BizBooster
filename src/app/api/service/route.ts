@@ -619,8 +619,27 @@ for (let i = 0; i < 8; i++) {
       const company: any = {
         name: name,
         location: formData.get(`serviceDetails[companyDetails][${i}][location]`) || "",
+        profile: "",
         details: []
       };
+       const profileFile = formData.get(`serviceDetails[companyDetails][${i}][profile]`);
+  if (profileFile instanceof File) {
+    try {
+      const buffer = Buffer.from(await profileFile.arrayBuffer());
+      const upload = await imagekit.upload({
+        file: buffer,
+        fileName: `${uuidv4()}-${profileFile.name}`,
+        folder: "/services/companyProfiles",
+      });
+      company.profile = upload.url;
+    } catch (error) {
+      console.error(`Failed to upload company profile for ${i}:`, error);
+      company.profile = "";
+    }
+  } else if (typeof profileFile === "string" && profileFile) {
+    // If it's already a URL (from edit), keep it
+    company.profile = profileFile;
+  }
 
       // Process details
       for (let j = 0; j < 8; j++) {

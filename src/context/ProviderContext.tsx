@@ -154,6 +154,8 @@ const updateKycInfo = async (formData: FormData) => {
       const res = await fetch(`/api/provider/${id}`);
       const data = await res.json();
 
+      console.log("res : ", res);
+
       if (!res.ok) throw new Error(data.message || 'Failed to fetch provider');
       setProvider(data);
       return data;

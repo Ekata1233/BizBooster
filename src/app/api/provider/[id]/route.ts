@@ -94,34 +94,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(response, { status: 200, headers: getCorsHeaders(origin) });
 }
 
-// ─── PUT /api/provider/:id ─────────────────────────────────────────
-export async function PUT(req: NextRequest) {
-  await connectToDatabase();
-
-  const origin = req.headers.get("origin");
-  const id = req.nextUrl.pathname.split("/").pop();
-
-  if (!id) {
-    return NextResponse.json(
-      { success: false, message: "Missing ID parameter." },
-      { status: 400, headers: getCorsHeaders(origin) }
-    );
-  }
-
-  const updates = await req.json();
-  console.log("provider data for the update : ", updates)
-  const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
-
-  if (!provider) {
-    return NextResponse.json(
-      { success: false, message: "Provider not found." },
-      { status: 404, headers: getCorsHeaders(origin) }
-    );
-  }
-
-  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
-}
-
 // ─── DELETE /api/provider/:id ──────────────────────────────────────
 export async function DELETE(req: Request) {
   await connectToDatabase();
@@ -174,3 +146,89 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+// ─── PUT /api/provider/:id ─────────────────────────────────────────
+export async function PUT(req: NextRequest) {
+  await connectToDatabase();
+
+  const origin = req.headers.get("origin");
+  const id = req.nextUrl.pathname.split("/").pop();
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, message: "Missing ID parameter." },
+      { status: 400, headers: getCorsHeaders(origin) }
+    );
+  }
+
+  const updates = await req.json();
+  console.log("provider data for the update : ", updates)
+  const provider = await Provider.findByIdAndUpdate(id, updates, { new: true });
+
+  if (!provider) {
+    return NextResponse.json(
+      { success: false, message: "Provider not found." },
+      { status: 404, headers: getCorsHeaders(origin) }
+    );
+  }
+
+  return NextResponse.json(provider, { status: 200, headers: getCorsHeaders(origin) });
+}
+
+export async function PATCH(req: NextRequest) {
+  await connectToDatabase();
+
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
+  try {
+    const id = req.nextUrl.pathname.split("/").pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing provider ID parameter." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const updates = await req.json();
+
+    if (!updates || Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { success: false, message: "No fields provided for update." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const provider = await Provider.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found." },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Provider updated successfully.",
+        data: provider,
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
+
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+

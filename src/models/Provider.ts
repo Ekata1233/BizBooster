@@ -208,6 +208,7 @@ const providerSchema = new Schema<ProviderDocument>(
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isStoreOpen: { type: Boolean, default: true },
+    isPromoted: { type: Boolean, default: null },
     isRecommended: { type: Boolean, default: false },
     isPromoted: {
       type: Boolean,
