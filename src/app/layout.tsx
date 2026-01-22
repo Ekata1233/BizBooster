@@ -38,6 +38,7 @@ import { RewardProvider } from '@/context/RewardContext';
 import { ClaimNowProvider } from '@/context/ClaimContext';
 import { SupportQuestionProvider } from '@/context/SupportContext';
 import { WhyJustOurServiceProvider } from '@/context/WhyJustOurServiceContext';
+import { CategoryBannerProvider } from '@/context/CategoryBannerContext';
 
 
 
@@ -92,7 +93,9 @@ export default function RootLayout({
                                                                             <ClaimNowProvider>
                                                                               <SupportQuestionProvider>
                                                                                 <WhyJustOurServiceProvider>
-                                                                            {children}
+                                                                                  <CategoryBannerProvider>
+                                                                                      {children}
+                                                                                  </CategoryBannerProvider>
                                                                             </WhyJustOurServiceProvider>
                                                                               </SupportQuestionProvider>
                                                                             </ClaimNowProvider>

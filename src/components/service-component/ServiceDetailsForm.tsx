@@ -79,6 +79,7 @@ type CompanyDetailItem = {
 type CompanyDetails = {
   name: string;
   location: string;
+  profile: string;
   details: CompanyDetailItem[];
 };
 
@@ -218,6 +219,7 @@ const [compareAndChoose, setCompareAndChoose] = useState<string[]>(['']);
 const [companyDetails, setCompanyDetails] = useState<CompanyDetails[]>([{ 
   name: '', 
   location: '', 
+  profile: '',
   details: [{ title: '', description: '' }] 
 }]);
 const [roi, setRoi] = useState<string[]>(['']);
@@ -313,6 +315,7 @@ setCompareAndChoose(data.compareAndChoose?.length ? data.compareAndChoose : ['']
 setCompanyDetails(data.companyDetails?.length ? data.companyDetails : [{ 
   name: '', 
   location: '', 
+  profile:'',
   details: [{ title: '', description: '' }] 
 }]);
 setRoi(data.roi?.length ? data.roi : ['']);
@@ -1229,8 +1232,8 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
       companyDetails,
       setCompanyDetails,
       (company, companyIdx, updateCompany) => (
-        <div className="border p-4 rounded mb-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <div className="">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <Input
               value={company.name}
               placeholder="Company Name"
@@ -1241,6 +1244,28 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
               placeholder="Location"
               onChange={(e) => updateCompany({ ...company, location: e.target.value })}
             />
+             </div>
+          
+          {/* Profile Image Upload */}
+          <div className="mb-3">
+            <Label className="text-sm mb-1">Company Profile Image</Label>
+            <FileInput
+              onChange={(e) => handleFileUpload(e, company, updateCompany, 'profile')}
+            />
+            {/* Display current profile if exists */}
+            {company.profile && typeof company.profile === 'string' && company.profile !== '' && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-600">Current Profile:</p>
+                <div className="relative w-20 h-20 mt-1">
+                  <Image
+                    src={company.profile}
+                    alt="Company profile"
+                    fill
+                    className="object-cover rounded"
+                  />
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="mb-2">

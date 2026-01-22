@@ -681,7 +681,7 @@ const router = useRouter();
         alert("Franchise details saved successfully!");
         // Refresh data after saving
         await fetchFranchiseData();
-        if (onSave) onSave();
+        // if (onSave) onSave();
          router.push("/service-management/service-list");
       } else {
         throw new Error("Some API calls failed");

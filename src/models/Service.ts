@@ -200,6 +200,7 @@ keyValues: [
     {
       name: { type: String },
       location: { type: String },
+      profile: { type: String },
       details: [
         {
           title: { type: String },

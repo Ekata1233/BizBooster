@@ -132,6 +132,7 @@ const [compareAndChoose, setCompareAndChoose] = useState<string[]>(['']);
 const [companyDetails, setCompanyDetails] = useState<CompanyDetails[]>([{ 
   name: '', 
   location: '', 
+  profile: '',
   details: [{ title: '', description: '' }] 
 }]);
 const [roi, setRoi] = useState<string[]>(['']);
@@ -160,7 +161,7 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
 
 // Add this at the top of your component after useState declarations
 const isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
-console.log("package",packages);
+console.log("timeRequired : ",timeRequired);
 
 // Replace the problematic useEffect with this:
 useEffect(() => {
@@ -290,7 +291,7 @@ useEffect(() => {
   setMoreInfo(details.moreInfo?.length ? details.moreInfo : [{ title: '', image: '', description: '' }]);
   setFaqs(details.faq?.length ? details.faq : [{ question: '', answer: '' }]);
   setConnectWith(details.connectWith?.length ? details.connectWith : [{ name: '', mobileNo: '', email: '' }]);
-  const timeRequiredData = details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }];
+  setTimeRequired(details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }]);
   const extraImagesArray = details.extraImages?.length 
     ? details.extraImages.map(icon => ({ icon })) 
     : [{ icon: '' }];
@@ -337,6 +338,7 @@ setFranchiseOperatingModel(
   setCompanyDetails(details.companyDetails?.length ? details.companyDetails : [{ 
     name: '', 
     location: '', 
+    profile: '',
     details: [{ title: '', description: '' }] 
   }]);
   setRoi(details.roi?.length ? details.roi : ['']);
@@ -1283,7 +1285,7 @@ setCertificateImage(
             companyDetails,
             setCompanyDetails,
             (company, companyIdx, updateCompany) => (
-              <div className="border p-4 rounded mb-3">
+              <div className="">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <Input
                     value={company.name}
@@ -1296,6 +1298,28 @@ setCertificateImage(
                     onChange={(e) => updateCompany({ ...company, location: e.target.value })}
                   />
                 </div>
+
+                {/* Profile Image Upload */}
+                          <div className="mb-3">
+                            <Label className="text-sm mb-1">Company Profile Image</Label>
+                            <FileInput
+                              onChange={(e) => handleFileUploadUpdate(e, company, updateCompany, 'profile')}
+                            />
+                            {/* Display current profile if exists */}
+                            {company.profile && typeof company.profile === 'string' && company.profile !== '' && (
+                              <div className="mt-2">
+                                <p className="text-sm text-gray-600">Current Profile:</p>
+                                <div className="relative w-20 h-20 mt-1">
+                                  <Image
+                                    src={company.profile}
+                                    alt="Company profile"
+                                    fill
+                                    className="object-cover rounded"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
                 
                 <div className="mb-2">
                   <Label className="text-sm mb-1">Details</Label>

@@ -49,7 +49,6 @@ const BasicDetailsForm = ({ data, setData, selectedModuleId ,fieldsConfig }: Bas
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
-console.log('data of basic details : ', data)
 
   // Sync key-value rows with parent data
  useEffect(() => {
@@ -128,8 +127,6 @@ const filteredCategories = categories.filter(
   const categoryOptions = filteredCategories.map(cat => ({ value: cat._id, label: cat.name, image: cat.image || "" }));
   const filteredSubcategories = data.category ? subcategories.filter(s => s.category?._id === data.category) : [];
   const subcategoryOptions = filteredSubcategories.map(subcat => ({ value: subcat._id, label: subcat.name, image: subcat.image || "" }));
-
-  console.log("categoryes : ", categories);
 
   // File handling
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

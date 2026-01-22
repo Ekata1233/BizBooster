@@ -77,6 +77,7 @@ type CompleteSupportSystemItem = {
 type CompanyDetailsItem = {
   name: string;
   location: string;
+  profile: string;
   details: {
     title: string;
     description: string;
@@ -261,8 +262,6 @@ const AddNewService = () => {
       connectWith: [{ name: '', mobileNo: '', email: '' }],
       timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
-      
-      // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
       emiavalable: [''],
@@ -285,7 +284,7 @@ const AddNewService = () => {
       agreementDetails: [''],
       goodThings: [''],
       compareAndChoose: [''],
-      companyDetails: [{ name: '', location: '', details: [{ title: '', description: '' }] }],
+      companyDetails: [{ name: '', location: '', profile: '', details: [{ title: '', description: '' }] }],
       roi: [''],
       level: "beginner",
       lessonCount: null,
@@ -352,8 +351,6 @@ const AddNewService = () => {
       connectWith: [{ name: '', mobileNo: '', email: '' }],
       timeRequired: [{ range: '', parameters: '' }],
       extraImages: [],
-      
-      // NEW EXTENDED FIELDS INITIAL VALUES
       operatingCities: [''],
       brochureImage: [],
       emiavalable: [''],
@@ -376,7 +373,7 @@ const AddNewService = () => {
       agreementDetails: [''],
       goodThings: [''],
       compareAndChoose: [''],
-      companyDetails: [{ name: '', location: '', details: [{ title: '', description: '' }] }],
+      companyDetails: [{ name: '', location: '', profile: '', details: [{ title: '', description: '' }] }],
       roi: [''],
       level: "beginner",
       lessonCount: null,
@@ -407,6 +404,8 @@ const AddNewService = () => {
       extraImages: [],
     },
   };
+
+  console.log("formdata for add service : ", formData);
 
   // ---------------- Build FormData ----------------
   const buildFormData = (data: any, fd = new FormData(), parentKey = ''): FormData => {
@@ -798,6 +797,12 @@ formData.service.timeRequired?.forEach((item, i) => {
       formData.service.companyDetails?.forEach((company, i) => {
         fd.append(`serviceDetails[companyDetails][${i}][name]`, company.name || "");
         fd.append(`serviceDetails[companyDetails][${i}][location]`, company.location || "");
+        if (company.profile instanceof File) {
+    fd.append(`serviceDetails[companyDetails][${i}][profile]`, company.profile);
+  }
+  else if (typeof company.profile === 'string' && company.profile) {
+    fd.append(`serviceDetails[companyDetails][${i}][profileUrl]`, company.profile);
+  }
         company.details?.forEach((detail, j) => {
           fd.append(`serviceDetails[companyDetails][${i}][details][${j}][title]`, detail.title || "");
           fd.append(`serviceDetails[companyDetails][${i}][details][${j}][description]`, detail.description || "");
@@ -939,7 +944,6 @@ fd.append("franchiseDetails[areaRequired]", formData.franchise.areaRequired || "
 // ---------------- CREATE SERVICE ----------------
 try {
   const result = await createService(fd);
-  console.log("Service creation result (should be service object):", result);
    if (result?.success === false) {
     alert(result.message || "Service creation failed");
     return;

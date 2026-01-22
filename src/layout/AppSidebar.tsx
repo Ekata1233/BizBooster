@@ -86,6 +86,7 @@ const moduleItems: NavItem[] = [
     subItems: [
       { name: "Add Banner", path: "/banner-management/add-banner", pro: false },
       { name: "Banner-list", path: "/banner-management/banners", pro: false },
+      { name: "Category Banners", path: "/category-management/category/category-banner", pro: false },
     ],
   },
   {
@@ -131,6 +132,7 @@ const providerItems: NavItem[] = [
       { name: "Provider List", path: "/provider-management/provider-list", pro: false },
       { name: "Provider Gallery", path: "/provider-management/provider-gallery", pro: false },
       { name: "Payment Adjustment", path: "/provider-management/payment-adjustment", pro: false },
+      { name: "Promotion Request", path: "/provider-management/promotion-request", pro: false },
     ],
   },
   {

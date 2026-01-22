@@ -619,6 +619,12 @@ fd.append(
     `serviceDetails[companyDetails][${i}][location]`,
     company.location || ""
   );
+  if (company.profile instanceof File) {
+    fd.append(`serviceDetails[companyDetails][${i}][profile]`, company.profile);
+  }
+  else if (typeof company.profile === 'string' && company.profile) {
+    fd.append(`serviceDetails[companyDetails][${i}][profile]`, company.profile);
+  }
 
   (company.details || []).forEach((detail, j) => {
     fd.append(
