@@ -58,6 +58,7 @@ interface TableData {
     totalBookings: string;
     totalEarnings?: string;
     status: string;
+      isDeleted?: boolean;
 }
 
 const UserList = () => {
@@ -73,6 +74,7 @@ const UserList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalUsers, setTotalUsers] = useState(0);
     const [statusCounts, setStatusCounts] = useState<{ [key: string]: number }>({
+        Active: 0,
         GP: 0,
         SGP: 0,
         PGP: 0,
@@ -80,6 +82,7 @@ const UserList = () => {
         Deleted: 0,
     });
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
+console.log("users",users);
 
 
 function useDebounce<T>(value: T, delay: number) {
@@ -213,67 +216,100 @@ function useDebounce<T>(value: T, delay: number) {
     ];
 
     const fetchFilteredUsers = async () => {
-        try {
-            const isValidDate = (date: string | null) => date && !isNaN(Date.parse(date));
+    try {
+        const isValidDate = (date: string | null) => date && !isNaN(Date.parse(date));
 
-            const params: any = {
-                page: currentPage,
-                limit: rowsPerPage,
-                ...(isValidDate(startDate) && { startDate }),
-                ...(isValidDate(endDate) && { endDate }),
-                ...(sort && { sort }),
-                ...(debouncedSearchQuery  && { search: debouncedSearchQuery  }),
-            };
+        const params: any = {
+            page: currentPage,
+            limit: rowsPerPage,
+            ...(isValidDate(startDate) && { startDate }),
+            ...(isValidDate(endDate) && { endDate }),
+            ...(sort && { sort }),
+            ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
+        };
 
-            const response = await axios.get('/api/users/details', { params });
-            const result = response.data;
+        const response = await axios.get('/api/users/details', { params });
+        const result = response.data;
 
-            console.log("response : ", response)
+        console.log("response : ", response);
 
-            if (!result.success || result.data.length === 0) {
-                setFilteredUsers([]);
-                setTotalUsers(0);
-                setMessage("No users found");
-                return;
-            }
-
-            const mapped = result.data.map((user: any) => ({
-                id: user._id,
-                user: {
-                    image: user.profilePhoto || "/images/logo/user1.png",
-                    fullName: user.fullName,
-                },
-                email: user.email,
-                mobileNumber: user.mobileNumber,
-                referredBy: user.referredBy || "N/A",
-                totalBookings: user.totalBookings?.toString() || "0",
-                totalEarnings: user.walletBalance?.toString() || "0",
-                status: user.isDeleted
-                    ? "Deleted"
-                    : user.packageStatus?.toUpperCase() === "GP"
-                        ? "GP"
-                        : user.packageStatus?.toUpperCase() === "SGP"
-                            ? "SGP"
-                            : user.packageStatus?.toUpperCase() === "PGP"
-                                ? "PGP"
-                                : "NonGP",
-
-            }));
-            console.log("Mapped user statuses:", mapped.map(u => u.status));
-
-            setFilteredUsers(mapped);
-            setTotalUsers(result.total);  
-            setStatusCounts(result.statusCounts || { GP: 0, SGP: 0, PGP: 0, NonGP: 0, Deleted: 0 });
-            setMessage("");
-
-
-        } catch (error) {
-            console.error("Error fetching users:", error);
+        if (!result.success || result.data.length === 0) {
             setFilteredUsers([]);
             setTotalUsers(0);
-            setMessage("Something went wrong while fetching users");
+            setMessage("No users found");
+            return;
         }
-    };
+
+        const mapped = result.data.map((user: any) => ({
+            id: user._id,
+            user: {
+                image: user.profilePhoto || "/images/logo/user1.png",
+                fullName: user.fullName,
+            },
+            email: user.email,
+            mobileNumber: user.mobileNumber,
+            referredBy: user.referredBy || "N/A",
+            totalBookings: user.totalBookings?.toString() || "0",
+            totalEarnings: user.walletBalance?.toString() || "0",
+            // Update status logic to include "Active" for non-deleted users
+            status: user.isDeleted
+                ? "Deleted"
+                : user.packageStatus?.toUpperCase() === "GP"
+                    ? "GP"
+                    : user.packageStatus?.toUpperCase() === "SGP"
+                        ? "SGP"
+                        : user.packageStatus?.toUpperCase() === "PGP"
+                            ? "PGP"
+                            : "NonGP",
+            isDeleted: user.isDeleted, // Keep this for filtering
+        }));
+
+        console.log("Mapped user statuses:", mapped.map(u => u.status));
+
+        // Calculate status counts
+        const counts = {
+            Active: 0,
+            GP: 0,
+            SGP: 0,
+            PGP: 0,
+            NonGP: 0,
+            Deleted: 0,
+        };
+
+        mapped.forEach((user: any) => {
+            if (user.isDeleted) {
+                counts.Deleted++;
+            } else {
+                counts.Active++; // Count all non-deleted users as active
+                switch (user.status) {
+                    case "GP":
+                        counts.GP++;
+                        break;
+                    case "SGP":
+                        counts.SGP++;
+                        break;
+                    case "PGP":
+                        counts.PGP++;
+                        break;
+                    case "NonGP":
+                        counts.NonGP++;
+                        break;
+                }
+            }
+        });
+
+        setFilteredUsers(mapped);
+        setTotalUsers(result.total);
+        setStatusCounts(counts);
+        setMessage("");
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        setFilteredUsers([]);
+        setTotalUsers(0);
+        setMessage("Something went wrong while fetching users");
+    }
+};
 
     useEffect(() => {
         console.log("Active tab changed:", activeTab);
@@ -287,7 +323,15 @@ function useDebounce<T>(value: T, delay: number) {
 
     const getFilteredByStatus = () => {
         if (activeTab === "all") return filteredUsers;
-
+ if (activeTab === "active") {
+        // Show all non-deleted users (Active tab)
+        return filteredUsers.filter(user => !user.isDeleted);
+    }
+    
+    if (activeTab === "deleted") {
+        // Show only deleted users
+        return filteredUsers.filter(user => user.isDeleted);
+    }
         const statusFilter = {
             GP: "GP",
             SGP: "SGP",
@@ -450,6 +494,15 @@ console.log("Available users:", filteredUsers.map(u => u.status));
                                     {statusCounts['NonGP']}
                                 </span>
                             </li>
+                             <li
+                    className={`cursor-pointer px-4 py-2 whitespace-nowrap ${activeTab === 'active' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
+                    onClick={() => setActiveTab('active')}
+                >
+                    Active
+                    <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                        {statusCounts['Active']}
+                    </span>
+                </li>
                             <li
                                 className={`cursor-pointer px-4 py-2 ${activeTab === 'deleted' ? 'border-b-2 border-blue-600 text-blue-600' : ''}`}
                                 onClick={() => setActiveTab('deleted')}

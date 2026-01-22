@@ -46,6 +46,7 @@ export interface CouponType {
   createdAt?: string;
   updatedAt?: string;
   couponAppliesTo?: string;
+  isDeleted?: boolean;
 }
 
 export interface TableData {
@@ -77,6 +78,8 @@ const couponTypeOptions = [
   { value: 'customerWise', label: 'Customer Wise' },
 ];
 
+type TabType = 'All' | 'Active' | 'Inactive';
+
 /* -------------------------------------------------------------------------- */
 /* 🔖 component                                                               */
 /* -------------------------------------------------------------------------- */
@@ -97,6 +100,7 @@ const CouponList: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('');
   const [sort, setSort] = useState<'latest' | 'oldest' | 'ascending' | 'descending'>('latest');
+  const [selectedTab, setSelectedTab] = useState<TabType>('All');
 
   const [rows, setRows] = useState<TableData[]>([]);
   const [allRows, setAllRows] = useState<TableData[]>([]); // Store all data for client-side filtering
@@ -118,6 +122,11 @@ const CouponList: React.FC = () => {
     return c.zone?.name ?? '-';
   };
 
+  const getCouponStatus = (coupon: CouponType): 'Active' | 'Inactive' => {
+    // Check if coupon is active based on isActive field
+    return coupon.isActive ? 'Active' : 'Inactive';
+  };
+
   /* ─── fetch data ───────────────────────────────────────────────────────── */
   useEffect(() => {
     fetchFilteredCoupons();
@@ -133,28 +142,38 @@ const CouponList: React.FC = () => {
 
       const res = await axios.get<{ data: CouponType[] }>('/api/coupon/all', { params });
       const data: CouponType[] = res.data.data ?? [];
-  console.log('📦 Raw coupon data from API:', data);
+      
+      console.log('📦 Raw coupon data from API:', data);
+
       if (data.length === 0) {
         setRows([]);
         setAllRows([]);
         setMessage('No coupons found.');
         return;
       }
+      
       /* map to table-friendly rows */
-      const mapped = data.map<TableData>((c, index) => ({
-        id: c._id,
-        srNo: index + 1,
-        couponCode: c.couponCode,
-        couponType: c.couponType,
-        discountTitle: c.discountTitle,
-        discount: formatDiscount(c),
-        appliesTo: formatAppliesTo(c),
-        validity: formatValidity(c),
-        status: !c.isActive || (c as any).isDeleted ? 'Expired' : 'Active',
-      }));
+      const mapped = data.map<TableData>((c, index) => {
+        const status = getCouponStatus(c);
+        return {
+          id: c._id,
+          srNo: index + 1,
+          couponCode: c.couponCode,
+          couponType: c.couponType,
+          discountTitle: c.discountTitle,
+          discount: formatDiscount(c),
+          appliesTo: formatAppliesTo(c),
+          validity: formatValidity(c),
+          status: status,
+        };
+      });
 
       setAllRows(mapped); // Store all data
-      setRows(mapped); // Initially show all data
+      
+      // Filter by selected tab
+      const filteredByTab = filterRowsByTab(mapped, selectedTab);
+      setRows(filteredByTab);
+      
       setMessage('');
     } catch (e) {
       console.error(e);
@@ -162,24 +181,37 @@ const CouponList: React.FC = () => {
     }
   };
 
+  /* ─── filter rows by tab ──────────────────────────────────────────────── */
+  const filterRowsByTab = (rowsToFilter: TableData[], tab: TabType): TableData[] => {
+    if (tab === 'All') return rowsToFilter;
+    return rowsToFilter.filter(row => row.status === tab);
+  };
+
   /* ─── search functionality ─────────────────────────────────────────────── */
   useEffect(() => {
     if (!search.trim()) {
-      setRows(allRows); // Show all data when search is empty
+      const filteredByTab = filterRowsByTab(allRows, selectedTab);
+      setRows(filteredByTab);
       return;
     }
 
     const searchTerm = search.toLowerCase().trim();
     
-    const filtered = allRows.filter(row => 
-      row.couponCode.toLowerCase().includes(searchTerm) ||
-      row.couponType.toLowerCase().includes(searchTerm) ||
-      row.discountTitle.toLowerCase().includes(searchTerm) ||
-      row.discount.toLowerCase().includes(searchTerm) ||
-      row.appliesTo.toLowerCase().includes(searchTerm) ||
-      row.validity.toLowerCase().includes(searchTerm) ||
-      row.status.toLowerCase().includes(searchTerm)
-    );
+    const filtered = allRows.filter(row => {
+      const matchesSearch = 
+        row.couponCode.toLowerCase().includes(searchTerm) ||
+        row.couponType.toLowerCase().includes(searchTerm) ||
+        row.discountTitle.toLowerCase().includes(searchTerm) ||
+        row.discount.toLowerCase().includes(searchTerm) ||
+        row.appliesTo.toLowerCase().includes(searchTerm) ||
+        row.validity.toLowerCase().includes(searchTerm) ||
+        row.status.toLowerCase().includes(searchTerm);
+      
+      // Also filter by selected tab
+      const matchesTab = selectedTab === 'All' || row.status === selectedTab;
+      
+      return matchesSearch && matchesTab;
+    });
 
     setRows(filtered);
     
@@ -188,7 +220,36 @@ const CouponList: React.FC = () => {
     } else {
       setMessage('');
     }
-  }, [search, allRows]);
+  }, [search, allRows, selectedTab]);
+
+  /* ─── handle tab change ───────────────────────────────────────────────── */
+  const handleTabChange = (tab: TabType) => {
+    setSelectedTab(tab);
+    
+    if (!search.trim()) {
+      const filteredByTab = filterRowsByTab(allRows, tab);
+      setRows(filteredByTab);
+    } else {
+      // If there's a search term, reapply both filters
+      const searchTerm = search.toLowerCase().trim();
+      const filtered = allRows.filter(row => {
+        const matchesSearch = 
+          row.couponCode.toLowerCase().includes(searchTerm) ||
+          row.couponType.toLowerCase().includes(searchTerm) ||
+          row.discountTitle.toLowerCase().includes(searchTerm) ||
+          row.discount.toLowerCase().includes(searchTerm) ||
+          row.appliesTo.toLowerCase().includes(searchTerm) ||
+          row.validity.toLowerCase().includes(searchTerm) ||
+          row.status.toLowerCase().includes(searchTerm);
+        
+        const matchesTab = tab === 'All' || row.status === tab;
+        
+        return matchesSearch && matchesTab;
+      });
+      
+      setRows(filtered);
+    }
+  };
 
   /* ─── actions ──────────────────────────────────────────────────────────── */
   const handleDelete = async (id: string) => {
@@ -212,6 +273,12 @@ const CouponList: React.FC = () => {
     }
   };
 
+  /* ─── count coupons by status ─────────────────────────────────────────── */
+  const countCouponsByTab = (tab: TabType): number => {
+    if (tab === 'All') return allRows.length;
+    return allRows.filter(row => row.status === tab).length;
+  };
+
   /* ─── table columns ────────────────────────────────────────────────────── */
   const columns = [
     { header: 'Sr No.', accessor: 'srNo' },
@@ -226,7 +293,7 @@ const CouponList: React.FC = () => {
       render: (row: TableData) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold
-            ${row.status === 'Expired'
+            ${row.status === 'Inactive'
               ? 'text-red-600 bg-red-100 border border-red-300'
               : 'text-green-600 bg-green-100 border border-green-300'
             }`}
@@ -299,6 +366,32 @@ const CouponList: React.FC = () => {
             />
           </div>
         </div>
+      </div>
+
+      {/* Tabs with counts */}
+      <div className="flex gap-6 mb-5 border-b border-gray-200">
+        {(['All', 'Active', 'Inactive'] as const).map((tab) => {
+          const active = selectedTab === tab;
+          const count = countCouponsByTab(tab);
+
+          return (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`relative pb-3 text-sm font-medium transition-colors ${
+                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab}
+              <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                {count}
+              </span>
+              {active && (
+                <span className="absolute left-0 -bottom-[1px] h-[2px] w-full rounded-full bg-blue-600" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Table Section */}

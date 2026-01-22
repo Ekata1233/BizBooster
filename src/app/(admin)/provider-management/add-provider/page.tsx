@@ -10,6 +10,26 @@ import axios from 'axios';
 import { useZone } from '@/context/ZoneContext';
 import { useModule } from '@/context/ModuleContext';
 
+
+/* ------------------------------------------------------------------ */
+/*  IMAGE VALIDATION FUNCTION                                         */
+/* ------------------------------------------------------------------ */
+const validateImage = (file: File, maxSizeMB: number = 1): string | null => {
+  // Check file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+  if (!allowedTypes.includes(file.type)) {
+    return `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`;
+  }
+
+  // Check file size (1MB = 1024 * 1024 bytes)
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    return `File size must be less than or equal to ${maxSizeMB}MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
+  }
+
+  return null;
+};
+
 /* ------------------------------------------------------------------ */
 /*  VISUAL STEPPER                                                    */
 /* ------------------------------------------------------------------ */
@@ -88,6 +108,147 @@ export default function ProviderOnboardingPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const providerId = providerDetails?._id as string | undefined;
 
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [aadhaarError, setAadhaarError] = useState<string | null>(null);
+  const [panError, setPanError] = useState<string | null>(null);
+  const [storeDocError, setStoreDocError] = useState<string | null>(null);
+  const [gstError, setGstError] = useState<string | null>(null);
+  const [otherError, setOtherError] = useState<string | null>(null);
+
+
+  // Image validation handlers
+const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+  setLogoError(null);
+  
+  if (file) {
+    const validationError = validateImage(file, 1);
+    if (validationError) {
+      setLogoError(validationError);
+      e.target.value = '';
+    }
+  }
+};
+
+const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+  setCoverError(null);
+  
+  if (file) {
+    const validationError = validateImage(file, 1);
+    if (validationError) {
+      setCoverError(validationError);
+      e.target.value = '';
+    }
+  }
+};
+
+const handleAadhaarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setAadhaarError(null);
+  
+  if (files.length > 0) {
+    const validationErrors: string[] = [];
+    
+    files.forEach((file, index) => {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        validationErrors.push(`File ${index + 1}: ${validationError}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setAadhaarError(validationErrors.join(' | '));
+      e.target.value = '';
+    }
+  }
+};
+
+const handlePanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setPanError(null);
+  
+  if (files.length > 0) {
+    const validationErrors: string[] = [];
+    
+    files.forEach((file, index) => {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        validationErrors.push(`File ${index + 1}: ${validationError}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setPanError(validationErrors.join(' | '));
+      e.target.value = '';
+    }
+  }
+};
+
+const handleStoreDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setStoreDocError(null);
+  
+  if (files.length > 0) {
+    const validationErrors: string[] = [];
+    
+    files.forEach((file, index) => {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        validationErrors.push(`File ${index + 1}: ${validationError}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setStoreDocError(validationErrors.join(' | '));
+      e.target.value = '';
+    }
+  }
+};
+
+const handleGstChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setGstError(null);
+  
+  if (files.length > 0) {
+    const validationErrors: string[] = [];
+    
+    files.forEach((file, index) => {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        validationErrors.push(`File ${index + 1}: ${validationError}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setGstError(validationErrors.join(' | '));
+      e.target.value = '';
+    }
+  }
+};
+
+const handleOtherChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  setOtherError(null);
+  
+  if (files.length > 0) {
+    const validationErrors: string[] = [];
+    
+    files.forEach((file, index) => {
+      const validationError = validateImage(file, 1);
+      if (validationError) {
+        validationErrors.push(`File ${index + 1}: ${validationError}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setOtherError(validationErrors.join(' | '));
+      e.target.value = '';
+    }
+  }
+};
+
   // Auto-navigate to first incomplete step
   useEffect(() => {
     const fetchProvider = async () => {
@@ -148,6 +309,10 @@ export default function ProviderOnboardingPage() {
   const onStoreSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
     try {
       setApiError(null);
+      if (logoError || coverError) {
+      setApiError('Please fix image validation errors before submitting.');
+      return;
+    }
       const fd = new FormData();
       Object.entries(data).forEach(([k, v]) => {
         if (v instanceof FileList) {
@@ -168,6 +333,10 @@ export default function ProviderOnboardingPage() {
   const onKycSave = async (data: Record<string, FormDataEntryValue | FileList>) => {
     try {
       setApiError(null);
+        if (aadhaarError || panError || storeDocError || gstError || otherError) {
+      setApiError('Please fix document validation errors before submitting.');
+      return;
+    }
       const fd = new FormData();
       Object.entries(data).forEach(([k, v]) => {
         if (v instanceof FileList) {
@@ -551,26 +720,36 @@ export default function ProviderOnboardingPage() {
                     </div>
 
                     {/* Logo */}
-                    <div>
-                      <label className="block mb-1 font-medium text-gray-700">Logo</label>
-                      <input
-                        {...storeForm.register("logo")}
-                        type="file"
-                        accept="image/*"
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      />
-                    </div>
+                   <div>
+  <label className="block mb-1 font-medium text-gray-700">Logo</label>
+  <input
+    {...storeForm.register("logo")}
+    type="file"
+    accept="image/*"
+    onChange={handleLogoChange}
+    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+  />
+  {logoError && (
+    <p className="text-red-500 text-xs mt-1">{logoError}</p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
+</div>
 
                     {/* Cover */}
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Cover</label>
-                      <input
-                        {...storeForm.register("cover")}
-                        type="file"
-                        accept="image/*"
-                        className="block w-full text-sm text-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      />
-                    </div>
+  <label className="block mb-1 font-medium text-gray-700">Cover</label>
+  <input
+    {...storeForm.register("cover")}
+    type="file"
+    accept="image/*"
+    onChange={handleCoverChange}
+    className="block w-full text-sm text-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+  />
+  {coverError && (
+    <p className="text-red-500 text-xs mt-1">{coverError}</p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF</p>
+</div>
                   </div>
 
                   <div className="flex justify-between mt-8">
@@ -609,116 +788,140 @@ export default function ProviderOnboardingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Aadhaar - REQUIRED */}
-                      <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                          Aadhaar (up to 2) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          {...kycForm.register("aadhaarCard", {
-                            required: "Aadhaar card is required",
-                          })}
-                          type="file"
-                          multiple
-                          accept="image/*,application/pdf"
-                          className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-                        />
-                        {kycForm.formState.errors.aadhaarCard && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {kycForm.formState.errors.aadhaarCard.message as string}
-                          </p>
-                        )}
-                      </div>
+                     <div>
+  <label className="block mb-1 font-medium text-gray-700">
+    Aadhaar (up to 2) <span className="text-red-500">*</span>
+  </label>
+  <input
+    {...kycForm.register("aadhaarCard", {
+      required: "Aadhaar card is required",
+    })}
+    type="file"
+    multiple
+    accept="image/*,application/pdf"
+    onChange={handleAadhaarChange}
+    className="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100"
+  />
+  {aadhaarError && (
+    <p className="text-red-500 text-xs mt-1">{aadhaarError}</p>
+  )}
+  {kycForm.formState.errors.aadhaarCard && (
+    <p className="text-red-500 text-sm mt-1">
+      {kycForm.formState.errors.aadhaarCard.message as string}
+    </p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size per file: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF, PDF</p>
+</div>
 
                       {/* PAN - REQUIRED */}
                       <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                          PAN Card <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          {...kycForm.register("panCard", {
-                            required: "PAN card is required",
-                          })}
-                          type="file"
-                          multiple
-                          accept="image/*,application/pdf"
-                          className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-                        />
-                        {kycForm.formState.errors.panCard && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {kycForm.formState.errors.panCard.message as string}
-                          </p>
-                        )}
-                      </div>
+  <label className="block mb-1 font-medium text-gray-700">
+    PAN Card <span className="text-red-500">*</span>
+  </label>
+  <input
+    {...kycForm.register("panCard", {
+      required: "PAN card is required",
+    })}
+    type="file"
+    multiple
+    accept="image/*,application/pdf"
+    onChange={handlePanChange}
+    className="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100"
+  />
+  {panError && (
+    <p className="text-red-500 text-xs mt-1">{panError}</p>
+  )}
+  {kycForm.formState.errors.panCard && (
+    <p className="text-red-500 text-sm mt-1">
+      {kycForm.formState.errors.panCard.message as string}
+    </p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size per file: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF, PDF</p>
+</div>
 
                       {/* Store Document - REQUIRED */}
-                      <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                          Store Document <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          {...kycForm.register("storeDocument", {
-                            required: "Store document is required",
-                          })}
-                          type="file"
-                          multiple
-                          accept="image/*,application/pdf"
-                          className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-                        />
-                        {kycForm.formState.errors.storeDocument && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {kycForm.formState.errors.storeDocument.message as string}
-                          </p>
-                        )}
-                      </div>
-
+                     <div>
+  <label className="block mb-1 font-medium text-gray-700">
+    Store Document <span className="text-red-500">*</span>
+  </label>
+  <input
+    {...kycForm.register("storeDocument", {
+      required: "Store document is required",
+    })}
+    type="file"
+    multiple
+    accept="image/*,application/pdf"
+    onChange={handleStoreDocChange}
+    className="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100"
+  />
+  {storeDocError && (
+    <p className="text-red-500 text-xs mt-1">{storeDocError}</p>
+  )}
+  {kycForm.formState.errors.storeDocument && (
+    <p className="text-red-500 text-sm mt-1">
+      {kycForm.formState.errors.storeDocument.message as string}
+    </p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size per file: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF, PDF</p>
+</div>
                       {/* GST - Optional */}
-                      <div>
-                        <label className="block mb-1 font-medium text-gray-700">GST Certificates</label>
-                        <input
-                          {...kycForm.register("GST")}
-                          type="file"
-                          multiple
-                          accept="image/*,application/pdf"
-                          className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-                        />
-                      </div>
+                     <div>
+  <label className="block mb-1 font-medium text-gray-700">GST Certificates</label>
+  <input
+    {...kycForm.register("GST")}
+    type="file"
+    multiple
+    accept="image/*,application/pdf"
+    onChange={handleGstChange}
+    className="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100"
+  />
+  {gstError && (
+    <p className="text-red-500 text-xs mt-1">{gstError}</p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size per file: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF, PDF</p>
+</div>
 
                       {/* Other Docs - Optional */}
                       <div>
-                        <label className="block mb-1 font-medium text-gray-700">Other Docs</label>
-                        <input
-                          {...kycForm.register("other")}
-                          type="file"
-                          multiple
-                          accept="image/*,application/pdf"
-                          className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-                        />
-                      </div>
+  <label className="block mb-1 font-medium text-gray-700">Other Docs</label>
+  <input
+    {...kycForm.register("other")}
+    type="file"
+    multiple
+    accept="image/*,application/pdf"
+    onChange={handleOtherChange}
+    className="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100"
+  />
+  {otherError && (
+    <p className="text-red-500 text-xs mt-1">{otherError}</p>
+  )}
+  <p className="text-xs text-gray-500 mt-1">Max size per file: 1MB | Supported: JPEG, JPG, PNG, WEBP, GIF, PDF</p>
+</div>
                     </div>
 
                     <div className="flex justify-between mt-6">
@@ -731,12 +934,12 @@ export default function ProviderOnboardingPage() {
                         Previous
                       </button>
                       <button
-                        type="submit"
-                        className="px-8 py-3 rounded text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 disabled:opacity-60"
-                        disabled={loading}
-                      >
-                        {loading ? "Uploading…" : "Submit KYC"}
-                      </button>
+  type="submit"
+  className="px-8 py-3 rounded text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 disabled:opacity-60"
+  disabled={loading || !!aadhaarError || !!panError || !!storeDocError || !!gstError || !!otherError}
+>
+  {loading ? "Uploading…" : "Submit KYC"}
+</button>
                     </div>
                   </form>
                 ) : (
