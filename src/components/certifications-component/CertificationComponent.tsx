@@ -9,6 +9,7 @@ import ComponentCard from '../common/ComponentCard';
 import { useCertificate } from '@/context/CertificationContext';
 import axios from 'axios';
 import Image from 'next/image';
+import { XMarkIcon } from '@heroicons/react/24/outline'; // Import an icon for remove button
 
 interface AddCertificateProps {
     certificationIdToEdit?: string;
@@ -21,17 +22,63 @@ interface VideoEntry {
     videoImageFile: File | null; 
     videoImageUrl: string | null; 
 }
-
-const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit }) => {
+const validateVideoUrl = (url: string): boolean => {
+  if (!url.trim()) return false; // Empty string is invalid
+  
+  // Common video URL patterns
+  const videoUrlPatterns = [
+    // YouTube patterns
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[\w-]{11}/i,
+    // Vimeo patterns
+    /^(https?:\/\/)?(www\.)?vimeo\.com\/\d+/i,
+    // MP4, WebM, etc. direct video files
+    /^(https?:\/\/).+\.(mp4|webm|ogg|mov|avi|wmv|flv|mkv)(\?.*)?$/i,
+    // Video streaming services
+    /^(https?:\/\/).+(dailymotion\.com|twitch\.tv|facebook\.com\/watch|v\.qq\.com)/i,
+    // Generic video URL with common video parameters
+    /^(https?:\/\/).+\/.*(video|vid|mp4|watch)(\/|\?|&)/i
+  ];
+  
+  return videoUrlPatterns.some(pattern => pattern.test(url));
+};
+const validateTextField = (text: string, fieldName: string): string => {
+  if (!text.trim()) {
+    return `${fieldName} is required`;
+  }
+  
+  // Check if it contains only numbers (not allowed)
+  const onlyNumbersRegex = /^[0-9\s]+$/;
+  if (onlyNumbersRegex.test(text)) {
+    return `${fieldName} cannot contain only numbers`;
+  }
+  
+  // Check if it contains at least one letter (character)
+  const hasAtLeastOneLetter = /[a-zA-Z]/;
+  if (!hasAtLeastOneLetter.test(text)) {
+    return `${fieldName} must contain at least one letter`;
+  }
+  
+  return ''; // No error
+};
+const AddCertificate: React.FC<AddCertificateProps> = ({ certificationIdToEdit }) => {
     const { addCertificate } = useCertificate();
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [mainImageFile, setMainImageFile] = useState<File | null>(null);
-    const [imageUrl, setImageUrl] = useState<string | null>(null); // This holds the main image URL for display/sending back
-    const [videoEntries, setVideoEntries] = useState<VideoEntry[]>([]);
-    const [newVideoUrl, setNewVideoUrl] = useState('');
-
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [videoErrors, setVideoErrors] = useState<{[key: number]: string}>({});
+    const [nameError, setNameError] = useState<string>('');
+const [descriptionError, setDescriptionError] = useState<string>('');
+const [videoNameErrors, setVideoNameErrors] = useState<{[key: number]: string}>({});
+const [videoDescErrors, setVideoDescErrors] = useState<{[key: number]: string}>({});
+    const [videoEntries, setVideoEntries] = useState<VideoEntry[]>([{ 
+        videoUrl: '', 
+        name: '', 
+        description: '', 
+        videoImageFile: null, 
+        videoImageUrl: null 
+    }]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,13 +91,13 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
 
             try {
                 const res = await axios.get(`/api/academy/certifications/${certificationIdToEdit}`);
-                const data = res.data.data; // KEEP THIS IF YOUR API NESTS DATA. If not, change to res.data;
+                const data = res.data.data;
 
                 setName(data.name || '');
                 setDescription(data.description || '');
-                setImageUrl(data.imageUrl || null); // Set the current main image URL for display and resending
+                setImageUrl(data.imageUrl || null);
 
-                if (Array.isArray(data.video)) {
+                if (Array.isArray(data.video) && data.video.length > 0) {
                     const formatted = data.video.map((v: unknown) => {
                         const videoObj = v as { videoUrl?: string; name?: string; description?: string; videoImageUrl?: string };
                         return {
@@ -58,7 +105,7 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                             name: videoObj.name || '',
                             description: videoObj.description || '',
                             videoImageFile: null,
-                            videoImageUrl: videoObj.videoImageUrl || null, // This is correctly populated
+                            videoImageUrl: videoObj.videoImageUrl || null,
                         };
                     });
                     setVideoEntries(formatted);
@@ -74,16 +121,55 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
         fetchCertification();
     }, [certificationIdToEdit]);
 
+    const validateVideoEntry = (index: number, url: string): boolean => {
+  if (url.trim() === '') {
+    // Clear error if URL is empty (optional, depends on your requirement)
+    setVideoErrors(prev => ({...prev, [index]: ''}));
+    return true; // or false if you want to require non-empty URLs
+  }
+  
+  if (!validateVideoUrl(url)) {
+    setVideoErrors(prev => ({
+      ...prev, 
+      [index]: 'Please enter a valid video URL (YouTube, Vimeo, or direct video file)'
+    }));
+    return false;
+  }
+  
+  setVideoErrors(prev => ({...prev, [index]: ''}));
+  return true;
+};
+const handleNameValidation = (value: string) => {
+  const error = validateTextField(value, 'Tutorial Name');
+  setNameError(error);
+  return error === '';
+};
+
+const handleDescriptionValidation = (value: string) => {
+  const error = validateTextField(value, 'Tutorial Description');
+  setDescriptionError(error);
+  return error === '';
+};
+
+const handleVideoNameValidation = (index: number, value: string) => {
+  const error = validateTextField(value, 'Video Name');
+  setVideoNameErrors(prev => ({...prev, [index]: error}));
+  return error === '';
+};
+
+const handleVideoDescValidation = (index: number, value: string) => {
+  const error = validateTextField(value, 'Video Description');
+  setVideoDescErrors(prev => ({...prev, [index]: error}));
+  return error === '';
+};
+
     const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setMainImageFile(file);
-            setImageUrl(null); // Clear existing URL if a new file is selected, as new file takes precedence
+            setImageUrl(null);
         } else {
-            // If user clears selection, reset file but keep current URL if it exists
             setMainImageFile(null);
-            // Don't change imageUrl here; it means they might want to keep the old one.
-            // The handleSubmit will send `currentImageUrl` if mainImageFile is null.
         }
     };
 
@@ -95,70 +181,120 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                 updated[index] = {
                     ...updated[index],
                     videoImageFile: file,
-                    videoImageUrl: null, // Clear existing URL if a new file is selected
+                    videoImageUrl: null,
                 };
             } else {
-                // If user clears selection, reset file but keep current URL if it exists
                 updated[index] = {
                     ...updated[index],
                     videoImageFile: null,
-                    // Don't set videoImageUrl to null here if it had a value,
-                    // as it means they might want to keep the old one.
                 };
             }
             return updated;
         });
+         validateVideoEntry(index, value);
     };
 
     const handleAddUrl = () => {
-        if (!newVideoUrl.trim()) return;
-
         setVideoEntries((prev) => [
             ...prev,
-            { videoUrl: newVideoUrl, name: '', description: '', videoImageFile: null, videoImageUrl: null },
+            { videoUrl: '', name: '', description: '', videoImageFile: null, videoImageUrl: null },
         ]);
+    };
+
+    const handleRemoveVideo = (index: number) => {
+        if (videoEntries.length > 1) {
+            setVideoEntries((prev) => prev.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleVideoUrlChange = (index: number, value: string) => {
+        setVideoEntries((prev) => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                videoUrl: value
+            };
+            return updated;
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+  // First, validate all video URLs
+  const urlValidations = videoEntries.map((video, index) => 
+    validateVideoEntry(index, video.videoUrl)
+  );
+    // Check if any URL is invalid
+  if (urlValidations.some(isValid => !isValid)) {
+    alert('Please fix invalid video URLs before submitting.');
+    setLoading(false);
+    return;
+  }
+
+   // Validate main fields
+  const isNameValid = handleNameValidation(name);
+  const isDescriptionValid = handleDescriptionValidation(description);
+  
+  if (!isNameValid || !isDescriptionValid) {
+    alert('Please fix errors in the main fields before submitting.');
+    setLoading(false);
+    return;
+  }
+
+  // Validate all video name and description fields
+  const videoValidations = videoEntries.map((video, index) => {
+    const nameValid = handleVideoNameValidation(index, video.name);
+    const descValid = handleVideoDescValidation(index, video.description);
+    return nameValid && descValid;
+  });
+  
+  if (videoValidations.some(isValid => !isValid)) {
+    alert('Please fix errors in video details before submitting.');
+    setLoading(false);
+    return;
+  }
+
+        // Filter out empty video entries (where videoUrl is empty)
+        const validVideoEntries = videoEntries.filter(video => video.videoUrl.trim() !== '');
+
+        // If no valid video entries and not editing, show error
+        if (validVideoEntries.length === 0 && !certificationIdToEdit) {
+            alert('Please add at least one video entry with a URL.');
+            setLoading(false);
+            return;
+        }
 
         const formData = new FormData();
         formData.append('name', name);
         formData.append('description', description);
 
-        // --- Start Main Image Handling for FormData ---
+        // Main Image Handling
         if (mainImageFile) {
-            formData.append('imageUrl', mainImageFile); // Append new file
+            formData.append('imageUrl', mainImageFile);
         } else if (imageUrl) {
-            // If no new file is selected, but there's an existing imageUrl, send it
             formData.append('currentImageUrl', imageUrl);
         } else {
-            // If neither new file nor existing URL, and it's required for creation/update
             alert('Please add first basic details.');
             setLoading(false);
             return;
         }
-        // --- End Main Image Handling for FormData ---
 
-
-        // Loop through video entries and append their data including image files/URLs
-        for (const [i, video] of videoEntries.entries()) {
-            // Basic text field validation for each video
+        // Loop through valid video entries
+        for (const [i, video] of validVideoEntries.entries()) {
+            // Basic text field validation
             if (!video.videoUrl || !video.name || !video.description) {
                 alert(`Please complete all details for video no ${i + 1}.`);
                 setLoading(false);
                 return;
             }
 
-            // Video Image validation:
-            // For a new video, a file or URL must be provided.
-            // For an existing video, if both file and existing URL are absent, it's an error.
+            // Video Image validation
             if (!video.videoImageFile && !video.videoImageUrl) {
-                 alert(`Please upload a video image or ensure an existing image is present for video entry ${i + 1}.`);
-                 setLoading(false);
-                 return;
+                alert(`Please upload a video image or ensure an existing image is present for video entry ${i + 1}.`);
+                setLoading(false);
+                return;
             }
 
             formData.append(`video[${i}][videoUrl]`, video.videoUrl);
@@ -166,18 +302,10 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
             formData.append(`video[${i}][description]`, video.description);
 
             if (video.videoImageFile) {
-                formData.append(`video[${i}][videoImage]`, video.videoImageFile); // New file upload
+                formData.append(`video[${i}][videoImage]`, video.videoImageFile);
             } else if (video.videoImageUrl) {
-                // If no new file, but an existing URL is present, send the existing URL
                 formData.append(`video[${i}][videoImageUrl]`, video.videoImageUrl);
             }
-        }
-
-        // Validate that at least one video entry exists for new certifications
-        if (videoEntries.length === 0 && !certificationIdToEdit) {
-            alert('Please add at least one video entry.');
-            setLoading(false);
-            return;
         }
 
         try {
@@ -186,44 +314,36 @@ const AddCertificate: React.FC< AddCertificateProps> = ({ certificationIdToEdit 
                 await axios.put(`/api/academy/certifications/${certificationIdToEdit}`, formData);
                 alert('Tutorial updated!');
             } else {
-              res = await axios.post(
-      '/api/academy/certifications',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+                res = await axios.post(
+                    '/api/academy/certifications',
+                    formData,
+                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                );
 
-console.log("response of tutorial: ", res);
+                console.log("response of tutorial: ", res);
 
-if (!res.data?.success) {
-  const msg = res.data?.message || 'Failed to submit form.';
-  alert(msg);
-  throw new Error(msg);
-}
+                if (!res.data?.success) {
+                    const msg = res.data?.message || 'Failed to submit form.';
+                    alert(msg);
+                    throw new Error(msg);
+                }
 
-alert('✅ Tutorial added successfully!');
-
+                alert('✅ Tutorial added successfully!');
             }
             setName('');
             setDescription('');
             setMainImageFile(null);
-            setImageUrl(null); // Reset imageUrl state
-            setVideoEntries([]);
-            setNewVideoUrl('');
-        }catch (err) {
-  console.error('Submission error:', err);
-
-  let message = 'Failed to submit form. Please try again.';
-
-  if (axios.isAxiosError(err)) {
-    message =
-      err.response?.data?.message || // ✅ YOUR backend error
-      err.message ||
-      message;
-  }
-
-  setError(message);
-  alert(message); // ✅ THIS WILL WORK
-} finally {
+            setImageUrl(null);
+            setVideoEntries([{ videoUrl: '', name: '', description: '', videoImageFile: null, videoImageUrl: null }]);
+        } catch (err) {
+            console.error('Submission error:', err);
+            let message = 'Failed to submit form. Please try again.';
+            if (axios.isAxiosError(err)) {
+                message = err.response?.data?.message || err.message || message;
+            }
+            setError(message);
+            alert(message);
+        } finally {
             setLoading(false);
         }
     };
@@ -232,20 +352,27 @@ alert('✅ Tutorial added successfully!');
         <div>
             <ComponentCard title={certificationIdToEdit ? "Edit Tutorial" : "Add New Tutorial"}>
                 {loading && <p className="text-blue-500">Loading...</p>}
-                {/* {error && <p className="text-red-500">{error}</p>} */}
 
                 <form onSubmit={handleSubmit} encType="multipart/form-data">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
 
                         <div>
                             <Label htmlFor="certificateName">Tutorial Name</Label>
-                            <Input
-                                id="certificateName"
-                                type="text"
-                                placeholder="Enter Tutorial Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
+                           <Input
+  id="certificateName"
+  type="text"
+  placeholder="Enter Tutorial Name"
+  value={name}
+  onChange={(e) => {
+    setName(e.target.value);
+    handleNameValidation(e.target.value);
+  }}
+  onBlur={() => handleNameValidation(name)}
+  className={nameError ? 'border-red-500' : ''}
+/>
+{nameError && (
+  <p className="text-red-500 text-sm mt-1">{nameError}</p>
+)}
                         </div>
 
                         <div>
@@ -263,106 +390,144 @@ alert('✅ Tutorial added successfully!');
 
                         <div>
                             <Label htmlFor="tutorialDescription">Tutorial Description</Label>
-                            <Input
-                                id="tutorialDescription"
-                                type="text"
-                                placeholder="Enter Description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
+                           <Input
+  id="tutorialDescription"
+  type="text"
+  placeholder="Enter Description"
+  value={description}
+  onChange={(e) => {
+    setDescription(e.target.value);
+    handleDescriptionValidation(e.target.value);
+  }}
+  onBlur={() => handleDescriptionValidation(description)}
+  className={descriptionError ? 'border-red-500' : ''}
+/>
+{descriptionError && (
+  <p className="text-red-500 text-sm mt-1">{descriptionError}</p>
+)}
                         </div>
 
-                        <div className="col-span-2">
-                            <Label htmlFor="newVideoUrl">Paste Video URL</Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="newVideoUrl"
-                                    type="text"
-                                    placeholder="https://example.com/video"
-                                    value={newVideoUrl}
-                                    onChange={(e) => setNewVideoUrl(e.target.value)}
-                                />
-                                <Button type="button" onClick={handleAddUrl}>
-                                    + Details
-                                </Button>
-                            </div>
-                        </div>
-
+                        {/* Display existing video entries */}
                         {videoEntries.map((video, index) => (
-                            <div key={index} className="col-span-2 border p-4 rounded-md mb-4">
-                                <p className="text-sm text-gray-600 mb-3">Video URL: {video.videoUrl}</p>
+                            <React.Fragment key={index}>
+                              <div className="col-span-2 relative">
+  <div className="flex justify-between items-center mb-1">
+    <Label htmlFor={`videoUrl-${index}`}>
+      Paste Video URL {videoEntries.length > 1 && `#${index + 1}`}
+    </Label>
+    {videoEntries.length > 1 && (
+      <button
+        type="button"
+        onClick={() => handleRemoveVideo(index)}
+        className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
+        title="Remove this video"
+      >
+        <XMarkIcon className="h-5 w-5" />
+      </button>
+    )}
+  </div>
+  <Input
+    id={`videoUrl-${index}`}
+    type="text"
+    placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+    value={video.videoUrl}
+    onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+    onBlur={() => validateVideoEntry(index, video.videoUrl)} // Validate on blur too
+    className={videoErrors[index] ? 'border-red-500' : ''}
+  />
+  {videoErrors[index] && (
+    <p className="text-red-500 text-sm mt-1">{videoErrors[index]}</p>
+  )}
+</div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor={`videoName-${index}`}>Video Name</Label>
-                                        <Input
-                                            id={`videoName-${index}`}
-                                            type="text"
-                                            value={video.name}
-                                            onChange={(e) => {
-                                                const updated = [...videoEntries];
-                                                updated[index].name = e.target.value;
-                                                setVideoEntries(updated);
-                                            }}
-                                            placeholder="Enter video name"
-                                        />
-                                    </div>
+                                <div className="col-span-2 border p-4 rounded-md mb-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+  <Label htmlFor={`videoName-${index}`}>Video Name</Label>
+  <Input
+    id={`videoName-${index}`}
+    type="text"
+    value={video.name}
+    onChange={(e) => {
+      const updated = [...videoEntries];
+      updated[index].name = e.target.value;
+      setVideoEntries(updated);
+      handleVideoNameValidation(index, e.target.value);
+    }}
+    onBlur={() => handleVideoNameValidation(index, video.name)}
+    placeholder="Enter video name"
+    className={videoNameErrors[index] ? 'border-red-500' : ''}
+  />
+  {videoNameErrors[index] && (
+    <p className="text-red-500 text-sm mt-1">{videoNameErrors[index]}</p>
+  )}
+</div>
+                                        <div>
+  <Label htmlFor={`videoDesc-${index}`}>Video Description</Label>
+  <Input
+    id={`videoDesc-${index}`}
+    type="text"
+    value={video.description}
+    onChange={(e) => {
+      const updated = [...videoEntries];
+      updated[index].description = e.target.value;
+      setVideoEntries(updated);
+      handleVideoDescValidation(index, e.target.value);
+    }}
+    onBlur={() => handleVideoDescValidation(index, video.description)}
+    placeholder="Enter video description"
+    className={videoDescErrors[index] ? 'border-red-500' : ''}
+  />
+  {videoDescErrors[index] && (
+    <p className="text-red-500 text-sm mt-1">{videoDescErrors[index]}</p>
+  )}
+</div>
 
-                                    <div>
-                                        <Label htmlFor={`videoDesc-${index}`}>Video Description</Label>
-                                        <Input
-                                            id={`videoDesc-${index}`}
-                                            type="text"
-                                            value={video.description}
-                                            onChange={(e) => {
-                                                const updated = [...videoEntries];
-                                                updated[index].description = e.target.value;
-                                                setVideoEntries(updated);
-                                            }}
-                                            placeholder="Enter video description"
-                                        />
-                                    </div>
-
-                                    {/* Video Image Input and Display */}
-                                    <div className="col-span-full">
-                                        <Label htmlFor={`videoImage-${index}`}>Video Image (Thumbnail)</Label>
-                                        <FileInput
-                                            id={`videoImage-${index}`}
-                                            onChange={(e) => handleVideoImageChange(index, e)}
-                                            accept="image/*"
-                                        />
-                                        {video.videoImageFile && <p>New Thumbnail: {video.videoImageFile.name}</p>}
-                                        {video.videoImageUrl && !video.videoImageFile && (
-                                            <div className="mt-2">
-                                                <p>Current Thumbnail:</p>
-                                                <Image
-                                                    src={video.videoImageUrl}
-                                                    alt={`Video thumbnail for ${video.name}`}
-                                                    width={100}
-                                                    height={60}
-                                                    className="object-cover rounded-md"
-                                                />
-                                                <a href={video.videoImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm ml-2">View Full Size</a>
-                                            </div>
-                                        )}
+                                        {/* Video Image Input and Display */}
+                                        <div className="col-span-full">
+                                            <Label htmlFor={`videoImage-${index}`}>Video Image (Thumbnail)</Label>
+                                            <FileInput
+                                                id={`videoImage-${index}`}
+                                                onChange={(e) => handleVideoImageChange(index, e)}
+                                                accept="image/*"
+                                            />
+                                            {video.videoImageFile && <p>New Thumbnail: {video.videoImageFile.name}</p>}
+                                            {video.videoImageUrl && !video.videoImageFile && (
+                                                <div className="mt-2">
+                                                    <p>Current Thumbnail:</p>
+                                                    <Image
+                                                        src={video.videoImageUrl}
+                                                        alt={`Video thumbnail for ${video.name}`}
+                                                        width={100}
+                                                        height={60}
+                                                        className="object-cover rounded-md"
+                                                    />
+                                                    <a href={video.videoImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm ml-2">View Full Size</a>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </React.Fragment>
                         ))}
 
-                        
+                        {/* Add More Videos Button */}
+                        <div className="col-span-2">
+                            <Button type="button" onClick={handleAddUrl}>
+                                + Add Another Video
+                            </Button>
+                        </div>
 
-                    </div>
-
-                    <div className="mt-6 col-span-2">
+                        <div className="mt-6 col-span-2">
                             <Button className="w-full" size="sm" variant="primary" type="submit" disabled={loading}>
                                 {certificationIdToEdit ? "Update Tutorial" : "Add Tutorial"}
                             </Button>
                         </div>
+                    </div>
                 </form>
             </ComponentCard>
         </div>
     );
 };
 
-export default AddCertificate;
+export default AddCertificate; 
