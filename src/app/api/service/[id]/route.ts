@@ -958,7 +958,7 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
       let iconUrl = "";
 
       // ✅ CASE 1: uploaded file
-      if (icon instanceof File && icon.size > 0) {
+      if (icon && typeof icon === 'object' && 'size' in icon && icon.size > 0) {
         iconUrl = await handleFileUpload(
           icon,
           "/services/franchiseOperatingModel"
@@ -1022,7 +1022,7 @@ if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
     if (!title || title.trim() === "") break;
 
     let iconUrl = "";
-    if (icon instanceof File && icon.size > 0) {
+    if (icon && typeof icon === 'object' && 'size' in icon && icon.size > 0) {
       iconUrl = await handleFileUpload(icon, "/services/keyAdvantages");
     }
     else if (typeof icon === "string" && icon.trim() !== "") {
@@ -1048,7 +1048,7 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
     let iconUrl = "";
 
     // ✅ CASE 1: icon is a File (browser upload)
-    if (icon instanceof File && icon.size > 0) {
+    if (icon && typeof icon === 'object' && 'size' in icon && icon.size > 0) {
       iconUrl = await handleFileUpload(
         icon,
         "/services/completeSupportSystem"
@@ -1105,7 +1105,7 @@ if (formData.has("serviceDetails[companyDetails][0][name]")) {
     let profile = "";
 
     // ✅ Handle profile upload / reuse
-    if (profileFile instanceof File && profileFile.size > 0) {
+    if (profileFile && typeof profileFile === 'object' && 'size' in profileFile && profileFile.size > 0) {
       try {
         const buffer = Buffer.from(await profileFile.arrayBuffer());
         const upload = await imagekit.upload({

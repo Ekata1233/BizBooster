@@ -86,6 +86,14 @@ const Banner = () => {
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
 const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('');
 
+console.log("current banner : ", currentBanner);
+
+const serviceOptions = serviceData.map((srv) => ({
+  value: srv._id,
+  label: srv.serviceName,
+}));
+
+
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
@@ -616,21 +624,31 @@ const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('')
             )}
 
             {currentBanner?.selectionType === 'service' && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium">Service</label>
-                <input
-                  type="text"
-                  className="w-full border px-3 py-2 rounded"
-                  value={currentBanner?.service || ''}
-                  onChange={(e) =>
-                    setCurrentBanner((prev) =>
-                      prev ? { ...prev, service: e.target.value } : null
-                    )
-                  }
-                  placeholder="Enter service ID"
-                />
-              </div>
-            )}
+  <div className="md:col-span-2">
+    <label className="block text-sm font-medium">Service</label>
+    <select
+      className="w-full border px-3 py-2 rounded"
+      value={
+        typeof currentBanner?.service === 'object'
+          ? currentBanner?.service?._id
+          : currentBanner.service || ''
+      }
+      onChange={(e) =>
+        setCurrentBanner((prev) =>
+          prev ? { ...prev, service: e.target.value } : null
+        )
+      }
+    >
+      <option value="">Select Service</option>
+      {serviceData.map((srv) => (
+        <option key={srv._id} value={srv._id}>
+          {srv.serviceName}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
 
             {currentBanner?.selectionType === 'referralUrl' && (
               <div className="md:col-span-2">

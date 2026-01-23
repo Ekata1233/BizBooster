@@ -16,7 +16,7 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
     const [moduleName, setModuleName] = useState<string>('Loading...');
     const [zoneName, setZoneName] = useState<string>('Loading...');
 
-    console.log("module provider : ", provider);
+    console.log("Detils provider : ", provider);
 
     useEffect(() => {
         const fetchModule = async () => {
@@ -170,10 +170,35 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                                     <p className="font-medium">{provider.storeInfo?.storePhone || '-'}</p>
                                 </div>
 
-                                {/* <div className="flex items-center gap-2">
-                                    <p className="text-sm text-gray-500 whitespace-nowrap">Zone:</p>
-                                    <p className="font-medium">{provider.storeInfo?.zone || '-'}</p>
-                                </div> */}
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-gray-500 whitespace-nowrap">Total Experience:</p>
+                                    <p className="font-medium">{provider.storeInfo?.totalExperience || '-'}</p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-gray-500 whitespace-nowrap">Total Projects:</p>
+                                    <p className="font-medium">{provider.storeInfo?.totalProjects || '-'}</p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+  <p className="text-sm text-gray-500 whitespace-nowrap">Tags:</p>
+
+  {provider.storeInfo?.tags && provider.storeInfo.tags.length > 0 ? (
+    <div className="flex gap-2 ">
+      {provider.storeInfo.tags.map((tag, index) => (
+        <span
+          key={index}
+          className="whitespace-nowrap px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full"
+        >
+          {tag}
+        </span>
+      ))}
+    </div>
+  ) : (
+    <p className="font-medium">-</p>
+  )}
+</div>
+
 
                             </div>
 
