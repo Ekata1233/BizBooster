@@ -45,6 +45,7 @@ const appliesTo = ["Growth Partner", "Customer"] as const;
 /* ─── component ─────────────────────────────────────────────── */
 const EditCouponPage: React.FC = () => {
   const [form, setForm] = useState<Partial<CouponType>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const params = useParams();
   const couponId = params.id;
   const router = useRouter();
@@ -91,6 +92,14 @@ const EditCouponPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+      // Clear previous errors
+  setErrors({});
+  
+  // Validate form
+  if (!validateForm()) {
+    alert("Please fill all required fields correctly");
+    return; // Stop submission if validation fails
+  }
     if (!form?._id) return;
 
     const formData = new FormData();
@@ -125,8 +134,90 @@ const EditCouponPage: React.FC = () => {
       alert("Failed to update coupon ❌");
     }
   };
-
-
+  
+/* ─── validation function ─────────────────────────────────── */
+const validateForm = () => {
+  const newErrors: Record<string, string> = {};
+  
+  // Required fields validation
+  if (!form.couponType) newErrors.couponType = "Coupon type is required";
+  if (!form.couponCode) newErrors.couponCode = "Coupon code is required";
+  if (!form.discountType) newErrors.discountType = "Discount type is required";
+  if (!form.discountTitle) newErrors.discountTitle = "Discount title is required";
+  if (!form.discountAmountType) newErrors.discountAmountType = "Amount type is required";
+  if (!form.zone?._id) newErrors.zone = "Zone selection is required";
+  
+  // Amount validation
+  if (!form.amount && form.amount !== 0) {
+    newErrors.amount = "Amount is required";
+  } else if (form.amount && form.amount < 0) {
+    newErrors.amount = "Amount cannot be negative";
+  }
+  
+  // Min purchase validation
+  if (!form.minPurchase && form.minPurchase !== 0) {
+    newErrors.minPurchase = "Minimum purchase amount is required";
+  } else if (form.minPurchase && form.minPurchase < 0) {
+    newErrors.minPurchase = "Minimum purchase cannot be negative";
+  }
+  
+  // Max discount validation for percentage type
+  if (form.discountAmountType === "Percentage" && !form.maxDiscount && form.maxDiscount !== 0) {
+    newErrors.maxDiscount = "Max discount is required for percentage discount";
+  } else if (form.maxDiscount && form.maxDiscount < 0) {
+    newErrors.maxDiscount = "Max discount cannot be negative";
+  }
+  
+  // Date validation
+  if (!form.startDate) {
+    newErrors.startDate = "Start date is required";
+  }
+  
+  if (!form.endDate) {
+    newErrors.endDate = "End date is required";
+  } else if (form.startDate && form.endDate && new Date(form.endDate) < new Date(form.startDate)) {
+    newErrors.endDate = "End date must be after start date";
+  }
+  
+  // Limit per user validation
+  if (!form.limitPerUser && form.limitPerUser !== 0) {
+    newErrors.limitPerUser = "Limit per user is required";
+  } else if (form.limitPerUser && form.limitPerUser < 1) {
+    newErrors.limitPerUser = "Limit must be at least 1";
+  }
+  
+  // Cost bearer validation
+  if (!form.discountCostBearer) newErrors.discountCostBearer = "Cost bearer is required";
+  
+  // Applies to validation
+  if (!form.couponAppliesTo) newErrors.couponAppliesTo = "Coupon applies to is required";
+  
+  // Conditional validations based on discount type
+  if (form.discountType === "Category Wise" && !form.category?._id) {
+    newErrors.category = "Category selection is required";
+  }
+  
+  if (form.discountType === "Service Wise" && !form.service?._id) {
+    newErrors.service = "Service selection is required";
+  }
+  
+  if (form.discountType === "Mixed" && (!form.category?._id || !form.service?._id)) {
+    if (!form.category?._id) newErrors.category = "Category selection is required for mixed discount";
+    if (!form.service?._id) newErrors.service = "Service selection is required for mixed discount";
+  }
+  
+  // Customer validation for customerWise coupon type
+  if (form.couponType === "customerWise" && !form.customer?._id) {
+    newErrors.customer = "Customer selection is required for customer wise coupon";
+  }
+  
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+/* ─── error display component ──────────────────────────────── */  // <-- ADD HERE
+const ErrorMessage = ({ message }: { message: string }) => (
+  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{message}</p>
+);
   /* ─── memoized options ────────────────────────────────────── */
   const categoryOptions = useMemo(
     () =>
@@ -154,7 +245,9 @@ const EditCouponPage: React.FC = () => {
   );
 
   const zoneOptions = useMemo(
-    () => zones.map((z) => ({ value: z._id, label: z.name })),
+    () => zones
+    .filter(z => z.isDeleted === false) 
+    .map((z) => ({ value: z._id, label: z.name })),
     [zones]
   );
 
