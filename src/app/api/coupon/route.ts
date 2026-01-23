@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
     if (startDate >= endDate) {
       return NextResponse.json(
-        { success: false, message: "endDate must be later than startDate." },
+        { success: false, message: "endDate must be greater than startDate." },
         { status: 400, headers: corsHeaders }
       );
     }
