@@ -464,10 +464,11 @@ const keyValues: {
 
 if (keyValueIndexes.size > 0) {
   for (const index of [...keyValueIndexes].sort()) {
-    const key = formData.get(`keyValues[${index}][key]`) as string;
-    const value = formData.get(`keyValues[${index}][value]`) as string;
+    const rawKey = formData.get(`keyValues[${index}][key]`) as string | null;
+    const rawValue = formData.get(`keyValues[${index}][value]`) as string | null;
     const iconFile = formData.get(`keyValues[${index}][icon]`);
-const key = rawKey?.trim() || "";
+
+    const key = rawKey?.trim() || "";
     const value = rawValue?.trim() || "";
 
     let iconUrl = "";
