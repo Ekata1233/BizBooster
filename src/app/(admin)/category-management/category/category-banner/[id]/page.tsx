@@ -57,7 +57,7 @@ const EditCategoryBannerPage = () => {
       await updateBanner(id, formData);
       alert("Category banner updated successfully!");
       fetchBanners(); // refresh list
-      router.push("/category-management/category/category-banner");
+      router.push("/category-management/category/category-banner   ");
     } catch (err) {
       console.error("Error updating banner:", err);
       alert("Failed to update banner.");
