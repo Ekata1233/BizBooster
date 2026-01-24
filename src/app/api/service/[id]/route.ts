@@ -457,18 +457,19 @@ for (const key of formData.keys()) {
 
     // --- Key Values ---
 const keyValues: {
-  key: string;
-  value: string;
+  key?: string;
+  value?: string;
   icon?: string;
 }[] = [];
 
 if (keyValueIndexes.size > 0) {
   for (const index of [...keyValueIndexes].sort()) {
-    const key = formData.get(`keyValues[${index}][key]`) as string;
-    const value = formData.get(`keyValues[${index}][value]`) as string;
+    const rawKey = formData.get(`keyValues[${index}][key]`) as string | null;
+    const rawValue = formData.get(`keyValues[${index}][value]`) as string | null;
     const iconFile = formData.get(`keyValues[${index}][icon]`);
 
-    if (!key || !value) continue;
+    const key = rawKey?.trim() || "";
+    const value = rawValue?.trim() || "";
 
     let iconUrl = "";
 
@@ -484,11 +485,13 @@ if (keyValueIndexes.size > 0) {
       iconUrl = iconFile;
     }
 
-    keyValues.push({
-      key: key.trim(),
-      value: value.trim(),
-      icon: iconUrl,
-    });
+    if (key || value || iconUrl) {
+      keyValues.push({
+        key,
+        value,
+        icon: iconUrl,
+      });
+    }
   }
 } else {
   keyValues.push(...(existingService.keyValues || []));
