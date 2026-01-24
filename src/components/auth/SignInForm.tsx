@@ -23,7 +23,7 @@ export default function SignInForm() {
 
     // Static credentials
     const validEmail = "Admin@FetchTrue";
-    const validPassword = "FetchTrue@2025";
+    const validPassword = "@FetchT2025!Root#";
     setIsLoading(true);
     if (email === validEmail && password === validPassword) {
       // ✅ Set cookie

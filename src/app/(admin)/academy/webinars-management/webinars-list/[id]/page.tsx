@@ -519,9 +519,9 @@ const WebinarDetailPage: React.FC = () => {
                     Training Webinar: {webinar.name}
                 </h1>
 
-                <button onClick={handleDeleteWebinar} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
+                {/* <button onClick={handleDeleteWebinar} className="text-red-500 border border-red-500 rounded-md p-2 hover:bg-red-500 hover:text-white hover:border-red-500">
                     <TrashBinIcon />
-                </button>
+                </button> */}
             </div>
 
             {/* Main Info Card (Image and Description) */}
