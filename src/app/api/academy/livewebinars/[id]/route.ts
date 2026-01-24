@@ -39,6 +39,7 @@ export async function PUT(req: Request) {
     }
 
     const formData = await req.formData();
+    console.log("formdtata of livewebinar : ", formData);
     const name = formData.get("name") as string | null;
     const description = formData.get("description") as string | null;
     const imageFile = formData.get("imageUrl") as File | null;

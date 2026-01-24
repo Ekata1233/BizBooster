@@ -405,6 +405,14 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
   const keyValues = service?.keyValues || [];
   const tags = service?.tags || [];
 
+  const hasValidCounter =
+  counter?.some(
+    (item) =>
+      (typeof item.number === "number" && item.number >= 1) ||
+      (item.title && item.title.trim() !== "")
+  );
+
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Breadcrumb */}
@@ -726,6 +734,38 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
               </ComponentCard>
             )}
 
+{howItWorks?.length > 0 && (
+  <ComponentCard title="How It Works">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {howItWorks.map((item, index) => (
+        <div
+          key={item._id || index}
+          className="flex flex-col items-center text-center p-6 bg-white border rounded-xl shadow-sm hover:shadow-md transition"
+        >
+          {item.icon && (
+            <div className="w-16 h-16 mb-4 relative">
+              <Image
+                src={item.icon}
+                alt={item.title}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+
+          <h4 className="text-lg font-semibold text-gray-800 mb-2">
+            {item.title}
+          </h4>
+
+          <p className="text-sm text-gray-600">
+            {item.description}
+          </p>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
             {/* Why Choose Us */}
             {whyChooseUs.length > 0 && (
               <ComponentCard title="Why Choose Us">
@@ -882,20 +922,34 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
 )}
 
 {/* Counter */}
-{counter.length > 0 && (
+{hasValidCounter && (
   <ComponentCard title="Achievements">
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {counter.map((item, index) => (
-        <div key={index} className="text-center">
-          <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-            {item.number ? item.number.toLocaleString() : 'N/A'}
+      {counter.map((item, index) => {
+        const hasValue =
+          (typeof item.number === "number" && item.number >= 1) ||
+          (item.title && item.title.trim() !== "");
+
+        if (!hasValue) return null;
+
+        return (
+          <div key={item._id || index} className="text-center">
+            {typeof item.number === "number" && item.number >= 1 && (
+              <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+                {item.number.toLocaleString()}
+              </div>
+            )}
+
+            {item.title && (
+              <div className="text-gray-600">{item.title}</div>
+            )}
           </div>
-          <div className="text-gray-600">{item.title}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </ComponentCard>
 )}
+
 
 {/* Franchise Operating Model */}
 {franchiseOperatingModel.length > 0 && (
@@ -966,33 +1020,54 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
 )}
 
 {/* Business Fundamental */}
-{businessFundamental && (
-  <ComponentCard title="Business Fundamentals">
-    <div className="bg-white border rounded-xl p-6">
-      {businessFundamental.description && (
-        <p className="text-gray-700 mb-6">{businessFundamental.description}</p>
-      )}
-      
-      {businessFundamental.points && businessFundamental.points.length > 0 && (
-        <div className="space-y-4">
-          {businessFundamental.points.map((point, index) => (
-            <div key={index} className="flex gap-4">
-              <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
-              <div>
-                {point.subtitle && (
-                  <h6 className="font-medium text-gray-800 mb-1">{point.subtitle}</h6>
-                )}
-                {point.subDescription && (
-                  <p className="text-gray-600">{point.subDescription}</p>
-                )}
-              </div>
+{businessFundamental &&
+  (
+    (businessFundamental.description &&
+      businessFundamental.description.trim() !== "") ||
+    (businessFundamental.points &&
+      businessFundamental.points.length > 0)
+  ) && (
+    <ComponentCard title="Business Fundamentals">
+      <div className="bg-white border rounded-xl p-6">
+
+        {/* Description */}
+        {businessFundamental.description &&
+          businessFundamental.description.trim() !== "" && (
+            <p className="text-gray-700 mb-6">
+              {businessFundamental.description}
+            </p>
+        )}
+
+        {/* Points */}
+        {businessFundamental.points &&
+          businessFundamental.points.length > 0 && (
+            <div className="space-y-4">
+              {businessFundamental.points.map((point, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
+
+                  <div>
+                    {point.subtitle && (
+                      <h6 className="font-medium text-gray-800 mb-1">
+                        {point.subtitle}
+                      </h6>
+                    )}
+
+                    {point.subDescription && (
+                      <p className="text-gray-600">
+                        {point.subDescription}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  </ComponentCard>
+        )}
+
+      </div>
+    </ComponentCard>
 )}
+
 
 {/* Key Advantages */}
 {keyAdvantages.length > 0 && (
@@ -1465,6 +1540,28 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
                 </div>
               </ComponentCard>
             )}
+
+{timeRequired?.length > 0 && (
+  <ComponentCard title="Time Required">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {timeRequired.map((item, index) => (
+        <div
+          key={item._id || index}
+          className="flex flex-col items-center justify-center p-6 bg-gray-50 border rounded-xl text-center"
+        >
+          <h4 className="text-base font-semibold text-gray-800 mb-2">
+            {item.parameters}
+          </h4>
+
+          <span className="inline-block px-4 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">
+            {item.range}
+          </span>
+        </div>
+      ))}
+    </div>
+  </ComponentCard>
+)}
+
 
             {/* Documents */}
             {document.length > 0 && (
