@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Provider from "@/models/Provider";
-import Service from "@/models/Service";
 import "@/models/Category";
 import "@/models/Subcategory";
+import "@/models/Service";
 import { connectToDatabase } from "@/utils/db";
+import Service from "@/models/Service";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -16,10 +17,6 @@ export async function OPTIONS() {
     return NextResponse.json({}, { headers: corsHeaders });
 }
 
-/**
- * GET: Fetch subscribed services for a provider
- * Example: /api/provider/subscribed-services?providerId=123
- */
 
 const removeEmpty = (value: any): any => {
   // ✅ keep ObjectId & Date untouched
@@ -74,6 +71,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const categoryId = url.searchParams.get("categoryId");
+
+
     // 🔹 Fetch provider
     const provider = await Provider.findById(providerId)
       .populate("subscribedServices")
@@ -86,44 +86,46 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 🔹 Fetch services
-    const services = await Service.find({
-      _id: { $in: provider.subscribedServices },
-    })
-      .populate("category")
-      // .populate("subCategory")
-      .lean();
+   // 🔹 Build service query
+const serviceQuery: any = {
+  _id: { $in: provider.subscribedServices },
+};
 
-    // 🔹 Map + clean services
-    const mappedServices = services
-      .map((svc: any, index: number) => {
-        const providerPriceEntry = svc.providerPrices?.find(
-          (pp: any) => String(pp.provider?._id) === String(providerId)
-        );
+if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+  serviceQuery.category = categoryId;
+}
 
-        const mapped = {
-          srNo: index + 1,
+// 🔹 Fetch services
+const services = await Service.find(serviceQuery)
+  .populate("category")
+  .lean();
 
-          // include all service fields
-          ...svc,
+// 🔹 Map + clean services
+const mappedServices = services
+  .map((svc: any, index: number) => {
+    const providerPriceEntry = svc.providerPrices?.find(
+      (pp: any) => String(pp.provider?._id) === String(providerId)
+    );
 
-          // provider-specific overrides
-          providerPrice: providerPriceEntry?.providerPrice,
-          providerMRP: providerPriceEntry?.providerMRP,
-          providerDiscount: providerPriceEntry?.providerDiscount,
-          providerCommission: providerPriceEntry?.providerCommission,
+    const mapped = {
+      srNo: index + 1,
+      ...svc,
+      providerPrice: providerPriceEntry?.providerPrice,
+      providerMRP: providerPriceEntry?.providerMRP,
+      providerDiscount: providerPriceEntry?.providerDiscount,
+      providerCommission: providerPriceEntry?.providerCommission,
 
-          // computed fields
-          categoryName: svc.category?.name,
-          subCategoryName: svc.subCategory?.name,
+      // computed fields
+      categoryName: svc.category?.name,
+      subCategoryName: svc.subCategory?.name,
 
-          status: "Subscribed",
-        };
+      status: "Subscribed",
+    };
 
-        // ✅ remove empty values deeply
-        return removeEmpty(mapped);
-      })
-      .filter(Boolean); // remove undefined entries if any
+    return removeEmpty(mapped);
+  })
+  .filter(Boolean);
+
 
     return NextResponse.json(
       {

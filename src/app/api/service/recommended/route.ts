@@ -208,6 +208,7 @@ serviceDetails:{
         commission: 1,
         investmentRange: 1,
         monthlyEarnPotential: 1,
+        areaRequired: 1,
         franchiseModel:"$franchiseDetails.franchiseModel",
       },
 

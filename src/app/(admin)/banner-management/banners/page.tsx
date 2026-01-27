@@ -88,13 +88,6 @@ const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('')
 
 console.log("current banner : ", currentBanner);
 
-const serviceOptions = serviceData.map((srv) => ({
-  value: srv._id,
-  label: srv.serviceName,
-}));
-
-
-
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
     try {
