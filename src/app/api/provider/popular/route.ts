@@ -36,6 +36,21 @@ export async function GET(req: NextRequest) {
           "storeInfo.module": new mongoose.Types.ObjectId(moduleId),
         },
       },
+      /* ---------------- PROVIDER → MODULE ---------------- */
+{
+  $lookup: {
+    from: "modules",
+    localField: "storeInfo.module",
+    foreignField: "_id",
+    as: "module",
+  },
+},
+{
+  $unwind: {
+    path: "$module",
+    preserveNullAndEmptyArrays: true,
+  },
+},
 
       /* ---------------- PROVIDER → REVIEWS ---------------- */
       {
@@ -112,6 +127,10 @@ export async function GET(req: NextRequest) {
           totalReviews: 1,
           isStoreOpen: 1,
           category_list: 1,
+          module: {
+      _id: "$module._id",
+      name: "$module.name",
+    },
           storeInfo: {
             storeName: "$storeInfo.storeName",
             storePhone: "$storeInfo.storePhone",
