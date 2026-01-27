@@ -129,6 +129,7 @@ if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
           "$service.franchiseDetails.monthlyEarnPotential",
             franchiseModel:
           "$service.franchiseDetails.franchiseModel", 
+          areaRequired:"$service.franchiseDetails.areaRequired",
       },
     },
         },
