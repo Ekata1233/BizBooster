@@ -412,6 +412,16 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
       (item.title && item.title.trim() !== "")
   );
 
+  const hasValidFranchiseExtraSections =
+  franchiseExtraSections?.some((item) =>
+    item.title ||
+    item.description?.length > 0 ||
+    item.subDescription?.length > 0 ||
+    item.lists?.length > 0 ||
+    item.tags?.length > 0 ||
+    item.image?.length > 0
+  );
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -1941,42 +1951,100 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
             )}
 
             {/* Franchise Extra Sections */}
-            {franchiseExtraSections.length > 0 && (
-              <ComponentCard title="Additional Information">
-                <div className="space-y-8">
-                  {franchiseExtraSections.map((item, index) => (
-                    <div key={index} className="bg-white border rounded-xl p-6">
-                      {item.title && (
-                        <h4 className="text-xl font-bold text-gray-900 mb-4">{item.title}</h4>
-                      )}
-                      
-                      {item.description && item.description.length > 0 && (
-                        <div className="space-y-3">
-                          {item.description.map((desc, descIndex) => (
-                            <p key={descIndex} className="text-gray-700">{desc}</p>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {item.image && item.image.length > 0 && (
-                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {item.image.map((img, imgIndex) => (
-                            <div key={imgIndex} className="relative h-48 rounded-lg overflow-hidden">
-                              <Image
-                                src={img}
-                                alt={`${item.title || 'Franchise'} image ${imgIndex + 1}`}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </ComponentCard>
+            {hasValidFranchiseExtraSections && (
+  <ComponentCard title="Additional Information">
+    <div className="space-y-8">
+      {franchiseExtraSections.map((item, index) => {
+        const hasContent =
+          item.title ||
+          item.description?.length > 0 ||
+          item.subDescription?.length > 0 ||
+          item.lists?.length > 0 ||
+          item.tags?.length > 0 ||
+          item.image?.length > 0;
+
+        if (!hasContent) return null;
+
+        return (
+          <div key={item._id || index} className="bg-white border rounded-xl p-6">
+
+            {/* Title */}
+            {item.title && (
+              <h4 className="text-xl font-bold text-gray-900 mb-4">
+                {item.title}
+              </h4>
             )}
+
+            {/* Description */}
+            {item.description?.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {item.description.map((desc, i) => (
+                  <p key={i} className="text-gray-700">
+                    {desc}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {/* Sub Description */}
+            {item.subDescription?.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {item.subDescription.map((sub, i) => (
+                  <p key={i} className="text-gray-600 text-sm">
+                    {sub}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {/* Lists */}
+            {item.lists?.length > 0 && (
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1">
+                {item.lists.map((list, i) => (
+                  <li key={i}>{list}</li>
+                ))}
+              </ul>
+            )}
+
+            {/* Tags */}
+            {item.tags?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {item.tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Images */}
+            {item.image?.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {item.image.map((img, i) => (
+                  <div
+                    key={i}
+                    className="relative h-48 rounded-lg overflow-hidden"
+                  >
+                    <Image
+                      src={img}
+                      alt={`${item.title || "Franchise"} image ${i + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </ComponentCard>
+)}
+
 
             {/* Franchise Extra Images */}
             {franchiseExtraImages.length > 0 && (
@@ -1999,18 +2067,7 @@ const safetyAndAssurance = serviceDetails?.safetyAndAssurance || [];
         )}
       </div>
 
-      {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="text-center text-gray-500 text-sm">
-          <p>Service ID: {service._id}</p>
-          <p>Created: {new Date(service.createdAt || '').toLocaleDateString()}</p>
-          {service.recommendedServices && (
-            <span className="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-              ★ Recommended Service
-            </span>
-          )}
-        </div>
-      </div>
+      
     </div>
   );
 };
