@@ -161,7 +161,7 @@ const subscribeItems: NavItem[] = [
     icon: <EnvelopeIcon />,
     name: "Subscribe",
     subItems: [
-      { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
+      // { name: "Subscribe Request", path: "/subscribe-management/subscribe-request", pro: false },
       { name: "Subscribe List", path: "/subscribe-management/subscribe-list", pro: false },
     ],
   },

@@ -20,79 +20,125 @@ export async function OPTIONS() {
  * GET: Fetch subscribed services for a provider
  * Example: /api/provider/subscribed-services?providerId=123
  */
-export async function GET(req: NextRequest) {
-    await connectToDatabase();
 
-    try {
+const removeEmpty = (value: any): any => {
+  // ✅ keep ObjectId & Date untouched
+  if (
+    value instanceof mongoose.Types.ObjectId ||
+    value instanceof Date
+  ) {
+    return value;
+  }
+
+  // remove empty string
+  if (value === "") return undefined;
+
+  // handle arrays
+  if (Array.isArray(value)) {
+    const cleanedArray = value
+      .map(removeEmpty)
+      .filter(v => v !== undefined);
+
+    return cleanedArray.length > 0 ? cleanedArray : undefined;
+  }
+
+  // handle objects
+  if (typeof value === "object" && value !== null) {
+    const cleanedObject: any = {};
+
+    for (const key in value) {
+      const cleanedValue = removeEmpty(value[key]);
+
+      if (cleanedValue !== undefined) {
+        cleanedObject[key] = cleanedValue;
+      }
+    }
+
+    return Object.keys(cleanedObject).length > 0 ? cleanedObject : undefined;
+  }
+
+  // keep numbers, booleans, valid strings
+  return value;
+};
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
+
+  try {
     const url = new URL(req.url);
     const providerId = url.pathname.split("/").pop();
 
-        console.log("provider id : ", providerId)
-
-        if (!providerId || !mongoose.Types.ObjectId.isValid(providerId)) {
-            return NextResponse.json(
-                { success: false, message: "Invalid or missing providerId" },
-                { status: 400, headers: corsHeaders }
-            );
-        }
-
-        // Fetch provider and their subscribed services
-        const provider = await Provider.findById(providerId)
-            .populate("subscribedServices")
-            .lean();
-
-        if (!provider) {
-            return NextResponse.json(
-                { success: false, message: "Provider not found" },
-                { status: 404, headers: corsHeaders }
-            );
-        }
-
-        // Fetch full service details for the subscribed services
-        const services = await Service.find({
-            _id: { $in: provider.subscribedServices },
-        })
-            .populate("category")
-            // .populate("subCategory")
-            .lean();
-
-        // Map services with provider-specific pricing
-        const mappedServices = services.map((svc: any, index: number) => {
-            const providerPriceEntry = svc.providerPrices?.find(
-                (pp: any) => String(pp.provider?._id) === String(providerId)
-            );
-
-            const providerPrice = providerPriceEntry?.providerPrice ?? null;
-            const providerMRP = providerPriceEntry?.providerMRP ?? null;
-            const providerDiscount = providerPriceEntry?.providerDiscount ?? null;
-            const providerCommission = providerPriceEntry?.providerCommission ?? null;
-
-            return {
-                srNo: index + 1,
-                id: svc._id,
-                serviceName: svc.serviceName || "—",
-                categoryName: svc.category?.name || "—",
-                subCategoryName: svc.subCategory?.name || "—",
-                discountedPrice: svc.discountedPrice ?? null,
-                providerPrice,
-                providerMRP,
-                providerDiscount,
-                providerCommission,
-                 averageRating: svc.averageRating ?? 0,
-                totalReviews: svc.totalReviews ?? 0,
-                status: "Subscribed",
-            };
-        });
-
-        return NextResponse.json(
-            { success: true, data: mappedServices },
-            { status: 200, headers: corsHeaders }
-        );
-    } catch (error: unknown) {
-        const err = error as Error;
-        return NextResponse.json(
-            { success: false, message: err.message },
-            { status: 500, headers: corsHeaders }
-        );
+    if (!providerId || !mongoose.Types.ObjectId.isValid(providerId)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid or missing providerId" },
+        { status: 400, headers: corsHeaders }
+      );
     }
+
+    // 🔹 Fetch provider
+    const provider = await Provider.findById(providerId)
+      .populate("subscribedServices")
+      .lean();
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, message: "Provider not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    // 🔹 Fetch services
+    const services = await Service.find({
+      _id: { $in: provider.subscribedServices },
+    })
+      .populate("category")
+      // .populate("subCategory")
+      .lean();
+
+    // 🔹 Map + clean services
+    const mappedServices = services
+      .map((svc: any, index: number) => {
+        const providerPriceEntry = svc.providerPrices?.find(
+          (pp: any) => String(pp.provider?._id) === String(providerId)
+        );
+
+        const mapped = {
+          srNo: index + 1,
+
+          // include all service fields
+          ...svc,
+
+          // provider-specific overrides
+          providerPrice: providerPriceEntry?.providerPrice,
+          providerMRP: providerPriceEntry?.providerMRP,
+          providerDiscount: providerPriceEntry?.providerDiscount,
+          providerCommission: providerPriceEntry?.providerCommission,
+
+          // computed fields
+          categoryName: svc.category?.name,
+          subCategoryName: svc.subCategory?.name,
+
+          status: "Subscribed",
+        };
+
+        // ✅ remove empty values deeply
+        return removeEmpty(mapped);
+      })
+      .filter(Boolean); // remove undefined entries if any
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: mappedServices,
+      },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (error: unknown) {
+    const err = error as Error;
+
+    return NextResponse.json(
+      { success: false, message: err.message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
+
