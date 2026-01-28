@@ -120,7 +120,7 @@ if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
             keyValues: { $first: "$service.keyValues" },
           averageRating: { $avg: "$rating" },
           totalReviews: { $sum: 1 },
-          packages: { $first: "$service.serviceDetails.packages" },
+          serviceDetails: { $first: "$service.serviceDetails" },
           franchiseDetails: {
       $first: {
         commission: "$service.franchiseDetails.commission",
@@ -156,7 +156,7 @@ if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
           averageRating: { $round: ["$averageRating", 1] },
           totalReviews: 1,
           category: 1,
-          packages: 1,
+          serviceDetails: 1,
           keyValues: 1,
            franchiseDetails: 1,
         },
