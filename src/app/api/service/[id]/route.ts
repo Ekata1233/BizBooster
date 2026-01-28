@@ -621,7 +621,7 @@ bannerImages = (await Promise.all(bannerUploadPromises)).filter(Boolean);
     const providerPrices: any[] = [];
     const providerPricesUpdated = formData.has("providerPrices[0][provider]");
     if (providerPricesUpdated) {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const provider = formData.get(`providerPrices[${i}][provider]`) as string;
         if (!provider) break;
         
@@ -746,7 +746,7 @@ if (highlightUpdated) {
 
       if (!sectionUpdated) return existingData;
 
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const title = formData.get(`serviceDetails[${field}][${i}][title]`) as string;
         if (!title) break;
         const description = formData.get(`serviceDetails[${field}][${i}][description]`) as string;
@@ -814,7 +814,7 @@ if (highlightUpdated) {
     const connectWithUpdated = formData.has("serviceDetails[connectWith][0][name]");
     if (connectWithUpdated) {
       serviceDetails.connectWith = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const name = formData.get(`serviceDetails[connectWith][${i}][name]`) as string;
         if (!name) break;
         serviceDetails.connectWith.push({
@@ -829,7 +829,7 @@ if (highlightUpdated) {
 const timeRequiredUpdated = formData.has("serviceDetails[timeRequired][0][range]"); 
 if (timeRequiredUpdated) {
   serviceDetails.timeRequired = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const range = formData.get(`serviceDetails[timeRequired][${i}][range]`) as string;
 if (!range || range.trim() === "") break;
     serviceDetails.timeRequired.push({
@@ -843,7 +843,7 @@ if (!range || range.trim() === "") break;
     const faqUpdated = formData.has("serviceDetails[faq][0][question]");
     if (faqUpdated) {
       serviceDetails.faq = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const question = formData.get(`serviceDetails[faq][${i}][question]`) as string;
         if (!question) break;
         const answer = formData.get(`serviceDetails[faq][${i}][answer]`) as string;
@@ -858,7 +858,7 @@ if (!range || range.trim() === "") break;
     const packagesUpdated = formData.has("serviceDetails[packages][0][name]");
     if (packagesUpdated) {
       serviceDetails.packages = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const name = formData.get(`serviceDetails[packages][${i}][name]`) as string;
         if (!name) break;
         const pkg: any = {
@@ -868,7 +868,7 @@ if (!range || range.trim() === "") break;
           discountedPrice: Number(formData.get(`serviceDetails[packages][${i}][discountedPrice]`) || 0),
           whatYouGet: [],
         };
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const item = formData.get(`serviceDetails[packages][${i}][whatYouGet][${j}]`) as string;
           if (!item) break;
           pkg.whatYouGet.push(item.trim());
@@ -891,7 +891,7 @@ if (Array.from(formData.keys()).some(key => key.startsWith("serviceDetails[broch
   serviceDetails.brochureImage = [];
   
   // Method 1: Loop through sequential indices
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const brochureFile = formData.get(`serviceDetails[brochureImage][${i}]`);
     if (!brochureFile) break;
     
@@ -933,7 +933,7 @@ serviceDetails.certificateImage = (await Promise.all(certificateUploadPromises))
 // emiavalable
 if (formData.has("serviceDetails[emiavalable][0]")) {
   serviceDetails.emiavalable = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const emi = formData.get(`serviceDetails[emiavalable][${i}]`) as string;
     if (!emi || emi.trim() === "") break; // ✅ Add trim check
     serviceDetails.emiavalable.push(emi.trim());
@@ -943,7 +943,7 @@ if (formData.has("serviceDetails[emiavalable][0]")) {
 if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
   serviceDetails.franchiseOperatingModel = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const title = formData.get(`serviceDetails[franchiseOperatingModel][${i}][title]`) as string;
     const description = formData.get(`serviceDetails[franchiseOperatingModel][${i}][description]`) as string;
     const info = formData.get(`serviceDetails[franchiseOperatingModel][${i}][info]`) as string;
@@ -952,7 +952,7 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
     if (!title || title.trim() === "") break;
 
     const features: any[] = [];
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < 6; j++) {
       const subtitle = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subtitle]`) as string;
       const subDescription = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][subDescription]`) as string;
        const icon = formData.get(`serviceDetails[franchiseOperatingModel][${i}][features][${j}][icon]`);
@@ -980,7 +980,7 @@ if (formData.has("serviceDetails[franchiseOperatingModel][0][title]")) {
     }
 
     const tags: string[] = [];
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < 6; j++) {
       const tag = formData.get(`serviceDetails[franchiseOperatingModel][${i}][tags][${j}]`) as string;
       if (!tag || tag.trim() === "") break;
       tags.push(tag.trim());
@@ -1003,7 +1003,7 @@ if (formData.has("serviceDetails[businessFundamental][description]")) {
     points: [],
   };
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
     const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
     if (!subtitle || subtitle.trim() === "") break;
@@ -1018,7 +1018,7 @@ if (formData.has("serviceDetails[businessFundamental][description]")) {
 if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
   serviceDetails.keyAdvantages = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const title = formData.get(`serviceDetails[keyAdvantages][${i}][title]`) as string;
     const description = formData.get(`serviceDetails[keyAdvantages][${i}][description]`) as string;
    const icon = formData.get(`serviceDetails[keyAdvantages][${i}][icon]`);
@@ -1043,7 +1043,7 @@ if (formData.has("serviceDetails[keyAdvantages][0][title]")) {
 if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
   serviceDetails.completeSupportSystem = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const title = formData.get(`serviceDetails[completeSupportSystem][${i}][title]`) as string;
    const icon = formData.get(`serviceDetails[completeSupportSystem][${i}][icon]`);
  if (!title || title.trim() === "") break;
@@ -1065,7 +1065,7 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
 
     const lists: string[] = [];
 
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < 6; j++) {
       const item = formData.get(
         `serviceDetails[completeSupportSystem][${i}][lists][${j}]`
       ) as string;
@@ -1096,7 +1096,7 @@ if (formData.has("serviceDetails[completeSupportSystem][0][title]")) {
 if (formData.has("serviceDetails[companyDetails][0][name]")) {
   serviceDetails.companyDetails = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const name = formData.get(`serviceDetails[companyDetails][${i}][name]`) as string;
     const location = formData.get(`serviceDetails[companyDetails][${i}][location]`) as string;
     if (!name || name.trim() === "") break;
@@ -1126,7 +1126,7 @@ if (formData.has("serviceDetails[companyDetails][0][name]")) {
     }
 
     const details: any[] = [];
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < 6; j++) {
       const title = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][title]`) as string;
       const description = formData.get(`serviceDetails[companyDetails][${i}][details][${j}][description]`) as string;
       if (!title || title.trim() === "") break;
@@ -1149,7 +1149,7 @@ if (formData.has("serviceDetails[companyDetails][0][name]")) {
 
 if (formData.has("serviceDetails[counter][0][number]")) {
   serviceDetails.counter = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const number = formData.get(`serviceDetails[counter][${i}][number]`) as string;
     const title = formData.get(`serviceDetails[counter][${i}][title]`) as string;
 
@@ -1168,7 +1168,7 @@ if (formData.has("serviceDetails[counter][0][number]")) {
 //     points: [],
 //   };
 
-//   for (let i = 0; i < 10; i++) {
+//   for (let i = 0; i < 6; i++) {
 //     const subtitle = formData.get(`serviceDetails[businessFundamental][points][${i}][subtitle]`) as string;
 //     const subDescription = formData.get(`serviceDetails[businessFundamental][points][${i}][subDescription]`) as string;
 //     if (!subtitle || subtitle.trim() === "") break;
@@ -1183,7 +1183,7 @@ if (formData.has("serviceDetails[counter][0][number]")) {
 // ------------------ ROI ------------------
 serviceDetails.roi = [];
 if (formData.has("serviceDetails[roi][0]")) {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const val = formData.get(`serviceDetails[roi][${i}]`) as string;
     if (!val || val.trim() === "") break;
     serviceDetails.roi.push(val.trim());
@@ -1228,7 +1228,7 @@ if (formData.has("serviceDetails[eligibleFor][0]")) {
 // ------------------ Course Curriculum ------------------
 serviceDetails.courseCurriculum = [];
 if (formData.has("serviceDetails[courseCurriculum][0][title]")) {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const title = formData.get(`serviceDetails[courseCurriculum][${i}][title]`) as string;
     if (!title || title.trim() === "") break;
 
@@ -1267,7 +1267,7 @@ if (formData.has("serviceDetails[courseIncludes][0]")) {
 // ------------------ Whom To Sell ------------------
 serviceDetails.whomToSell = [];
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 6; i++) {
   const list = formData.get(
     `serviceDetails[whomToSell][${i}][lists]`
   )?.toString();
@@ -1406,7 +1406,7 @@ await Promise.all(extraSectionPromises);
     const extraSectionsUpdated = formData.has("serviceDetails[extraSections][0][title]");
     if (extraSectionsUpdated) {
       serviceDetails.extraSections = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const title = formData.get(`serviceDetails[extraSections][${i}][title]`) as string;
         if (!title) break;
 
@@ -1421,21 +1421,21 @@ await Promise.all(extraSectionPromises);
         };
 
         // Process subtitle array
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`) as string;
           if (!subtitle) break;
           extraSection.subtitle.push(subtitle.trim());
         }
 
         // Process description array
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`) as string;
           if (!description) break;
           extraSection.description.push(description.trim());
         }
 
         // Process subDescription array
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const subDescription = formData.get(
             `serviceDetails[extraSections][${i}][subDescription][${j}]`
           ) as string;
@@ -1444,21 +1444,21 @@ await Promise.all(extraSectionPromises);
         }
 
         // Process lists array
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`) as string;
           if (!list) break;
           extraSection.lists.push(list.trim());
         }
 
         // Process tags array
-        for (let j = 0; j < 10; j++) {
+        for (let j = 0; j < 6; j++) {
           const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`) as string;
           if (!tag) break;
           extraSection.tags.push(tag.trim());
         }
 
         // Process image array
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const imageValue = formData.get(
     `serviceDetails[extraSections][${i}][image][${j}]`
   );
@@ -1512,7 +1512,7 @@ commission: getStringOrExisting(
 const investmentRangeUpdated = formData.has("franchiseDetails[investmentRange][0][range]"); // Changed from minRange
 if (investmentRangeUpdated) {
   franchiseDetails.investmentRange = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const range = formData.get(`franchiseDetails[investmentRange][${i}][range]`) as string;
     if (!range) break;
     franchiseDetails.investmentRange.push({
@@ -1526,7 +1526,7 @@ if (investmentRangeUpdated) {
 const monthlyEarnUpdated = formData.has("franchiseDetails[monthlyEarnPotential][0][range]"); // Changed from minEarn
 if (monthlyEarnUpdated) {
   franchiseDetails.monthlyEarnPotential = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {
     const range = formData.get(`franchiseDetails[monthlyEarnPotential][${i}][range]`) as string;
     if (!range) break;
     franchiseDetails.monthlyEarnPotential.push({
@@ -1540,7 +1540,7 @@ if (monthlyEarnUpdated) {
     const franchiseModelUpdated = formData.has("franchiseDetails[franchiseModel][0][title]");
     if (franchiseModelUpdated) {
       franchiseDetails.franchiseModel = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const title = formData.get(`franchiseDetails[franchiseModel][${i}][title]`) as string;
         if (!title) break;
         franchiseDetails.franchiseModel.push({
@@ -1587,7 +1587,7 @@ if (franchiseExtraImagesUpdated) {
     const franchiseExtraSectionsUpdated = formData.has("franchiseDetails[extraSections][0][title]");
     if (franchiseExtraSectionsUpdated) {
       franchiseDetails.extraSections = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 6; i++) {
         const title = formData.get(`franchiseDetails[extraSections][${i}][title]`) as string;
         if (!title) break;
 
@@ -1603,7 +1603,7 @@ if (franchiseExtraImagesUpdated) {
 
 
        // subtitle
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const val = formData.get(
     `franchiseDetails[extraSections][${i}][subtitle][${j}]`
   ) as string;
@@ -1612,7 +1612,7 @@ for (let j = 0; j < 10; j++) {
 }
 
 // --- description ---
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const description = formData.get(
     `franchiseDetails[extraSections][${i}][description][${j}]`
   ) as string;
@@ -1622,7 +1622,7 @@ for (let j = 0; j < 10; j++) {
 }
 
 // --- subDescription ---
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const subDescription = formData.get(
     `franchiseDetails[extraSections][${i}][subDescription][${j}]`
   ) as string;
@@ -1632,7 +1632,7 @@ for (let j = 0; j < 10; j++) {
 }
 
 // --- lists ---
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const list = formData.get(
     `franchiseDetails[extraSections][${i}][lists][${j}]`
   ) as string;
@@ -1642,7 +1642,7 @@ for (let j = 0; j < 10; j++) {
 }
 
 // --- tags ---
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const tag = formData.get(
     `franchiseDetails[extraSections][${i}][tags][${j}]`
   ) as string;
@@ -1652,7 +1652,7 @@ for (let j = 0; j < 10; j++) {
 }
 
 // --- images ---
-for (let j = 0; j < 10; j++) {
+for (let j = 0; j < 6; j++) {
   const imageVal = formData.get(
     `franchiseDetails[extraSections][${i}][image][${j}]`
   );
