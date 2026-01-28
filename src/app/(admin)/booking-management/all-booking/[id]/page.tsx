@@ -413,6 +413,7 @@ const AllBookingsDetails = () => {
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
               <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
               <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} />
+              <ServiceMenCard serviceManId={checkoutDetails.serviceMan} />
             </div>
           </div>
         )}
