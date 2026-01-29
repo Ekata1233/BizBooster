@@ -397,7 +397,7 @@ const MostHomeServicesPage = () => {
 const [totalServices, setTotalServices] = useState(0);
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [loadingToggle, setLoadingToggle] = useState<string | null>(null);
-
+  const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [sort, setSort] = useState('oldest');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -405,6 +405,8 @@ const [totalServices, setTotalServices] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
   const rowsPerPage = 10;
+
+  console.log("total pages : ", totalPages);
 
   /* -------------------- Debounced Values -------------------- */
   const debouncedSearch = useDebounce(searchQuery);
@@ -439,7 +441,7 @@ const [totalServices, setTotalServices] = useState(0);
         ...(debouncedSubcategory && { subcategory: debouncedSubcategory }),
         ...(debouncedSort && { sort: debouncedSort }),
       };
-
+//  setTotalPages(0);
       const [
         allServicesRes,
         trendingRes,
@@ -477,8 +479,10 @@ const [totalServices, setTotalServices] = useState(0);
       console.log("all services : ", allServicesRes);
       setServices(mapped);
       setTotalServices(allServicesRes.data.total || 0);
+       setTotalPages(allServicesRes.data.totalPages || 1);
     } catch (error) {
       console.error('Failed to load services', error);
+      //  setTotalPages(0);
     }
   };
 
@@ -648,12 +652,16 @@ const [totalServices, setTotalServices] = useState(0);
 
       <ComponentCard title="All Services" className='mt-4'>
         <BasicTableOne columns={columns} data={services} />
-        <Pagination
-          currentPage={currentPage}
-          totalItems={services.length}
-          totalPages={Math.ceil(totalServices / rowsPerPage)}
-          onPageChange={setCurrentPage}
-        />
+        {services.length > 0 && (
+                      <div className="flex justify-center mt-4">
+                        <Pagination
+                          currentPage={currentPage}
+                          totalItems={totalPages * rowsPerPage}
+                          // totalPages={totalPages}
+                          onPageChange={(page) => setCurrentPage(page)}
+                        />
+                      </div>
+                    )}
       </ComponentCard>
     </div>
   );

@@ -39,7 +39,7 @@ export async function POST(req) {
             data = await req.json();
         }
 
-        // console.log("🚀 PayU Webhook Received:", data);
+        console.log("🚀 PayU Webhook Received:", data);
 
         // console.log("Expected Hash:", data.hash);
 
