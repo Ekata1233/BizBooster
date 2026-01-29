@@ -43,14 +43,42 @@ interface BasicDetailsFormProps {
    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
 
+const IMAGE_MAX_SIZE_MB = 1;
+const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+// Add this validation function
+const validateImage = (file: File): { isValid: boolean; error?: string } => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {
+      isValid: false,
+      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+    };
+  }
+
+  if (file.size > IMAGE_MAX_SIZE_BYTES) {
+    return {
+      isValid: false,
+      error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+    };
+  }
+
+  return { isValid: true };
+};
+
 const BasicDetailsForm = ({ data, setData, selectedModuleId ,fieldsConfig }: BasicDetailsFormProps) => {
   const { categories } = useCategory();
   const { subcategories } = useSubcategory();
   const [rows, setRows] = useState<KeyValue[]>(data.keyValues || []);
   const [tagInput, setTagInput] = useState("");
 const [errors, setErrors] = useState<{ serviceName?: string; category?: string }>({});
+const [imageErrors, setImageErrors] = useState<{
+  thumbnail?: string;
+  banner?: string;
+  keyValueIcons?: { [key: number]: string };
+}>({});
 
-  // Sync key-value rows with parent data
+
  useEffect(() => {
   if (
     data.keyValues &&
@@ -88,22 +116,66 @@ const handleAddRow = () => {
   setData({ keyValues: updated });
 };
 
+// REPLACE the existing handleRemoveRow function with this:
 const handleRemoveRow = (index: number) => {
   const updated = rows.filter((_, i) => i !== index);
   setRows(updated);
   setData({ keyValues: updated });
+  
+  // Clear the error for this row if it exists
+  if (imageErrors.keyValueIcons?.[index]) {
+    setImageErrors(prev => {
+      const newKeyValueIcons = { ...prev.keyValueIcons };
+      delete newKeyValueIcons[index];
+      // Re-index the errors after deletion
+      const reindexed: { [key: number]: string } = {};
+      Object.keys(newKeyValueIcons).forEach(key => {
+        const numKey = parseInt(key);
+        if (numKey > index) {
+          reindexed[numKey - 1] = newKeyValueIcons[key]!;
+        } else {
+          reindexed[numKey] = newKeyValueIcons[key]!;
+        }
+      });
+      return { ...prev, keyValueIcons: reindexed };
+    });
+  }
 };
+// REPLACE the existing handleRowChange function with this:
 const handleRowChange = (
   index: number,
   field: keyof KeyValue,
   value: string | File | null
 ) => {
+  // Special handling for icon file validation
+  if (field === 'icon' && value instanceof File) {
+    const { isValid, error } = validateImage(value);
+    if (!isValid) {
+      setImageErrors(prev => ({
+        ...prev,
+        keyValueIcons: {
+          ...prev.keyValueIcons,
+          [index]: error
+        }
+      }));
+      // Don't update the row if invalid
+      return;
+    } else {
+      // Clear error if valid
+      setImageErrors(prev => {
+        const newKeyValueIcons = { ...prev.keyValueIcons };
+        delete newKeyValueIcons[index];
+        return { ...prev, keyValueIcons: newKeyValueIcons };
+      });
+    }
+  }
+
+  // Update the row
   const updated = [...rows];
   updated[index][field] = value;
   setRows(updated);
   setData({ keyValues: updated });
 };
-
 
 
 
@@ -129,15 +201,65 @@ const filteredCategories = categories.filter(
   const subcategoryOptions = filteredSubcategories.map(subcat => ({ value: subcat._id, label: subcat.name, image: subcat.image || "" }));
 
   // File handling
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
+  // REPLACE the existing handleThumbnailChange function with this:
+const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+  
+  if (file) {
+    const { isValid, error } = validateImage(file);
+    if (!isValid) {
+      setImageErrors(prev => ({ ...prev, thumbnail: error }));
+      setData({ thumbnailImage: null });
+      // Clear the file input
+      e.target.value = '';
+      return;
+    }
+    setImageErrors(prev => ({ ...prev, thumbnail: undefined }));
     setData({ thumbnailImage: file });
-  };
+  } else {
+    setImageErrors(prev => ({ ...prev, thumbnail: undefined }));
+    setData({ thumbnailImage: null });
+  }
+};
 
-  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files || null;
-    setData({ bannerImages: files });
-  };
+// REPLACE the existing handleBannerChange function with this:
+const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  
+  if (files && files.length > 0) {
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+    
+    // Validate each file
+    Array.from(files).forEach((file, index) => {
+      const { isValid, error } = validateImage(file);
+      if (!isValid) {
+        errors.push(`File ${index + 1}: ${error}`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (errors.length > 0) {
+      setImageErrors(prev => ({ 
+        ...prev, 
+        banner: errors.join(' | ') 
+      }));
+    } else {
+      setImageErrors(prev => ({ ...prev, banner: undefined }));
+    }
+
+    // Only set valid files
+    if (validFiles.length > 0) {
+      setData({ bannerImages: validFiles });
+    } else {
+      setData({ bannerImages: null });
+    }
+  } else {
+    setImageErrors(prev => ({ ...prev, banner: undefined }));
+    setData({ bannerImages: null });
+  }
+};
 
   return (
     <div>
@@ -207,11 +329,25 @@ const filteredCategories = categories.filter(
           </div>
           )}
 
-          {fieldsConfig?.thumbnail && (
-          <div>
-            <Label>Thumbnail</Label>
-            <FileInput onChange={handleThumbnailChange} />
-          </div>
+{fieldsConfig?.thumbnail && (
+  <div>
+    <Label>Thumbnail</Label>
+    <FileInput 
+      onChange={handleThumbnailChange} 
+      accept="image/*"
+    />
+    {imageErrors.thumbnail && (
+      <p className="text-red-500 text-xs mt-1">{imageErrors.thumbnail}</p>
+    )}
+    {data.thumbnailImage && !imageErrors.thumbnail && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ Valid: {(data.thumbnailImage.size / (1024 * 1024)).toFixed(2)}MB
+      </p>
+    )}
+    <p className="text-xs text-gray-500 mt-1">
+      Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+  </div>
 )}
 
  {fieldsConfig?.tags && (
@@ -294,60 +430,118 @@ const filteredCategories = categories.filter(
 
 
 
- {fieldsConfig?.bannerImage && (
-          <div>
-            <Label>Banner Images</Label>
-            <FileInput multiple onChange={handleBannerChange} />
-          </div>
- )}
+{fieldsConfig?.bannerImage && (
+  <div>
+    <Label>Banner Images</Label>
+    <FileInput 
+      multiple 
+      onChange={handleBannerChange} 
+      accept="image/*"
+    />
+    {imageErrors.banner && (
+      <p className="text-red-500 text-xs mt-1">{imageErrors.banner}</p>
+    )}
+    {data.bannerImages && !imageErrors.banner && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ {data.bannerImages.length} valid image(s) selected
+      </p>
+    )}
+    <p className="text-xs text-gray-500 mt-1">
+      Max {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+  </div>
+)}
 
           
 
-
- {fieldsConfig?.keyValue && (
-          <div>
-            <Label>Key - Value</Label>
-            {rows.map((row, index) => (
-              <div key={index} className="border rounded p-3 mb-3">
-                <div className="flex justify-between">
-                  <h3 className="font-medium">Row {index + 1}</h3>
-                  <button type="button" onClick={() => handleRemoveRow(index)}>
-                    <TrashBinIcon />
-                  </button>
-                </div>
-                <div className="flex gap-4 mt-3">
-  <Input
-    placeholder="Key"
-    value={row.key}
-    onChange={(e) => handleRowChange(index, "key", e.target.value)}
-  />
-  <Input
-    placeholder="Value"
-    value={row.value}
-    onChange={(e) => handleRowChange(index, "value", e.target.value)}
-  />
- <div className="flex-1">
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      console.log("Direct file input - File:", file);
-      console.log("Is File?", file instanceof File);
-      handleRowChange(index, "icon", file);
-    }}
-    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  />
-</div>
-</div>
-
-              </div>
-            ))}
-            <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
-              + Add New Row
-            </button>
+{fieldsConfig?.keyValue && (
+  <div>
+    <Label>Key - Value</Label>
+    
+    {rows.map((row, index) => (
+      <div key={index} className="border rounded p-3 mb-3">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-medium">Row {index + 1}</h3>
+          <button 
+            type="button" 
+            onClick={() => handleRemoveRow(index)}
+            className="text-red-500 hover:text-red-700"
+          >
+            <TrashBinIcon />
+          </button>
+        </div>
+        
+        {/* First Row: Key and Value Inputs */}
+        <div className="flex gap-4 mb-3">
+          <div className="flex-1">
+            <Input
+              placeholder="Key"
+              value={row.key}
+              onChange={(e) => handleRowChange(index, "key", e.target.value)}
+              className="w-full"
+            />
           </div>
- )}
+          <div className="flex-1">
+            <Input
+              placeholder="Value"
+              value={row.value}
+              onChange={(e) => handleRowChange(index, "value", e.target.value)}
+              className="w-full"
+            />
+          </div>
+        </div>
+        
+        {/* Second Row: Icon File Input */}
+        <div className="mt-3">
+          <Label htmlFor={`icon-${index}`} className="text-sm mb-2 block">
+            Icon Image
+          </Label>
+          
+          {/* Using the same FileInput component */}
+          <FileInput
+            id={`icon-${index}`}
+            accept="image/*"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const file = e.target.files?.[0] || null;
+              handleRowChange(index, "icon", file);
+            }}
+            className="w-full"
+          />
+          
+          <p className="text-xs text-gray-500 mb-3 mt-1">
+            Max icon size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+          </p>
+          
+          {/* Error Message */}
+          {imageErrors.keyValueIcons?.[index] && (
+            <p className="text-red-500 text-xs mt-1">
+              {imageErrors.keyValueIcons[index]}
+            </p>
+          )}
+          
+          {/* Success Message */}
+          {row.icon && !imageErrors.keyValueIcons?.[index] && (
+            <div className="mt-2">
+              <p className="text-green-600 text-xs">
+                ✓ Valid: {row.icon instanceof File ? 
+                  `${row.icon.name} (${(row.icon.size / (1024 * 1024)).toFixed(2)}MB)` : 
+                  'File uploaded'}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+    
+    <button 
+      type="button" 
+      onClick={handleAddRow} 
+      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      + Add New Row
+    </button>
+  </div>
+)}
 
  {fieldsConfig?.gst && (
           <div className="border p-3 rounded-md">

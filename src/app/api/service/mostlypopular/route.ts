@@ -57,6 +57,7 @@ export async function GET() {
            moduleName: item.service.category?.module?.name || null,
           category: service.category || null,
           subcategory: service.subcategory || null,
+          packages:item.service.serviceDetails.packages,
           keyValues: service.keyValues || [],
           averageRating: service.averageRating || 0,
           totalReviews: service.totalReviews || 0,

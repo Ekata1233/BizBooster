@@ -55,6 +55,7 @@ export async function GET() {
             moduleName: item.service.category?.module?.name || null,
           category: item.service.category,
           subcategory: item.service.subcategory,
+          packages:item.service.serviceDetails.packages,
           keyValues: item.service.keyValues,
           averageRating: item.service.averageRating,
           totalReviews: item.service.totalReviews,
