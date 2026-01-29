@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     /* ✅ BASE FILTER */
     const baseFilter: any = {
-      isTrending: true,
+      topRated: true,
       isApproved: true,
       isDeleted: false,
     //   "storeInfo.module": moduleId,
