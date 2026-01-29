@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     let providers: any[] = [];
 
     if (lat && lng) {
-      const allZones = await Zone.find({ isDeleted: false });
+      const allZones = await Zone.find({  });
       let matchedZone: any = null;
 
       for (const zone of allZones) {
@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
         zoneProviders = await Provider.find({
           "storeInfo.zone": matchedZone._id,
           isApproved: true,
-          isDeleted: false,
         }).populate([
           {
             path: "subscribedServices",
@@ -75,7 +74,6 @@ export async function GET(req: NextRequest) {
         panIndiaProviders = await Provider.find({
           "storeInfo.zone": panIndiaZone._id,
           isApproved: true,
-          isDeleted: false,
         }).populate([
           {
             path: "subscribedServices",
@@ -84,7 +82,7 @@ export async function GET(req: NextRequest) {
             populate: { path: "category", select: "name" },
           },
           {
-            path: "storeInfo.module",       // ✅ Added populate for Module
+            path: "storeInfo.module",
             select: "name",
           },
         ]);
@@ -92,7 +90,7 @@ export async function GET(req: NextRequest) {
 
       providers = [...zoneProviders, ...panIndiaProviders];
     } else {
-      providers = await Provider.find()
+      providers = await Provider.find({})
         .populate([
           {
             path: "subscribedServices",

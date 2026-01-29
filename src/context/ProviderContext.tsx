@@ -255,6 +255,7 @@ const updateKycInfo = async (formData: FormData) => {
       setLoading(false);
     }
   };
+  
   const getGalleryImages = async (providerId: string): Promise<string[]> => {
     try {
       const response = await axios.get(`/api/provider/${providerId}/gallery`);

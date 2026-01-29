@@ -34,6 +34,7 @@ interface ProviderTableData {
   kycCompleted: boolean;
    isRecommended: boolean;
   isTrending: boolean;
+  topRated: boolean;
 }
 
 const ProviderList = () => {
@@ -95,6 +96,7 @@ const ProviderList = () => {
           kycCompleted: provider.kycCompleted || false,
           isRecommended: provider.isRecommended || false,
   isTrending: provider.isTrending || false,
+  topRated: provider.topRated || false,
         };
       });
       console.log("✅ Provider List (Processed):", updatedProviders);
@@ -181,7 +183,7 @@ const ProviderList = () => {
 
 const handleToggleChange = async (
   id: string,
-  field: "isRecommended" | "isTrending",
+  field: "isRecommended" | "isTrending" | "topRated",
   checked: boolean
 ) => {
   try {
@@ -326,6 +328,23 @@ const handleToggleChange = async (
    disabled={row.isDeleted}
   onChange={(checked) =>
     handleToggleChange(row.id, "isTrending", checked)
+  }
+  color="gray"
+/>
+
+    </div>
+  ),
+},
+{
+  header: "Top Rated",
+  accessor: "topRated",
+  render: (row: ProviderTableData) => (
+    <div className="flex justify-center">
+    <Switch
+  checked={row.topRated}
+   disabled={row.isDeleted}
+  onChange={(checked) =>
+    handleToggleChange(row.id, "topRated", checked)
   }
   color="gray"
 />

@@ -82,6 +82,7 @@ export interface ProviderDocument extends Document {
   isPromoted?: boolean | null;
   isRecommended?: boolean;
   isTrending? : boolean;
+  topRated? : boolean;
   /* progress flags */
   step1Completed: boolean;
   storeInfoCompleted: boolean;
@@ -215,7 +216,7 @@ const providerSchema = new Schema<ProviderDocument>(
       default: null, 
     },
     isTrending: { type: Boolean, default: false },
-
+    topRated: { type: Boolean, default: false },
     /* ––– Registration progress flags ––– */
     step1Completed: { type: Boolean, default: false },
     storeInfoCompleted: { type: Boolean, default: false },
