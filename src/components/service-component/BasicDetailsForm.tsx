@@ -186,6 +186,10 @@ const filteredCategories = categories.filter(
     setErrors(prev => ({ ...prev, category: "" }));
 
     // update data
+
+
+
+    
     setData({ category: val || null });
 
     // validate here

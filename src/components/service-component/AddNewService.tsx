@@ -213,7 +213,19 @@ const modules = [
   { _id: "6822e05ee8235364b35df1b1", name: "OnDemand", icon: <FaTruck size={36} /> },
   { _id: "6822e075e8235364b35df1b4", name: "AIHub", icon: <FaRobot size={36} /> },
 ];
-
+// ---------------- VALIDATION UTILS ----------------
+const validateImageSize = (file: File, maxSizeMB: number = 1): { isValid: boolean; error: string } => {
+  const maxSizeBytes = maxSizeMB * 1024 * 1024; // Convert MB to bytes
+  
+  if (file.size > maxSizeBytes) {
+    return {
+      isValid: false,
+      error: `File "${file.name}" exceeds ${maxSizeMB}MB. Please choose a smaller file.`
+    };
+  }
+  
+  return { isValid: true, error: '' };
+};
 // ---------------- COMPONENT ----------------
 const AddNewService = () => {
   const { createService } = useService();

@@ -25,13 +25,19 @@ export async function GET() {
       mostlyRecommended: true,
       isDeleted: false,
     })
-      .populate({
-        path: "service",
-        populate: [
-          { path: "category" },     // ✅ full category
-          { path: "subcategory" },  // ✅ full subcategory
-        ],
-      })
+       .populate({
+  path: "service",
+  populate: [
+    {
+      path: "category",
+      populate: {
+        path: "module",
+        select: "name", // only module name
+      },
+    },
+    { path: "subcategory" },
+  ],
+})
       .sort({ sortOrder: 1, createdAt: -1 })
       .lean();
 
@@ -48,6 +54,7 @@ export async function GET() {
         service: {
           _id: item.service._id,
           serviceName: item.service.serviceName,
+            moduleName: item.service.category?.module?.name || null,
           category: item.service.category,
           subcategory: item.service.subcategory,
           keyValues: item.service.keyValues,
@@ -67,6 +74,7 @@ export async function GET() {
         // ✅ FRANCHISE DETAILS LAST
         franchiseDetails: {
           commission: franchise.commission || null,
+          areaRequired:franchise.areaRequired || null,
           investmentRange: franchise.investmentRange?.at(-1) || null,
           monthlyEarnPotential: franchise.monthlyEarnPotential?.at(-1) || null,
           franchiseModel: franchise.franchiseModel?.at(-1) || null,
