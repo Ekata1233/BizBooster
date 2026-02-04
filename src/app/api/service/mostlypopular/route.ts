@@ -28,12 +28,19 @@ export async function GET() {
       service: { $type: "objectId" },
     })
       .populate({
-        path: "service",
-        populate: [
-          { path: "category" },     // full category details
-          { path: "subcategory" },  // full subcategory details
-        ],
-      })
+  path: "service",
+  populate: [
+    {
+      path: "category",
+      populate: {
+        path: "module",
+        select: "name", // only module name
+      },
+    },
+    { path: "subcategory" },
+  ],
+})
+
       .sort({ sortOrder: 1, createdAt: -1 });
 
     const data = records.map((item) => {
@@ -47,8 +54,10 @@ export async function GET() {
         service: {
           _id: service._id || null,
           serviceName: service.serviceName || null,
+           moduleName: item.service.category?.module?.name || null,
           category: service.category || null,
           subcategory: service.subcategory || null,
+          packages:item.service.serviceDetails.packages,
           keyValues: service.keyValues || [],
           averageRating: service.averageRating || 0,
           totalReviews: service.totalReviews || 0,
@@ -66,6 +75,7 @@ export async function GET() {
         // ✅ FRANCHISE DETAILS LAST
         franchiseDetails: {
           commission: franchise.commission || null,
+          areaRequired:franchise.areaRequired || null,
           investmentRange: franchise.investmentRange?.at(-1) || null,
           monthlyEarnPotential: franchise.monthlyEarnPotential?.at(-1) || null,
           franchiseModel: franchise.franchiseModel?.at(-1) || null,
