@@ -91,15 +91,21 @@ export async function POST(req) {
                     ? Number(checkout.grandTotal)
                     : Number(checkout.totalAmount ?? 0);
 
-                checkout.cashfreeMethod = paymentMethod; // keeping naming consistent
-                // checkout.paidAmount = (checkout.paidAmount || 0) + paymentAmount;
-                // checkout.remainingAmount = roundToTwo(Math.max(total - checkout.paidAmount, 0));
+                checkout.cashfreeMethod = paymentMethod;
                 checkout.paidAmount = roundToTwo((checkout.paidAmount || 0) + paymentAmount);
                 checkout.remainingAmount = roundToTwo(Math.max(total - checkout.paidAmount, 0));
                 if (checkout.remainingAmount < 0.01) checkout.remainingAmount = 0;
                 const isFullPayment = checkout.paidAmount >= total;
-                checkout.paymentStatus = isFullPayment ? "paid" : "pending";
-                // checkout.isPartialPayment = !isFullPayment;
+                // checkout.paymentStatus = isFullPayment ? "paid" : "pending";
+                const paid = checkout.paidAmount;
+
+                if (paid > 0 && paid < total) {
+                    checkout.paymentStatus = "partpay";
+                } else if (paid >= total) {
+                    checkout.paymentStatus = "paid";
+                } else {
+                    checkout.paymentStatus = "pending";
+                }
                 console.log("remaining amount : ", checkout.remainingAmount);
 
                 if (!isFullPayment) {
