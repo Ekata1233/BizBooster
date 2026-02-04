@@ -1,12 +1,10 @@
 // /api/team/earnings.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import mongoose from 'mongoose';
 import User from '@/models/User';
-import Checkout, { ICheckout } from '@/models/Checkout';
-import Wallet, { IWallet, IWalletTransaction } from '@/models/Wallet';
+import Checkout, {  } from '@/models/Checkout';
+import Wallet, { } from '@/models/Wallet';
 import { connectToDatabase } from '@/utils/db';
-import Lead from '@/models/Lead';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -23,24 +21,8 @@ export interface IUser extends Document {
     phone: string;
     referralCode: string;
     referredBy?: string;
-    // any other fields...
 }
 
-interface CommissionBreakdown {
-    leadId: string;
-    amount: number;
-    description?: string;
-}
-
-interface TeamMemberSummary {
-    user: IUser;
-    totalEarningsFromThisUser: number;
-    leads: ICheckout[];
-    activeLeadCount: number;
-    completeLeadCount: number;
-    commissionBreakdown: CommissionBreakdown[];
-    team: TeamMemberSummary[];
-}
 
 export async function GET(req: NextRequest) {
     await connectToDatabase();

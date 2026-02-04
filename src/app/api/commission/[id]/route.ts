@@ -1,5 +1,6 @@
 import Commission from "@/models/Commission";
 import { connectToDatabase } from "@/utils/db";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 const corsHeaders = {
