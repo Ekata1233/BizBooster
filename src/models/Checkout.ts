@@ -53,6 +53,7 @@ export interface ICheckout extends Document {
     acceptedDate: Date;
     isOtpVerified: boolean;
     isCompleted: boolean;
+    isSkip? : boolean;
     commissionDistributed: boolean;
     isCanceled: boolean;
     isDeleted: boolean;
@@ -115,7 +116,7 @@ const checkoutSchema = new Schema<ICheckout>({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed', 'unpaid'],
+        enum: ['pending', 'paid', 'failed', 'unpaid','partpay'],
         default: 'pending',
     },
     orderStatus: {
@@ -132,6 +133,10 @@ const checkoutSchema = new Schema<ICheckout>({
     acceptedDate: { type: Date, default: null },
     isOtpVerified: { type: Boolean, default: false },
     isCompleted: { type: Boolean, default: false },
+    isSkip: {
+      type: Boolean,
+      default: false,
+    },
     commissionDistributed: { type: Boolean, default: false },
     isCanceled: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },

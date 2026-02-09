@@ -24,9 +24,6 @@ export const POST = async (req: Request) => {
     const body = await req.json();
     const { email, mobileNumber, password } = body;
 
-    console.log("mobile no : ", mobileNumber)
-    console.log("password no : ", password)
-
     if (!email && !mobileNumber) {
       return NextResponse.json(
         { error: 'Email or Mobile number is required' },
@@ -67,11 +64,7 @@ export const POST = async (req: Request) => {
       );
     }
 
-    console.log("Input password:", password);
-    console.log("Stored hashed password:", user.password);
-
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match result:", isMatch);
 
     if (!isMatch) {
       return NextResponse.json(
