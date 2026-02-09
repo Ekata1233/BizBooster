@@ -46,15 +46,14 @@ interface BasicDetailsFormProps {
 const IMAGE_MAX_SIZE_MB = 1;
 const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+const isBrowser = typeof window !== "undefined" && typeof File !== "undefined";
 
 // Add this validation function
-const validateImage = (file: File): { isValid: boolean; error?: string } => {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return {
-      isValid: false,
-      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
-    };
+const validateImage = (file: any): { isValid: boolean; error?: string } => {
+  if (!isBrowser || !(file instanceof File)) {
+    return { isValid: true };
   }
+
 
   if (file.size > IMAGE_MAX_SIZE_BYTES) {
     return {
@@ -148,7 +147,8 @@ const handleRowChange = (
   value: string | File | null
 ) => {
   // Special handling for icon file validation
-  if (field === 'icon' && value instanceof File) {
+  if (field === 'icon' && isBrowser && value instanceof File) {
+
     const { isValid, error } = validateImage(value);
     if (!isValid) {
       setImageErrors(prev => ({
@@ -205,7 +205,8 @@ const filteredCategories = categories.filter(
 const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0] || null;
   
-  if (file) {
+  if (isBrowser && file instanceof File) {
+
     const { isValid, error } = validateImage(file);
     if (!isValid) {
       setImageErrors(prev => ({ ...prev, thumbnail: error }));
@@ -231,8 +232,10 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const errors: string[] = [];
     
     // Validate each file
-    Array.from(files).forEach((file, index) => {
-      const { isValid, error } = validateImage(file);
+    Array.from(files).forEach((file,index) => {
+  if (!isBrowser || !(file instanceof File)) return;
+  const { isValid, error } = validateImage(file);
+
       if (!isValid) {
         errors.push(`File ${index + 1}: ${error}`);
       } else {
