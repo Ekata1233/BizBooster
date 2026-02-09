@@ -542,7 +542,8 @@ const AddNewService = () => {
         formData.service.assuredByFetchTrue.map(async (item, i) => {
           fd.append(`serviceDetails[assuredByFetchTrue][${i}][title]`, item.title || "");
           fd.append(`serviceDetails[assuredByFetchTrue][${i}][description]`, item.description || "");
-          if (item.icon instanceof File) {
+          if (typeof File !== "undefined" && item.icon instanceof File) {
+
             fd.append(`serviceDetails[assuredByFetchTrue][${i}][icon]`, item.icon);
           } else if (typeof item.icon === "string" && item.icon.startsWith("blob:")) {
             const blob = await fetch(item.icon).then(res => res.blob());
