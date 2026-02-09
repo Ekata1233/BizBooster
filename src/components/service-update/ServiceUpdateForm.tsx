@@ -68,7 +68,29 @@ interface ServiceUpdateFromProps {
    fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
 
+// ✅ ADD these validation constants at the top
+const IMAGE_MAX_SIZE_MB = 1;
+const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
+// ✅ ADD this validation function
+const validateImage = (file: File): { isValid: boolean; error?: string } => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {
+      isValid: false,
+      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+    };
+  }
+
+  if (file.size > IMAGE_MAX_SIZE_BYTES) {
+    return {
+      isValid: false,
+      error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+    };
+  }
+
+  return { isValid: true };
+};
 // ---------------- COMPONENT ----------------
 const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, fieldsConfig }) => {
   // ---------- BASIC STATES ----------
@@ -79,7 +101,22 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, f
         fetchSingleService(id as string);
       }, [id]);
   const data = service;
-  
+   const [imageErrors, setImageErrors] = useState<{
+    highlight?: string;
+    whyChooseUsIcons?: { [key: number]: string };
+    howItWorksIcons?: { [key: number]: string };
+    assuredByFetchTrueIcons?: { [key: number]: string };
+    moreInfoImages?: { [key: number]: string };
+    franchiseOperatingModelIcons?: { [key: number]: { [key: number]: string } };
+    keyAdvantagesIcons?: { [key: number]: string };
+    completeSupportSystemIcons?: { [key: number]: string };
+    companyProfile?: { [key: number]: string };
+    brochureImages?: string;
+    certificateImages?: string;
+    whomToSellIcons?: { [key: number]: string };
+    extraImages?: { [key: number]: string };
+    extraSectionsImages?: { [key: number]: string };
+  }>({});
   const [editorReady, setEditorReady] = useState(false);
 
   const [benefits, setBenefits] = useState<string[]>(['']);
@@ -158,7 +195,9 @@ const [certificateImage, setCertificateImage] = useState<File[]>([]);
 const [include, setInclude] = useState<string[]>(['']);
 const [notInclude, setNotInclude] = useState<string[]>(['']);
 const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
-
+const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(File | string)[]>>) => {
+  setter(prev => prev.filter((_, i) => i !== index));
+};
 // Add this at the top of your component after useState declarations
 const isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
 console.log("timeRequired : ",timeRequired);
@@ -374,43 +413,271 @@ setCertificateImage(
   const documentValue = document[0] || "";
 
   // ---------------- HELPERS ----------------
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (urls: string[]) => void) => {
-    if (e.target.files) {
-      const urls = Array.from(e.target.files).map(f => URL.createObjectURL(f));
-      callback(urls);
-    }
-  };
-
-  const handleFileChange = (
-  e: React.ChangeEvent<HTMLInputElement>, 
-  setter: React.Dispatch<React.SetStateAction<(File | string)[]>>
-) => {
+ const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (urls: string[]) => void) => {
   if (e.target.files) {
-    const files = Array.from(e.target.files);
-    setter(prev => [...prev, ...files]);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+    
+    // Validate each file
+    Array.from(e.target.files).forEach((file, index) => {
+      const validation = validateImage(file);
+      if (!validation.isValid) {
+        errors.push(`${file.name}: ${validation.error}`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    if (errors.length > 0) {
+      setImageErrors(prev => ({ ...prev, highlight: errors.join(', ') }));
+      e.target.value = '';
+      return;
+    }
+    
+    // Clear errors and update files
+    setImageErrors(prev => ({ ...prev, highlight: undefined }));
+    const urls = validFiles.map(f => URL.createObjectURL(f));
+    callback(urls);
   }
 };
 
-  const handleSingleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      callback(URL.createObjectURL(file));
+  const handleFileChange = (
+  e: React.ChangeEvent<HTMLInputElement>, 
+  setter: React.Dispatch<React.SetStateAction<(File | string)[]>>,
+  errorKey?: keyof typeof imageErrors
+) => {
+  if (e.target.files) {
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+    
+    // Validate each file
+    Array.from(e.target.files).forEach((file, index) => {
+      const validation = validateImage(file);
+      if (!validation.isValid) {
+        errors.push(`${file.name}: ${validation.error}`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    if (errors.length > 0 && errorKey) {
+      setImageErrors(prev => ({ ...prev, [errorKey]: errors.join(', ') }));
+      e.target.value = '';
+      return;
     }
-  };
+    
+    // Clear errors and add files
+    if (errorKey) {
+      setImageErrors(prev => ({ ...prev, [errorKey]: undefined }));
+    }
+    setter(prev => [...prev, ...validFiles]);
+  }
+};
+
+const handleSingleFileUpload = (
+  e: React.ChangeEvent<HTMLInputElement>, 
+  callback: (url: string) => void,
+  errorKey?: string,
+  itemIndex?: number
+) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    const validation = validateImage(file);
+    
+    if (!validation.isValid) {
+      if (errorKey === 'whyChooseUs' && itemIndex !== undefined) {
+        setImageErrors(prev => ({
+          ...prev,
+          whyChooseUsIcons: {
+            ...prev.whyChooseUsIcons,
+            [itemIndex]: validation.error
+          }
+        }));
+      } else if (errorKey === 'howItWorks' && itemIndex !== undefined) {
+        setImageErrors(prev => ({
+          ...prev,
+          howItWorksIcons: {
+            ...prev.howItWorksIcons,
+            [itemIndex]: validation.error
+          }
+        }));
+      } else if (errorKey === 'assuredByFetchTrue' && itemIndex !== undefined) {
+        setImageErrors(prev => ({
+          ...prev,
+          assuredByFetchTrueIcons: {
+            ...prev.assuredByFetchTrueIcons,
+            [itemIndex]: validation.error
+          }
+        }));
+      } else if (errorKey === 'moreInfo' && itemIndex !== undefined) {
+        setImageErrors(prev => ({
+          ...prev,
+          moreInfoImages: {
+            ...prev.moreInfoImages,
+            [itemIndex]: validation.error
+          }
+        }));
+      }
+      
+      e.target.value = '';
+      return;
+    }
+    
+    // Clear error for this item
+    if (errorKey === 'whyChooseUs' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        whyChooseUsIcons: {
+          ...prev.whyChooseUsIcons,
+          [itemIndex]: undefined
+        }
+      }));
+    } else if (errorKey === 'howItWorks' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        howItWorksIcons: {
+          ...prev.howItWorksIcons,
+          [itemIndex]: undefined
+        }
+      }));
+    } else if (errorKey === 'assuredByFetchTrue' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        assuredByFetchTrueIcons: {
+          ...prev.assuredByFetchTrueIcons,
+          [itemIndex]: undefined
+        }
+      }));
+    } else if (errorKey === 'moreInfo' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        moreInfoImages: {
+          ...prev.moreInfoImages,
+          [itemIndex]: undefined
+        }
+      }));
+    }
+    
+    callback(URL.createObjectURL(file));
+  }
+};
 
     const handleEditorChange = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
       // Store as array with single item for compatibility
       setter([value]);
     };
 
- function handleFileUploadUpdate<T>(
+function handleFileUploadUpdate<T>(
   e: React.ChangeEvent<HTMLInputElement>,
   item: T,
   updateItem: (updated: T) => void,
-  property: keyof T
+  property: keyof T,
+  section?: string,
+  itemIndex?: number,
+  subIndex?: number
 ) {
   const file = e.target.files?.[0];
   if (!file) return;
+
+  // Validate the file
+  const validation = validateImage(file);
+  
+  if (!validation.isValid) {
+    // Set error based on section
+    if (section === 'franchiseOperatingModel' && itemIndex !== undefined && subIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        franchiseOperatingModelIcons: {
+          ...prev.franchiseOperatingModelIcons,
+          [itemIndex]: {
+            ...prev.franchiseOperatingModelIcons?.[itemIndex],
+            [subIndex]: validation.error
+          }
+        }
+      }));
+    } else if (section === 'keyAdvantages' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        keyAdvantagesIcons: {
+          ...prev.keyAdvantagesIcons,
+          [itemIndex]: validation.error
+        }
+      }));
+    } else if (section === 'completeSupportSystem' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        completeSupportSystemIcons: {
+          ...prev.completeSupportSystemIcons,
+          [itemIndex]: validation.error
+        }
+      }));
+    } else if (section === 'companyProfile' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        companyProfile: {
+          ...prev.companyProfile,
+          [itemIndex]: validation.error
+        }
+      }));
+    } else if (section === 'whomToSell' && itemIndex !== undefined) {
+      setImageErrors(prev => ({
+        ...prev,
+        whomToSellIcons: {
+          ...prev.whomToSellIcons,
+          [itemIndex]: validation.error
+        }
+      }));
+    }
+    
+    e.target.value = '';
+    return;
+  }
+  
+  // Clear error for this item
+  if (section === 'franchiseOperatingModel' && itemIndex !== undefined && subIndex !== undefined) {
+    setImageErrors(prev => ({
+      ...prev,
+      franchiseOperatingModelIcons: {
+        ...prev.franchiseOperatingModelIcons,
+        [itemIndex]: {
+          ...prev.franchiseOperatingModelIcons?.[itemIndex],
+          [subIndex]: undefined
+        }
+      }
+    }));
+  } else if (section === 'keyAdvantages' && itemIndex !== undefined) {
+    setImageErrors(prev => ({
+      ...prev,
+      keyAdvantagesIcons: {
+        ...prev.keyAdvantagesIcons,
+        [itemIndex]: undefined
+      }
+    }));
+  } else if (section === 'completeSupportSystem' && itemIndex !== undefined) {
+    setImageErrors(prev => ({
+      ...prev,
+      completeSupportSystemIcons: {
+        ...prev.completeSupportSystemIcons,
+        [itemIndex]: undefined
+      }
+    }));
+  } else if (section === 'companyProfile' && itemIndex !== undefined) {
+    setImageErrors(prev => ({
+      ...prev,
+      companyProfile: {
+        ...prev.companyProfile,
+        [itemIndex]: undefined
+      }
+    }));
+  } else if (section === 'whomToSell' && itemIndex !== undefined) {
+    setImageErrors(prev => ({
+      ...prev,
+      whomToSellIcons: {
+        ...prev.whomToSellIcons,
+        [itemIndex]: undefined
+      }
+    }));
+  }
 
   // ✅ STORE FILE (binary), NOT blob URL
   updateItem({
@@ -497,77 +764,118 @@ setCertificateImage(
        )}
 
       {/* Highlight Images */}
-       {fieldsConfig?.highlight && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">Highlight Images</Label>
-        <FileInput
-          multiple
-          accept="image/*"
-          onChange={(e) => handleFileUpload(e, (urls) => {
-            setHighlightImages(prev => [...prev, ...urls]);
-          })}
-        />
-        <div className="flex gap-3 mt-3 flex-wrap">
-          {highlightImages.map((src, idx) => (
-            <div key={idx} className="w-24 h-24 relative group">
-              <Image 
-                src={src} 
-                alt="highlight" 
-                fill 
-                className="rounded-lg object-cover"
-                sizes="96px"
-              />
-              <button
-                type="button"
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => setHighlightImages(prev => prev.filter((_, i) => i !== idx))}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+      {fieldsConfig?.highlight && (
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">Highlight Images</Label>
+    <FileInput
+      multiple
+      accept="image/*"
+      onChange={(e) => handleFileUpload(e, (urls) => {
+        setHighlightImages(prev => [...prev, ...urls]);
+      })}
+    />
+    
+    {/* ✅ ADD error display */}
+    {imageErrors.highlight && (
+      <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">
+        {imageErrors.highlight}
+      </p>
+    )}
+    
+    {/* ✅ ADD success message */}
+    {highlightImages.length > 0 && !imageErrors.highlight && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ Valid: {highlightImages.length} image(s) selected
+      </p>
+    )}
+    
+    {/* ✅ ADD file requirements */}
+    <p className="text-xs text-gray-500 mt-1">
+      Max size: {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    <div className="flex gap-3 mt-3 flex-wrap">
+      {highlightImages.map((src, idx) => (
+        <div key={idx} className="w-24 h-24 relative group">
+          <Image 
+            src={src} 
+            alt="highlight" 
+            fill 
+            className="rounded-lg object-cover"
+            sizes="96px"
+          />
+          <button
+            type="button"
+            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => setHighlightImages(prev => prev.filter((_, i) => i !== idx))}
+          >
+            ×
+          </button>
         </div>
-      </div>
-       )}
+      ))}
+    </div>
+  </div>
+)}
 
       {/* Why Choose Us */}
        {fieldsConfig?.whyChooseUs && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">Why Choose Us</Label>
-        {renderArrayField(
-          whyChooseUs,
-          setWhyChooseUs,
-          (item, _, update) => (
-            <div className="space-y-3">
-              <Input 
-                value={item.title} 
-                placeholder="Title" 
-                onChange={e => update({ ...item, title: e.target.value })} 
-              />
-              <div>
-                <Label>Icon/Image</Label>
-                <FileInput
-                  accept="image/*"
-                  onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, icon: url }))}
-                />
-                {item.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
-              </div>
-              <textarea
-                value={item.description}
-                placeholder="Description"
-                onChange={e => update({ ...item, description: e.target.value })}
-                className="w-full border rounded p-3 min-h-[100px] resize-y"
-              />
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">Why Choose Us</Label>
+    {renderArrayField(
+      whyChooseUs,
+      setWhyChooseUs,
+      (item, idx, update) => (
+        <div className="space-y-3">
+          <Input 
+            value={item.title} 
+            placeholder="Title" 
+            onChange={e => update({ ...item, title: e.target.value })} 
+          />
+          <div>
+            <div className="flex items-center justify-between">
+              <Label>Icon/Image</Label>
+              {item.icon && typeof item.icon === 'string' && (
+                <span className="text-green-600 text-xs">
+                  ✓ Image selected
+                </span>
+              )}
             </div>
-          ),
-          { title: '', description: '', icon: '' }
-        )}
-      </div>
-       )}
+            
+            <FileInput
+              accept="image/*"
+              onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, icon: url }), 'whyChooseUs', idx)}
+            />
+            
+            {/* ✅ ADD error display */}
+            {imageErrors.whyChooseUsIcons?.[idx] && (
+              <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                {imageErrors.whyChooseUsIcons[idx]}
+              </p>
+            )}
+            
+            {/* ✅ ADD file requirements */}
+            <p className="text-xs text-gray-500 mt-1">
+              Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+            </p>
+            
+            {item.icon && (
+              <div className="w-16 h-16 relative mt-2">
+                <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
+              </div>
+            )}
+          </div>
+          <textarea
+            value={item.description}
+            placeholder="Description"
+            onChange={e => update({ ...item, description: e.target.value })}
+            className="w-full border rounded p-3 min-h-[100px] resize-y"
+          />
+        </div>
+      ),
+      { title: '', description: '', icon: '' }
+    )}
+  </div>
+)}
 
       {/* How It Works */}
       {fieldsConfig?.howItWork && (
@@ -610,42 +918,63 @@ setCertificateImage(
 
       {/* Assured By */}
        {fieldsConfig?.assuredByFetchfalse && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">Assured By FetchTrue</Label>
-        {renderArrayField(
-          assuredByFetchTrue,
-          setAssuredByFetchTrue,
-          (item, _, update) => (
-            <div className="space-y-3">
-              <Input 
-                value={item.title} 
-                placeholder="Title" 
-                onChange={e => update({ ...item, title: e.target.value })} 
-              />
-              <div>
-                <Label>Icon/Image</Label>
-                <FileInput
-                  accept="image/*"
-                  onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, icon: url }))}
-                />
-                {item.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
-              </div>
-              <textarea
-                value={item.description}
-                placeholder="Description"
-                onChange={e => update({ ...item, description: e.target.value })}
-                className="w-full border rounded p-3 min-h-[100px] resize-y"
-              />
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">Assured By FetchTrue</Label>
+    {renderArrayField(
+      assuredByFetchTrue,
+      setAssuredByFetchTrue,
+      (item, idx, update) => (
+        <div className="space-y-3">
+          <Input 
+            value={item.title} 
+            placeholder="Title" 
+            onChange={e => update({ ...item, title: e.target.value })} 
+          />
+          <div>
+            <div className="flex items-center justify-between">
+              <Label>Icon/Image</Label>
+              {item.icon && typeof item.icon === 'string' && (
+                <span className="text-green-600 text-xs">
+                  ✓ Image selected
+                </span>
+              )}
             </div>
-          ),
-          { title: '', description: '', icon: '' }
-        )}
-      </div>
-       )}
+            
+            <FileInput
+              accept="image/*"
+              onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, icon: url }), 'assuredByFetchTrue', idx)}
+            />
+            
+            {/* ✅ ADD error display */}
+            {imageErrors.assuredByFetchTrueIcons?.[idx] && (
+              <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                {imageErrors.assuredByFetchTrueIcons[idx]}
+              </p>
+            )}
+            
+            {/* ✅ ADD file requirements */}
+            <p className="text-xs text-gray-500 mt-1">
+              Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+            </p>
+            
+            {item.icon && (
+              <div className="w-16 h-16 relative mt-2">
+                <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
+              </div>
+            )}
+          </div>
+          <textarea
+            value={item.description}
+            placeholder="Description"
+            onChange={e => update({ ...item, description: e.target.value })}
+            className="w-full border rounded p-3 min-h-[100px] resize-y"
+          />
+        </div>
+      ),
+      { title: '', description: '', icon: '' }
+    )}
+  </div>
+)}
 
       {/* Packages */}
       {fieldsConfig?.packages && (
@@ -940,37 +1269,57 @@ setCertificateImage(
                 <div className="mb-3">
                   <Label className="text-sm mb-1">Features</Label>
                   {renderArrayField<FranchiseFeatureItem>(
-                    model.features,
-                    (newFeatures) => {
-                      updateModel({ 
-                        ...model, 
-                        features: typeof newFeatures === 'function' ? 
-                          newFeatures(model.features) : newFeatures 
-                      });
-                    },
-                    (feature, featureIdx, updateFeature) => (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-                        <div>
-                          <Label className="text-xs mb-1">Icon</Label>
-                          <FileInput
-                            onChange={(e) => handleFileUploadUpdate(e, feature, updateFeature, 'icon')}
-                          />
-                          {feature.icon && (
-  <div className="w-16 h-16 relative mt-2">
-    <Image
-      src={
-        typeof feature.icon === "string"
-          ? feature.icon
-          : URL.createObjectURL(feature.icon)
-      }
-      alt="icon"
-      fill
-      className="rounded object-cover"
-    />
-  </div>
-)}
-
-                        </div>
+  model.features,
+  (newFeatures) => {
+    updateModel({ 
+      ...model, 
+      features: typeof newFeatures === 'function' ? 
+        newFeatures(model.features) : newFeatures 
+    });
+  },
+  (feature, featureIdx, updateFeature) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+      <div>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs mb-1">Icon</Label>
+          {feature.icon && (
+            <span className="text-green-600 text-xs">
+              ✓ Image selected
+            </span>
+          )}
+        </div>
+        
+        <FileInput
+          onChange={(e) => handleFileUploadUpdate(e, feature, updateFeature, 'icon', 'franchiseOperatingModel', modelIdx, featureIdx)}
+        />
+        
+        {/* ✅ ADD error display */}
+        {imageErrors.franchiseOperatingModelIcons?.[modelIdx]?.[featureIdx] && (
+          <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+            {imageErrors.franchiseOperatingModelIcons[modelIdx][featureIdx]}
+          </p>
+        )}
+        
+        {/* ✅ ADD file requirements */}
+        <p className="text-xs text-gray-500 mt-1">
+          Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+        </p>
+        
+        {feature.icon && (
+          <div className="w-16 h-16 relative mt-2">
+            <Image
+              src={
+                typeof feature.icon === "string"
+                  ? feature.icon
+                  : URL.createObjectURL(feature.icon)
+              }
+              alt="icon"
+              fill
+              className="rounded object-cover"
+            />
+          </div>
+        )}
+      </div>
                         <div>
                           <Label className="text-xs mb-1">Subtitle</Label>
                           <Input
@@ -1089,87 +1438,130 @@ setCertificateImage(
          )}
       
         {/* ============= SECTION 5: KEY ADVANTAGES ============= */}
-         {fieldsConfig?.keyAdvantages && (
-        <div className="mb-6">
-          <Label className="mb-2 font-semibold">Key Advantages</Label>
-          {renderArrayField<KeyAdvantageItem>(
-            keyAdvantages,
-            setKeyAdvantages,
-            (item, idx, updateItem) => (
-              <div className="border p-4 rounded mb-3">
-                <div className="grid gap-3">
-                  <Input
-                    value={item.title}
-                    placeholder="Advantage Title"
-                    onChange={(e) => updateItem({ ...item, title: e.target.value })}
-                  />
-                  <div>
-                    <Label className="text-sm mb-1">Icon</Label>
-                    <FileInput
-                      onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
-                    />
-                   {item.icon && (
-  <div className="w-16 h-16 relative mt-2">
-    <Image
-      src={
-        typeof item.icon === "string"
-          ? item.icon
-          : URL.createObjectURL(item.icon)
-      }
-      alt="icon"
-      fill
-      className="rounded object-cover"
-    />
-  </div>
-)}
-
-                  </div>
-                  <Input
-                    value={item.description}
-                    placeholder="Description"
-                    onChange={(e) => updateItem({ ...item, description: e.target.value })}
+        {fieldsConfig?.keyAdvantages && (
+  <div className="mb-6">
+    <Label className="mb-2 font-semibold">Key Advantages</Label>
+    {renderArrayField<KeyAdvantageItem>(
+      keyAdvantages,
+      setKeyAdvantages,
+      (item, idx, updateItem) => (
+        <div className="border p-4 rounded mb-3">
+          <div className="grid gap-3">
+            <Input
+              value={item.title}
+              placeholder="Advantage Title"
+              onChange={(e) => updateItem({ ...item, title: e.target.value })}
+            />
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm mb-1">Icon</Label>
+                {item.icon && (
+                  <span className="text-green-600 text-xs">
+                    ✓ Image selected
+                  </span>
+                )}
+              </div>
+              
+              <FileInput
+                onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon', 'keyAdvantages', idx)}
+              />
+              
+              {/* ✅ ADD error display */}
+              {imageErrors.keyAdvantagesIcons?.[idx] && (
+                <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                  {imageErrors.keyAdvantagesIcons[idx]}
+                </p>
+              )}
+              
+              {/* ✅ ADD file requirements */}
+              <p className="text-xs text-gray-500 mt-1">
+                Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+              </p>
+              
+              {item.icon && (
+                <div className="w-16 h-16 relative mt-2">
+                  <Image
+                    src={
+                      typeof item.icon === "string"
+                        ? item.icon
+                        : URL.createObjectURL(item.icon)
+                    }
+                    alt="icon"
+                    fill
+                    className="rounded object-cover"
                   />
                 </div>
-              </div>
-            ),
-            { icon: '', title: '', description: '' }
-          )}
+              )}
+            </div>
+            <Input
+              value={item.description}
+              placeholder="Description"
+              onChange={(e) => updateItem({ ...item, description: e.target.value })}
+            />
+          </div>
         </div>
-         )}
-      
-        {/* ============= SECTION 6: COMPLETE SUPPORT SYSTEM ============= */}
-         {fieldsConfig?.completeSupportSystem && (
-        <div className="mb-6 border p-4 rounded">
-          <Label className="mb-2 font-semibold">Complete Support System</Label>
-          {renderArrayField<CompleteSupportSystemItem>(
-            completeSupportSystem,
-            setCompleteSupportSystem,
-            (item, idx, updateItem) => (
-              <div className="border p-3 rounded mb-2">
-                <Input
-                  value={item.title}
-                  placeholder="Support Title"
-                  onChange={(e) => updateItem({ ...item, title: e.target.value })}
-                  className="mb-2"
-                />
-                <FileInput
-                  onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
-                  className="mb-2"
-                />
-               {item.icon && (
-  <div className="w-16 h-16 relative mt-2">
-    <Image
-      src={
-        typeof item.icon === "string"
-          ? item.icon
-          : URL.createObjectURL(item.icon)
-      }
-      alt="icon"
-      fill
-      className="rounded object-cover"
-    />
+      ),
+      { icon: '', title: '', description: '' }
+    )}
   </div>
 )}
+        {/* ============= SECTION 6: COMPLETE SUPPORT SYSTEM ============= */}
+         {fieldsConfig?.completeSupportSystem && (
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Complete Support System</Label>
+    {renderArrayField<CompleteSupportSystemItem>(
+      completeSupportSystem,
+      setCompleteSupportSystem,
+      (item, idx, updateItem) => (
+        <div className="border p-3 rounded mb-2">
+          <Input
+            value={item.title}
+            placeholder="Support Title"
+            onChange={(e) => updateItem({ ...item, title: e.target.value })}
+            className="mb-2"
+          />
+          <div className="mb-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm mb-1">Icon</Label>
+              {item.icon && (
+                <span className="text-green-600 text-xs">
+                  ✓ Image selected
+                </span>
+              )}
+            </div>
+            
+            <FileInput
+              onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon', 'completeSupportSystem', idx)}
+              className="mb-2"
+            />
+            
+            {/* ✅ ADD error display */}
+            {imageErrors.completeSupportSystemIcons?.[idx] && (
+              <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                {imageErrors.completeSupportSystemIcons[idx]}
+              </p>
+            )}
+            
+            {/* ✅ ADD file requirements */}
+            <p className="text-xs text-gray-500 mt-1">
+              Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+            </p>
+            
+            {item.icon && (
+              <div className="w-16 h-16 relative mt-2">
+                <Image
+                  src={
+                    typeof item.icon === "string"
+                      ? item.icon
+                      : URL.createObjectURL(item.icon)
+                  }
+                  alt="icon"
+                  fill
+                  className="rounded object-cover"
+                />
+              </div>
+            )}
+          </div>
 
                 <Label className="text-sm mb-1">Support Points</Label>
                 {renderArrayField<string>(
@@ -1301,25 +1693,46 @@ setCertificateImage(
 
                 {/* Profile Image Upload */}
                           <div className="mb-3">
-                            <Label className="text-sm mb-1">Company Profile Image</Label>
-                            <FileInput
-                              onChange={(e) => handleFileUploadUpdate(e, company, updateCompany, 'profile')}
-                            />
-                            {/* Display current profile if exists */}
-                            {company.profile && typeof company.profile === 'string' && company.profile !== '' && (
-                              <div className="mt-2">
-                                <p className="text-sm text-gray-600">Current Profile:</p>
-                                <div className="relative w-20 h-20 mt-1">
-                                  <Image
-                                    src={company.profile}
-                                    alt="Company profile"
-                                    fill
-                                    className="object-cover rounded"
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
+  <div className="flex items-center justify-between">
+    <Label className="text-sm mb-1">Company Profile Image</Label>
+    {company.profile && (
+      <span className="text-green-600 text-xs">
+        ✓ Image selected
+      </span>
+    )}
+  </div>
+  
+  <FileInput
+    onChange={(e) => handleFileUploadUpdate(e, company, updateCompany, 'profile', 'companyProfile', companyIdx)}
+  />
+  
+  {/* ✅ ADD error display */}
+  {imageErrors.companyProfile?.[companyIdx] && (
+    <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+      {imageErrors.companyProfile[companyIdx]}
+    </p>
+  )}
+  
+  {/* ✅ ADD file requirements */}
+  <p className="text-xs text-gray-500 mt-1">
+    Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+  </p>
+  
+  {/* Display current profile if exists */}
+  {company.profile && typeof company.profile === 'string' && company.profile !== '' && (
+    <div className="mt-2">
+      <p className="text-sm text-gray-600">Current Profile:</p>
+      <div className="relative w-20 h-20 mt-1">
+        <Image
+          src={company.profile}
+          alt="Company profile"
+          fill
+          className="object-cover rounded"
+        />
+      </div>
+    </div>
+  )}
+</div>
                 
                 <div className="mb-2">
                   <Label className="text-sm mb-1">Details</Label>
@@ -1592,25 +2005,54 @@ setCertificateImage(
       
         {/* ============= SECTION 15: WHOM TO SELL ============= */}
          {fieldsConfig?.whomToSell && (
-        <div className="mb-6 border p-4 rounded">
-          <Label className="mb-2 font-semibold">Whom To Sell</Label>
-          {renderArrayField<WhomToSellItem>(
-            whomToSell,
-            setWhomToSell,
-            (item, idx, updateItem) => (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <div>
-                  <Label className="text-sm mb-1">Icon</Label>
-                  <FileInput
-                  onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon')}
-                  />
-                  {item.icon && (
-                  <div className="w-16 h-16 relative mt-2">
-                    <Image src={item.icon} alt="icon" fill className="rounded object-cover" />
-                  </div>
-                )}
-                  
-                </div>
+  <div className="mb-6 border p-4 rounded">
+    <Label className="mb-2 font-semibold">Whom To Sell</Label>
+    {renderArrayField<WhomToSellItem>(
+      whomToSell,
+      setWhomToSell,
+      (item, idx, updateItem) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <div>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm mb-1">Icon</Label>
+              {item.icon && (
+                <span className="text-green-600 text-xs">
+                  ✓ Image selected
+                </span>
+              )}
+            </div>
+            
+            <FileInput
+              onChange={(e) => handleFileUploadUpdate(e, item, updateItem, 'icon', 'whomToSell', idx)}
+            />
+            
+            {/* ✅ ADD error display */}
+            {imageErrors.whomToSellIcons?.[idx] && (
+              <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                {imageErrors.whomToSellIcons[idx]}
+              </p>
+            )}
+            
+            {/* ✅ ADD file requirements */}
+            <p className="text-xs text-gray-500 mt-1">
+              Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+            </p>
+            
+            {item.icon && (
+              <div className="w-16 h-16 relative mt-2">
+                <Image
+                  src={
+                    typeof item.icon === "string"
+                      ? item.icon
+                      : URL.createObjectURL(item.icon)
+                  }
+                  alt="icon"
+                  fill
+                  className="rounded object-cover"
+                />
+              </div>
+            )}
+          </div>
                 <div className="md:col-span-2">
                   <Label className="text-sm mb-1">Lists</Label>
                   <textarea
@@ -1633,87 +2075,108 @@ setCertificateImage(
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
   {/* Brochure Image */}
   {fieldsConfig?.brochureImage && (
-    <div>
-      <Label className="mb-2">Brochure Images</Label>
-      <FileInput
-        multiple
-        onChange={(e) => {
-          if (e.target.files) {
-            const files = Array.from(e.target.files);
-            // Add ONLY new File objects, not URLs
-            setBrochureImage(prev => {
-              // Filter out any string URLs (keep only File objects)
-              const existingFiles = prev.filter(item => item instanceof File);
-              return [...existingFiles, ...files];
-            });
-          }
-        }}
-      />
-      <div className="mt-2 flex flex-wrap gap-2">
-        {brochureImage.map((img, idx) => (
-          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
-            {typeof img === 'string' ? (
-              <Image src={img} alt="brochure" fill className="object-cover" />
-            ) : (
-              <Image src={URL.createObjectURL(img)} alt="brochure" fill className="object-cover" />
-            )}
-            <button
-              type="button"
-              onClick={() => removeFile(idx, setBrochureImage)}
-              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-gray-500 mt-1">
-        Note: Adding new images will replace all existing ones
+  <div>
+    <Label className="mb-2">Brochure Images</Label>
+    <FileInput
+      multiple
+      onChange={(e) => handleFileChange(e, setBrochureImage, 'brochureImages')}
+      accept="image/*"
+    />
+    
+    {/* ✅ ADD error display */}
+    {imageErrors.brochureImages && (
+      <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">
+        {imageErrors.brochureImages}
       </p>
+    )}
+    
+    {/* ✅ ADD success message */}
+    {brochureImage.length > 0 && !imageErrors.brochureImages && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ Valid: {brochureImage.length} image(s) selected
+      </p>
+    )}
+    
+    {/* ✅ ADD file requirements */}
+    <p className="text-xs text-gray-500 mt-1">
+      Max size: {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    <div className="mt-2 flex flex-wrap gap-2">
+      {brochureImage.map((img, idx) => (
+        <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+          {typeof img === 'string' ? (
+            <Image src={img} alt="brochure" fill className="object-cover" />
+          ) : (
+            <Image src={URL.createObjectURL(img)} alt="brochure" fill className="object-cover" />
+          )}
+          <button
+            type="button"
+            onClick={() => removeFile(idx, setBrochureImage)}
+            className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
     </div>
-  )}
-
+    <p className="text-xs text-gray-500 mt-1">
+      Note: Adding new images will replace all existing ones
+    </p>
+  </div>
+)}
   {/* Certificate Image */}
-  {fieldsConfig?.certificateImage && (
-    <div>
-      <Label className="mb-2">Certificate Images</Label>
-      <FileInput
-        multiple
-        onChange={(e) => {
-          if (e.target.files) {
-            const files = Array.from(e.target.files);
-            // Add ONLY new File objects, not URLs
-            setCertificateImage(prev => {
-              // Filter out any string URLs (keep only File objects)
-              const existingFiles = prev.filter(item => item instanceof File);
-              return [...existingFiles, ...files];
-            });
-          }
-        }}
-      />
-      <div className="mt-2 flex flex-wrap gap-2">
-        {certificateImage.map((img, idx) => (
-          <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
-            {typeof img === 'string' ? (
-              <Image src={img} alt="certificate" fill className="object-cover" />
-            ) : (
-              <Image src={URL.createObjectURL(img)} alt="certificate" fill className="object-cover" />
-            )}
-            <button
-              type="button"
-              onClick={() => removeFile(idx, setCertificateImage)}
-              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-gray-500 mt-1">
-        Note: Adding new images will replace all existing ones
+ {fieldsConfig?.certificateImage && (
+  <div>
+    <Label className="mb-2">Certificate Images</Label>
+    <FileInput
+      multiple
+      onChange={(e) => handleFileChange(e, setCertificateImage, 'certificateImages')}
+      accept="image/*"
+    />
+    
+    {/* ✅ ADD error display */}
+    {imageErrors.certificateImages && (
+      <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">
+        {imageErrors.certificateImages}
       </p>
+    )}
+    
+    {/* ✅ ADD success message */}
+    {certificateImage.length > 0 && !imageErrors.certificateImages && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ Valid: {certificateImage.length} image(s) selected
+      </p>
+    )}
+    
+    {/* ✅ ADD file requirements */}
+    <p className="text-xs text-gray-500 mt-1">
+      Max size: {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    <div className="mt-2 flex flex-wrap gap-2">
+      {certificateImage.map((img, idx) => (
+        <div key={idx} className="relative w-20 h-20 border rounded overflow-hidden">
+          {typeof img === 'string' ? (
+            <Image src={img} alt="certificate" fill className="object-cover" />
+          ) : (
+            <Image src={URL.createObjectURL(img)} alt="certificate" fill className="object-cover" />
+          )}
+          <button
+            type="button"
+            onClick={() => removeFile(idx, setCertificateImage)}
+            className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-bl"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
     </div>
-  )}
+    <p className="text-xs text-gray-500 mt-1">
+      Note: Adding new images will replace all existing ones
+    </p>
+  </div>
+)}
 </div>
       
         {/* ============= SECTION 17: CKEDITOR FIELDS ============= */}
@@ -1761,45 +2224,66 @@ setCertificateImage(
       </div>
 
       {/* More Info */}
-       {fieldsConfig?.moreInfo && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">More Info</Label>
-        {renderArrayField(
-          moreInfo,
-          setMoreInfo,
-          (item, _, update) => (
-            <div className="space-y-3">
-              <Input
-                value={item.title}
-                placeholder="Title"
-                onChange={e => update({ ...item, title: e.target.value })}
-              />
+   {fieldsConfig?.moreInfo && (
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">More Info</Label>
+    {renderArrayField(
+      moreInfo,
+      setMoreInfo,
+      (item, idx, update) => (
+        <div className="space-y-3">
+          <Input
+            value={item.title}
+            placeholder="Title"
+            onChange={e => update({ ...item, title: e.target.value })}
+          />
 
-              <div>
-                <Label>Image</Label>
-                <FileInput
-                  accept="image/*"
-                  onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, image: url }))}
-                />
-                {item.image && (
-                  <div className="w-32 h-32 relative mt-2">
-                    <Image src={item.image} alt="info" fill className="rounded-lg object-cover" />
-                  </div>
-                )}
-              </div>
-
-              <textarea
-                value={item.description}
-                placeholder="Description"
-                onChange={e => update({ ...item, description: e.target.value })}
-                className="w-full border rounded p-3 min-h-[100px] resize-y"
-              />
+          <div>
+            <div className="flex items-center justify-between">
+              <Label>Image</Label>
+              {item.image && typeof item.image === 'string' && (
+                <span className="text-green-600 text-xs">
+                  ✓ Image selected
+                </span>
+              )}
             </div>
-          ),
-          { title: '', image: '', description: '' }
-        )}
-      </div>
-       )}
+            
+            <FileInput
+              accept="image/*"
+              onChange={(e) => handleSingleFileUpload(e, (url) => update({ ...item, image: url }), 'moreInfo', idx)}
+            />
+            
+            {/* ✅ ADD error display */}
+            {imageErrors.moreInfoImages?.[idx] && (
+              <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+                {imageErrors.moreInfoImages[idx]}
+              </p>
+            )}
+            
+            {/* ✅ ADD file requirements */}
+            <p className="text-xs text-gray-500 mt-1">
+              Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+            </p>
+            
+            {item.image && (
+              <div className="w-32 h-32 relative mt-2">
+                <Image src={item.image} alt="info" fill className="rounded-lg object-cover" />
+              </div>
+            )}
+          </div>
+
+          <textarea
+            value={item.description}
+            placeholder="Description"
+            onChange={e => update({ ...item, description: e.target.value })}
+            className="w-full border rounded p-3 min-h-[100px] resize-y"
+          />
+        </div>
+      ),
+      { title: '', image: '', description: '' }
+    )}
+  </div>
+)}
 
       {/* Terms & Conditions */}
        {fieldsConfig?.termsAndCondition && (
@@ -1930,29 +2414,77 @@ setCertificateImage(
 )}
 
       {/* Extra Images */}
-      {fieldsConfig?.extraImage && (
-      <div className="space-y-2">
-        <Label className="text-lg font-semibold">Extra Images</Label>
-        {renderArrayField(
-          extraImages,
-          setExtraImages,
-          (item, _, update) => (
-            <div>
-              <FileInput
-                accept="image/*"
-                onChange={(e) => handleSingleFileUpload(e, (url) => update({ icon: url }))}
-              />
-              {item.icon && (
-                <div className="w-24 h-24 relative mt-2">
-                  <Image src={item.icon} alt="extra" fill className="rounded-lg object-cover" />
-                </div>
-              )}
+    {fieldsConfig?.extraImage && (
+  <div className="space-y-2">
+    <Label className="text-lg font-semibold">Extra Images</Label>
+    {renderArrayField(
+      extraImages,
+      setExtraImages,
+      (item, idx, update) => (
+        <div>
+          <div className="flex items-center justify-between">
+            <Label>Image</Label>
+            {item.icon && (
+              <span className="text-green-600 text-xs">
+                ✓ Image selected
+              </span>
+            )}
+          </div>
+          
+          <FileInput
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const validation = validateImage(file);
+                if (!validation.isValid) {
+                  setImageErrors(prev => ({
+                    ...prev,
+                    extraImages: {
+                      ...prev.extraImages,
+                      [idx]: validation.error
+                    }
+                  }));
+                  e.target.value = '';
+                  return;
+                }
+                
+                setImageErrors(prev => ({
+                  ...prev,
+                  extraImages: {
+                    ...prev.extraImages,
+                    [idx]: undefined
+                  }
+                }));
+                
+                handleSingleFileUpload(e, (url) => update({ icon: url }));
+              }
+            }}
+          />
+          
+          {/* ✅ ADD error display */}
+          {imageErrors.extraImages?.[idx] && (
+            <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
+              {imageErrors.extraImages[idx]}
+            </p>
+          )}
+          
+          {/* ✅ ADD file requirements */}
+          <p className="text-xs text-gray-500 mt-1">
+            Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+          </p>
+          
+          {item.icon && (
+            <div className="w-24 h-24 relative mt-2">
+              <Image src={item.icon} alt="extra" fill className="rounded-lg object-cover" />
             </div>
-          ),
-          { icon: '' }
-        )}
-      </div>
-      )}
+          )}
+        </div>
+      ),
+      { icon: '' }
+    )}
+  </div>
+)}
 
       {/* EXTRA SECTIONS */}
        {fieldsConfig?.extraSection && (

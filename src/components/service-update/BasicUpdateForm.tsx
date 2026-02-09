@@ -23,7 +23,29 @@ interface BasicUpdateFormProps {
   //  onModuleSelect?: (moduleName: string) => void;
   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["basicDetails"];
 }
+// Add these constants after your imports, before the interface definitions
+const IMAGE_MAX_SIZE_MB = 1;
+const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
+// Add this validation function
+const validateImage = (file: File): { isValid: boolean; error?: string } => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {
+      isValid: false,
+      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+    };
+  }
+
+  if (file.size > IMAGE_MAX_SIZE_BYTES) {
+    return {
+      isValid: false,
+      error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+    };
+  }
+
+  return { isValid: true };
+};
 const BasicUpdateForm: React.FC<BasicUpdateFormProps> = ({ data, setData ,fieldsConfig }) => {
   if (!data) return null;
   
@@ -41,7 +63,12 @@ const categoryOptions = categories.map(cat => ({
   const subcategoryOptions = filteredSubcategories.map(subcat => ({ value: subcat._id, label: subcat.name, image: subcat.image || "" }));
 
   const [rows, setRows] = useState(data.keyValues || []);
-
+// Inside the BasicUpdateForm component, add this state:
+const [imageErrors, setImageErrors] = useState<{
+  thumbnail?: string;
+  banner?: string;
+  keyValueIcons?: { [key: number]: string };
+}>({});
     console.log("rows of key value : ", rows);
 
 
@@ -57,7 +84,27 @@ const categoryOptions = categories.map(cat => ({
     keyValues: rows,
   }));
 }, [rows]);
-
+// Add this useEffect for cleanup when component unmounts
+useEffect(() => {
+  return () => {
+    // Cleanup blob URLs
+    if (data.thumbnailImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(data.thumbnailImage);
+    }
+    
+    data.bannerImages?.forEach((img: string) => {
+      if (img?.startsWith('blob:')) {
+        URL.revokeObjectURL(img);
+      }
+    });
+    
+    rows.forEach(row => {
+      if (row.icon && typeof row.icon === 'string') {
+        URL.revokeObjectURL(row.icon);
+      }
+    });
+  };
+}, [data.thumbnailImage, data.bannerImages, rows]);
     // const handleThumbnailUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     //   const file = e.target.files?.[0];
     //   if (!file) return;
@@ -73,17 +120,28 @@ const categoryOptions = categories.map(cat => ({
     //   }));
     // }, [setData]);
 
-    const handleThumbnailUpload = useCallback(
+const handleThumbnailUpload = useCallback(
   (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate image
+    const { isValid, error } = validateImage(file);
+    if (!isValid) {
+      setImageErrors(prev => ({ ...prev, thumbnail: error }));
+      e.target.value = ''; // Clear the input
+      return;
+    }
+
+    // Clear error if valid
+    setImageErrors(prev => ({ ...prev, thumbnail: undefined }));
 
     const previewUrl = URL.createObjectURL(file);
 
     setData((prev: any) => ({
       ...prev,
       thumbnailFile: file,
-      thumbnailImage: previewUrl, // 👈 always use this for preview
+      thumbnailImage: previewUrl,
     }));
   },
   [setData]
@@ -96,15 +154,42 @@ const handleBannerImagesUpload = useCallback(
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const previewUrls = Array.from(files).map((file) =>
-      URL.createObjectURL(file)
-    );
+    const validFiles: File[] = [];
+    const previewUrls: string[] = [];
+    const errors: string[] = [];
 
-    setData((prev: any) => ({
-      ...prev,
-      bannerFiles: [...(prev.bannerFiles || []), ...Array.from(files)],
-      bannerImages: [...(prev.bannerImages || []), ...previewUrls], // 👈 preview source
-    }));
+    // Validate each file
+    Array.from(files).forEach((file, index) => {
+      const { isValid, error } = validateImage(file);
+      if (!isValid) {
+        errors.push(`File ${index + 1}: ${error}`);
+      } else {
+        validFiles.push(file);
+        previewUrls.push(URL.createObjectURL(file));
+      }
+    });
+
+    // Set error message if any
+    if (errors.length > 0) {
+      setImageErrors(prev => ({
+        ...prev,
+        banner: errors.join(' | ')
+      }));
+    } else {
+      setImageErrors(prev => ({ ...prev, banner: undefined }));
+    }
+
+    // Only add valid files
+    if (validFiles.length > 0) {
+      setData((prev: any) => ({
+        ...prev,
+        bannerFiles: [...(prev.bannerFiles || []), ...validFiles],
+        bannerImages: [...(prev.bannerImages || []), ...previewUrls],
+      }));
+    }
+
+    // Clear the input to allow re-uploading
+    e.target.value = '';
   },
   [setData]
 );
@@ -146,12 +231,64 @@ const handleBannerImagesUpload = useCallback(
 
 
   const handleAddRow = () => setRows([...rows, { key: "", value: "" }]);
-  const handleRemoveRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
-  const handleRowChange = (index: number, field: keyof KeyValue, value: string | File | null) => {
-    const updated = [...rows];
-    updated[index][field] = value;
-    setRows(updated);
-  };
+const handleRemoveRow = (index: number) => {
+  // If there's an icon with preview URL, revoke it
+  if (rows[index]?.icon && typeof rows[index].icon === 'string') {
+    URL.revokeObjectURL(rows[index].icon);
+  }
+  
+  const updatedRows = rows.filter((_, i) => i !== index);
+  setRows(updatedRows);
+  
+  // Clear error for this row if exists
+  if (imageErrors.keyValueIcons?.[index]) {
+    setImageErrors(prev => {
+      const newKeyValueIcons = { ...prev.keyValueIcons };
+      delete newKeyValueIcons[index];
+      
+      // Re-index errors
+      const reindexed: { [key: number]: string } = {};
+      Object.keys(newKeyValueIcons).forEach(key => {
+        const numKey = parseInt(key);
+        if (numKey > index) {
+          reindexed[numKey - 1] = newKeyValueIcons[key]!;
+        } else {
+          reindexed[numKey] = newKeyValueIcons[key]!;
+        }
+      });
+      
+      return { ...prev, keyValueIcons: reindexed };
+    });
+  }
+};
+const handleRowChange = (index: number, field: keyof KeyValue, value: string | File | null) => {
+  // Special handling for icon file validation
+  if (field === 'icon' && value instanceof File) {
+    const { isValid, error } = validateImage(value);
+    if (!isValid) {
+      setImageErrors(prev => ({
+        ...prev,
+        keyValueIcons: {
+          ...prev.keyValueIcons,
+          [index]: error
+        }
+      }));
+      // Don't update the row if invalid
+      return;
+    } else {
+      // Clear error if valid
+      setImageErrors(prev => {
+        const newKeyValueIcons = { ...prev.keyValueIcons };
+        delete newKeyValueIcons[index];
+        return { ...prev, keyValueIcons: newKeyValueIcons };
+      });
+    }
+  }
+
+  const updated = [...rows];
+  updated[index][field] = value;
+  setRows(updated);
+};
 
 
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -228,32 +365,49 @@ const handleBannerImagesUpload = useCallback(
           )}
 
           {/* Thumbnail */}
-           {fieldsConfig?.thumbnail && (
-          <div>
-            <Label>Thumbnail</Label>
-            <FileInput  onChange={handleThumbnailUpload} />
-            {data.thumbnailImage && (
-  <div className="mt-3 relative w-40 h-40">
-    <Image
-      src={data.thumbnailImage}
-      alt="Thumbnail Preview"
-      fill
-      className="object-cover rounded border"
-      sizes="160px"
-      priority={false}
-    />
-    <button
-                  type="button"
-                  onClick={removeThumbnailImage}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
-                >
-                  ×
-                </button>
+        
+{fieldsConfig?.thumbnail && (
+  <div>
+    <Label>Thumbnail</Label>
+    <FileInput onChange={handleThumbnailUpload} accept="image/*" />
+    
+    {/* Error Message */}
+    {imageErrors.thumbnail && (
+      <p className="text-red-500 text-xs mt-1">{imageErrors.thumbnail}</p>
+    )}
+    
+    {/* Success Message */}
+    {data.thumbnailImage && !imageErrors.thumbnail && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ Valid: {(data.thumbnailFile?.size / (1024 * 1024)).toFixed(2)}MB
+      </p>
+    )}
+    
+    <p className="text-xs text-gray-500 mt-1">
+      Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    {data.thumbnailImage && (
+      <div className="mt-3 relative w-40 h-40">
+        <Image
+          src={data.thumbnailImage}
+          alt="Thumbnail Preview"
+          fill
+          className="object-cover rounded border"
+          sizes="160px"
+          priority={false}
+        />
+        <button
+          type="button"
+          onClick={removeThumbnailImage}
+          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+        >
+          ×
+        </button>
+      </div>
+    )}
   </div>
-)}
-
-          </div>
-           )} 
+)} 
 
           {/* Tags */}
           {fieldsConfig?.tags && (
@@ -361,110 +515,145 @@ const handleBannerImagesUpload = useCallback(
           )}
 
           {/* Banner Images */}
-          {fieldsConfig?.bannerImage && (
-          <div>
-            <Label>Banner Images</Label>
-            <FileInput multiple  onChange={handleBannerImagesUpload} />
-            {data.bannerImages?.length > 0 && (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-    {data.bannerImages.map((img: string, index: number) => (
-      <div
-        key={index}
-        className="relative w-full h-32"
-      >
-        <Image
-          src={img}
-          alt={`Banner Image ${index + 1}`}
-          fill
-          className="object-cover rounded border"
-          sizes="(max-width: 768px) 50vw, 33vw"
-          priority={false}
-        />
-
-        {/* Optional remove button */}
-        <button
-                      type="button"
-                      onClick={() => removeBannerImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                    >
-                      ×
-                    </button>
+{fieldsConfig?.bannerImage && (
+  <div>
+    <Label>Banner Images</Label>
+    <FileInput multiple onChange={handleBannerImagesUpload} accept="image/*" />
+    
+    {/* Error Message */}
+    {imageErrors.banner && (
+      <p className="text-red-500 text-xs mt-1">{imageErrors.banner}</p>
+    )}
+    
+    {/* Success Message */}
+    {data.bannerImages?.length > 0 && !imageErrors.banner && (
+      <p className="text-green-600 text-xs mt-1">
+        ✓ {data.bannerImages.length} valid image(s) selected
+      </p>
+    )}
+    
+    <p className="text-xs text-gray-500 mt-1">
+      Max {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    {data.bannerImages?.length > 0 && (
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+        {data.bannerImages.map((img: string, index: number) => (
+          <div key={index} className="relative w-full h-32 group">
+            <Image
+              src={img}
+              alt={`Banner Image ${index + 1}`}
+              fill
+              className="object-cover rounded border"
+              sizes="(max-width: 768px) 50vw, 33vw"
+              priority={false}
+            />
+            <button
+              type="button"
+              onClick={() => removeBannerImage(index)}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
-    ))}
+    )}
   </div>
 )}
 
-          </div>
-          )}
-
           {/* Key Values */}
-           {fieldsConfig?.keyValue && (
-           <div>
-            <Label>Key - Value</Label>
-            {rows.map((row, index) => (
-              <div key={index} className="border rounded p-3 mb-3">
-                <div className="flex justify-between">
-                  <h3 className="font-medium">Row {index + 1}</h3>
-                  <button type="button" onClick={() => handleRemoveRow(index)}>
-                    <TrashBinIcon />
+{fieldsConfig?.keyValue && (
+  <div>
+    <Label>Key - Value</Label>
+    <p className="text-xs text-gray-500 mb-3">
+      Max icon size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
+    </p>
+    
+    {rows.map((row, index) => (
+      <div key={index} className="border rounded p-3 mb-3">
+        <div className="flex justify-between">
+          <h3 className="font-medium">Row {index + 1}</h3>
+          <button type="button" onClick={() => handleRemoveRow(index)}>
+            <TrashBinIcon />
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 mt-3">
+          <Input
+            placeholder="Key"
+            value={row.key}
+            onChange={(e) => handleRowChange(index, "key", e.target.value)}
+          />
+          <Input
+            placeholder="Value"
+            value={row.value}
+            onChange={(e) => handleRowChange(index, "value", e.target.value)}
+          />
+          
+          <div className="col-span-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0] || null;
+                handleRowChange(index, "icon", file);
+                e.target.value = ''; // Clear input
+              }}
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            
+            {/* Error Message */}
+            {imageErrors.keyValueIcons?.[index] && (
+              <p className="text-red-500 text-xs mt-1">
+                {imageErrors.keyValueIcons[index]}
+              </p>
+            )}
+            
+            {/* Success Message */}
+            {row.icon && !imageErrors.keyValueIcons?.[index] && (
+              <p className="text-green-600 text-xs mt-1">
+                ✓ Valid: {row.icon instanceof File ? 
+                  `${(row.icon.size / (1024 * 1024)).toFixed(2)}MB` : 
+                  'File uploaded'}
+              </p>
+            )}
+            
+            {row.icon && (
+              <div className="flex gap-3 mt-3 flex-wrap">
+                <div className="w-24 h-24 relative group">
+                  <Image
+                    src={typeof row.icon === 'string' ? row.icon : URL.createObjectURL(row.icon)}
+                    alt="icon"
+                    fill
+                    className="rounded-lg object-cover"
+                    sizes="96px"
+                  />
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                    onClick={() => {
+                      if (typeof row.icon === 'string') {
+                        URL.revokeObjectURL(row.icon);
+                      }
+                      handleRowChange(index, "icon", null);
+                    }}
+                  >
+                    ×
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-3">
-                  <Input
-                    placeholder="Key"
-                    value={row.key}
-                    onChange={(e) => handleRowChange(index, "key", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={row.value}
-                    onChange={(e) => handleRowChange(index, "value", e.target.value)}
-                  />
-                
-                 <div className="col-span-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const file = e.target.files?.[0] || null;
-                      handleRowChange(index, "icon", file);
-                    }}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                   {row.icon && (
-    <div className="flex gap-3 mt-3 flex-wrap">
-      <div className="w-24 h-24 relative group">
-        <Image
-          src={row.icon}
-          alt="icon"
-          fill
-          className="rounded-lg object-cover"
-          sizes="96px"
-        />
-
-        <button
-          type="button"
-          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center
-                     opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => {
-            URL.revokeObjectURL(row.icon!.preview);
-            handleRowChange(index, "icon", null);
-          }}
-        >
-          ×
-        </button>
-      </div>
-    </div>
-  )}
-                </div>
-                </div>
               </div>
-            ))}
-            <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
-              + Add New Row
-            </button>
+            )}
           </div>
-           )}
+        </div>
+      </div>
+    ))}
+    
+    <button type="button" onClick={handleAddRow} className="bg-blue-500 text-white px-4 py-2 rounded">
+      + Add New Row
+    </button>
+  </div>
+)}
 
           {/* GST */}
           {fieldsConfig?.gst && (

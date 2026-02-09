@@ -261,7 +261,7 @@ const WhyJustOurServiceList = () => {
   return (
     <div>
       <PageBreadcrumb pageTitle="Why Just Our Services" />
-      <AddWhyJustOurService />
+      {/* <AddWhyJustOurService /> */}
 
       {/* FILTERS */}
       <div className="flex flex-col lg:flex-row gap-6 my-5">
@@ -306,18 +306,32 @@ const WhyJustOurServiceList = () => {
       </div>
 
       {/* TABLE */}
-      <ComponentCard title="All Services">
-        <BasicTableOne columns={columns} data={currentRows} />
+     <ComponentCard title="All Services">
+  {filtered.length === 0 ? (
+    <div className="py-10 text-center text-gray-500">
+      <p className="text-lg font-medium">
+        Services are not available for the selected module
+      </p>
+      <p className="text-sm mt-1">
+        Please try selecting a different module or adjust your search.
+      </p>
+    </div>
+  ) : (
+    <>
+      <BasicTableOne columns={columns} data={currentRows} />
 
-        {filtered.length > rowsPerPage && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            onPageChange={setCurrentPage}
-          />
-        )}
-      </ComponentCard>
+      {filtered.length > rowsPerPage && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          onPageChange={setCurrentPage}
+        />
+      )}
+    </>
+  )}
+</ComponentCard>
+
 
       {/* EDIT MODAL */}
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>

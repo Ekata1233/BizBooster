@@ -337,13 +337,13 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       accept="image/*"
     />
     {imageErrors.thumbnail && (
-      <p className="text-red-500 text-xs mt-1">{imageErrors.thumbnail}</p>
+      <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">{imageErrors.thumbnail}</p>
     )}
-    {data.thumbnailImage && !imageErrors.thumbnail && (
+    {/* {data.thumbnailImage && !imageErrors.thumbnail && (
       <p className="text-green-600 text-xs mt-1">
         ✓ Valid: {(data.thumbnailImage.size / (1024 * 1024)).toFixed(2)}MB
       </p>
-    )}
+    )} */}
     <p className="text-xs text-gray-500 mt-1">
       Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
     </p>
@@ -439,13 +439,13 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       accept="image/*"
     />
     {imageErrors.banner && (
-      <p className="text-red-500 text-xs mt-1">{imageErrors.banner}</p>
+      <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">{imageErrors.banner}</p>
     )}
-    {data.bannerImages && !imageErrors.banner && (
+    {/* {data.bannerImages && !imageErrors.banner && (
       <p className="text-green-600 text-xs mt-1">
         ✓ {data.bannerImages.length} valid image(s) selected
       </p>
-    )}
+    )} */}
     <p className="text-xs text-gray-500 mt-1">
       Max {IMAGE_MAX_SIZE_MB}MB per image | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
     </p>
@@ -514,13 +514,13 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           
           {/* Error Message */}
           {imageErrors.keyValueIcons?.[index] && (
-            <p className="text-red-500 text-xs mt-1">
+             <p className="text-red-500 text-sm mt-1 p-2 bg-red-50 rounded border border-red-200">
               {imageErrors.keyValueIcons[index]}
             </p>
           )}
           
           {/* Success Message */}
-          {row.icon && !imageErrors.keyValueIcons?.[index] && (
+          {/* {row.icon && !imageErrors.keyValueIcons?.[index] && (
             <div className="mt-2">
               <p className="text-green-600 text-xs">
                 ✓ Valid: {row.icon instanceof File ? 
@@ -528,7 +528,7 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   'File uploaded'}
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     ))}
