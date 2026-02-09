@@ -176,6 +176,14 @@ const validateImage = (file: File): { isValid: boolean; error?: string } => {
   return { isValid: true };
 };
 
+const isFileLike = (value: unknown): value is { size: number; type: string } => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "size" in value &&
+    "type" in value
+  );
+};
 
 // ------------------- COMPONENT -------------------
 const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) => {
@@ -859,7 +867,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     {/* {highlight.length > 0 && !imageErrors.highlight && (
       <p className="text-green-600 text-xs mt-1">
         ✓ Valid: {highlight.length} image(s) selected
-        {highlight[0] instanceof File && (
+        {highlight[0]  && (
           <span> | Largest: {(highlight[0].size / (1024 * 1024)).toFixed(2)}MB</span>
         )}
       </p>
@@ -905,7 +913,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.whyChooseUsIcons?.[idx] && (
+            { !imageErrors.whyChooseUsIcons?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -956,7 +964,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.howItWorksIcons?.[idx] && (
+            { !imageErrors.howItWorksIcons?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -1007,7 +1015,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.assuredByFetchTrueIcons?.[idx] && (
+            {!imageErrors.assuredByFetchTrueIcons?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -1278,7 +1286,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
                   <div>
                     <div className="flex items-center justify-between">
                       <Label className="text-xs mb-1">Icon</Label>
-                      {feature.icon instanceof File && !imageErrors.franchiseOperatingModelIcons?.[modelIdx]?.[featureIdx] && (
+                      { !imageErrors.franchiseOperatingModelIcons?.[modelIdx]?.[featureIdx] && (
                         <span className="text-green-600 text-xs">
                           ✓ Valid: {(feature.icon.size / (1024 * 1024)).toFixed(2)}MB
                         </span>
@@ -1437,7 +1445,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
             <div>
               <div className="flex items-center justify-between">
                 <Label className="text-sm mb-1">Icon</Label>
-                {item.icon instanceof File && !imageErrors.keyAdvantagesIcons?.[idx] && (
+                { !imageErrors.keyAdvantagesIcons?.[idx] && (
                   <span className="text-green-600 text-xs">
                     ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                   </span>
@@ -1493,7 +1501,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div className="mb-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Icon</Label>
-              {item.icon instanceof File && !imageErrors.completeSupportSystemIcons?.[idx] && (
+              { !imageErrors.completeSupportSystemIcons?.[idx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -1648,7 +1656,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div className="mb-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Company Profile Image</Label>
-              {company.profile instanceof File && !imageErrors.companyProfile?.[companyIdx] && (
+              { !imageErrors.companyProfile?.[companyIdx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(company.profile.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -1979,7 +1987,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div>
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Icon</Label>
-              {item.icon instanceof File && !imageErrors.whomToSellIcons?.[idx] && (
+              { !imageErrors.whomToSellIcons?.[idx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -2182,7 +2190,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Image</Label>
-            {item.image instanceof File && !imageErrors.moreInfoImages?.[idx] && (
+            { !imageErrors.moreInfoImages?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.image.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -2308,7 +2316,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Image</Label>
-            {img.file instanceof File && !imageErrors.extraImages?.[idx] && (
+            { !imageErrors.extraImages?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(img.file.size / (1024 * 1024)).toFixed(2)}MB
               </span>

@@ -664,13 +664,12 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
                       )}
 
                     {/* If new file uploaded → Show filename */}
-                    {sec.image &&
-                      sec.image.length > 0 &&
-                      sec.image[0] instanceof File && (
+                    {/* {sec.image &&
+                      sec.image.length > 0 && (
                         <p className="text-sm mt-1 text-gray-500">
                           {sec.image[0].name}
                         </p>
-                      )}
+                      )} */}
 
                     {/* Add button for more image items */}
                     <button
