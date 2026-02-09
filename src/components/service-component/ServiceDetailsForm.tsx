@@ -151,28 +151,44 @@ interface Props {
   setData: (newData: ServiceDetails) => void; 
   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
+// ✅ ADD this helper function at the top of your component (after imports)
+const isBrowser = typeof window !== 'undefined';
+const isFile = (obj: any): obj is File => {
+  if (!isBrowser) return false; // Never true on server
+  return obj instanceof File;
+};
 
+// ✅ Use this instead of instanceof File everywhere in your component
 // ✅ ADD these validation constants at the top (after imports, before types)
 const IMAGE_MAX_SIZE_MB = 1;
 const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
 // ✅ ADD this validation function
-const validateImage = (file: File): { isValid: boolean; error?: string } => {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return {
-      isValid: false,
-      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
-    };
+// ✅ REPLACE the validateImage function at the top:
+const validateImage = (file: File | string): { isValid: boolean; error?: string } => {
+  // If it's a string (URL), it's already valid
+  if (typeof file === 'string') {
+    return { isValid: true };
   }
+  
+  // Only validate if it's actually a File object and we're in browser
+  if (typeof window !== 'undefined' && file instanceof File) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return {
+        isValid: false,
+        error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+      };
+    }
 
-  if (file.size > IMAGE_MAX_SIZE_BYTES) {
-    return {
-      isValid: false,
-      error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
-    };
+    if (file.size > IMAGE_MAX_SIZE_BYTES) {
+      return {
+        isValid: false,
+        error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+      };
+    }
   }
-
+  
   return { isValid: true };
 };
 
@@ -905,11 +921,11 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.whyChooseUsIcons?.[idx] && (
-              <span className="text-green-600 text-xs">
-                ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
-              </span>
-            )}
+            {typeof window !== 'undefined' && item.icon instanceof File && !imageErrors.whyChooseUsIcons?.[idx] && (
+  <span className="text-green-600 text-xs">
+    ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
+  </span>
+)}
           </div>
           
           <FileInput
