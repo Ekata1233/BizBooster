@@ -151,47 +151,39 @@ interface Props {
   setData: (newData: ServiceDetails) => void; 
   fieldsConfig?: typeof moduleFieldConfig["Franchise"]["serviceDetails"];
 }
-// ✅ ADD this helper function at the top of your component (after imports)
-const isBrowser = typeof window !== 'undefined';
-const isFile = (obj: any): obj is File => {
-  if (!isBrowser) return false; // Never true on server
-  return obj instanceof File;
-};
 
-// ✅ Use this instead of instanceof File everywhere in your component
 // ✅ ADD these validation constants at the top (after imports, before types)
 const IMAGE_MAX_SIZE_MB = 1;
 const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
 // ✅ ADD this validation function
-// ✅ REPLACE the validateImage function at the top:
-const validateImage = (file: File | string): { isValid: boolean; error?: string } => {
-  // If it's a string (URL), it's already valid
-  if (typeof file === 'string') {
-    return { isValid: true };
+const validateImage = (file: File): { isValid: boolean; error?: string } => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {
+      isValid: false,
+      error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+    };
   }
-  
-  // Only validate if it's actually a File object and we're in browser
-  if (typeof window !== 'undefined' && file instanceof File) {
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      return {
-        isValid: false,
-        error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
-      };
-    }
 
-    if (file.size > IMAGE_MAX_SIZE_BYTES) {
-      return {
-        isValid: false,
-        error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
-      };
-    }
+  if (file.size > IMAGE_MAX_SIZE_BYTES) {
+    return {
+      isValid: false,
+      error: `Image must be ${IMAGE_MAX_SIZE_MB}MB or less. Current: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+    };
   }
-  
+
   return { isValid: true };
 };
 
+const isFileLike = (value: unknown): value is { size: number; type: string } => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "size" in value &&
+    "type" in value
+  );
+};
 
 // ------------------- COMPONENT -------------------
 const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) => {
@@ -875,7 +867,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
     {/* {highlight.length > 0 && !imageErrors.highlight && (
       <p className="text-green-600 text-xs mt-1">
         ✓ Valid: {highlight.length} image(s) selected
-        {highlight[0] instanceof File && (
+        {highlight[0]  && (
           <span> | Largest: {(highlight[0].size / (1024 * 1024)).toFixed(2)}MB</span>
         )}
       </p>
@@ -921,11 +913,11 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {typeof window !== 'undefined' && item.icon instanceof File && !imageErrors.whyChooseUsIcons?.[idx] && (
-  <span className="text-green-600 text-xs">
-    ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
-  </span>
-)}
+            { !imageErrors.whyChooseUsIcons?.[idx] && (
+              <span className="text-green-600 text-xs">
+                ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
+              </span>
+            )}
           </div>
           
           <FileInput
@@ -972,7 +964,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.howItWorksIcons?.[idx] && (
+            { !imageErrors.howItWorksIcons?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -1023,7 +1015,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Icon</Label>
-            {item.icon instanceof File && !imageErrors.assuredByFetchTrueIcons?.[idx] && (
+            {!imageErrors.assuredByFetchTrueIcons?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -1294,7 +1286,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
                   <div>
                     <div className="flex items-center justify-between">
                       <Label className="text-xs mb-1">Icon</Label>
-                      {feature.icon instanceof File && !imageErrors.franchiseOperatingModelIcons?.[modelIdx]?.[featureIdx] && (
+                      { !imageErrors.franchiseOperatingModelIcons?.[modelIdx]?.[featureIdx] && (
                         <span className="text-green-600 text-xs">
                           ✓ Valid: {(feature.icon.size / (1024 * 1024)).toFixed(2)}MB
                         </span>
@@ -1453,7 +1445,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
             <div>
               <div className="flex items-center justify-between">
                 <Label className="text-sm mb-1">Icon</Label>
-                {item.icon instanceof File && !imageErrors.keyAdvantagesIcons?.[idx] && (
+                { !imageErrors.keyAdvantagesIcons?.[idx] && (
                   <span className="text-green-600 text-xs">
                     ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                   </span>
@@ -1509,7 +1501,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div className="mb-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Icon</Label>
-              {item.icon instanceof File && !imageErrors.completeSupportSystemIcons?.[idx] && (
+              { !imageErrors.completeSupportSystemIcons?.[idx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -1664,7 +1656,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div className="mb-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Company Profile Image</Label>
-              {company.profile instanceof File && !imageErrors.companyProfile?.[companyIdx] && (
+              { !imageErrors.companyProfile?.[companyIdx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(company.profile.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -1995,7 +1987,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
           <div>
             <div className="flex items-center justify-between">
               <Label className="text-sm mb-1">Icon</Label>
-              {item.icon instanceof File && !imageErrors.whomToSellIcons?.[idx] && (
+              { !imageErrors.whomToSellIcons?.[idx] && (
                 <span className="text-green-600 text-xs">
                   ✓ Valid: {(item.icon.size / (1024 * 1024)).toFixed(2)}MB
                 </span>
@@ -2198,7 +2190,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div>
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Image</Label>
-            {item.image instanceof File && !imageErrors.moreInfoImages?.[idx] && (
+            { !imageErrors.moreInfoImages?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(item.image.size / (1024 * 1024)).toFixed(2)}MB
               </span>
@@ -2324,7 +2316,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <Label className="text-sm mb-1">Image</Label>
-            {img.file instanceof File && !imageErrors.extraImages?.[idx] && (
+            { !imageErrors.extraImages?.[idx] && (
               <span className="text-green-600 text-xs">
                 ✓ Valid: {(img.file.size / (1024 * 1024)).toFixed(2)}MB
               </span>

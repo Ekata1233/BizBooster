@@ -50,7 +50,7 @@ const isBrowser = typeof window !== "undefined" && typeof File !== "undefined";
 
 // Add this validation function
 const validateImage = (file: any): { isValid: boolean; error?: string } => {
-  if (!isBrowser || !(file instanceof File)) {
+  if (!isBrowser ) {
     return { isValid: true };
   }
 
@@ -147,7 +147,7 @@ const handleRowChange = (
   value: string | File | null
 ) => {
   // Special handling for icon file validation
-  if (field === 'icon' && isBrowser && value instanceof File) {
+  if (field === 'icon' && isBrowser) {
 
     const { isValid, error } = validateImage(value);
     if (!isValid) {
@@ -205,7 +205,7 @@ const filteredCategories = categories.filter(
 const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0] || null;
   
-  if (isBrowser && file instanceof File) {
+  if (isBrowser ) {
 
     const { isValid, error } = validateImage(file);
     if (!isValid) {
@@ -233,7 +233,7 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     
     // Validate each file
     Array.from(files).forEach((file,index) => {
-  if (!isBrowser || !(file instanceof File)) return;
+  if (!isBrowser ) return;
   const { isValid, error } = validateImage(file);
 
       if (!isValid) {
@@ -525,7 +525,7 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           {/* {row.icon && !imageErrors.keyValueIcons?.[index] && (
             <div className="mt-2">
               <p className="text-green-600 text-xs">
-                ✓ Valid: {row.icon instanceof File ? 
+                ✓ Valid: {row.icon ? 
                   `${row.icon.name} (${(row.icon.size / (1024 * 1024)).toFixed(2)}MB)` : 
                   'File uploaded'}
               </p>
