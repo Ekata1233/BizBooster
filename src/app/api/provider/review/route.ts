@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/utils/db";
 import Provider from "@/models/Provider";
 import ProviderReview from "@/models/ProviderReview";
+import Checkout from "@/models/Checkout";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +19,34 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { userId, providerId, rating, comment } = body;
+    const { userId, providerId, rating, comment,checkoutId , isSkip } = body;
+
+     /* ----------------------------------------
+           CASE 2: SKIP REVIEW
+        ---------------------------------------- */
+        if (checkoutId && isSkip === true) {
+          const checkout = await Checkout.findByIdAndUpdate(
+            checkoutId,
+            { isSkip: true },
+            { new: true }
+          );
+    
+          if (!checkout) {
+            return NextResponse.json(
+              { success: false, message: "Checkout not found" },
+              { status: 404, headers: corsHeaders }
+            );
+          }
+    
+          return NextResponse.json(
+            {
+              success: true,
+              message: "Review skipped successfully",
+            },
+            { status: 200, headers: corsHeaders }
+          );
+        }
+    
 
     if (!userId || !providerId || typeof rating !== "number") {
       return NextResponse.json(
