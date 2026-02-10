@@ -70,6 +70,7 @@ export async function GET(req: Request) {
           : checkout?.orderStatus || "processing";
 
         return {
+          _id: checkout._id,
           leadId: checkout.bookingId || checkout._id,
           serviceName: checkout.service?.serviceName || "N/A",
           contactDetails: checkout.user

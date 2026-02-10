@@ -86,6 +86,8 @@
     "react-leaflet": "^4.2.1",
     "recharts": "^3.1.2",
     "sharp": "^0.34.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-react": "^5.31.0",
     "swiper": "^11.2.0",
     "tailwind-merge": "^2.6.0",
     "tinymce": "^7.9.1",

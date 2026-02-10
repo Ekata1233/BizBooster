@@ -552,9 +552,9 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
           <div className="flex justify-center mt-4">
             <Pagination
               currentPage={currentPage}
-               totalItems={totalPages * rowsPerPage}
+              totalItems={totalRecords}
               // totalPages={totalPages}
-               onPageChange={(page) => setCurrentPage(page)}
+              onPageChange={setCurrentPage}
             />
           </div>
         </>

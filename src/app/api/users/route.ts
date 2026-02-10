@@ -13,6 +13,29 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
+
 export const GET = async (req: NextRequest) => {
   try {
     await connectToDatabase();

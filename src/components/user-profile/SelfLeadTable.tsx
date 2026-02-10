@@ -67,18 +67,23 @@ const columnsSelfLead = [
     },
   },
   {
-    header: "Action",
-    accessor: "action",
-    render: (row: any) => (
+  header: "Action",
+  accessor: "action",
+  render: (row: any) => {
+    console.log("row of user self lead:", row);
+
+    return (
       <div className="flex gap-2">
-        <Link href={`/booking-management/all-booking/${row.id}`} passHref>
+        <Link href={`/booking-management/all-booking/${row.objectId}`}>
           <button className="text-blue-500 border border-blue-500 rounded-md p-2 hover:bg-blue-500 hover:text-white">
             <EyeIcon size={16} />
           </button>
         </Link>
       </div>
-    ),
+    );
   },
+}
+,
 ];
 
 const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
@@ -86,6 +91,9 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasFetched = useRef(false);
+
+      console.log("lead data : ", leads);
+
 
   // ✅ Fetch API data once per userId
   useEffect(() => {
@@ -137,6 +145,8 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
     const addOnCommission = `₹${Number(lead.extra_share_1 || 0).toFixed(2)}`;
     const addOnCommissionValue = Number(lead.extra_share_1 || 0);
 
+    console.log("lead : ", lead);
+
     // ✅ Same commission status logic restored
     let commissionWithStatus: React.ReactNode = (
       <div className="flex flex-col">
@@ -167,6 +177,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
     return {
       id: index,
       sr: index + 1,
+      objectId: lead._id,
       leadId: lead.leadId || "N/A",
       serviceName: lead.serviceName || "N/A",
       contactDetails: lead.contactDetails || "N/A",
