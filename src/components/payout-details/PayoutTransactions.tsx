@@ -553,7 +553,7 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
             <Pagination
               currentPage={currentPage}
               totalItems={totalRecords}
-              totalPages={totalPages}
+              // totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
           </div>

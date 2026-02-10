@@ -74,6 +74,10 @@ export async function POST(req: NextRequest) {
       totalReviews: allReviews.length,
     });
 
+    if (checkoutId) {
+  await Checkout.findByIdAndUpdate(checkoutId, { isSkip: true });
+}
+
     return NextResponse.json(
       { success: true, message: "Review posted successfully.", review: newReview },
       { status: 201, headers: corsHeaders }
