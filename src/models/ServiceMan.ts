@@ -110,7 +110,6 @@ const ServiceManSchema = new mongoose.Schema(
 ServiceManSchema.pre("save", async function (next) {
   if (this.serviceManId) return next(); // Already exists, skip
 
-  console.log("proivder id : ", this.provider);
   const providerDoc = await mongoose.model("Provider").findById(this.provider);
 
   if (!providerDoc) {

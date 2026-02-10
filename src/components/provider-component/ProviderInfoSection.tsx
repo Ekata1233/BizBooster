@@ -29,7 +29,6 @@ const ProviderInfoSection: React.FC<Props> = ({ provider }) => {
                 const res = await fetch(`/api/modules/${provider.storeInfo.module._id}`);
                 const data = await res.json();
 
-                console.log("data of provider : ", data)
                 if (data.success && data.data?.name) {
                     setModuleName(data.data.name);
                 } else {

@@ -5,8 +5,6 @@ import { useParams } from 'next/navigation';
 import { useProvider } from '@/context/ProviderContext';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
-import {  EyeIcon } from '@/icons';
-import Link from 'next/link';
 import ProviderInfoSection from '@/components/provider-component/ProviderInfoSection';
 import ProviderStatsSection from '@/components/provider-component/ProviderStatsSection';
 import ProviderSubscribedServices from '@/components/provider-component/ProviderSubscribedServices';
@@ -14,6 +12,7 @@ import ProviderBookings from '@/components/provider-component/ProviderBookings';
 import ProviderServiceMan from '@/components/provider-component/ProviderServiceMan';
 import ProviderBankInfo from '@/components/provider-component/ProviderBankInfo';
 import ProviderWallet from '@/components/provider-component/ProviderWallet';
+import ProviderReviews from '@/components/provider-component/ProviderReviews';
 
 interface KycDocs {
   GST?: string[];
@@ -216,6 +215,15 @@ const ProviderDetailsPage = () => {
             >
               Wallet
             </li>
+            <li
+              className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'reviews'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                }`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              Reviews
+            </li>
           </ul>
         </div>
 
@@ -228,7 +236,9 @@ const ProviderDetailsPage = () => {
           {activeTab === 'serviceMan' && <ProviderServiceMan provider={provider} />}
           {activeTab === 'bank' && <ProviderBankInfo  />}
           {activeTab === 'wallet' && <ProviderWallet provider={provider} />}
+          {activeTab === 'reviews' && <ProviderReviews provider={provider} />}
         </div>
+
       </div>
     </div>
   );
