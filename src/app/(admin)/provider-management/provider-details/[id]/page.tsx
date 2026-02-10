@@ -170,7 +170,7 @@ const ProviderDetailsPage = () => {
             >
               Statestics
             </li>
-            <li
+            {/* <li
               className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'subscribe'
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
@@ -178,7 +178,7 @@ const ProviderDetailsPage = () => {
               onClick={() => setActiveTab('subscribe')}
             >
               Subscribed Services
-            </li>
+            </li> */}
             <li
               className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-md border ${activeTab === 'bookings'
                 ? 'bg-blue-600 text-white border-blue-600'
