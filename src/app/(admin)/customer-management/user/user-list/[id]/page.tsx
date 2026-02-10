@@ -1,6 +1,5 @@
 'use client';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import UserStatCard from '@/components/user-profile/UserAddressCard';
 import UserInfoCard from '@/components/user-profile/UserInfoCard';
 import UserMetaCard from '@/components/user-profile/UserMetaCard';
 import React, { useEffect, useState } from 'react';
@@ -10,10 +9,8 @@ import { useParams, usePathname } from 'next/navigation';
 import SelfLeadTable from '@/components/user-profile/SelfLeadTable';
 import TeamLeadTable from '@/components/user-profile/TeamLeadTable';
 import FiveXGuarantee from '@/components/user-profile/FiveXGuarantee';
-import HelpSupport from '@/components/user-profile/HelpSupport';
 import UserDeposite from '@/components/user-profile/UserDeposite';
 import UserWallet from '@/components/user-profile/UserWallet';
-import Image from 'next/image';
 import PackageTransaction from '@/components/user-profile/PackageTransaction';
 import BankDetailsPage from '@/components/user-profile/BankDetails';
 
