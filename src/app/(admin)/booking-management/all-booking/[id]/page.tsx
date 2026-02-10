@@ -12,6 +12,7 @@ import ServiceMenCard from '@/components/booking-management/ServiceMenCard';
 import InvoiceDownload from '@/components/booking-management/InvoiceDownload';
 import { Lead, useLead } from '@/context/LeadContext';
 import { useServiceCustomer } from '@/context/ServiceCustomerContext';
+import { useUserContext } from '@/context/UserContext';
 
 const AllBookingsDetails = () => {
   const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
@@ -28,6 +29,14 @@ const AllBookingsDetails = () => {
     loading,
     error,
   } = useServiceCustomer();
+
+    const {
+      users,
+      fetchSingleUser,
+      singleUser,
+      singleUserLoading,
+      singleUserError,
+    } = useUserContext();
 
   const handleDownload = async () => {
     if (!checkoutDetails?._id) return;
@@ -78,7 +87,9 @@ const AllBookingsDetails = () => {
   useEffect(() => {
     if (checkoutDetails?.serviceCustomer) {
       fetchServiceCustomer(checkoutDetails.serviceCustomer);
+      fetchSingleUser(checkoutDetails.serviceCustomer);
     }
+     
   }, [checkoutDetails]);
 
 
@@ -411,7 +422,7 @@ const AllBookingsDetails = () => {
             </div>
             {/* RIGHT SIDE */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-              <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
+              <CustomerInfoCard serviceCustomer={serviceCustomer} singleUser={singleUser} loading={loading} error={error} />
               <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} />
               <ServiceMenCard serviceManId={checkoutDetails.serviceMan} />
             </div>
@@ -444,7 +455,7 @@ const AllBookingsDetails = () => {
 
             {/* RIGHT */}
             <div className="w-full lg:w-1/3 rounded-2xl border border-gray-200 bg-white p-3">
-              <CustomerInfoCard serviceCustomer={serviceCustomer} loading={loading} error={error} />
+              <CustomerInfoCard serviceCustomer={serviceCustomer} singleUser={singleUser} loading={loading} error={error} />
               {/* <ProviderAssignedCard serviceId={serviceId} checkoutId={checkoutDetails._id} /> */}
               {/* <ServiceMenCard serviceManId={checkoutDetails?.serviceMan} /> */}
             </div>
