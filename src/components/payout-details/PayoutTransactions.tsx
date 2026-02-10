@@ -324,7 +324,7 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
         ? wpArray.find(w => w.weekStart === selectedWeek)
         : wpArray.sort((a, b) => new Date(b.weekStart).getTime() - new Date(a.weekStart).getTime())[0];
 
-    const belongsToSelectedWeek = wp && wp.weekStart && selectedWeek ? wp.weekStart === selectedWeek : !!wp;
+    const belongsToSelectedWeek = wp && wp.weekStart && selectedWeek   ? wp.weekStart === selectedWeek : !!wp;
     const payoutId = wp?._id || ""; // weekly payout doc id
 
     return {
@@ -552,9 +552,9 @@ const PayoutTransactions: React.FC<PayoutTransactionsProps> = ({
           <div className="flex justify-center mt-4">
             <Pagination
               currentPage={currentPage}
-              totalItems={totalRecords}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
+               totalItems={totalPages * rowsPerPage}
+              // totalPages={totalPages}
+               onPageChange={(page) => setCurrentPage(page)}
             />
           </div>
         </>
