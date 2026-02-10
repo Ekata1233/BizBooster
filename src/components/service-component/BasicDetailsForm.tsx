@@ -500,7 +500,6 @@ const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             Icon Image
           </Label>
           
-          {/* Using the same FileInput component */}
           <FileInput
             id={`icon-${index}`}
             accept="image/*"

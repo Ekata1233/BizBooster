@@ -60,14 +60,34 @@ export async function POST(req: NextRequest) {
 
     const { email, password } = parsed.data;
 
-    const provider = await Provider.findOne({ email });
+   const provider = await Provider
+  .findOne({ email })
+  .select("+password");
 
-    if (!provider || !(await provider.comparePassword(password))) {
-      return NextResponse.json(
-        { success: false, message: "Invalid Password" },
-        { status: 401, headers }
-      );
-    }
+
+    if (!provider) {
+  return NextResponse.json(
+    { success: false, message: "Invalid credentials" },
+    { status: 401, headers }
+  );
+}
+
+if (!provider.password) {
+  return NextResponse.json(
+    { success: false, message: "Password not set for this account" },
+    { status: 401, headers }
+  );
+}
+
+const isMatch = await provider.comparePassword(password);
+
+if (!isMatch) {
+  return NextResponse.json(
+    { success: false, message: "Invalid credentials" },
+    { status: 401, headers }
+  );
+}
+
 
     const token = signToken(provider._id.toString());
 
