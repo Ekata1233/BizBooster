@@ -53,6 +53,16 @@ export async function POST(req) {
         // }
 
         // console.log("Generated Hash:", generateReverseHash(data));
+        const existingPayment = await Payment.findOne({
+            payment_id: data.mihpayid,
+            status: "SUCCESS"
+        });
+
+        if (existingPayment) {
+            console.log("⚠️ Duplicate webhook ignored");
+            return NextResponse.json({ success: true }, { headers: corsHeaders });
+        }
+
 
         // --- Extract PayU identifiers ---
         const orderId = data.udf1;     // your order id
