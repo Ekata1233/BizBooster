@@ -61,7 +61,7 @@ const FranchiseDetailsForm: React.FC<FranchiseDetailsFormProps> = ({ data, setDa
   // Editors and simple fields
   const [termsAndConditions, setTermsAndConditions] = useState<string>(data?.termsAndConditions || '');
   const [rows, setRows] = useState<RowData[]>(data?.rows?.length ? data.rows : []);
-  const [showExtraSections, setShowExtraSections] = useState(false);
+  // const [showExtraSections, setShowExtraSections] = useState(false);
 const didInitFromData = useRef(false);
 
 
@@ -77,12 +77,12 @@ const [areaRequired, setAreaRequired] = useState<string>(data?.areaRequired || '
       ? data.franchiseModel
       : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
   );
-  const [extraSections, setExtraSections] = useState<ExtraSection[]>(
-    data?.extraSections?.length
-      ? data.extraSections
-      : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
-  );
-  const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : []);
+  // const [extraSections, setExtraSections] = useState<ExtraSection[]>(
+  //   data?.extraSections?.length
+  //     ? data.extraSections
+  //     : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
+  // );
+  // const [extraImages, setExtraImages] = useState<string[]>(data?.extraImages?.length ? data.extraImages : []);
 
   useEffect(() => {
     // no-op to keep behavior consistent with other forms that use mounted ref
@@ -103,8 +103,8 @@ const [areaRequired, setAreaRequired] = useState<string>(data?.areaRequired || '
   monthlyEarnPotential,
   areaRequired,
   franchiseModel,
-  extraSections,
-  extraImages,
+  // extraSections,
+  // extraImages,
     };
 
     if (JSON.stringify(newData) !== JSON.stringify(data)) {
@@ -117,8 +117,8 @@ const [areaRequired, setAreaRequired] = useState<string>(data?.areaRequired || '
   monthlyEarnPotential,
   areaRequired,
   franchiseModel,
-  extraSections,
-  extraImages,
+  // extraSections,
+  // extraImages,
   ]);
 
 
@@ -154,13 +154,13 @@ setMonthlyEarnPotential(
       : [{ title: '', agreement: '', price: null, discount: null, gst: null, fees: null }]
   );
 
-  setExtraSections(
-    Array.isArray(data.extraSections) && data.extraSections.length
-      ? data.extraSections
-      : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
-  );
+  // setExtraSections(
+  //   Array.isArray(data.extraSections) && data.extraSections.length
+  //     ? data.extraSections
+  //     : [{ title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] }]
+  // );
 
-  setExtraImages(Array.isArray(data.extraImages) ? data.extraImages : []);
+  // setExtraImages(Array.isArray(data.extraImages) ? data.extraImages : []);
 }, []);
 
   // -----------------------
@@ -216,54 +216,54 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
   // -----------------------
   // ExtraSections handlers (images kept as URL strings to match other forms)
   // -----------------------
-  const addExtraSection = () =>
-    setExtraSections([
-      ...extraSections,
-      { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] },
-    ]);
-  const removeExtraSection = (i: number) => setExtraSections(extraSections.filter((_, idx) => idx !== i));
-  const updateExtraSection = (i: number, newSection: ExtraSection) => {
-    const v = [...extraSections];
-    v[i] = newSection;
-    setExtraSections(v);
-  };
+  // const addExtraSection = () =>
+  //   setExtraSections([
+  //     ...extraSections,
+  //     { title: '', subtitle: [''], image: [''], description: [''], subDescription: [''], lists: [''], tags: [''] },
+  //   ]);
+  // const removeExtraSection = (i: number) => setExtraSections(extraSections.filter((_, idx) => idx !== i));
+  // const updateExtraSection = (i: number, newSection: ExtraSection) => {
+  //   const v = [...extraSections];
+  //   v[i] = newSection;
+  //   setExtraSections(v);
+  // };
 
   // helper to update nested string arrays in extra sections
-  const updateExtraSectionArrayField = (
-    sectionIndex: number,
-    field: keyof ExtraSection,
-    itemIndex: number,
-    value: string
-  ) => {
-    const v = [...extraSections];
-    const arr = [...(v[sectionIndex][field] as string[])];
-    arr[itemIndex] = value;
-    v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
-    setExtraSections(v);
-  };
-  const addExtraSectionArrayItem = (sectionIndex: number, field: keyof ExtraSection) => {
-    const v = [...extraSections];
-    const arr = [...(v[sectionIndex][field] as string[]), ''];
-    v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
-    setExtraSections(v);
-  };
-  const removeExtraSectionArrayItem = (sectionIndex: number, field: keyof ExtraSection, itemIndex: number) => {
-    const v = [...extraSections];
-    const arr = [...(v[sectionIndex][field] as string[])].filter((_, idx) => idx !== itemIndex);
-    v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
-    setExtraSections(v);
-  };
+  // const updateExtraSectionArrayField = (
+  //   sectionIndex: number,
+  //   field: keyof ExtraSection,
+  //   itemIndex: number,
+  //   value: string
+  // ) => {
+  //   const v = [...extraSections];
+  //   const arr = [...(v[sectionIndex][field] as string[])];
+  //   arr[itemIndex] = value;
+  //   v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
+  //   setExtraSections(v);
+  // };
+  // const addExtraSectionArrayItem = (sectionIndex: number, field: keyof ExtraSection) => {
+  //   const v = [...extraSections];
+  //   const arr = [...(v[sectionIndex][field] as string[]), ''];
+  //   v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
+  //   setExtraSections(v);
+  // };
+  // const removeExtraSectionArrayItem = (sectionIndex: number, field: keyof ExtraSection, itemIndex: number) => {
+  //   const v = [...extraSections];
+  //   const arr = [...(v[sectionIndex][field] as string[])].filter((_, idx) => idx !== itemIndex);
+  //   v[sectionIndex] = { ...v[sectionIndex], [field]: arr } as ExtraSection;
+  //   setExtraSections(v);
+  // };
 
   // -----------------------
   // ExtraImages handlers
   // -----------------------
-  const addExtraImage = () => setExtraImages([...extraImages, '']);
-  const updateExtraImage = (i: number, value: string) => {
-    const v = [...extraImages];
-    v[i] = value;
-    setExtraImages(v);
-  };
-  const removeExtraImage = (i: number) => setExtraImages(extraImages.filter((_, idx) => idx !== i));
+  // const addExtraImage = () => setExtraImages([...extraImages, '']);
+  // const updateExtraImage = (i: number, value: string) => {
+  //   const v = [...extraImages];
+  //   v[i] = value;
+  //   setExtraImages(v);
+  // };
+  // const removeExtraImage = (i: number) => setExtraImages(extraImages.filter((_, idx) => idx !== i));
 
 
   return (
@@ -545,14 +545,13 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
          )}
 
         {/* Extra Images (URLs) */}
-        {fieldsConfig?.extraImages && (
+        {/* {fieldsConfig?.extraImages && (
         <div className="my-4">
   <Label>Extra Images</Label>
 
   {extraImages.map((img, i) => (
     <div key={i} className="flex gap-3 items-center mt-2">
 
-      {/* FILE INPUT (same type you use everywhere) */}
       <FileInput
         onChange={(e: any) => {
           const file = e.target.files?.[0] || null;
@@ -560,14 +559,12 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
         }}
       />
 
-      {/* Show selected file name */}
       {img && (
         <span className="text-sm text-gray-600 w-40 truncate">
           {img.name}
         </span>
       )}
 
-      {/* Remove Button */}
       <button
         type="button"
         className="text-red-500"
@@ -578,7 +575,6 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
     </div>
   ))}
 
-  {/* ADD NEW EXTRA IMAGE BUTTON */}
   <button
     type="button"
     onClick={addExtraImage}
@@ -587,12 +583,12 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
     + Add Extra Image
   </button>
 </div>
-        )}
+        )} */}
  
 
         {/* Extra Sections */}
 {/* Extra Sections */}
-{fieldsConfig?.extraSections && (
+{/* {fieldsConfig?.extraSections && (
 <div className="my-4">
   <Label>Extra Sections</Label>
 
@@ -639,7 +635,6 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
               <div key={field} className="border p-3 rounded">
                 <Label className="capitalize">{field}</Label>
 
-                {/* ---------- IMAGE FIELD (FILE INPUT) ---------- */}
                 {field === "image" ? (
                   <div className="mt-2">
                     <FileInput
@@ -652,7 +647,6 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
                       }}
                     />
 
-                    {/* If old image URL exists → Show preview */}
                     {sec.image &&
                       sec.image.length > 0 &&
                       typeof sec.image[0] === "string" && (
@@ -663,15 +657,7 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
                         />
                       )}
 
-                    {/* If new file uploaded → Show filename */}
-                    {/* {sec.image &&
-                      sec.image.length > 0 && (
-                        <p className="text-sm mt-1 text-gray-500">
-                          {sec.image[0].name}
-                        </p>
-                      )} */}
-
-                    {/* Add button for more image items */}
+                   
                     <button
                       type="button"
                       className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
@@ -681,7 +667,6 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
                     </button>
                   </div>
                 ) : (
-                  /* ---------- NORMAL INPUT FOR OTHER FIELDS ---------- */
                   <>
                     {sec[field].map((val, idx) => (
                       <div key={idx} className="relative mt-2">
@@ -744,7 +729,7 @@ const updateMonthlyEarn = (i: number, key: 'range' | 'parameters', value: string
     </>
   )}
 </div>
-)}
+)} */}
 
       </div>
     </div>

@@ -153,8 +153,8 @@ export async function POST(req: NextRequest) {
       timeRequired: [],
       faq: [],
       packages: [],
-      extraSections: [],
-      extraImages: [],
+      // extraSections: [],
+      // extraImages: [],
       
       // --- NEW EXTENDED FIELDS ---
       operatingCities: [],
@@ -326,85 +326,85 @@ for (let i = 0; i < 8; i++) {
     }
     
     // --- Extra Images ---
-    serviceDetails.extraImages = [];
-    for (const key of formData.keys()) {
-      if (key.startsWith("serviceDetails[extraImages]")) {
-        const file = formData.get(key);
-        if (file instanceof File) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const upload = await imagekit.upload({
-            file: buffer,
-            fileName: `${uuidv4()}-${file.name}`,
-            folder: "/services/extraImages",
-          });
-          serviceDetails.extraImages.push(upload.url);
-        }
-      }
-    }
+    // serviceDetails.extraImages = [];
+    // for (const key of formData.keys()) {
+    //   if (key.startsWith("serviceDetails[extraImages]")) {
+    //     const file = formData.get(key);
+    //     if (file instanceof File) {
+    //       const buffer = Buffer.from(await file.arrayBuffer());
+    //       const upload = await imagekit.upload({
+    //         file: buffer,
+    //         fileName: `${uuidv4()}-${file.name}`,
+    //         folder: "/services/extraImages",
+    //       });
+    //       serviceDetails.extraImages.push(upload.url);
+    //     }
+    //   }
+    // }
 
     // --- Extra Sections ---
-    for (let i = 0; i < 8; i++) {
-      const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
-      if (!title) break;
+    // for (let i = 0; i < 8; i++) {
+    //   const title = formData.get(`serviceDetails[extraSections][${i}][title]`);
+    //   if (!title) break;
 
-      const extraSection: any = {
-        title,
-        subtitle: [],
-        description: [],
-        subDescription: [],
-        lists: [],
-        tags: [],
-        image: [],
-      };
+    //   const extraSection: any = {
+    //     title,
+    //     subtitle: [],
+    //     description: [],
+    //     subDescription: [],
+    //     lists: [],
+    //     tags: [],
+    //     image: [],
+    //   };
 
-      for (let j = 0; j < 8; j++) {
-        const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
-        if (!subtitle) break;
-        extraSection.subtitle.push(subtitle);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const subtitle = formData.get(`serviceDetails[extraSections][${i}][subtitle][${j}]`);
+    //     if (!subtitle) break;
+    //     extraSection.subtitle.push(subtitle);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
-        if (!description) break;
-        extraSection.description.push(description);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const description = formData.get(`serviceDetails[extraSections][${i}][description][${j}]`);
+    //     if (!description) break;
+    //     extraSection.description.push(description);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
-        if (!subDescription) break;
-        extraSection.subDescription.push(subDescription);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const subDescription = formData.get(`serviceDetails[extraSections][${i}][subDescription][${j}]`);
+    //     if (!subDescription) break;
+    //     extraSection.subDescription.push(subDescription);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
-        if (!list) break;
-        extraSection.lists.push(list);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const list = formData.get(`serviceDetails[extraSections][${i}][lists][${j}]`);
+    //     if (!list) break;
+    //     extraSection.lists.push(list);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
-        if (!tag) break;
-        extraSection.tags.push(tag);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const tag = formData.get(`serviceDetails[extraSections][${i}][tags][${j}]`);
+    //     if (!tag) break;
+    //     extraSection.tags.push(tag);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const imageFile = formData.get(
-          `serviceDetails[extraSections][${i}][image][${j}]`
-        );
+    //   for (let j = 0; j < 8; j++) {
+    //     const imageFile = formData.get(
+    //       `serviceDetails[extraSections][${i}][image][${j}]`
+    //     );
 
-        if (!(imageFile instanceof File)) break;
+    //     if (!(imageFile instanceof File)) break;
 
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const upload = await imagekit.upload({
-          file: buffer,
-          fileName: `${uuidv4()}-${imageFile.name}`,
-          folder: "/services/extraSections",
-        });
-        extraSection.image.push(upload.url);
-      }
+    //     const buffer = Buffer.from(await imageFile.arrayBuffer());
+    //     const upload = await imagekit.upload({
+    //       file: buffer,
+    //       fileName: `${uuidv4()}-${imageFile.name}`,
+    //       folder: "/services/extraSections",
+    //     });
+    //     extraSection.image.push(upload.url);
+    //   }
 
-      serviceDetails.extraSections.push(extraSection);
-    }
+    //   serviceDetails.extraSections.push(extraSection);
+    // }
 
     // --- NEW EXTENDED FIELDS PROCESSING ---
     
@@ -790,8 +790,8 @@ for (let i = 0; i < 8; i++) {
       monthlyEarnPotential: [],
       areaRequired : formData.get("franchiseDetails[areaRequired]"),
       franchiseModel: [],
-      extraSections: [],
-      extraImages: [],
+      // extraSections: [],
+      // extraImages: [],
     };
 
     for (let i = 0; i < 8; i++) {
@@ -826,67 +826,67 @@ for (let i = 0; i < 8; i++) {
     }
 
     // --- Franchise Extra Sections ---
-    for (let i = 0; i < 8; i++) {
-      const title = formData.get(`franchiseDetails[extraSections][${i}][title]`);
-      if (!title) break;
+    // for (let i = 0; i < 8; i++) {
+    //   const title = formData.get(`franchiseDetails[extraSections][${i}][title]`);
+    //   if (!title) break;
 
-      const extraSection: any = {
-        title,
-        subtitle: [],
-        description: [],
-        subDescription: [],
-        lists: [],
-        tags: [],
-        image: [],
-      };
+    //   const extraSection: any = {
+    //     title,
+    //     subtitle: [],
+    //     description: [],
+    //     subDescription: [],
+    //     lists: [],
+    //     tags: [],
+    //     image: [],
+    //   };
 
-      for (let j = 0; j < 8; j++) {
-        const subtitle = formData.get(`franchiseDetails[extraSections][${i}][subtitle][${j}]`);
-        if (!subtitle) break;
-        extraSection.subtitle.push(subtitle);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const subtitle = formData.get(`franchiseDetails[extraSections][${i}][subtitle][${j}]`);
+    //     if (!subtitle) break;
+    //     extraSection.subtitle.push(subtitle);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const description = formData.get(`franchiseDetails[extraSections][${i}][description][${j}]`);
-        if (!description) break;
-        extraSection.description.push(description);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const description = formData.get(`franchiseDetails[extraSections][${i}][description][${j}]`);
+    //     if (!description) break;
+    //     extraSection.description.push(description);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const subDescription = formData.get(`franchiseDetails[extraSections][${i}][subDescription][${j}]`);
-        if (!subDescription) break;
-        extraSection.subDescription.push(subDescription);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const subDescription = formData.get(`franchiseDetails[extraSections][${i}][subDescription][${j}]`);
+    //     if (!subDescription) break;
+    //     extraSection.subDescription.push(subDescription);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const list = formData.get(`franchiseDetails[extraSections][${i}][lists][${j}]`);
-        if (!list) break;
-        extraSection.lists.push(list);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const list = formData.get(`franchiseDetails[extraSections][${i}][lists][${j}]`);
+    //     if (!list) break;
+    //     extraSection.lists.push(list);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const tag = formData.get(`franchiseDetails[extraSections][${i}][tags][${j}]`);
-        if (!tag) break;
-        extraSection.tags.push(tag);
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const tag = formData.get(`franchiseDetails[extraSections][${i}][tags][${j}]`);
+    //     if (!tag) break;
+    //     extraSection.tags.push(tag);
+    //   }
 
-      for (let j = 0; j < 8; j++) {
-        const imageFile = formData.get(`franchiseDetails[extraSections][${i}][image][${j}]`);
-        if (imageFile instanceof File) {
-          const buffer = Buffer.from(await imageFile.arrayBuffer());
-          const upload = await imagekit.upload({
-            file: buffer,
-            fileName: `${uuidv4()}-${imageFile.name || "extra-section.png"}`,
-            folder: "/services/franchiseExtraSections",
-          });
-          extraSection.image.push(upload.url);
-        } else {
-          break;
-        }
-      }
+    //   for (let j = 0; j < 8; j++) {
+    //     const imageFile = formData.get(`franchiseDetails[extraSections][${i}][image][${j}]`);
+    //     if (imageFile instanceof File) {
+    //       const buffer = Buffer.from(await imageFile.arrayBuffer());
+    //       const upload = await imagekit.upload({
+    //         file: buffer,
+    //         fileName: `${uuidv4()}-${imageFile.name || "extra-section.png"}`,
+    //         folder: "/services/franchiseExtraSections",
+    //       });
+    //       extraSection.image.push(upload.url);
+    //     } else {
+    //       break;
+    //     }
+    //   }
 
-      franchiseDetails.extraSections.push(extraSection);
-    }
+    //   franchiseDetails.extraSections.push(extraSection);
+    // }
 
     // --- Final Price Calculations ---
     const discountedPrice = discount ? Math.floor(price - price * (discount / 100)) : price;

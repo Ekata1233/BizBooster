@@ -17,15 +17,15 @@ const ClientSideCustomEditor = dynamic(
 // ------------------- TYPES -------------------
 type FAQ = { question: string; answer: string };
 type TitleDescription = { title: string; description: string; icon?: string | File };
-type ExtraSection = {
-  title: string;
-  subtitle: string[];
-  image: string[];  // Changed to string array for URLs
-  description: string[];
-  subDescription: string[];
-  lists: string[];
-  tags: string[];
-};
+// type ExtraSection = {
+//   title: string;
+//   subtitle: string[];
+//   image: string[];  // Changed to string array for URLs
+//   description: string[];
+//   subDescription: string[];
+//   lists: string[];
+//   tags: string[];
+// };
 type Package = { name: string; price: number | null; discount: number | null; discountedPrice: number | null; whatYouGet: string[] };
 type MoreInfo = { title: string; image: string | File; description: string };
 type ConnectWith = { name: string; mobileNo: string; email: string };
@@ -108,7 +108,7 @@ export type ServiceDetails = {
   howItWorks: TitleDescription[];
   termsAndConditions: string[];
   faq: FAQ[];
-  extraSections: ExtraSection[];
+  // extraSections: ExtraSection[];
   whyChooseUs: TitleDescription[];
   packages: Package[];
   weRequired: TitleDescription[];
@@ -116,7 +116,7 @@ export type ServiceDetails = {
   moreInfo: MoreInfo[];
   connectWith: ConnectWith[];
   timeRequired: TimeRequired[];
-  extraImages: (string | File)[];
+  // extraImages: (string | File)[];
 
   operatingCities: string[];
   brochureImage: (string | File)[];
@@ -201,8 +201,8 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
     brochureImages?: string;
     certificateImages?: string;
     whomToSellIcons?: { [key: number]: string };
-    extraImages?: { [key: number]: string };
-    extraSectionsImages?: { [key: number]: string };
+    // extraImages?: { [key: number]: string };
+    // extraSectionsImages?: { [key: number]: string };
   }>({});
   // ------------------- STATES -------------------
   const [benefits, setBenefits] = useState<string[]>([]);
@@ -214,15 +214,15 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [howItWorks, setHowItWorks] = useState<TitleDescription[]>([{ title: '', description: '', icon: '' }]);
   const [termsAndConditions, setTermsAndConditions] = useState<string[]>([]);
   const [faq, setFaq] = useState<FAQ[]>([{ question: '', answer: '' }]);
-  const [extraSections, setExtraSections] = useState<ExtraSection[]>([{ 
-    title: '', 
-    subtitle: [''], 
-    image: [], 
-    description: [''], 
-    subDescription: [''], 
-    lists: [''], 
-    tags: [''] 
-  }]);
+  // const [extraSections, setExtraSections] = useState<ExtraSection[]>([{ 
+  //   title: '', 
+  //   subtitle: [''], 
+  //   image: [], 
+  //   description: [''], 
+  //   subDescription: [''], 
+  //   lists: [''], 
+  //   tags: [''] 
+  // }]);
   const [whyChooseUs, setWhyChooseUs] = useState<TitleDescription[]>([{ title: '', description: '', icon: '' }]);
   const [packages, setPackages] = useState<Package[]>([{ 
     name: '', 
@@ -236,8 +236,8 @@ const ServiceDetailsForm: React.FC<Props> = ({ data, setData ,fieldsConfig }) =>
   const [moreInfo, setMoreInfo] = useState<MoreInfo[]>([{ title: '', image: '', description: '' }]);
   const [connectWith, setConnectWith] = useState<ConnectWith[]>([{ name: '', mobileNo: '', email: '' }]);
   const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ range: '', parameters: '' }]);
-  const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: "" }]);
-  const [showExtraSections, setShowExtraSections] = useState(false);
+  // const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: "" }]);
+  // const [showExtraSections, setShowExtraSections] = useState(false);
 
   
 
@@ -307,15 +307,15 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
     setHowItWorks(data.howItWorks?.length ? data.howItWorks : [{ title: '', description: '', icon: '' }]);
     setTermsAndConditions(Array.isArray(data.termsAndConditions) ? data.termsAndConditions : [data.termsAndConditions || '']);
     setFaq(data.faq?.length ? data.faq : [{ question: '', answer: '' }]);
-    setExtraSections(data.extraSections?.length ? data.extraSections : [{ 
-      title: '', 
-      subtitle: [''], 
-      image: [], 
-      description: [''], 
-      subDescription: [''], 
-      lists: [''], 
-      tags: [''] 
-    }]);
+    // setExtraSections(data.extraSections?.length ? data.extraSections : [{ 
+    //   title: '', 
+    //   subtitle: [''], 
+    //   image: [], 
+    //   description: [''], 
+    //   subDescription: [''], 
+    //   lists: [''], 
+    //   tags: [''] 
+    // }]);
     setWhyChooseUs(data.whyChooseUs?.length ? data.whyChooseUs : [{ title: '', description: '', icon: '' }]);
     setPackages(data.packages?.length ? data.packages : [{ 
       name: '', 
@@ -331,10 +331,10 @@ const [safetyAndAssurance, setSafetyAndAssurance] = useState<string[]>(['']);
     setTimeRequired(data.timeRequired?.length ? data.timeRequired : [{ range: '', parameters: '' }]);
     
     // Convert extraImages strings to objects
-    const extraImagesData = data.extraImages?.map(img => 
-      typeof img === 'string' ? { icon: img } : { icon: '', file: img }
-    ) || [{ icon: "" }];
-    setExtraImages(extraImagesData);
+    // const extraImagesData = data.extraImages?.map(img => 
+    //   typeof img === 'string' ? { icon: img } : { icon: '', file: img }
+    // ) || [{ icon: "" }];
+    // setExtraImages(extraImagesData);
 
 
 // NEW EXTENDED FIELDS INITIALIZATION
@@ -399,7 +399,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
       howItWorks,
       termsAndConditions,
       faq,
-      extraSections,
+      // extraSections,
       whyChooseUs,
       packages,
       weRequired,
@@ -407,7 +407,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
       moreInfo,
       connectWith,
       timeRequired,
-      extraImages: extraImages.map(item => item.file || item.icon), // Convert back to string/File array
+      // extraImages: extraImages.map(item => item.file || item.icon), // Convert back to string/File array
       highlightPreviews, // Keep previews separate
 
        // NEW EXTENDED FIELDS
@@ -450,7 +450,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
     howItWorks,
     termsAndConditions,
     faq,
-    extraSections,
+    // extraSections,
     whyChooseUs,
     packages,
     weRequired,
@@ -458,7 +458,7 @@ setSafetyAndAssurance(data.safetyAndAssurance?.length ? data.safetyAndAssurance 
     moreInfo,
     connectWith,
     timeRequired,
-    extraImages,
+    // extraImages,
 
 
     operatingCities,
@@ -2296,6 +2296,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
         value={item.range || ''} 
         placeholder="Range (e.g., 3-5)" 
         onChange={e => updateItem({ ...item, range: e.target.value })} 
+
       />
       <Input 
         value={item.parameters || ''} 
@@ -2308,7 +2309,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
 )}
 
         {/* Extra Images */}
-       {fieldsConfig?.extraImage && (
+       {/* {fieldsConfig?.extraImage && (
   <div>
     <Label>Extra Images</Label>
     {renderArrayField<ExtraImageItem>(extraImages, setExtraImages, (img, idx, updateImg) => (
@@ -2368,10 +2369,10 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
       </div>
     ), { icon: "" })}
   </div>
-)}
+)} */}
 
         {/* Extra Sections */}
-        {fieldsConfig?.extraSection && (
+        {/* {fieldsConfig?.extraSection && (
         <div className="my-4">
           <Label>Extra Sections</Label>
           
@@ -2529,7 +2530,7 @@ const removeFile = (index: number, setter: React.Dispatch<React.SetStateAction<(
             </>
           )}
         </div>
-        )}
+        )} */}
       </div>
     </div>
   );
