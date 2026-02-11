@@ -466,4 +466,5 @@ const AllBookingsDetails = () => {
   );
 };
 
+
 export default AllBookingsDetails;
