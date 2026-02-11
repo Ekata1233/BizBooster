@@ -154,8 +154,10 @@ const AllBookings = () => {
     .filter((checkout) => {
       const searchTerm = search.toLowerCase();
 
-      const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || '';
-      const email = checkout.serviceCustomer?.email?.toLowerCase() || '';
+      console.log("checkout in al booking : ", checkout);
+
+      const fullName = checkout.serviceCustomer?.fullName?.toLowerCase() || checkout.user.fullName;
+      const email = checkout.serviceCustomer?.email?.toLowerCase() || checkout.user.email;
       const bookingId = checkout.bookingId?.toLowerCase() || '';
       const paymentStatus = checkout.paymentStatus?.toLowerCase() || '';
       const orderStatus = checkout.orderStatus?.toLowerCase() || '';
@@ -178,8 +180,8 @@ const AllBookings = () => {
     })
     .map((checkout) => ({
       bookingId: checkout.bookingId,
-      fullName: checkout.serviceCustomer?.fullName,
-      email: checkout.serviceCustomer?.email,
+      fullName: checkout.serviceCustomer?.fullName || checkout.user.fullName,
+      email: checkout.serviceCustomer?.email || checkout.user.email,
       totalAmount:
         Number(checkout.grandTotal ?? 0) > 0
           ? Number(checkout.grandTotal)
