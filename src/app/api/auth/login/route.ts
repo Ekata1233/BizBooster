@@ -64,14 +64,23 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+   // Check if hashed password exists
+if (!user.password) {
+  return NextResponse.json(
+    { error: 'Password not set for this user' },
+    { status: 400, headers: corsHeaders }
+  );
+}
 
-    if (!isMatch) {
-      return NextResponse.json(
-        { error: 'Invalid Password' },
-        { status: 400, headers: corsHeaders }
-      );
-    }
+const isMatch = await bcrypt.compare(password, user.password);
+
+if (!isMatch) {
+  return NextResponse.json(
+    { error: 'Invalid Password' },
+    { status: 400, headers: corsHeaders }
+  );
+}
+
 
     const token = jwt.sign(
       { userId: user._id },

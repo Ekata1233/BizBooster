@@ -1108,18 +1108,34 @@ try {
               <div className="">
                 <div className="flex items-center justify-center gap-6">
                   {/* STEP 1 */}
-                  <div
-                    onClick={() => setFranchiseStep(1)}
-                    className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all 
-                      ${franchiseStep === 1 ? "bg-blue-600 text-white shadow-md border-blue-600" :
-                      "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}
-                    `}
-                  >
-                    <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 border border-gray-400">
-                      {franchiseStep > 1 ? "✓" : "1"}
-                    </div>
-                    <span className="font-medium">Franchise Basic Details</span>
-                  </div>
+                
+<div
+  onClick={() => {
+    // Disable clicking on step 1 when on step 2
+    if (franchiseStep === 2) {
+      return; // Do nothing when trying to go back
+    }
+    // Only allow clicking if on step 1
+    if (franchiseStep === 1) {
+      // Optional: You can still keep it clickable on step 1 if needed
+      // But since we're already on step 1, clicking does nothing anyway
+    }
+  }}
+  className={`flex items-center gap-3 px-5 py-3 rounded-full border cursor-pointer transition-all 
+    ${franchiseStep === 1 ? "bg-blue-600 text-white shadow-md border-blue-600" :
+    createdServiceId ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed" :
+    "bg-white text-gray-600 border-gray-300"}
+  `}
+>
+  <div className={`w-7 h-7 flex items-center justify-center rounded-full
+    ${franchiseStep === 1 ? "bg-white/20 border border-white" :
+    createdServiceId ? "bg-gray-300 text-gray-500 border-gray-300" :
+    "bg-white/20 border border-gray-400"}`}
+  >
+    {createdServiceId ? "✓" : "1"}
+  </div>
+  <span className="font-medium">Franchise Basic Details</span>
+</div>
                   {/* LINE */}
                   <div className="w-12 h-1 bg-gray-300"></div>
                   {/* STEP 2 */}
