@@ -163,7 +163,7 @@ export interface ServiceDetails {
   howItWorks: HowItWorksItem[];
   termsAndConditions: string[];
   faq: FAQ[];
-  extraSections: ExtraSection[];
+  // extraSections: ExtraSection[];
   whyChooseUs: WhyChooseUsItem[];
   packages: PackageItem[];
   weRequired: { title: string; description: string }[];
@@ -171,7 +171,7 @@ export interface ServiceDetails {
   moreInfo: MoreInfoItem[];
   connectWith: ConnectWithItem[];
   timeRequired: TimeRequiredItem[];
-  extraImages: string[];
+  // extraImages: string[];
   
   // 🆕 NEW EXTENDED FIELDS (26 fields)
   operatingCities: string[];
@@ -216,8 +216,8 @@ export interface FranchiseDetails {
     gst: number | null;
     fees: number | null;
   }[];
-  extraSections: ExtraSection[];
-  extraImages: string[];
+  // extraSections: ExtraSection[];
+  // extraImages: string[];
 }
 
 // -------- MAIN SERVICE MODEL ----------
@@ -333,7 +333,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     howItWorks: [],
     termsAndConditions: [],
     faq: [],
-    extraSections: [],
+    // extraSections: [],
     whyChooseUs: [],
     packages: [],
     weRequired: [],
@@ -341,7 +341,7 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
     moreInfo: [],
     connectWith: [],
     timeRequired: [],
-    extraImages: [],
+    // extraImages: [],
     
     // 🆕 NEW EXTENDED FIELDS with defaults
     operatingCities: [],
@@ -401,8 +401,8 @@ export const ServiceProvider = ({ children }: { children: ReactNode }) => {
       investmentRange: [],
       monthlyEarnPotential: [],
       franchiseModel: [],
-      extraSections: [],
-      extraImages: []
+      // extraSections: [],
+      // extraImages: []
     },
     averageRating: 0,
     totalReviews: 0,

@@ -80,17 +80,17 @@ keyValues: [
   termsAndConditions: [{ type: String }],
   faq: [{ question: String, answer: String }],
 
-  extraSections: [
-    {
-      title: { type: String },
-      subtitle: [{ type: String }],
-      image: [{ type: String }],
-      description: [{ type: String }],
-      subDescription: [{ type: String }],
-      lists: [{ type: String }],
-      tags: [{ type: String }],
-    },
-  ],
+  // extraSections: [
+  //   {
+  //     title: { type: String },
+  //     subtitle: [{ type: String }],
+  //     image: [{ type: String }],
+  //     description: [{ type: String }],
+  //     subDescription: [{ type: String }],
+  //     lists: [{ type: String }],
+  //     tags: [{ type: String }],
+  //   },
+  // ],
 
   whyChooseUs: [
     { title: String, icon: String, description: String },
@@ -124,7 +124,7 @@ keyValues: [
   },
 ],
 
-  extraImages: [{ type: String }],
+  // extraImages: [{ type: String }],
 
   // --------------------------------------------------
   // 🆕 EXTENDED SERVICE DETAILS
@@ -291,20 +291,20 @@ areaRequired: { type: String },
         },
       ],
 
-      extraSections: [
-        {
-          title: { type: String },
+      // extraSections: [
+      //   {
+      //     title: { type: String },
 
-          subtitle: [{ type: String }],
-          image: [{ type: String }],
-          description: [{ type: String }],
-          subDescription: [{ type: String }],
-          lists: [{ type: String }],
-          tags: [{ type: String }],
-        }
-      ],
+      //     subtitle: [{ type: String }],
+      //     image: [{ type: String }],
+      //     description: [{ type: String }],
+      //     subDescription: [{ type: String }],
+      //     lists: [{ type: String }],
+      //     tags: [{ type: String }],
+      //   }
+      // ],
 
-      extraImages: [{ type: String }],
+      // extraImages: [{ type: String }],
     },
 
     averageRating: { type: Number, default: 0 },

@@ -114,8 +114,8 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, f
     brochureImages?: string;
     certificateImages?: string;
     whomToSellIcons?: { [key: number]: string };
-    extraImages?: { [key: number]: string };
-    extraSectionsImages?: { [key: number]: string };
+    // extraImages?: { [key: number]: string };
+    // extraSectionsImages?: { [key: number]: string };
   }>({});
   const [editorReady, setEditorReady] = useState(false);
 
@@ -141,9 +141,9 @@ const ServiceUpdateFrom: React.FC<ServiceUpdateFromProps> = ({ datas, setData, f
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: '', answer: '' }]);
   const [connectWith, setConnectWith] = useState<ConnectWith[]>([{ name: '', mobileNo: '', email: '' }]);
   const [timeRequired, setTimeRequired] = useState<TimeRequired[]>([{ range: '', parameters: '' }]);
-  const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: '' }]);
-  const [extraSections, setExtraSections] = useState<ExtraSection[]>([]);
-  const [showExtraSections, setShowExtraSections] = useState(false);
+  // const [extraImages, setExtraImages] = useState<ExtraImageItem[]>([{ icon: '' }]);
+  // const [extraSections, setExtraSections] = useState<ExtraSection[]>([]);
+  // const [showExtraSections, setShowExtraSections] = useState(false);
 
   const [operatingCities, setOperatingCities] = useState<string[]>(['']);
 const [emiavalable, setEmiavalable] = useState<string[]>(['']);
@@ -220,8 +220,8 @@ useEffect(() => {
     faq: faqs,
     connectWith,
     timeRequired,
-    extraImages: extraImages.map(img => img.icon),
-    extraSections: showExtraSections ? extraSections : [] ,
+    // extraImages: extraImages.map(img => img.icon),
+    // extraSections: showExtraSections ? extraSections : [] ,
     operatingCities,
     emiavalable,
     counter,
@@ -261,7 +261,8 @@ useEffect(() => {
   benefits, aboutUs, terms, document, highlightImages,
   whyChooseUs, howItWorks, assuredByFetchTrue, weRequired,
   weDeliver, packages, moreInfo, faqs, connectWith,
-  timeRequired, extraImages, extraSections, showExtraSections,
+  timeRequired, 
+  // extraImages, extraSections, showExtraSections,
   operatingCities,
   emiavalable,
   counter,
@@ -293,10 +294,10 @@ useEffect(() => {
 ]);
 
 // Also, add useMemo to memoize array/object values that are created in render:
-const memoizedExtraImages = useMemo(() => extraImages.map(img => img.icon), [extraImages]);
+// const memoizedExtraImages = useMemo(() => extraImages.map(img => img.icon), [extraImages]);
 
 // Update the dependency in useEffect to use the memoized version:
-extraImages: memoizedExtraImages,
+// extraImages: memoizedExtraImages,
 
   useEffect(() => {
     setEditorReady(true);
@@ -331,12 +332,12 @@ useEffect(() => {
   setFaqs(details.faq?.length ? details.faq : [{ question: '', answer: '' }]);
   setConnectWith(details.connectWith?.length ? details.connectWith : [{ name: '', mobileNo: '', email: '' }]);
   setTimeRequired(details.timeRequired?.length ? details.timeRequired : [{ range: '', parameters: '' }]);
-  const extraImagesArray = details.extraImages?.length 
-    ? details.extraImages.map(icon => ({ icon })) 
-    : [{ icon: '' }];
-  setExtraImages(extraImagesArray);
-  setExtraSections(details.extraSections || []);
-  setShowExtraSections(!!details.extraSections?.length);
+  // const extraImagesArray = details.extraImages?.length 
+  //   ? details.extraImages.map(icon => ({ icon })) 
+  //   : [{ icon: '' }];
+  // setExtraImages(extraImagesArray);
+  // setExtraSections(details.extraSections || []);
+  // setShowExtraSections(!!details.extraSections?.length);
    setOperatingCities(details.operatingCities?.length ? details.operatingCities : ['']);
   setEmiavalable(details.emiavalable?.length ? details.emiavalable : ['']);
 setCounter(
@@ -2414,7 +2415,7 @@ function handleFileUploadUpdate<T>(
 )}
 
       {/* Extra Images */}
-    {fieldsConfig?.extraImage && (
+    {/* {fieldsConfig?.extraImage && (
   <div className="space-y-2">
     <Label className="text-lg font-semibold">Extra Images</Label>
     {renderArrayField(
@@ -2458,18 +2459,18 @@ function handleFileUploadUpdate<T>(
                 }));
                 
                 handleSingleFileUpload(e, (url) => update({ icon: url }));
+
+                
               }
             }}
           />
           
-          {/* ✅ ADD error display */}
           {imageErrors.extraImages?.[idx] && (
             <p className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded border border-red-200">
               {imageErrors.extraImages[idx]}
             </p>
           )}
           
-          {/* ✅ ADD file requirements */}
           <p className="text-xs text-gray-500 mt-1">
             Max size: {IMAGE_MAX_SIZE_MB}MB | Supported: {ALLOWED_IMAGE_TYPES.join(', ')}
           </p>
@@ -2484,13 +2485,15 @@ function handleFileUploadUpdate<T>(
       { icon: '' }
     )}
   </div>
-)}
+)} */}
 
       {/* EXTRA SECTIONS */}
-       {fieldsConfig?.extraSection && (
+       {/* {fieldsConfig?.extraSection && (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label className="text-lg font-semibold">Extra Sections</Label>
+          
+         
           
           {!showExtraSections ? (
             <button
@@ -2508,10 +2511,10 @@ function handleFileUploadUpdate<T>(
             >
               Hide Sections
             </button>
-          )}
+          )} 
         </div>
 
-        {showExtraSections && (
+       {showExtraSections && (
           <div className="space-y-4">
             {extraSections.map((section, sectionIdx) => (
               <div key={sectionIdx} className="border rounded-lg p-4 bg-gray-50 space-y-4">
@@ -2536,7 +2539,6 @@ function handleFileUploadUpdate<T>(
                   }}
                 />
 
-                {/* Subtitle */}
                 <div>
                   <Label>Subtitles</Label>
                   <div className="space-y-2">
@@ -2588,7 +2590,6 @@ function handleFileUploadUpdate<T>(
                   </div>
                 </div>
 
-                {/* Images */}
                 <div>
                   <Label>Images</Label>
                   <FileInput
@@ -2629,7 +2630,6 @@ function handleFileUploadUpdate<T>(
                   </div>
                 </div>
 
-                {/* Lists, Tags, etc. */}
                 {['description', 'subDescription', 'lists', 'tags'].map((field) => (
                   <div key={field}>
                     <Label className="capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</Label>
@@ -2701,9 +2701,9 @@ function handleFileUploadUpdate<T>(
               + Add New Section
             </button>
           </div>
-        )}
+        )} 
       </div>
-       )}
+       )} */}
     </div>
   );
 };
