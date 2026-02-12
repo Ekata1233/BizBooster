@@ -53,7 +53,7 @@
 //     const rawCommission = checkout.service?.franchiseDetails?.commission;
 //     const commission = rawCommission;
 
-//     const leadAmount =  checkout.subtotal;
+//     const leadAmount =  checkout.priceAfterDiscount;
 //     const extraLeadAmount = Array.isArray(lead?.extraService)
 //       ? lead.extraService.reduce((sum: number, item: { total?: number }) => sum + (item.total || 0), 0)
 //       : 0;
@@ -208,7 +208,7 @@ export async function POST(req: Request) {
     const rawCommission = checkout.commission ?? checkout.service?.franchiseDetails?.commission;
     const commission = rawCommission;
 
-    const leadAmount = checkout.subtotal;
+    const leadAmount = checkout.priceAfterDiscount;
     const extraLeadAmount = Array.isArray(lead?.extraService)
       ? lead.extraService.reduce(
         (sum: number, item: { total?: number }) => sum + (item.total || 0),
