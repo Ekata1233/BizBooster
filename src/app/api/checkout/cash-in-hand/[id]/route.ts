@@ -114,6 +114,9 @@ export async function PUT(req: NextRequest) {
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
         checkout.isPartialPayment = !isFullPayment;
 
+                console.log("cashInHandAmount : ", cashInHandAmount);
+
+
         if (statusTypeFromClient === "Lead completed") {
             checkout.orderStatus = "completed";
             checkout.isCompleted = true;
