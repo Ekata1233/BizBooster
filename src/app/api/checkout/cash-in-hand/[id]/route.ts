@@ -174,13 +174,24 @@ export async function PUT(req: NextRequest) {
         }
 
         // 3️⃣ Update Provider Wallet
-        const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
+        let providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
         console.log("🔎 Provider Wallet Found:", providerWallet);
         if (!providerWallet) {
-            return NextResponse.json(
-                { success: false, message: "Provider wallet not found." },
-                { status: 404, headers: corsHeaders }
-            );
+            providerWallet = await ProviderWallet.create({
+                providerId: checkout.provider,
+                balance: 0,
+                receivableBalance: 0,
+                withdrawableBalance: 0,
+                pendingWithdraw: 0,
+                alreadyWithdrawn: 0,
+                totalEarning: 0,
+                totalCredits: 0,
+                totalDebits: 0,
+                cashInHand: 0,
+                adjustmentCash: 0,
+                transactions: [],
+                isActive: true,
+            });
         }
 
         const prevBalance = round2(providerWallet.balance || 0);
