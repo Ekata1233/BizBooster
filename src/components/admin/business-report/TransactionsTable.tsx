@@ -111,6 +111,19 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
     { header: 'Method', accessor: 'method', className: "w-28" },
     {
+      header: 'Commission',
+      accessor: 'commission',
+      className: "w-40", // reduced width + ellipsis
+      render: (row: Transaction) => {
+        console.log("row of transaction table : ", row)
+        return(
+          (
+        <span className="block truncate max-w-[150px]">{row.transactionId}</span>
+      )
+        )
+      },
+    },
+    {
       header: 'Type',
       accessor: 'type',
       className: "w-24",
