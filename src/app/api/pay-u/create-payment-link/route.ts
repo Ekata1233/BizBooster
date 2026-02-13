@@ -43,6 +43,7 @@ export async function POST(req) {
             source: "API",
             order_id: body.orderId,
             // transactionId: body.checkoutId,
+            redirectUrl: "https://www.fetchtrue.com",
             customer: {
                 customerId: body?.customer.customer_id?.toString() ?? "",
                 name: body?.customer.customer_name?.toString() ?? "",

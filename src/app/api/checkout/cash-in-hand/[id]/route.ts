@@ -100,11 +100,16 @@ export async function PUT(req: NextRequest) {
             );
         }
 
+        console.log("🔎 Checkout Found:", checkout);
+
         const total = round2(
             checkout.grandTotal && checkout.grandTotal > 0
                 ? Number(checkout.grandTotal)
                 : Number(checkout.totalAmount ?? 0)
         );
+
+          console.log("🧮 Total Checkout Amount:", total);
+        console.log("💰 Previous Paid Amount:", checkout.paidAmount);
 
         checkout.cashInHand = true;
         checkout.cashInHandAmount = round2((checkout.cashInHandAmount || 0) + fetchedAmount);
@@ -113,6 +118,13 @@ export async function PUT(req: NextRequest) {
         const isFullPayment = checkout.paidAmount >= total;
         checkout.paymentStatus = isFullPayment ? "paid" : "pending";
         checkout.isPartialPayment = !isFullPayment;
+
+                console.log("💰 Updated Paid Amount:", checkout.paidAmount);
+        console.log("⏳ Remaining Amount:", checkout.remainingAmount);
+        
+        console.log("📌 Payment Status:", checkout.paymentStatus);
+        console.log("📌 Is Partial:", checkout.isPartialPayment);
+
 
         if (statusTypeFromClient === "Lead completed") {
             checkout.orderStatus = "completed";
@@ -162,15 +174,28 @@ export async function PUT(req: NextRequest) {
         }
 
         // 3️⃣ Update Provider Wallet
-        const providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
+        let providerWallet = await ProviderWallet.findOne({ providerId: checkout.provider });
+        console.log("🔎 Provider Wallet Found:", providerWallet);
         if (!providerWallet) {
-            return NextResponse.json(
-                { success: false, message: "Provider wallet not found." },
-                { status: 404, headers: corsHeaders }
-            );
+            providerWallet = await ProviderWallet.create({
+                providerId: checkout.provider,
+                balance: 0,
+                receivableBalance: 0,
+                withdrawableBalance: 0,
+                pendingWithdraw: 0,
+                alreadyWithdrawn: 0,
+                totalEarning: 0,
+                totalCredits: 0,
+                totalDebits: 0,
+                cashInHand: 0,
+                adjustmentCash: 0,
+                transactions: [],
+                isActive: true,
+            });
         }
 
         const prevBalance = round2(providerWallet.balance || 0);
+         console.log("💰 Previous Wallet Balance:", prevBalance);
         let remainingCash = 0;
         let newBalance = round2(prevBalance - fetchedAmount);
 
@@ -178,6 +203,9 @@ export async function PUT(req: NextRequest) {
             remainingCash = Math.abs(newBalance);
             newBalance = 0;
         }
+
+        console.log("💸 New Wallet Balance:", newBalance);
+        console.log("⚖️ Remaining Cash Adjustment:", remainingCash);
 
         if (!Array.isArray(providerWallet.transactions)) {
             providerWallet.transactions = [];
@@ -197,6 +225,13 @@ export async function PUT(req: NextRequest) {
         providerWallet.withdrawableBalance = newWithdrawableBalance;
         providerWallet.pendingWithdraw = newPendingWithdraw;
         providerWallet.balance = newBalance;
+
+         console.log("🏦 Updated Wallet Values:");
+        console.log("   cashInHand:", providerWallet.cashInHand);
+        console.log("   adjustmentCash:", providerWallet.adjustmentCash);
+        console.log("   withdrawableBalance:", providerWallet.withdrawableBalance);
+        console.log("   pendingWithdraw:", providerWallet.pendingWithdraw);
+        console.log("   balance:", providerWallet.balance);
 
         providerWallet.transactions.push({
             type: "credit",

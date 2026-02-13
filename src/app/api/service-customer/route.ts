@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import ServiceCustomer from "@/models/ServiceCustomer";
 import { connectToDatabase } from "@/utils/db";
 import User from "@/models/User";
+import mongoose from "mongoose";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -224,10 +225,22 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
+    const userId = searchParams.get("userId");
 
-    const filter: {
-      $or?: { [key: string]: { $regex: string; $options: string } }[];
-    } = {};
+    const filter: any = {
+      isDeleted: false, 
+    };
+
+    if (userId) {
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return NextResponse.json(
+          { success: false, message: "Invalid userId" },
+          { status: 400 }
+        );
+      }
+
+      filter.user = new mongoose.Types.ObjectId(userId);
+    }
 
     if (search) {
       const searchRegex = { $regex: search, $options: "i" };

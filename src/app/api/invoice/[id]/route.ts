@@ -7,6 +7,8 @@ import '@/models/Provider';
 import '@/models/ServiceCustomer';
 import mongoose from 'mongoose';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,6 +113,10 @@ export async function GET(req: NextRequest) {
       .lean() as unknown as Invoice;
 
 
+          console.log("-----------------------------------------------------service customer",invoice);
+
+
+
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404, headers: corsHeaders });
     }
@@ -122,6 +128,14 @@ export async function GET(req: NextRequest) {
     console.log("extra services", extraServices);
 
     const pdfDoc = await PDFDocument.create();
+    // 🔹 Load Logo
+const logoPath = path.join(process.cwd(), 'public/logo.png'); // change filename if needed
+const logoBytes = fs.readFileSync(logoPath);
+const logoImage = await pdfDoc.embedPng(logoBytes);
+
+// Logo size
+const logoDims = logoImage.scale(0.02);
+
     let page = pdfDoc.addPage([595, 842]); // first page
     const { width, height } = page.getSize();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -228,64 +242,32 @@ export async function GET(req: NextRequest) {
     // ✅ Add to invoice total
     const grandTotal = (invoice.totalAmount || 0) + extraServicesTotal1;
 
-    // 🔹 Add Company Logo
-    try {
-      // Fetch logo from your public directory or CDN
-      const logoUrl = 'https://your-domain.com/logo.png'; // Replace with your actual logo URL
-      const logoResponse = await fetch(logoUrl);
-      const logoArrayBuffer = await logoResponse.arrayBuffer();
-      
-      // Determine logo format and embed
-      let logoImage;
-      if (logoUrl.endsWith('.png')) {
-        logoImage = await pdfDoc.embedPng(logoArrayBuffer);
-      } else if (logoUrl.endsWith('.jpg') || logoUrl.endsWith('.jpeg')) {
-        logoImage = await pdfDoc.embedJpg(logoArrayBuffer);
-      } else if (logoUrl.endsWith('.svg')) {
-        // SVG embedding might require additional processing
-        // For simplicity, we'll skip SVG or you can use a PNG version
-        console.log('SVG format detected, skipping or use PNG instead');
-      }
-
-      if (logoImage) {
-        // Scale logo to fit within 150px width while maintaining aspect ratio
-        const logoMaxWidth = 150;
-        const logoScale = logoMaxWidth / logoImage.width;
-        const logoWidth = logoImage.width * logoScale;
-        const logoHeight = logoImage.height * logoScale;
-
-        // Draw logo on left side
-        page.drawImage(logoImage, {
-          x: margin,
-          y: y - logoHeight,
-          width: logoWidth,
-          height: logoHeight,
-        });
-
-        // Adjust y position to account for logo height
-        y -= (logoHeight + 10); // Add 10px spacing after logo
-      }
-    } catch (logoError) {
-      console.error('Failed to load or embed logo:', logoError);
-      // Continue without logo if there's an error
-    }
-
     // 🔹 Header
-    drawText('INVOICE', margin, y, 18, rgb(0, 0, 0.6), true);
-    nextLine(25);
-    drawText(`Booking #${invoice.bookingId}`, margin, y);
-    drawText(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, width - 150, y);
-    nextLine(30);
+page.drawImage(logoImage, {
+  x: 50,              // change horizontal position
+  y: height - 80,    // change vertical position
+  width: 120,         // custom width
+  height: 60,         // custom height
+});
+
+
+
 
     // Company Info
-    drawText('3rd Floor, 307 Amanora Chamber,', width - 250, y, 10);
+        drawText('FETCH TRUE', width - 250, y, 10);
+    nextLine(12);
+
+    drawText('4th Floor, 416  Amanora Chamber,', width - 250, y, 10);
     nextLine(12);
     drawText('Amanora Mall, Hadapsar, Pune - 411028', width - 250, y, 10);
     nextLine(12);
     drawText('+91 93096 517500', width - 250, y, 10);
     nextLine(12);
     drawText('info@FetchTrue.com', width - 250, y, 10);
-    nextLine(30);
+    nextLine(25);
+    drawText(`Booking #${invoice.bookingId}`, margin, y);
+    drawText(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, width - 150, y);
+        nextLine(30);
 
     // Customer Box
     if (!checkPageSpace(150)) addNewPage();
@@ -299,6 +281,8 @@ export async function GET(req: NextRequest) {
     });
 
     const customer = invoice.serviceCustomer || {};
+    console.log("service customer",customer);
+    
     drawText('Customer Details', margin + 10, y - 10, 14, rgb(0, 0, 0.5), true);
     nextLine(35);
 
@@ -357,8 +341,8 @@ export async function GET(req: NextRequest) {
       if (!checkPageSpace(0)) addNewPage();
 
       const serviceName = s?.serviceName || 'N/A';
-      const price = s?.price || 0;
-      const discountedPrice = s?.discountedPrice || 0;
+      const price = invoice.listingPrice || 0;
+      const discountedPrice = invoice.priceAfterDiscount || 0;
       const rowServiceDiscountPrice = price - discountedPrice;
 
       const originalY = y; // store original y before wrapping
