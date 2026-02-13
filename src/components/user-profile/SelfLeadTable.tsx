@@ -158,7 +158,7 @@ const SelfLeadTable = ({ userId, isAction }: SelfLeadProps) => {
           <span className="text-xs text-blue-600">(expected)</span>
         )}
          {lead.leadStatus === "Accepted" && (
-          <span className="text-xs text-yellow-600">(upcoming)</span>
+          <span className="text-xs text-yellow-600">(expected)</span>
         )}
 
         {addOnCommissionValue > 0 && (

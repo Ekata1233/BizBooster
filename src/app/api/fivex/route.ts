@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import FiveXGuarantee from "@/models/FiveXGuarantee";
 import { connectToDatabase } from "@/utils/db";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // POST (create or update single entry)
 export async function POST(req: Request) {
   try {
@@ -45,11 +55,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const entries = await FiveXGuarantee.find({});
-    return NextResponse.json(entries, { status: 200 });
+    return NextResponse.json(entries, { status: 200,headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json(
       { message: "Error fetching data", error: error.message },
-      { status: 500 }
+      { status: 500,headers: corsHeaders }
     );
   }
 }
