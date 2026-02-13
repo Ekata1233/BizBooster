@@ -9,6 +9,8 @@ import mongoose from 'mongoose';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
+import ServiceCustomer from '@/models/ServiceCustomer';
+import User from '@/models/User';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +47,7 @@ interface Customer {
   mobile?: string;
   phone?: string;
   address?: string;
+  mobileNumber?: string;
 }
 
 interface Provider {
@@ -107,13 +110,24 @@ export async function GET(req: NextRequest) {
 
     // ✅ Fetch Invoice
     const invoice = await Checkout.findById(id)
-      .populate('serviceCustomer')
+      // .populate('serviceCustomer')
       .populate({ path: 'service', strictPopulate: false })
       .populate('provider')
       .lean() as unknown as Invoice;
 
 
-          console.log("-----------------------------------------------------service customer",invoice);
+      if (invoice?.serviceCustomer) {
+  // Try ServiceCustomer first
+  const serviceCustomer = await ServiceCustomer.findById(invoice.serviceCustomer).lean();
+
+  if (serviceCustomer) {
+    invoice.serviceCustomer = serviceCustomer;
+  } else {
+    const user = await User.findById(invoice.serviceCustomer).lean();
+    invoice.serviceCustomer = user;
+  }
+}
+
 
 
 
@@ -125,16 +139,12 @@ export async function GET(req: NextRequest) {
     const lead = await Lead.findOne({ checkout: id }).lean<LeadType>();
 
     const extraServices: ExtraService[] = lead?.extraService || [];
-    console.log("extra services", extraServices);
 
     const pdfDoc = await PDFDocument.create();
     // 🔹 Load Logo
 const logoPath = path.join(process.cwd(), 'public/logo.png'); // change filename if needed
 const logoBytes = fs.readFileSync(logoPath);
 const logoImage = await pdfDoc.embedPng(logoBytes);
-
-// Logo size
-const logoDims = logoImage.scale(0.02);
 
     let page = pdfDoc.addPage([595, 842]); // first page
     const { width, height } = page.getSize();
@@ -213,12 +223,8 @@ const logoDims = logoImage.scale(0.02);
     };
 
 
-    const listingPrice = invoice.listingPrice || 0;
-    const serviceDiscount = invoice.serviceDiscount || 0;
-    const serviceDiscountPrice = invoice.serviceDiscountPrice;
     const gst = invoice.gst || 0;
     const assurityFee = invoice.assurityfee || 0;
-    const platformFeePrice = invoice.platformFeePrice || 0;
 
     const calculatedServices = extraServices.map(service => {
       const gstAmount = ((service.total || 0) * gst) / 100;
@@ -240,12 +246,11 @@ const logoDims = logoImage.scale(0.02);
     );
 
     // ✅ Add to invoice total
-    const grandTotal = (invoice.totalAmount || 0) + extraServicesTotal1;
-
+    let grandTotal = (invoice.totalAmount || 0) + extraServicesTotal1;
     // 🔹 Header
 page.drawImage(logoImage, {
   x: 50,              // change horizontal position
-  y: height - 80,    // change vertical position
+  y: height - 100,    // change vertical position
   width: 120,         // custom width
   height: 60,         // custom height
 });
@@ -254,19 +259,21 @@ page.drawImage(logoImage, {
 
 
     // Company Info
-        drawText('FETCH TRUE', width - 250, y, 10);
+        drawText('FETCH TRUE', width - 225, y, 10);
     nextLine(12);
 
-    drawText('4th Floor, 416  Amanora Chamber,', width - 250, y, 10);
+    drawText('4th Floor, 416  Amanora Chamber,', width - 225, y, 10);
     nextLine(12);
-    drawText('Amanora Mall, Hadapsar, Pune - 411028', width - 250, y, 10);
+    drawText('Amanora Mall, Hadapsar, Pune - 411028', width - 225, y, 10);
     nextLine(12);
-    drawText('+91 93096 517500', width - 250, y, 10);
+    drawText('+91 93096 517500', width - 225, y, 10);
     nextLine(12);
-    drawText('info@FetchTrue.com', width - 250, y, 10);
+    drawText('info@FetchTrue.com', width - 225, y, 10);
     nextLine(25);
+    nextLine(25);
+    
     drawText(`Booking #${invoice.bookingId}`, margin, y);
-    drawText(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, width - 150, y);
+    drawText(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, width - 125, y);
         nextLine(30);
 
     // Customer Box
@@ -281,7 +288,6 @@ page.drawImage(logoImage, {
     });
 
     const customer = invoice.serviceCustomer || {};
-    console.log("service customer",customer);
     
     drawText('Customer Details', margin + 10, y - 10, 14, rgb(0, 0, 0.5), true);
     nextLine(35);
@@ -294,7 +300,7 @@ page.drawImage(logoImage, {
 
     drawText(customer.name || customer.fullName || '-', margin + 10, y);
     drawText(customer.email || '-', 200, y);
-    drawText(customer.mobile || customer.phone || '-', 350, y);
+    drawText(customer.mobile || customer.phone ||customer.mobileNumber || '-', 350, y);
     drawText(`₹${grandTotal.toFixed(2)}`, 470, y, 14, rgb(0, 0.31, 0.615), true);
     nextLine(20);
     drawLine(y);
@@ -364,109 +370,251 @@ page.drawImage(logoImage, {
     // Extra services
 
 
-    if (!checkPageSpace(30)) addNewPage();
-    nextLine(10);
+    // if (!checkPageSpace(30)) addNewPage();
+    // nextLine(10);
+    // drawLine(y);
+    // nextLine(20);
+
+    // // Summary Items
+    // const summaryItems = [
+    //   ['Listing Price', invoice.listingPrice],
+    //   [
+    //     `Service Discount (${`${invoice.serviceDiscount || 0}%`})`,
+    //     invoice.serviceDiscountPrice,
+    //   ],
+    //   ['Price After Discount', invoice.priceAfterDiscount],
+    //   [
+    //      `Coupon Discount (${invoice.couponDiscount || 0}${invoice?.couponDiscountType|| '-'})`,
+    //     invoice.couponDiscountPrice,
+    //   ],
+    //   [`Service GST (${invoice.gst || 0}%)`, invoice.serviceGSTPrice],
+    //   ['Platform Fee (₹)', invoice.platformFeePrice],
+    //   [`Fetch True Assurity Charges (${invoice.assurityfee || 0}%)`, invoice.assurityChargesPrice],
+    //   ['Service Total', invoice.totalAmount],
+
+    // ];
+
+
+    // // Example GST and Assurity values (can come from invoice or service)
+    // const gstPercent = gst;       // GST %
+    // const assurityPercent = assurityFee;   // Assurity %
+    // let extraServicesTotal = 0;
+    // const extraservice = extraServices.flatMap(service => {
+    //   const gstAmount = ((service.total || 0) * gstPercent) / 100;
+    //   const assurityAmount = ((service.total || 0) * assurityPercent) / 100;
+    //   const finalAmount = (service.total || 0) + gstAmount + assurityAmount;
+    //   extraServicesTotal += finalAmount;
+    //   return [
+    //     ['Listing Price', service.price || 0],
+    //     [
+    //       `Service Discount (${typeof service.discount === 'number' ? service.discount + '%' : `Rs.${service.discount || 0}`})`,
+    //       service.discount || 0,
+    //     ],
+    //     ['Price After Discount', service.total || 0],
+    //     [`GST (${gstPercent}%)`, gstAmount],
+    //     [`Assurity Charges (${assurityPercent}%)`, assurityAmount],
+    //     ['Final Amount', finalAmount],
+    //   ];
+    // });
+
+
+
+
+
+    // for (const [label, amount] of summaryItems) {
+    //   if (!checkPageSpace(15)) addNewPage();
+    //   drawText(`${label}:`, margin, y);
+    //   drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
+    //   nextLine(15);
+    // }
+    // addNewPage();
+    // if (extraServices.length > 0) {
+    //   if (!checkPageSpace(30)) addNewPage();
+    //   nextLine(10);
+    //   drawLine(y);
+    //   nextLine(20);
+
+    //   drawText('Extra Services', margin, y, 12, rgb(0, 0, 0), true);
+    //   nextLine(20);
+    //   drawLine(y);
+    //   nextLine(20);
+
+    //   for (const [index, extra] of extraServices.entries()) {
+    //     if (!checkPageSpace(20)) addNewPage();
+
+    //     drawText(`${index + 1}. ${extra.serviceName}`, margin, y);
+    //     drawText(`₹${extra.price.toFixed(2)}`, 200, y);
+    //     drawText(
+    //       extra.discount > 0 ? (invoice.discountAmountType === 'Percentage' ? `${extra.discount}%` : `Rs.${extra.discount}`) : '0',
+    //       320,
+    //       y
+    //     );
+    //     drawText(`₹${extra.total.toFixed(2)}`, 440, y);
+    //     nextLine(20);
+    //     drawLine(y);
+    //     nextLine(20);
+    //   }
+    // }
+
+    // for (const [label, amount] of extraservice) {
+    //   if (!checkPageSpace(15)) addNewPage();
+    //   drawText(`${label}:`, margin, y);
+    //   drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
+    //   nextLine(15);
+    // }
+
+    // if (!checkPageSpace(40)) addNewPage();
+    // nextLine(10);
+    // drawText('Grand Total:', margin, y, 14, rgb(0, 0, 0.8), true);
+    // drawText(`₹${grandTotal.toFixed(2)}`, 450, y, 14, rgb(0, 0, 0.8), true);
+    // nextLine(40);
+    // drawLine(y);
+    // nextLine(30);
+
+    // ============================
+// SUMMARY SECTION
+// ============================
+
+if (!checkPageSpace(30)) addNewPage();
+nextLine(10);
+drawLine(y);
+nextLine(20);
+
+// Summary Items
+const summaryItems = [
+  ['Listing Price', invoice.listingPrice],
+  [
+    `Service Discount (${invoice.serviceDiscount || 0}%)`,
+    invoice.serviceDiscountPrice,
+  ],
+  ['Price After Discount', invoice.priceAfterDiscount],
+  [
+    `Coupon Discount (${invoice.couponDiscount || 0}${invoice?.couponDiscountType || '-'})`,
+    invoice.couponDiscountPrice,
+  ],
+  [`Service GST (${invoice.gst || 0}%)`, invoice.serviceGSTPrice],
+  ['Platform Fee (₹)', invoice.platformFeePrice],
+  [`Fetch True Assurity Charges (${invoice.assurityfee || 0}%)`, invoice.assurityChargesPrice],
+  ['Service Total', invoice.totalAmount],
+];
+
+// Draw Summary
+for (const [label, amount] of summaryItems) {
+  if (!checkPageSpace(15)) addNewPage();
+  drawText(`${label}:`, margin, y);
+  drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
+  nextLine(15);
+}
+
+// ============================
+// EXTRA SERVICES CALCULATION
+// ============================
+
+const gstPercent = gst || 0;
+const assurityPercent = assurityFee || 0;
+
+let extraServicesTotal = 0;
+
+const extraservice =
+  extraServices && extraServices.length > 0
+    ? extraServices.flatMap(service => {
+        const baseTotal = service.total || 0;
+
+        const gstAmount = (baseTotal * gstPercent) / 100;
+        const assurityAmount = (baseTotal * assurityPercent) / 100;
+        const finalAmount = baseTotal + gstAmount + assurityAmount;
+
+        extraServicesTotal += finalAmount;
+
+        return [
+          ['Listing Price', service.price || 0],
+          [
+            `Service Discount (${
+              typeof service.discount === 'number'
+                ? service.discount + '%'
+                : `Rs.${service.discount || 0}`
+            })`,
+            service.discount || 0,
+          ],
+          ['Price After Discount', baseTotal],
+          [`GST (${gstPercent}%)`, gstAmount],
+          [`Assurity Charges (${assurityPercent}%)`, assurityAmount],
+          ['Final Amount', finalAmount],
+        ];
+      })
+    : [];
+
+// ============================
+// EXTRA SERVICES RENDERING
+// ============================
+
+if (extraServices && extraServices.length > 0) {
+
+  addNewPage();
+
+  if (!checkPageSpace(30)) addNewPage();
+  nextLine(10);
+  drawLine(y);
+  nextLine(20);
+
+  drawText('Extra Services', margin, y, 12, rgb(0, 0, 0), true);
+  nextLine(20);
+  drawLine(y);
+  nextLine(20);
+
+  // List each extra service
+  for (const [index, extra] of extraServices.entries()) {
+    if (!checkPageSpace(20)) addNewPage();
+
+    drawText(`${index + 1}. ${extra.serviceName}`, margin, y);
+    drawText(`₹${Number(extra.price || 0).toFixed(2)}`, 200, y);
+
+    drawText(
+      extra.discount > 0
+        ? invoice.discountAmountType === 'Percentage'
+          ? `${extra.discount}%`
+          : `Rs.${extra.discount}`
+        : '0',
+      320,
+      y
+    );
+
+    drawText(`₹${Number(extra.total || 0).toFixed(2)}`, 440, y);
+    nextLine(20);
     drawLine(y);
     nextLine(20);
+  }
 
-    // Summary Items
-    const summaryItems = [
-      ['Listing Price', invoice.listingPrice],
-      [
-        `Service Discount (${`${invoice.serviceDiscount || 0}%`})`,
-        invoice.serviceDiscountPrice,
-      ],
-      ['Price After Discount', invoice.priceAfterDiscount],
-      [
-         `Coupon Discount (${invoice.couponDiscount || 0}${invoice?.couponDiscountType|| '-'})`,
-        invoice.couponDiscountPrice,
-      ],
-      [`Service GST (${invoice.gst || 0}%)`, invoice.serviceGSTPrice],
-      ['Platform Fee (₹)', invoice.platformFeePrice],
-      [`Fetch True Assurity Charges (${invoice.assurityfee || 0}%)`, invoice.assurityChargesPrice],
-      ['Service Total', invoice.totalAmount],
+  // Breakdown of calculated amounts (GST + Assurity etc)
+  for (const [label, amount] of extraservice) {
+    if (!checkPageSpace(15)) addNewPage();
+    drawText(`${label}:`, margin, y);
+    drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
+    nextLine(15);
+  }
+}
 
-    ];
+// ============================
+// GRAND TOTAL (NO GAP ISSUE)
+// ============================
 
 
-    // Example GST and Assurity values (can come from invoice or service)
-    const gstPercent = gst;       // GST %
-    const assurityPercent = assurityFee;   // Assurity %
-    let extraServicesTotal = 0;
-    const extraservice = extraServices.flatMap(service => {
-      const gstAmount = ((service.total || 0) * gstPercent) / 100;
-      const assurityAmount = ((service.total || 0) * assurityPercent) / 100;
-      const finalAmount = (service.total || 0) + gstAmount + assurityAmount;
-      extraServicesTotal += finalAmount;
-      return [
-        ['Listing Price', service.price || 0],
-        [
-          `Service Discount (${typeof service.discount === 'number' ? service.discount + '%' : `Rs.${service.discount || 0}`})`,
-          service.discount || 0,
-        ],
-        ['Price After Discount', service.total || 0],
-        [`GST (${gstPercent}%)`, gstAmount],
-        [`Assurity Charges (${assurityPercent}%)`, assurityAmount],
-        ['Final Amount', finalAmount],
-      ];
-    });
+ grandTotal =
+  Number(invoice.totalAmount || 0) +
+  Number(extraServicesTotal || 0);
 
+if (!checkPageSpace(40)) addNewPage();
+nextLine(10);
 
+drawText('Grand Total:', margin, y, 14, rgb(0, 0, 0.8), true);
+drawText(`₹${grandTotal.toFixed(2)}`, 450, y, 14, rgb(0, 0, 0.8), true);
 
-
-
-    for (const [label, amount] of summaryItems) {
-      if (!checkPageSpace(15)) addNewPage();
-      drawText(`${label}:`, margin, y);
-      drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
-      nextLine(15);
-    }
-    addNewPage();
-    if (extraServices.length > 0) {
-      if (!checkPageSpace(30)) addNewPage();
-      nextLine(10);
-      drawLine(y);
-      nextLine(20);
-
-      drawText('Extra Services', margin, y, 12, rgb(0, 0, 0), true);
-      nextLine(20);
-      drawLine(y);
-      nextLine(20);
-
-      for (const [index, extra] of extraServices.entries()) {
-        if (!checkPageSpace(20)) addNewPage();
-
-        drawText(`${index + 1}. ${extra.serviceName}`, margin, y);
-        drawText(`₹${extra.price.toFixed(2)}`, 200, y);
-        drawText(
-          extra.discount > 0 ? (invoice.discountAmountType === 'Percentage' ? `${extra.discount}%` : `Rs.${extra.discount}`) : '0',
-          320,
-          y
-        );
-        drawText(`₹${extra.total.toFixed(2)}`, 440, y);
-        nextLine(20);
-        drawLine(y);
-        nextLine(20);
-      }
-    }
-
-    for (const [label, amount] of extraservice) {
-      if (!checkPageSpace(15)) addNewPage();
-      drawText(`${label}:`, margin, y);
-      drawText(`₹${Number(amount || 0).toFixed(2)}`, 450, y);
-      nextLine(15);
-    }
-
-    if (!checkPageSpace(40)) addNewPage();
-    nextLine(10);
-    drawText('Grand Total:', margin, y, 14, rgb(0, 0, 0.8), true);
-    drawText(`₹${grandTotal.toFixed(2)}`, 450, y, 14, rgb(0, 0, 0.8), true);
-    nextLine(40);
-    drawLine(y);
-    nextLine(30);
+nextLine(40);
+drawLine(y);
+nextLine(30);
 
     // Terms
-    if (!checkPageSpace(60)) addNewPage();
+    if (!checkPageSpace(200)) addNewPage();
     drawText('Terms & Conditions', margin, y, 14, rgb(0, 0, 0.5), true);
     nextLine(20);
 
