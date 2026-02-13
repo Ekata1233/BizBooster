@@ -47,6 +47,9 @@ export async function GET() {
       const service = item.service || {};
       const franchise = service.franchiseDetails || {};
 
+          console.log("data of post populrejre ; : ", service);
+
+
       return {
         _id: item._id,
 
@@ -82,6 +85,7 @@ export async function GET() {
         },
       };
     });
+
 
     return NextResponse.json({ success: true, data }, { headers: corsHeaders });
   } catch (error) {
