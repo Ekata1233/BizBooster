@@ -25,6 +25,7 @@ interface WalletTxn {
 interface AdminTransaction {
   transactionId: string;
   walletType: 'User' | 'Provider';
+  description?: string;
   to: string;
   date: Date;
   type: 'credit' | 'debit';
@@ -55,6 +56,7 @@ export async function GET() {
       to: wallet.userId
         ? `${wallet.userId.userId} - ${wallet.userId.fullName}`
         : 'Admin',
+      description : txn.description,
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
@@ -77,6 +79,7 @@ export async function GET() {
       to: wallet.providerId
         ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
         : 'Unknown Provider',
+      description: txn.description,
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,

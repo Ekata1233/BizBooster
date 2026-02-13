@@ -11,6 +11,7 @@ interface Transaction {
   transactionId: string;
   walletType: string;
   to: string;
+  description: string;
   date: string;
   type: string;
   credit: number;
@@ -111,18 +112,37 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
     // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
     { header: 'Method', accessor: 'method', className: "w-28" },
     {
-      header: 'Commission',
-      accessor: 'commission',
-      className: "w-40", // reduced width + ellipsis
-      render: (row: Transaction) => {
-        console.log("row of transaction table : ", row)
-        return(
-          (
-        <span className="block truncate max-w-[150px]">{row.transactionId}</span>
-      )
-        )
-      },
-    },
+  header: 'Commission from',
+  accessor: 'commission',
+  className: "w-40",
+  render: (row: Transaction) => {
+
+    console.log("row transaction : ", row)
+    const desc = row.description?.toLowerCase() || "";
+
+    let label = "-";
+
+    if (desc.includes("team revenue")) {
+      label = "LEAD";
+    } else if (desc.includes("team build commission")) {
+      label = "PACKAGE";
+    } else if (desc.includes("deposit")) {
+      label = "DEPOSIT";
+    } else if (desc.includes("weekly payout") || desc.includes("payout")) {
+      label = "PAYOUT";
+    } else if (desc.includes("self earning")) {
+      label = "LEAD";
+    } else if (desc.includes("cash in hand")) {
+      label = "CASH";
+    }
+
+    return (
+      <span className="font-medium">
+        {label}
+      </span>
+    );
+  },
+},
     {
       header: 'Type',
       accessor: 'type',
