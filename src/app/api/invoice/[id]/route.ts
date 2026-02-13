@@ -228,6 +228,48 @@ export async function GET(req: NextRequest) {
     // ✅ Add to invoice total
     const grandTotal = (invoice.totalAmount || 0) + extraServicesTotal1;
 
+    // 🔹 Add Company Logo
+    try {
+      // Fetch logo from your public directory or CDN
+      const logoUrl = 'https://your-domain.com/logo.png'; // Replace with your actual logo URL
+      const logoResponse = await fetch(logoUrl);
+      const logoArrayBuffer = await logoResponse.arrayBuffer();
+      
+      // Determine logo format and embed
+      let logoImage;
+      if (logoUrl.endsWith('.png')) {
+        logoImage = await pdfDoc.embedPng(logoArrayBuffer);
+      } else if (logoUrl.endsWith('.jpg') || logoUrl.endsWith('.jpeg')) {
+        logoImage = await pdfDoc.embedJpg(logoArrayBuffer);
+      } else if (logoUrl.endsWith('.svg')) {
+        // SVG embedding might require additional processing
+        // For simplicity, we'll skip SVG or you can use a PNG version
+        console.log('SVG format detected, skipping or use PNG instead');
+      }
+
+      if (logoImage) {
+        // Scale logo to fit within 150px width while maintaining aspect ratio
+        const logoMaxWidth = 150;
+        const logoScale = logoMaxWidth / logoImage.width;
+        const logoWidth = logoImage.width * logoScale;
+        const logoHeight = logoImage.height * logoScale;
+
+        // Draw logo on left side
+        page.drawImage(logoImage, {
+          x: margin,
+          y: y - logoHeight,
+          width: logoWidth,
+          height: logoHeight,
+        });
+
+        // Adjust y position to account for logo height
+        y -= (logoHeight + 10); // Add 10px spacing after logo
+      }
+    } catch (logoError) {
+      console.error('Failed to load or embed logo:', logoError);
+      // Continue without logo if there's an error
+    }
+
     // 🔹 Header
     drawText('INVOICE', margin, y, 18, rgb(0, 0, 0.6), true);
     nextLine(25);

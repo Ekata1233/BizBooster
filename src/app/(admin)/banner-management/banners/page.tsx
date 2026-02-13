@@ -66,7 +66,6 @@ const Banner = () => {
   console.log("banners : ", banners)
 
   // Create mapping objects for easy lookup
-  // const moduleMap = Object.fromEntries(moduleData.map((mod) => [mod._id, mod.name]));
   const categoryMap = Object.fromEntries(categoryData.map((cat) => [cat._id, cat.name]));
   const subcategoryMap = Object.fromEntries(subcategoryData.map((cat) => [cat._id, cat.name]));
   const serviceMap = Object.fromEntries(serviceData.map((cat) => [cat._id, cat.serviceName]));
@@ -84,9 +83,96 @@ const Banner = () => {
   const [message, setMessage] = useState('');
   const pageOptions = ['home', 'category'];
   const selectionTypeOptions = ['category', 'subcategory', 'service', 'referralUrl'];
-const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('');
+  const [selectedCategoryForSub, setSelectedCategoryForSub] = useState<string>('');
+  
+  // ===== ADD THESE STATE VARIABLES FOR FILTERING =====
+  const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
+  const [filteredServices, setFilteredServices] = useState<any[]>([]);
+  // =================================================
 
-console.log("current banner : ", currentBanner);
+  console.log("current banner : ", currentBanner);
+
+  // ===== FILTER CATEGORIES BASED ON SELECTED MODULE =====
+  useEffect(() => {
+    if (selectedModule) {
+      const filtered = categoryData.filter(cat => cat.module?._id === selectedModule);
+      setFilteredCategories(filtered);
+    } else {
+      setFilteredCategories([]);
+    }
+  }, [selectedModule, categoryData]);
+  // ====================================================
+
+  // ===== FILTER SUBCATEGORIES BASED ON SELECTED MODULE AND CATEGORY =====
+  useEffect(() => {
+    if (selectedModule) {
+      // First, get all categories that belong to the selected module
+      const moduleCategoryIds = categoryData
+        .filter(cat => cat.module?._id === selectedModule)
+        .map(cat => cat._id);
+      
+      // Then filter subcategories that belong to those categories
+      const filtered = subcategoryData.filter(sub => {
+        const categoryId = typeof sub.category === 'object' 
+          ? sub.category?._id 
+          : sub.category;
+        return moduleCategoryIds.includes(categoryId || '');
+      });
+      
+      setFilteredSubcategories(filtered);
+    } else {
+      setFilteredSubcategories([]);
+    }
+  }, [selectedModule, categoryData, subcategoryData]);
+  // ====================================================
+
+  // ===== FILTER SERVICES BASED ON SELECTED MODULE AND CATEGORY/SUBCATEGORY =====
+  useEffect(() => {
+    if (selectedModule) {
+      // First, get all categories that belong to the selected module
+      const moduleCategoryIds = categoryData
+        .filter(cat => cat.module?._id === selectedModule)
+        .map(cat => cat._id);
+      
+      // Then filter services that belong to those categories
+      const filtered = serviceData.filter(serv => {
+        const categoryId = typeof serv.category === 'object' 
+          ? serv.category?._id 
+          : serv.category;
+        return moduleCategoryIds.includes(categoryId || '');
+      });
+      
+      setFilteredServices(filtered);
+    } else {
+      setFilteredServices([]);
+    }
+  }, [selectedModule, categoryData, serviceData]);
+  // ====================================================
+
+  // ===== FILTER SUBCATEGORIES BY SELECTED CATEGORY (for dependent dropdown) =====
+  const getSubcategoriesByCategory = (categoryId: string) => {
+    if (!categoryId) return [];
+    return subcategoryData.filter(sub => {
+      const subCategoryId = typeof sub.category === 'object' 
+        ? sub.category?._id 
+        : sub.category;
+      return subCategoryId === categoryId;
+    });
+  };
+  // ====================================================
+
+  // ===== FILTER SERVICES BY SELECTED CATEGORY (for dependent dropdown) =====
+  const getServicesByCategory = (categoryId: string) => {
+    if (!categoryId) return [];
+    return serviceData.filter(serv => {
+      const servCategoryId = typeof serv.category === 'object' 
+        ? serv.category?._id 
+        : serv.category;
+      return servCategoryId === categoryId;
+    });
+  };
+  // ====================================================
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
@@ -102,11 +188,34 @@ console.log("current banner : ", currentBanner);
     setCurrentBanner(banner);
     setUpdatedFile(banner.file);
     setSelectedModule(typeof banner.module === 'object' ? banner.module._id : banner.module || '');
+    
+    // Set selectedCategoryForSub when editing
+    if (banner.selectionType === 'subcategory') {
+      const subId = typeof banner.subcategory === 'object' ? banner.subcategory?._id : banner.subcategory;
+      const sub = subcategoryData.find(s => s._id === subId);
+      if (sub) {
+        const catId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+        setSelectedCategoryForSub(catId || '');
+      }
+    } else if (banner.selectionType === 'service') {
+      const servId = typeof banner.service === 'object' ? banner.service?._id : banner.service;
+      const serv = serviceData.find(s => s._id === servId);
+      if (serv) {
+        const catId = typeof serv.category === 'object' ? serv.category?._id : serv.category;
+        setSelectedCategoryForSub(catId || '');
+      }
+    } else if (banner.selectionType === 'category') {
+      const catId = typeof banner.category === 'object' ? banner.category?._id : banner.category;
+      setSelectedCategoryForSub(catId || '');
+    }
+    
     setEditModalOpen(true);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedModule(e.target.value);
+    // Reset category selection when module changes
+    setSelectedCategoryForSub('');
   };
 
   const handleUpdate = async () => {
@@ -118,6 +227,7 @@ console.log("current banner : ", currentBanner);
     formData.append('page', currentBanner.page);
     formData.append('selectionType', currentBanner.selectionType);
     formData.append("module", selectedModule);
+    
     // Handle category object case
     const categoryId = typeof currentBanner.category === 'object'
       ? currentBanner.category?._id
@@ -148,21 +258,23 @@ console.log("current banner : ", currentBanner);
     }
 
     try {
-      // Pass both id and formData as separate arguments
       await updateBanner(currentBanner._id, formData);
       alert('Banner updated successfully');
-       await fetchFilteredBanners();
+      await fetchFilteredBanners();
       setEditModalOpen(false);
       setNewImage(null);
+      // Reset filter states
+      setSelectedCategoryForSub('');
+      setFilteredCategories([]);
+      setFilteredSubcategories([]);
+      setFilteredServices([]);
     } catch (err) {
       setError('Failed to update banner.');
       console.log(err);
-
     } finally {
       setIsLoading(false);
     }
   };
-
 
   // Helper function to get navigation target display text
   const getNavigationTarget = (banner: BannerType): string => {
@@ -173,16 +285,14 @@ console.log("current banner : ", currentBanner);
         }
         return banner.category ? categoryMap[banner.category] || banner.category : '-';
       case 'subcategory':
-        // return banner.subcategory || '-';
         if (typeof banner.subcategory === 'object') {
           return banner.subcategory?.name || '-';
         }
         return banner.subcategory ? subcategoryMap[banner.subcategory] || banner.subcategory : '-';
       case 'service':
         if (typeof banner.service === 'object' && banner.service !== null) {
-          return (banner.service as { name?: string })?.name || '-';
+          return (banner.service as { serviceName?: string })?.serviceName || '-';
         }
-
         return banner.service ? serviceMap[banner.service] || banner.service : '-';
       case 'referralUrl':
         return banner.referralUrl ? 'External Link' : '-';
@@ -288,7 +398,6 @@ console.log("current banner : ", currentBanner);
       header: 'Action',
       accessor: 'action',
       render: (row: TableData) => {
-        console.log('Row data of banner :', row);
         return (
           <div className="flex gap-2">
             <button
@@ -309,8 +418,6 @@ console.log("current banner : ", currentBanner);
           </div>
         );
       }
-
-
     },
   ];
 
@@ -320,7 +427,7 @@ console.log("current banner : ", currentBanner);
   }));
 
   const handleSelectSubcategory = (value: string) => {
-    setSelectedSubcategory(value); // required to set the selected module
+    setSelectedSubcategory(value);
   };
 
   const totalPages = Math.ceil(filteredBanner.length / rowsPerPage);
@@ -335,26 +442,11 @@ console.log("current banner : ", currentBanner);
 
   console.log("Banner data in frontend  : ", banners);
 
-  const filteredSubcategories = selectedCategoryForSub
-  ? subcategoryData.filter(
-      (sub) =>
-        typeof sub.category === 'object'
-          ? sub.category?._id === selectedCategoryForSub
-          : sub.category === selectedCategoryForSub
-    )
-  : [];
-
-
-
   if (!filteredBanner) return <div>Loading...</div>;
-
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Banners" />
-      {/* <div className="my-5">
-        <AddBanner />
-      </div> */}
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left section - Search Filter */}
@@ -420,7 +512,6 @@ console.log("current banner : ", currentBanner);
         </div>
       </div>
 
-
       <div className="my-5">
         <ComponentCard title="All Banners">
           {message ? (
@@ -443,7 +534,6 @@ console.log("current banner : ", currentBanner);
           )}
         </ComponentCard>
       </div>
-
 
       {/* Edit Modal */}
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} className="max-w-3xl">
@@ -481,19 +571,19 @@ console.log("current banner : ", currentBanner);
                   className="w-full border px-3 py-2 rounded"
                   value={(currentBanner as any)?.screenCategory || ""}
                   onChange={(e) => {
-  const value = e.target.value;
-  setSelectedCategoryForSub(value);
-  setCurrentBanner((prev) =>
-    prev
-      ? {
-          ...prev,
-          screenCategory: value,   
-          category: '',  
-          subcategory: ''
-        }
-      : null
-  );
-}}
+                    const value = e.target.value;
+                    setSelectedCategoryForSub(value);
+                    setCurrentBanner((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            screenCategory: value,   
+                            category: '',  
+                            subcategory: ''
+                          }
+                        : null
+                    );
+                  }}
                 >
                   <option value="">Select Screen Category</option>
                   {categoryData.map((cat) => (
@@ -505,9 +595,8 @@ console.log("current banner : ", currentBanner);
               </div>
             )}
 
-
             <div>
-                <label className="block text-sm font-medium">Select Module</label>
+              <label className="block text-sm font-medium">Select Module</label>
               <select
                 className="w-full border px-3 py-2 rounded"
                 value={selectedModule}
@@ -520,8 +609,6 @@ console.log("current banner : ", currentBanner);
                   </option>
                 ))}
               </select>
-
-
             </div>
 
             {/* Selection Type */}
@@ -530,18 +617,20 @@ console.log("current banner : ", currentBanner);
               <select
                 className="w-full border px-3 py-2 rounded"
                 value={currentBanner?.selectionType || ''}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value;
                   setCurrentBanner((prev) =>
                     prev ? {
                       ...prev,
-                      selectionType: e.target.value,
+                      selectionType: value,
                       category: undefined,
                       subcategory: undefined,
                       service: undefined,
                       referralUrl: undefined
                     } : null
-                  )
-                }
+                  );
+                  setSelectedCategoryForSub('');
+                }}
               >
                 <option value="">Select Navigation Target</option>
                 {selectionTypeOptions.map((type) => (
@@ -551,8 +640,6 @@ console.log("current banner : ", currentBanner);
                 ))}
               </select>
             </div>
-
-
 
             {/* Category Selection */}
             {currentBanner?.selectionType === 'category' && (
@@ -565,26 +652,34 @@ console.log("current banner : ", currentBanner);
                       ? currentBanner.category?._id
                       : currentBanner?.category || ''
                   }
-                   onChange={(e) => {
-  const value = e.target.value;
-  setSelectedCategoryForSub(value);
-  setCurrentBanner((prev) =>
-    prev
-      ? {
-          ...prev,
-          category: value,
-          subcategory: '' 
-        }
-      : null
-  );
-}}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedCategoryForSub(value);
+                    setCurrentBanner((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            category: value,
+                            subcategory: '' 
+                          }
+                        : null
+                    );
+                  }}
                 >
                   <option value="">Select Category</option>
-                  {categoryData.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
+                  {selectedModule ? (
+                    filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No categories found for this module</option>
+                    )
+                  ) : (
+                    <option value="" disabled>Please select a module first</option>
+                  )}
                 </select>
               </div>
             )}
@@ -600,49 +695,80 @@ console.log("current banner : ", currentBanner);
                       ? currentBanner.subcategory?._id
                       : currentBanner?.subcategory || ''
                   }
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setCurrentBanner((prev) =>
-                      prev ? { ...prev, subcategory: e.target.value, category: '' } : null
-                    )
-                  }
+                      prev ? { ...prev, subcategory: value, category: '' } : null
+                    );
+                    // Set the category for this subcategory
+                    const sub = subcategoryData.find(s => s._id === value);
+                    if (sub) {
+                      const catId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+                      setSelectedCategoryForSub(catId || '');
+                    }
+                  }}
                 >
                   <option value="">Select Subcategory</option>
-                  {filteredSubcategories.map((sub) => (
-                    <option key={sub._id} value={sub._id}>
-                      {sub.name}
-                    </option>
-                  ))}
+                  {selectedModule ? (
+                    filteredSubcategories.length > 0 ? (
+                      filteredSubcategories.map((sub) => (
+                        <option key={sub._id} value={sub._id}>
+                          {sub.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No subcategories found for this module</option>
+                    )
+                  ) : (
+                    <option value="" disabled>Please select a module first</option>
+                  )}
                 </select>
               </div>
             )}
 
+            {/* Service Selection */}
             {currentBanner?.selectionType === 'service' && (
-  <div className="md:col-span-2">
-    <label className="block text-sm font-medium">Service</label>
-    <select
-      className="w-full border px-3 py-2 rounded"
-      value={
-        typeof currentBanner?.service === 'object'
-          ? currentBanner?.service?._id
-          : currentBanner.service || ''
-      }
-      onChange={(e) =>
-        setCurrentBanner((prev) =>
-          prev ? { ...prev, service: e.target.value } : null
-        )
-      }
-    >
-      <option value="">Select Service</option>
-      {serviceData.map((srv) => (
-        <option key={srv._id} value={srv._id}>
-          {srv.serviceName}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium">Service</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={
+                    typeof currentBanner?.service === 'object'
+                      ? currentBanner?.service?._id
+                      : currentBanner.service || ''
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCurrentBanner((prev) =>
+                      prev ? { ...prev, service: value } : null
+                    );
+                    // Set the category for this service
+                    const serv = serviceData.find(s => s._id === value);
+                    if (serv) {
+                      const catId = typeof serv.category === 'object' ? serv.category?._id : serv.category;
+                      setSelectedCategoryForSub(catId || '');
+                    }
+                  }}
+                >
+                  <option value="">Select Service</option>
+                  {selectedModule ? (
+                    filteredServices.length > 0 ? (
+                      filteredServices.map((srv) => (
+                        <option key={srv._id} value={srv._id}>
+                          {srv.serviceName}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No services found for this module</option>
+                    )
+                  ) : (
+                    <option value="" disabled>Please select a module first</option>
+                  )}
+                </select>
+              </div>
+            )}
 
-
+            {/* Referral URL */}
             {currentBanner?.selectionType === 'referralUrl' && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium">Referral URL</label>
@@ -695,7 +821,14 @@ console.log("current banner : ", currentBanner);
 
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setEditModalOpen(false)}
+              onClick={() => {
+                setEditModalOpen(false);
+                // Reset filter states when closing modal
+                setSelectedCategoryForSub('');
+                setFilteredCategories([]);
+                setFilteredSubcategories([]);
+                setFilteredServices([]);
+              }}
               className="px-4 py-2 rounded border border-gray-300"
               disabled={isLoading}
             >

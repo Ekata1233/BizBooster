@@ -607,34 +607,50 @@ const ServiceDetailsPage = () => {
             </div>
 
             {/* Price Section */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-4">
-                {service.discount > 0 ? (
-                  <>
-                    <div>
-                      <span className="text-2xl font-bold text-gray-900">
-                        ₹{formatPrice(service.discountedPrice || service.price)}
-                      </span>
-                      <span className="ml-2 text-sm text-gray-500 line-through">
-                        ₹{formatPrice(service.price)}
-                      </span>
-                    </div>
-                    <span className="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full">
-                      {service.discount}% OFF
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-2xl font-bold text-gray-900">
-                    ₹{formatPrice(service.price || 0)}
-                  </span>
-                )}
-              </div>
-              {service.includeGst && (
-                <p className="text-sm text-gray-600 mt-2">
-                  {service.gst ? `Inclusive of GST: ${formatPrice(service.gst)}%` : 'GST Inclusive'}
-                </p>
-              )}
-            </div>
+<div className="mb-6 p-4 bg-gray-50 rounded-lg">
+  <div className="flex items-center gap-4">
+    {service.discount > 0 ? (
+      <>
+        <div>
+          <span className="text-2xl font-bold text-gray-900">
+            ₹{formatPrice(service.discountedPrice || service.price)}
+          </span>
+          <span className="ml-2 text-sm text-gray-500 line-through">
+            ₹{formatPrice(service.price)}
+          </span>
+        </div>
+        <span className="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full">
+          {service.discount}% OFF
+        </span>
+      </>
+    ) : (
+      <span className="text-2xl font-bold text-gray-900">
+        ₹{formatPrice(service.price || 0)}
+      </span>
+    )}
+  </div>
+  
+  {/* GST Status - Shows for both true and false */}
+  <div className="flex items-center gap-2 mt-2">
+    {/* Badge for Include/Exclude */}
+    <span 
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+        service.includeGst 
+          ? 'bg-green-100 text-green-800 border border-green-200' 
+          : 'bg-orange-100 text-orange-800 border border-orange-200'
+      }`}
+    >
+      {service.includeGst ? '✓ GST Inclusive' : '✗ GST Exclusive'}
+    </span>
+    
+    {/* GST Percentage if available */}
+    {service.gst > 0 && (
+      <span className="text-sm text-gray-600">
+        {service.includeGst ? 'Including' : 'Excluding'} {formatPrice(service.gst)}% GST
+      </span>
+    )}
+  </div>
+</div>
 
             {/* Key Values */}
             {keyValues.length > 0 && (

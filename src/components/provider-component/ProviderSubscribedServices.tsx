@@ -23,14 +23,14 @@ const ProviderSubscribedServices: React.FC<Props> = ({ data }) => {
             header: 'Service Name',
             accessor: 'serviceName',
         },
-        {
-            header: 'Price',
-            accessor: 'price',
-        },
-        {
-            header: 'Discount Price',
-            accessor: 'discountedPrice',
-        },
+        // {
+        //     header: 'Price',
+        //     accessor: 'price',
+        // },
+        // {
+        //     header: 'Discount Price',
+        //     accessor: 'discountedPrice',
+        // },
         {
             header: 'Status',
             accessor: 'status',
