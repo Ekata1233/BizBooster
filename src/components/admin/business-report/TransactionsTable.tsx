@@ -11,6 +11,7 @@ interface Transaction {
   transactionId: string;
   walletType: string;
   to: string;
+  description: string;
   date: string;
   type: string;
   credit: number;
@@ -20,6 +21,7 @@ interface Transaction {
   status: string;
   source: string;
   leadId: string;
+  commissionFrom: string;
 }
 
 interface Props {
@@ -99,30 +101,76 @@ const TransactionsTable: React.FC<Props> = ({ transactions }) => {
       ),
     },
     {
-      header: 'Lead ID',
-      accessor: 'leadId',
-      className: "w-40 truncate", // reduced width + ellipsis
-      render: (row: Transaction) => (
-        <span className="block truncate max-w-[150px]">{row.leadId}</span>
-      ),
-    },
-    { header: 'To', accessor: 'to', className: "w-32 truncate" },
-    { header: 'Wallet', accessor: 'walletType', className: "w-28" },
+  header: 'Lead ID / User ID',
+  accessor: 'leadId',
+  className: "w-40 truncate",
+  render: (row: Transaction) => (
+    <span className="block truncate max-w-[150px]">
+     {
+  row.leadId === "-"
+    ? `User-${row.commissionFrom}`
+    : `Lead-${row.leadId}`
+}
+    </span>
+  ),
+},
+{
+  header: 'To',
+  accessor: 'to',
+  className: "w-40",
+  render: (row: Transaction) => {
+    const value = row.to || "";
+
+    // Check if value contains " - "
+    if (value.includes(" - ")) {
+      const [id, name] = value.split(" - ");
+
+      return (
+        <div className="flex flex-col leading-snug">
+          <span className="font-medium">{id}</span>
+          <span className="text-gray-500 text-sm">{name}</span>
+        </div>
+      );
+    }
+
+    // If normal value like "Admin"
+    return <span>{value}</span>;
+  },
+},    { header: 'Wallet', accessor: 'walletType', className: "w-28" },
     // { header: 'Source', accessor: 'source', className: "w-28 truncate" },
     { header: 'Method', accessor: 'method', className: "w-28" },
     {
-      header: 'Commission',
-      accessor: 'commission',
-      className: "w-40", // reduced width + ellipsis
-      render: (row: Transaction) => {
-        console.log("row of transaction table : ", row)
-        return(
-          (
-        <span className="block truncate max-w-[150px]">{row.transactionId}</span>
-      )
-        )
-      },
-    },
+  header: 'Commission from',
+  accessor: 'commission',
+  className: "w-40",
+  render: (row: Transaction) => {
+
+    console.log("row transaction : ", row)
+    const desc = row.description?.toLowerCase() || "";
+
+    let label = "-";
+
+    if (desc.includes("team revenue")) {
+      label = "LEAD";
+    } else if (desc.includes("team build commission")) {
+      label = "PACKAGE";
+    } else if (desc.includes("deposit")) {
+      label = "DEPOSIT";
+    } else if (desc.includes("weekly payout") || desc.includes("payout")) {
+      label = "PAYOUT";
+    } else if (desc.includes("self earning")) {
+      label = "LEAD";
+    } else if (desc.includes("cash in hand")) {
+      label = "CASH";
+    }
+
+    return (
+      <span className="font-medium">
+        {label}
+      </span>
+    );
+  },
+},
     {
       header: 'Type',
       accessor: 'type',

@@ -13,6 +13,7 @@ interface WalletTxn {
   amount: number;
   description?: string;
   referenceId?: string;
+  commissionFrom?:string;
   method: 'UPI' | 'Card' | 'BankTransfer' | 'Cash' | 'Wallet' | 'Other';
   source: 'checkout' | 'refund' | 'topup' | 'adjustment' | 'withdraw' | 'referral' | 'Lead';
   status: 'success' | 'pending' | 'failed';
@@ -25,6 +26,8 @@ interface WalletTxn {
 interface AdminTransaction {
   transactionId: string;
   walletType: 'User' | 'Provider';
+  description?: string;
+  commissionFrom?: string;
   to: string;
   date: Date;
   type: 'credit' | 'debit';
@@ -51,10 +54,12 @@ export async function GET() {
           ? `${wallet.userId._id}-${txn.createdAt.getTime()}`
           : `U-unknown-${txn.createdAt.getTime()}`),
       leadId: txn.leadId,
+      commissionFrom: txn.commissionFrom,
       walletType: 'User',
       to: wallet.userId
         ? `${wallet.userId.userId} - ${wallet.userId.fullName}`
         : 'Admin',
+      description : txn.description,
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
@@ -77,6 +82,7 @@ export async function GET() {
       to: wallet.providerId
         ? `${wallet.providerId.providerId} - ${wallet.providerId.fullName}`
         : 'Unknown Provider',
+      description: txn.description,
       date: txn.createdAt,
       type: txn.type,
       source: txn.source,
