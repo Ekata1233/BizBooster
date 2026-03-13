@@ -236,13 +236,31 @@ const ErrorMessage = ({ message }: { message: string }) => (
     }));
   }, [customers]);
 
-  const serviceOptions = useMemo(
-    () =>
-      subcategories
-        .filter((sc) => sc.category?._id === (form.category as any)?._id)
-        .map((sc) => ({ value: sc._id, label: sc.name })),
-    [subcategories, form.category]
-  );
+const serviceOptions = useMemo(() => {
+  let services = subcategories;
+
+  if (form.category?._id) {
+    services = subcategories.filter(
+      (sc) => sc.category?._id === form.category?._id
+    );
+  }
+
+  const options = services.map((sc) => ({
+    value: sc._id,
+    label: sc.serviceName || sc.name,
+  }));
+
+  // ensure selected service exists in options
+  if (form.service && !options.find(o => o.value === form.service._id)) {
+    options.unshift({
+      value: form.service._id,
+      label: form.service.serviceName || "Selected Service"
+    });
+  }
+
+  return options;
+}, [subcategories, form.category, form.service]);
+
 
   const zoneOptions = useMemo(
     () => zones
@@ -278,12 +296,16 @@ const ErrorMessage = ({ message }: { message: string }) => (
         <div key="service" className="md:col-span-2 relative">
           <Label>Select Service</Label>
           <Select
-            options={serviceOptions}
-            placeholder="Select service"
-            value={(form.service as any)?._id}
-            onChange={(val) => handleChange("service", val)}
-            className="w-full dark:bg-dark-900"
-          />
+  options={serviceOptions}
+  placeholder="Select service"
+  value={form.service?._id || ""}
+  onChange={(val) => {
+    const selected = subcategories.find((s) => s._id === val);
+    handleChange("service", selected);
+  }}
+  className="w-full dark:bg-dark-900"
+/>
+
           <span className="pointer-events-none absolute right-3 top-1/2 mt-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             <ChevronDownIcon />
           </span>
@@ -415,17 +437,19 @@ const ErrorMessage = ({ message }: { message: string }) => (
 
             <div className="md:col-span-2 flex flex-wrap items-center gap-8">
               {form.couponType === "customerWise" && (
-                <div className="w-full">
-                  <Label>Select Customer</Label>
-                  <Select
-                    options={customersOptions}
-                    placeholder="Select customer"
-                    value={form.customer?._id}
-                    onChange={(val) => handleChange("customer", val)}
-                    className="w-full dark:bg-dark-900"
-                  />
-                </div>
-              )}
+  <div className="w-full">
+    <Label>Select Customer</Label>
+    <Select
+      options={customersOptions}
+      placeholder="Select customer"
+      value={form.customer ?? ""} // <-- use ID string
+      onChange={(val) => handleChange("customer", val)} // <-- store ID string
+      className="w-full dark:bg-dark-900"
+    />
+    {errors.customer && <ErrorMessage message={errors.customer} />}
+  </div>
+)}
+
             </div>
 
             {/* Discount Type */}

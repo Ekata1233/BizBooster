@@ -36,7 +36,7 @@ export async function PUT(req: Request) {
         return NextResponse.json(
             { success: false, message: "Missing providerId" },
             { status: 400, headers: corsHeaders }
-        );
+        );  
     }
 
     try {

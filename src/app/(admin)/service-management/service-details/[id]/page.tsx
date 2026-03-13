@@ -1892,45 +1892,84 @@ const ServiceDetailsPage = () => {
 
             {/* Investment Range */}
             {hasValidInvestmentRange && (
-              <ComponentCard title="Investment Range">
-                <div className="flex flex-wrap gap-4">
-                  {investmentRange.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
-                    >
-                      <span className="text-xl font-semibold text-emerald-700">
-                        {item.range}
-                      </span>
-                      <span className="ml-2 text-sm font-medium text-emerald-600">
-                        {item.parameters}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </ComponentCard>
-            )}
+      <Link 
+        href={`/service-management/service-details/${id}/investment-range`}
+        className="block cursor-pointer group"
+      >
+        <ComponentCard title="Investment Range">
+          <div className="flex flex-wrap gap-4">
+            {investmentRange.map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105"
+              >
+                <span className="text-xl font-semibold text-emerald-700">
+                  {item.range}
+                </span>
+                <span className="ml-2 text-sm font-medium text-emerald-600">
+                  {item.parameters}
+                </span>
+              </div>
+            ))}
+          </div>
+          
+          {/* View Details Indicator */}
+          <div className="mt-4 flex items-center justify-end text-sm text-blue-600 group-hover:text-blue-700">
+            <span>View Detailed Investment Breakdown</span>
+            <svg 
+              className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </ComponentCard>
+      </Link>
+    )}
 
-            {/* Monthly Earning Potential */}
-            {hasValidMonthlyEarnPotential && (
-              <ComponentCard title="Monthly Earning Potential">
-                <div className="flex flex-wrap gap-4">
-                  {monthlyEarnPotential.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm"
-                    >
-                      <span className="text-xl font-semibold text-emerald-700">
-                        {item.range}
-                      </span>
-                      <span className="ml-2 text-sm font-medium text-emerald-600">
-                        {item.parameters}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </ComponentCard>
-            )}
+            
+            {/* Monthly Earning Potential - Clickable */}
+{hasValidMonthlyEarnPotential && (
+  <Link 
+    href={`/service-management/service-details/${id}/model`}
+    className="block cursor-pointer group"
+  >
+    <ComponentCard title="Monthly Earning Potential">
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-4">
+          {monthlyEarnPotential.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-100 border border-emerald-200 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105"
+            >
+              <span className="text-xl font-semibold text-emerald-700">
+                {item.range}
+              </span>
+              <span className="ml-2 text-sm font-medium text-emerald-600">
+                {item.parameters}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        {/* View Details Indicator */}
+        <div className="flex items-center justify-end text-sm text-blue-600 group-hover:text-blue-700">
+          <span>View Detailed Franchise Models</span>
+          <svg 
+            className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </ComponentCard>
+  </Link>
+)}
 
             {/* Franchise Models */}
             {hasValidFranchiseModel && (
