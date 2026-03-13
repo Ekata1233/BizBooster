@@ -1,3 +1,119 @@
+// // src/app/api/provider/route.ts
+// import Provider from "@/models/Provider";
+// import { connectToDatabase } from "@/utils/db";
+// import { NextRequest, NextResponse } from "next/server";
+// import '@/models/Service';
+// import '@/models/Category';
+// import Zone from "@/models/Zone";
+
+// function isPointInPolygon(
+//   point: { lat: number; lng: number },
+//   polygon: { lat: number; lng: number }[]
+// ) {
+//   let inside = false;
+//   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+//     const xi = polygon[i].lng,
+//       yi = polygon[i].lat;
+//     const xj = polygon[j].lng,
+//       yj = polygon[j].lat;
+
+//     const intersect =
+//       yi > point.lat !== yj > point.lat &&
+//       point.lng < ((xj - xi) * (point.lat - yi)) / (yj - yi) + xi;
+//     if (intersect) inside = !inside;
+//   }
+//   return inside;
+// }
+
+// export async function GET(req: NextRequest) {
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const lat = searchParams.get("lat");
+//     const lng = searchParams.get("lng");
+
+//     let providers: any[] = [];
+
+//     if (lat && lng) {
+//       const allZones = await Zone.find({  });
+//       let matchedZone: any = null;
+
+//       for (const zone of allZones) {
+//         if (
+//           !zone.isPanIndia &&
+//           isPointInPolygon({ lat: +lat, lng: +lng }, zone.coordinates)
+//         ) {
+//           matchedZone = zone;
+//           break;
+//         }
+//       }
+
+//       let zoneProviders: any[] = [];
+//       if (matchedZone) {
+//         zoneProviders = await Provider.find({
+//           "storeInfo.zone": matchedZone._id,
+//           isApproved: true,
+//         }).populate([
+//           {
+//             path: "subscribedServices",
+//             select:
+//               "serviceName price discountedPrice category isDeleted providerCommission",
+//             populate: { path: "category", select: "name" },
+//           },
+//           {
+//             path: "storeInfo.module",       // ✅ Added populate for Module
+//             select: "name",                 // Only name field
+//           },
+//         ]);
+//       }
+
+//       const panIndiaZone = allZones.find((z) => z.isPanIndia);
+//       let panIndiaProviders: any[] = [];
+//       if (panIndiaZone) {
+//         panIndiaProviders = await Provider.find({
+//           "storeInfo.zone": panIndiaZone._id,
+//           isApproved: true,
+//         }).populate([
+//           {
+//             path: "subscribedServices",
+//             select:
+//               "serviceName price discountedPrice category isDeleted providerCommission",
+//             populate: { path: "category", select: "name" },
+//           },
+//           {
+//             path: "storeInfo.module",
+//             select: "name",
+//           },
+//         ]);
+//       }
+
+//       providers = [...zoneProviders, ...panIndiaProviders];
+//     } else {
+//       providers = await Provider.find({})
+//         .populate([
+//           {
+//             path: "subscribedServices",
+//             select:
+//               "serviceName price discountedPrice category isDeleted providerCommission",
+//             populate: { path: "category", select: "name" },
+//           },
+//           {
+//             path: "storeInfo.module",       // ✅ Added populate for Module
+//             select: "name",
+//           },
+//         ])
+//         .sort();
+//     }
+
+//     return NextResponse.json(providers, { status: 200 });
+//   } catch (error: unknown) {
+//     const message = error instanceof Error ? error.message : "Unknown error";
+//     return NextResponse.json({ success: false, message }, { status: 500 });
+//   }
+// }
+
+
 // src/app/api/provider/route.ts
 import Provider from "@/models/Provider";
 import { connectToDatabase } from "@/utils/db";
@@ -37,36 +153,38 @@ export async function GET(req: NextRequest) {
 
     if (lat && lng) {
       const allZones = await Zone.find({  });
-      let matchedZone: any = null;
+      let matchedZones: any[] = [];
 
-      for (const zone of allZones) {
-        if (
-          !zone.isPanIndia &&
-          isPointInPolygon({ lat: +lat, lng: +lng }, zone.coordinates)
-        ) {
-          matchedZone = zone;
-          break;
-        }
-      }
+for (const zone of allZones) {
+  if (
+    !zone.isPanIndia &&
+    isPointInPolygon({ lat: +lat, lng: +lng }, zone.coordinates)
+  ) {
+    matchedZones.push(zone);
+  }
+}
 
       let zoneProviders: any[] = [];
-      if (matchedZone) {
-        zoneProviders = await Provider.find({
-          "storeInfo.zone": matchedZone._id,
-          isApproved: true,
-        }).populate([
-          {
-            path: "subscribedServices",
-            select:
-              "serviceName price discountedPrice category isDeleted providerCommission",
-            populate: { path: "category", select: "name" },
-          },
-          {
-            path: "storeInfo.module",       // ✅ Added populate for Module
-            select: "name",                 // Only name field
-          },
-        ]);
-      }
+
+if (matchedZones.length > 0) {
+  const zoneIds = matchedZones.map((z) => z._id);
+
+  zoneProviders = await Provider.find({
+    "storeInfo.zone": { $in: zoneIds },
+    isApproved: true,
+  }).populate([
+    {
+      path: "subscribedServices",
+      select:
+        "serviceName price discountedPrice category isDeleted providerCommission",
+      populate: { path: "category", select: "name" },
+    },
+    {
+      path: "storeInfo.module",
+      select: "name",
+    },
+  ]);
+}
 
       const panIndiaZone = allZones.find((z) => z.isPanIndia);
       let panIndiaProviders: any[] = [];
@@ -112,3 +230,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
+
