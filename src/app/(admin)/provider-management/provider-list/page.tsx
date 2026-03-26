@@ -360,7 +360,7 @@ const handleToggleChange = async (
       <PageBreadcrumb pageTitle="Provider List" />
 
       <div className="mb-6">
-        <ComponentCard title="Search & Filter">
+       
           <div className="gap-4">
             <div>
               <Label htmlFor="search">Search Providers</Label>
@@ -373,7 +373,7 @@ const handleToggleChange = async (
               />
             </div>
           </div>
-        </ComponentCard>
+        
       </div>
 
       <ComponentCard title="Provider List Table">

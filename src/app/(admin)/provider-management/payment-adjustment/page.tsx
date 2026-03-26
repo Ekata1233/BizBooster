@@ -486,7 +486,7 @@ export default function PaymentAdjustment() {
             <PageBreadcrumb pageTitle="Payment Adjustment" />
             <div className="space-y-5 sm:space-y-6">
                 <div className="mb-6">
-                    <ComponentCard title="Search & Filter">
+                    
                         <div className=" gap-4">
                             <div>
                                 <Label htmlFor="search">Search Providers</Label>
@@ -499,7 +499,7 @@ export default function PaymentAdjustment() {
                                 />
                             </div>
                         </div>
-                    </ComponentCard>
+                    
                 </div>
 
                 <ComponentCard title="Payment Adjustment">
